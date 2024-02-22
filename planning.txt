@@ -1,0 +1,18 @@
+Data structure
+App
+  -> Sheet
+    Instruments (tracks)
+    KeySignature (may move this to instruments)
+    Measures (not explicitly under instruments)
+  -> Instrument
+    identifier (to link measures to it)
+    position (base position measures may refer to)
+  -> Measures
+    Position
+    Prev/Next
+      -> Notes
+        -> beat and duration
+          this will determine position / mouseover
+Update (no preview at this point)
+  -> Mutate (however we're doing this)
+Render after update call

@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "start": "live-server"
+  }
+
+}
