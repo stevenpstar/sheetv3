@@ -5,9 +5,9 @@ var Bounds = /** @class */ (function () {
         this.width = width;
         this.height = height;
     }
-    Bounds.prototype.IsHovered = function (ix, iy) {
-        return (ix >= this.x && ix <= this.x + this.width &&
-            iy >= this.y && iy <= this.y + this.height);
+    Bounds.prototype.IsHovered = function (ix, iy, cam) {
+        return (ix >= this.x + cam.x && ix <= this.x + cam.x + this.width &&
+            iy >= this.y + cam.y && iy <= this.y + cam.y + this.height);
     };
     return Bounds;
 }());

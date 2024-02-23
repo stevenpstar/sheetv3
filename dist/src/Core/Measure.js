@@ -7,12 +7,21 @@ var Measure = /** @class */ (function () {
         this.Notes = properties.Notes;
         this.BeatDistribution = properties.BeatDistribution;
         this.RenderClef = properties.RenderClef;
+        this.XOffset = 0;
+        if (this.RenderClef) {
+            this.XOffset = 30;
+        }
+        // probably always last
         this.CreateBeatDistribution();
     }
-    Measure.GetLineHovered = function (y, msr) {
-        var relYPos = y - msr.Bounds.y;
+    Measure.GetLineHovered = function (y, msr, cam) {
+        var relYPos = y - msr.Bounds.y - cam.y;
         var line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
-        return { num: line, bounds: new Bounds(msr.Bounds.x, (line * 5) - 2.5, msr.Bounds.width, 5) };
+        return { num: line,
+            bounds: new Bounds(msr.Bounds.x, msr.Bounds.y + ((line * 5) - 2.5), msr.Bounds.width + msr.XOffset, 5) };
+    };
+    Measure.prototype.GetBoundsWithOffset = function () {
+        return new Bounds(this.Bounds.x, this.Bounds.y, this.Bounds.width + this.XOffset, this.Bounds.height);
     };
     Measure.prototype.CreateBeatDistribution = function () {
         this.BeatDistribution = []; // empty
@@ -31,11 +40,12 @@ var Measure = /** @class */ (function () {
         var height = this.Bounds.height; // height will always be max
         var width = this.Bounds.width * value; // value will max at 1 (entire measure)
         var y = this.Bounds.y;
-        var x = this.Bounds.x + ((beat - 1) / this.TimeSignature.bottom) * this.Bounds.width;
+        var x = this.Bounds.x + this.XOffset + ((beat - 1) / this.TimeSignature.bottom) * this.Bounds.width;
         return new Bounds(x, y, width, height);
     };
     Measure.prototype.Reposition = function (prevMsr) {
-        this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width;
+        this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
+        this.CreateBeatDistribution();
     };
     Measure.prototype.AddNote = function (note) {
         this.Notes.push(note);

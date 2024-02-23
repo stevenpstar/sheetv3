@@ -4,6 +4,7 @@ import { CreateDefaultMeasure, CreateDefaultPiano, CreateMeasure } from "./Facto
 import { Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
+import { Camera } from "./Core/Camera.js";
 
 class App { 
   Canvas: HTMLCanvasElement;
@@ -13,6 +14,10 @@ class App {
   HoveredElements: { MeasureID: number };
   NoteInput: boolean;
   Zoom: number;
+  Camera: Camera;
+  Dragging: boolean;
+  DraggingPositions: { x1: number, y1: number, x2: number, y2: number };
+
   constructor (canvas: HTMLCanvasElement, 
              context: CanvasRenderingContext2D,
              load: boolean = false) {
@@ -21,6 +26,10 @@ class App {
     this.Load = load;
     this.HoveredElements = { MeasureID: -1 };
     this.Zoom = 1;
+    this.Dragging = false;
+    this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
+    this.Camera = new Camera(0, 0);
+
     if (!this.Load) {
       // Create New Sheet Properties
       const sProps: SheetProps = {
@@ -38,12 +47,20 @@ class App {
   }
 
   Hover(x: number, y: number): void {
+    if (this.Dragging) {
+      this.Camera.x = Math.floor(this.Camera.oldX + x - this.DraggingPositions.x1);
+      this.Camera.y = Math.floor(this.Camera.oldY + y - this.DraggingPositions.y1);
+      this.Update(x, y);
+      return;
+    }
     this.HoveredElements.MeasureID = -1;
     this.Sheet.Measures.forEach(measure => {
-      if (measure.Bounds.IsHovered(x, y)) { 
+      // TODO: Make this a function of measure probably
+      if (measure.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) { 
         this.HoveredElements.MeasureID = measure.ID; 
       }
     })
+    console.log(this.HoveredElements.MeasureID);
     this.Update(x, y);
   }
   Input(x: number, y: number): void {
@@ -52,15 +69,14 @@ class App {
       return;
     }
     this.HoveredElements.MeasureID = -1;
-
       this.Sheet.Measures.forEach(measure => {
-        if (measure.Bounds.IsHovered(x, y)) { 
+        if (measure.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) { 
           this.HoveredElements.MeasureID = measure.ID; 
 
           // add note
           measure.BeatDistribution.forEach(d => {
-            const line = Measure.GetLineHovered(y, measure);
-            if (d.bounds.IsHovered(x, y)) {
+            const line = Measure.GetLineHovered(y, measure, this.Camera);
+            if (d.bounds.IsHovered(x, y, this.Camera)) {
               const noteProps = {
                 Beat: d.startNumber,
                 Duration: d.value,
@@ -83,13 +99,13 @@ class App {
     this.Render({ x: x, y: y });
   }
   Render(mousePos: {x: number, y: number}): void {
-    Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.HoveredElements, mousePos);
+    Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.HoveredElements, mousePos, this.Camera);
   }
 
   AddMeasure(): void {
     const newMeasureID = this.Sheet.Measures.length;
     const prevMsr = this.Sheet.Measures[this.Sheet.Measures.length-1];
-    const x = prevMsr.Bounds.x + prevMsr.Bounds.width;
+    const x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
     const newMeasureBounds = new Bounds(x, prevMsr.Bounds.y, prevMsr.Bounds.width, prevMsr.Bounds.height);
     const newMsr = CreateMeasure(newMeasureID, newMeasureBounds, prevMsr.TimeSignature);
     this.Sheet.Measures.push(newMsr);
@@ -99,10 +115,29 @@ class App {
     this.NoteInput = !this.NoteInput;
   }
 
+  SetDragging(dragging: boolean, x: number, y: number): void {
+    this.Dragging = dragging;
+    if (this.Dragging) {
+      // set initial drag position
+      this.DraggingPositions.x1 = x;
+      this.DraggingPositions.y1 = y;
+    } else {
+      // reset drag positions
+      this.DraggingPositions.x1 = 0;
+      this.DraggingPositions.y1 = 0;
+      this.DraggingPositions.x2 = 0;
+      this.DraggingPositions.y2 = 0;
+      this.Camera.oldX = this.Camera.x;
+      this.Camera.oldY = this.Camera.y;
+    }
+  }
+
   AlterZoom(num: number): void {
     this.Zoom += num;
+    this.Camera.Zoom = this.Zoom;
     // This kind of works but I will need to change mouse position values etc.
-//    this.Context.scale(this.Zoom, this.Zoom);
+    // Kinda doesn't work, zoom value seems to not reduce consistently.
+    //this.Context.scale(this.Zoom, this.Zoom);
   }
 
   // TEST FUNCTION

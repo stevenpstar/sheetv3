@@ -61,10 +61,18 @@ window.addEventListener("mousedown", (e) => {
   const rect = canvas.getBoundingClientRect();
   let mouseX = e.clientX - rect.left;
   let mouseY = e.clientY - rect.top;
-  if (Application) {
+  if (Application && e.buttons === 1) {
     Application.Input(mouseX, mouseY);
   }
+  if (e.buttons === 4) {
+    // set dragging
+    Application.SetDragging(true, mouseX, mouseY);
+  }
 });
+
+window.addEventListener("mouseup", (e) => {
+  Application.SetDragging(false, 0, 0)
+})
 
 window.addEventListener("mousemove", (e) => {
   const rect = canvas.getBoundingClientRect();

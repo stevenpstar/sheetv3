@@ -1,13 +1,17 @@
-import { RenderMeasureBase } from "../Renderers/Measure.Renderer.js";
+import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
 var renderDebug = false;
 var scaleV = 1;
-var Renderer = function (c, ctx, measures, hovElements, mousePos) {
+var Renderer = function (c, ctx, measures, hovElements, mousePos, cam) {
     // reset
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.fillStyle = "black";
     measures.forEach(function (m, i) {
-        RenderMeasureBase(c, ctx, m, hovElements.MeasureID, mousePos);
-        //    RenderNotes(c, ctx, m);
+        var renderProps = {
+            canvas: c,
+            context: ctx,
+            camera: cam
+        };
+        RenderMeasure(m, renderProps, hovElements.MeasureID, mousePos);
     });
 };
 export { Renderer };

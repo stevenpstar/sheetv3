@@ -1,3 +1,5 @@
+import { Camera } from "../Core/Camera";
+
 class Bounds {
   x: number;
   y: number;
@@ -10,9 +12,9 @@ class Bounds {
     this.height = height;
   }
 
-  IsHovered(ix: number, iy: number): boolean {
-    return (ix >= this.x && ix <= this.x + this.width &&
-            iy >= this.y && iy <= this.y + this.height);
+  IsHovered(ix: number, iy: number, cam: Camera): boolean {
+    return (ix >= this.x + cam.x && ix <= this.x + cam.x + this.width &&
+            iy >= this.y + cam.y && iy <= this.y + cam.y + this.height);
   }
 }
 
