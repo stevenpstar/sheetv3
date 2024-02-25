@@ -1,6 +1,6 @@
 import { Bounds } from '../Types/Bounds.js';
-var Measure = /** @class */ (function () {
-    function Measure(properties) {
+class Measure {
+    constructor(properties) {
         this.ID = properties.ID;
         this.Bounds = properties.Bounds;
         this.TimeSignature = properties.TimeSignature;
@@ -14,42 +14,62 @@ var Measure = /** @class */ (function () {
         // probably always last
         this.CreateBeatDistribution();
     }
-    Measure.GetLineHovered = function (y, msr, cam) {
-        var relYPos = y - msr.Bounds.y - cam.y;
-        var line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
+    static GetLineHovered(y, msr, cam) {
+        const relYPos = y - msr.Bounds.y - cam.y;
+        const line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
         return { num: line,
             bounds: new Bounds(msr.Bounds.x, msr.Bounds.y + ((line * 5) - 2.5), msr.Bounds.width + msr.XOffset, 5) };
-    };
-    Measure.prototype.GetBoundsWithOffset = function () {
+    }
+    GetBoundsWithOffset() {
         return new Bounds(this.Bounds.x, this.Bounds.y, this.Bounds.width + this.XOffset, this.Bounds.height);
-    };
-    Measure.prototype.CreateBeatDistribution = function () {
+    }
+    CreateBeatDistribution() {
         this.BeatDistribution = []; // empty
-        // TODO: this is a test implementation during development at this point
-        var quarterMeasure = { startNumber: 1, value: 0.25,
-            bounds: this.CreateBeatBounds(1, 0.25) };
-        var quarterMeasure2 = { startNumber: 2, value: 0.25,
-            bounds: this.CreateBeatBounds(2, 0.25) };
-        var halfMeasure2 = { startNumber: 3, value: 0.5,
-            bounds: this.CreateBeatBounds(3, 0.5) };
-        this.BeatDistribution.push(quarterMeasure);
-        this.BeatDistribution.push(quarterMeasure2);
-        this.BeatDistribution.push(halfMeasure2);
-    };
-    Measure.prototype.CreateBeatBounds = function (beat, value) {
-        var height = this.Bounds.height; // height will always be max
-        var width = this.Bounds.width * value; // value will max at 1 (entire measure)
-        var y = this.Bounds.y;
-        var x = this.Bounds.x + this.XOffset + ((beat - 1) / this.TimeSignature.bottom) * this.Bounds.width;
+        let nextBeat = 0;
+        let runningValue = 0;
+        // sort notes first by beat
+        if (this.Notes.length === 0) {
+            this.BeatDistribution.push({
+                startNumber: 1,
+                value: 1,
+                bounds: this.CreateBeatBounds(1, 1)
+            });
+        }
+        this.Notes.sort((a, b) => {
+            return a.Beat - b.Beat;
+        });
+        this.Notes.forEach(n => {
+            if (!this.BeatDistribution.find(div => div.startNumber === n.Beat)) {
+                this.BeatDistribution.push({
+                    startNumber: n.Beat,
+                    value: n.Duration,
+                    bounds: this.CreateBeatBounds(n.Beat, n.Duration)
+                });
+                nextBeat = n.Beat + (n.Duration * this.TimeSignature.bottom);
+                runningValue += n.Duration;
+            }
+        });
+        if (runningValue > 0) {
+            this.BeatDistribution.push({
+                startNumber: nextBeat,
+                value: 1 - runningValue,
+                bounds: this.CreateBeatBounds(nextBeat, (1 - runningValue))
+            });
+        }
+    }
+    CreateBeatBounds(beat, value) {
+        const height = this.Bounds.height; // height will always be max
+        const width = this.Bounds.width * value; // value will max at 1 (entire measure)
+        const y = this.Bounds.y;
+        const x = this.Bounds.x + this.XOffset + ((beat - 1) / this.TimeSignature.bottom) * this.Bounds.width;
         return new Bounds(x, y, width, height);
-    };
-    Measure.prototype.Reposition = function (prevMsr) {
+    }
+    Reposition(prevMsr) {
         this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
         this.CreateBeatDistribution();
-    };
-    Measure.prototype.AddNote = function (note) {
+    }
+    AddNote(note) {
         this.Notes.push(note);
-    };
-    return Measure;
-}());
+    }
+}
 export { Measure };

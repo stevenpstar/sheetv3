@@ -1,14 +1,18 @@
 /* Development Mode (getting canvas from document etc.) */
 //import * as keymaps from './keymaps.json';
 import { App } from './src/App.js';
-var keymaps = {
+const keymaps = {
     "rerender": "r",
     "addmeasure": "a",
-    "changeinputmode": "n"
+    "changeinputmode": "n",
+    "value1": "1",
+    "value2": "2",
+    "value3": "3",
+    "value4": "4"
 };
 function returnCanvas(id) {
-    var canvas = document.getElementById(id);
-    var context = canvas.getContext("2d");
+    const canvas = document.getElementById(id);
+    const context = canvas.getContext("2d");
     if (canvas === null || canvas === undefined || context === null || context === undefined) {
         console.error("Canvas not found");
     }
@@ -25,15 +29,15 @@ function returnCanvas(id) {
     return { canvas: canvas, context: context };
 }
 /* Globals */
-var _a = returnCanvas("canvas"), canvas = _a.canvas, context = _a.context;
-var Application;
+const { canvas, context } = returnCanvas("canvas");
+let Application;
 /* Canvas event listeners */
-window.addEventListener("resize", function () {
+window.addEventListener("resize", () => {
     //  canvas.style.width = window.innerWidth + 'px';
     //  canvas.style.height = window.innerHeight + 'px';
 });
-window.addEventListener("keydown", function (e) {
-    var key = e.key;
+window.addEventListener("keydown", (e) => {
+    const key = e.key;
     switch (key) {
         case keymaps.rerender:
             //      if (Application) { Application.Render({x: 0,y: 0}); };
@@ -41,15 +45,29 @@ window.addEventListener("keydown", function (e) {
             break;
         case keymaps.addmeasure:
             Application.AddMeasure();
+            break;
         case keymaps.changeinputmode:
             Application.ChangeInputMode();
+            break;
+        case keymaps.value1:
+            Application.SetNoteValue(0.125);
+            break;
+        case keymaps.value2:
+            Application.SetNoteValue(0.25);
+            break;
+        case keymaps.value3:
+            Application.SetNoteValue(0.5);
+            break;
+        case keymaps.value4:
+            Application.SetNoteValue(1);
+            break;
         default:
     }
 });
-window.addEventListener("mousedown", function (e) {
-    var rect = canvas.getBoundingClientRect();
-    var mouseX = e.clientX - rect.left;
-    var mouseY = e.clientY - rect.top;
+window.addEventListener("mousedown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    let mouseX = e.clientX - rect.left;
+    let mouseY = e.clientY - rect.top;
     if (Application && e.buttons === 1) {
         Application.Input(mouseX, mouseY);
     }
@@ -58,19 +76,19 @@ window.addEventListener("mousedown", function (e) {
         Application.SetDragging(true, mouseX, mouseY);
     }
 });
-window.addEventListener("mouseup", function (e) {
+window.addEventListener("mouseup", (e) => {
     Application.SetDragging(false, 0, 0);
 });
-window.addEventListener("mousemove", function (e) {
-    var rect = canvas.getBoundingClientRect();
-    var mouseX = e.clientX - rect.left;
-    var mouseY = e.clientY - rect.top;
+window.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    let mouseX = e.clientX - rect.left;
+    let mouseY = e.clientY - rect.top;
     if (Application) {
         Application.Hover(mouseX, mouseY);
     }
 });
-window.addEventListener("wheel", function (e) {
-    var scale = e.deltaY * -0.01;
+window.addEventListener("wheel", (e) => {
+    const scale = e.deltaY * -0.01;
     if (scale > 0) {
         Application.AlterZoom(0.1);
     }

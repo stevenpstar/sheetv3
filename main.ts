@@ -5,7 +5,11 @@ import { App } from './src/App.js';
 const keymaps = {
   "rerender": "r",
   "addmeasure": "a",
-  "changeinputmode": "n"
+  "changeinputmode": "n",
+  "value1": "1",
+  "value2": "2",
+  "value3": "3",
+  "value4": "4"
 }
 
 interface CanText {
@@ -51,8 +55,22 @@ window.addEventListener("keydown", (e) => {
       break;
     case keymaps.addmeasure:
       Application.AddMeasure();
+      break;
     case keymaps.changeinputmode:
       Application.ChangeInputMode();
+      break;
+    case keymaps.value1: 
+      Application.SetNoteValue(0.125);
+      break;
+    case keymaps.value2: 
+      Application.SetNoteValue(0.25);
+      break;
+    case keymaps.value3: 
+      Application.SetNoteValue(0.5);
+      break;
+    case keymaps.value4: 
+      Application.SetNoteValue(1);
+      break;
     default:
   }
 });

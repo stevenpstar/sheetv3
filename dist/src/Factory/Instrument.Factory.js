@@ -1,14 +1,14 @@
 import { Measure } from "../Core/Measure.js";
 import { Bounds } from "../Types/Bounds.js";
-var CreateDefaultPiano = function (id) {
-    var defaultPiano = {
+const CreateDefaultPiano = (id) => {
+    const defaultPiano = {
         id: id,
         Position: { x: 0, y: 0 }
     };
     return defaultPiano;
 };
-var CreateDefaultMeasure = function () {
-    var props = {
+const CreateDefaultMeasure = () => {
+    const props = {
         ID: 0,
         Bounds: new Bounds(0, 0, 150, 150),
         TimeSignature: { top: 4, bottom: 4 },
@@ -18,8 +18,8 @@ var CreateDefaultMeasure = function () {
     };
     return new Measure(props);
 };
-var CreateMeasure = function (id, bounds, timeSignature) {
-    var props = {
+const CreateMeasure = (id, bounds, timeSignature) => {
+    const props = {
         ID: id,
         Bounds: bounds,
         TimeSignature: timeSignature,

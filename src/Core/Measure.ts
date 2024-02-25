@@ -2,6 +2,12 @@ import { Bounds } from '../Types/Bounds.js';
 import { Camera } from './Camera.js';
 import { Note } from './Note.js';
 
+interface BeatDistribution {
+  startNumber: number;
+  value: number;
+  bounds: Bounds;
+}
+
 interface MeasureProps {
   ID: number;
   Bounds: Bounds;
@@ -51,16 +57,40 @@ class Measure {
 
   CreateBeatDistribution() {
     this.BeatDistribution = []; // empty
-    // TODO: this is a test implementation during development at this point
-    const quarterMeasure = { startNumber: 1, value: 0.25,
-      bounds: this.CreateBeatBounds(1, 0.25)  };
-    const quarterMeasure2 = { startNumber: 2, value: 0.25,
-      bounds: this.CreateBeatBounds(2, 0.25)  };
-    const halfMeasure2 = { startNumber: 3, value: 0.5,
-      bounds: this.CreateBeatBounds(3, 0.5) };
-    this.BeatDistribution.push(quarterMeasure);
-    this.BeatDistribution.push(quarterMeasure2);
-    this.BeatDistribution.push(halfMeasure2);
+    let nextBeat = 0;
+    let runningValue = 0; 
+    // sort notes first by beat
+    if (this.Notes.length === 0) {
+      this.BeatDistribution.push(
+        {
+          startNumber: 1,
+          value: 1,
+          bounds: this.CreateBeatBounds(1, 1)
+        });
+    }
+
+    this.Notes.sort((a: Note, b: Note) => {
+      return a.Beat - b.Beat;
+    });
+    this.Notes.forEach(n => {
+      if (!this.BeatDistribution.find(div => div.startNumber === n.Beat)) {
+        this.BeatDistribution.push(
+          {
+            startNumber: n.Beat,
+            value: n.Duration,
+            bounds: this.CreateBeatBounds(n.Beat, n.Duration)
+          });
+          nextBeat = n.Beat + (n.Duration * this.TimeSignature.bottom);
+          runningValue += n.Duration;
+      }
+    });
+    if (runningValue > 0) {
+      this.BeatDistribution.push({
+        startNumber: nextBeat,
+        value: 1 - runningValue,
+        bounds: this.CreateBeatBounds(nextBeat, (1 - runningValue))
+      });
+    }
   }
 
   CreateBeatBounds(beat: number, value: number): Bounds {
@@ -81,4 +111,4 @@ class Measure {
   }
 }
 
-export { Measure, MeasureProps };
+export { Measure, MeasureProps, BeatDistribution };

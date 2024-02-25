@@ -5,6 +5,7 @@ import { Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
 import { Camera } from "./Core/Camera.js";
+import { InputOnMeasure } from "./Workers/NoteInput.js";
 
 class App { 
   Canvas: HTMLCanvasElement;
@@ -17,6 +18,7 @@ class App {
   Camera: Camera;
   Dragging: boolean;
   DraggingPositions: { x1: number, y1: number, x2: number, y2: number };
+  NoteValue: number;
 
   constructor (canvas: HTMLCanvasElement, 
              context: CanvasRenderingContext2D,
@@ -29,6 +31,7 @@ class App {
     this.Dragging = false;
     this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.Camera = new Camera(0, 0);
+    this.NoteValue = 0.25;
 
     if (!this.Load) {
       // Create New Sheet Properties
@@ -60,7 +63,6 @@ class App {
         this.HoveredElements.MeasureID = measure.ID; 
       }
     })
-    console.log(this.HoveredElements.MeasureID);
     this.Update(x, y);
   }
   Input(x: number, y: number): void {
@@ -69,27 +71,13 @@ class App {
       return;
     }
     this.HoveredElements.MeasureID = -1;
-      this.Sheet.Measures.forEach(measure => {
-        if (measure.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) { 
-          this.HoveredElements.MeasureID = measure.ID; 
+    const msrOver: Measure | undefined = this.Sheet
+      .Measures
+      .find( (msr: Measure) => msr.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
 
-          // add note
-          measure.BeatDistribution.forEach(d => {
-            const line = Measure.GetLineHovered(y, measure, this.Camera);
-            if (d.bounds.IsHovered(x, y, this.Camera)) {
-              const noteProps = {
-                Beat: d.startNumber,
-                Duration: d.value,
-                Line: line.num
-              };
-              const newNote: Note = new Note(noteProps);
-              newNote.SetBounds(line.bounds);
-              measure.AddNote(newNote);
-            }
-          })
+    if (msrOver === undefined) { return; } // no measure over
 
-        }
-    });
+    InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera); 
 
     this.Update(x, y);
   }
@@ -148,6 +136,10 @@ class App {
       this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i-1]);
     }
     this.Update(0, 0);
+  }
+
+  SetNoteValue(val: number): void {
+    this.NoteValue = val;
   }
 }
 

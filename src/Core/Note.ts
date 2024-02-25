@@ -24,4 +24,4 @@ class Note {
   }
 }
 
-export { Note }
+export { Note, NoteProps }

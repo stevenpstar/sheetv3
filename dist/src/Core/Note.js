@@ -1,13 +1,12 @@
-var Note = /** @class */ (function () {
-    function Note(props) {
+class Note {
+    constructor(props) {
         this.Beat = props.Beat;
         this.Duration = props.Duration;
         this.Line = props.Line;
         this.Selected = false;
     }
-    Note.prototype.SetBounds = function (bounds) {
+    SetBounds(bounds) {
         this.Bounds = bounds;
-    };
-    return Note;
-}());
+    }
+}
 export { Note };
