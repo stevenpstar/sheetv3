@@ -1,15 +1,16 @@
 import { Measure } from "../Core/Measure.js";
+import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
-import { RenderNote, RenderStem } from "./Note.Renderer.js";
+import { RenderNote, RenderRest, RenderStem, renderLedgerLines } from "./Note.Renderer.js";
 const line_space = 10;
 const line_width = 1;
 const endsWidth = 2;
 const debug = true;
-function RenderMeasure(measure, renderProps, hovId, mousePos) {
+function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure) {
     if (hovId === measure.ID)
         RenderHovered(measure, renderProps, hovId, mousePos);
-    RenderMeasureBase(measure, renderProps, mousePos);
+    RenderMeasureBase(measure, renderProps, mousePos, lastMeasure);
     RenderNotes(measure, renderProps);
 }
 function RenderHovered(measure, renderProps, hovId, mousePos) {
@@ -25,18 +26,26 @@ function RenderHovered(measure, renderProps, hovId, mousePos) {
             const onLedger = ((line.num < 10 || line.num > 20) && line.num % 2 !== 0);
             context.fillStyle = "rgb(0, 255, 0, 0.1)";
             context.fillRect(s.bounds.x + camera.x, s.bounds.y + camera.y, s.bounds.width, s.bounds.height);
-            const noteY = measure.Bounds.y + (line.num * (line_space / 2) + (line_space / 2));
-            //          RenderNote(c, ctx, s.bounds.x + 18 + cam.x, noteY + cam.y, false, onLedger, 0.25, "blue",);
+            const noteY = measure.Bounds.y + camera.y + (line.num * (line_space / 2) + (line_space / 2));
+            // temp note
+            const tempNoteProps = {
+                Beat: s.startNumber,
+                Duration: 0.25,
+                Line: line.num
+            };
+            const tempNote = new Note(tempNoteProps);
+            RenderNote(tempNote, renderProps, new Bounds(s.bounds.x + 18 + camera.x, noteY, 0, 0), true);
         }
     });
 }
 // Renders the basic lines and bar endings of the measure, no notes or clefs or time
 // time signatures
-function RenderMeasureBase(msr, renderProps, mousePos) {
+function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
     const { canvas, context, camera } = renderProps;
     context.fillStyle = "black";
     const measureBegin = `M${msr.Bounds.x + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4} h -${endsWidth} Z`;
-    const measureEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4} h -${endsWidth} Z`;
+    const measureEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4 + 1} h -${endsWidth} Z`;
+    const measureDoubleEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4 + 1} h -${endsWidth} Z`;
     for (let l = 0; l < 5; l++) {
         const lineString = `M${msr.Bounds.x + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + line_space * l + camera.y} h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
         const linePath = new Path2D(lineString);
@@ -44,6 +53,9 @@ function RenderMeasureBase(msr, renderProps, mousePos) {
     }
     context.fill(new Path2D(measureBegin));
     context.fill(new Path2D(measureEnd));
+    if (lastMeasure) {
+        context.fill(new Path2D(measureDoubleEnd));
+    }
     if (msr.RenderClef) {
         RenderMeasureClef(canvas, context, msr, "treble", camera);
     }
@@ -55,17 +67,21 @@ function RenderMeasureClef(c, ctx, msr, clef, cam) {
 }
 function RenderNotes(msr, renderProps) {
     const { canvas, context, camera } = renderProps;
-    // render notes here
-    msr.Notes.forEach((n) => {
-        // match to beat distribution, this will change
-        msr.BeatDistribution.forEach(d => {
-            if (d.startNumber === n.Beat) {
-                const onLedger = ((n.Line < 10 || n.Line > 20) && n.Line % 2 !== 0);
+    msr.BeatDistribution.forEach((div) => {
+        let noteCount = 0;
+        msr.Notes.forEach(n => {
+            if (n.Beat === div.startNumber) {
                 const yPos = (msr.Bounds.y + camera.y) + (n.Line * (line_space / 2) + 5);
-                RenderNote(n, renderProps, new Bounds(d.bounds.x + 18 + camera.x, yPos, 0, 0), n.Selected);
-                RenderStem(context, msr.Notes, d, camera);
+                RenderNote(n, renderProps, new Bounds(div.bounds.x + 18 + camera.x, yPos, 0, 0), n.Selected);
+                RenderStem(context, msr.Notes, div, camera);
+                noteCount++;
             }
         });
+        if (noteCount === 0) {
+            RenderRest(context, div, camera);
+            return;
+        }
+        renderLedgerLines(msr.Notes, div, renderProps);
     });
 }
 export { RenderMeasure };

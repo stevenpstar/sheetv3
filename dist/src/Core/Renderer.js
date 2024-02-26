@@ -11,7 +11,8 @@ const Renderer = (c, ctx, measures, hovElements, mousePos, cam) => {
             context: ctx,
             camera: cam
         };
-        RenderMeasure(m, renderProps, hovElements.MeasureID, mousePos);
+        const lastMeasure = (i === measures.length - 1);
+        RenderMeasure(m, renderProps, hovElements.MeasureID, mousePos, lastMeasure);
     });
 };
 export { Renderer };

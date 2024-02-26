@@ -84,7 +84,7 @@ class Measure {
           runningValue += n.Duration;
       }
     });
-    if (runningValue > 0) {
+    if (runningValue > 0 && nextBeat <= this.TimeSignature.bottom) {
       this.BeatDistribution.push({
         startNumber: nextBeat,
         value: 1 - runningValue,
