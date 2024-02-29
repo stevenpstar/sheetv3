@@ -4,7 +4,7 @@ function InputOnMeasure(msr, noteValue, x, y, cam) {
     let inputtingNote = true;
     const line = Measure.GetLineHovered(y, msr, cam);
     const beatOver = msr
-        .BeatDistribution.find(b => b.bounds.IsHovered(x, y, cam));
+        .Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
     if (beatOver === undefined) {
         inputtingNote = false;
     }
@@ -14,21 +14,21 @@ function InputOnMeasure(msr, noteValue, x, y, cam) {
 }
 function InputNote(msr, noteValue, division, line) {
     const noteProps = {
-        Beat: division.startNumber,
+        Beat: division.Beat,
         Duration: noteValue,
         Line: line.num
     };
     const newNote = new Note(noteProps);
-    if (division.value === noteValue) {
+    if (division.Duration === noteValue) {
         msr.AddNote(newNote);
     }
-    else if (noteValue > division.value) {
+    else if (noteValue > division.Duration) {
         AddToSmallerDivision(msr, noteProps);
     }
     else {
         AddToSmallerDivision(msr, noteProps);
     }
-    msr.CreateBeatDistribution();
+    msr.CreateDivisions();
 }
 function AddPartial(msr, noteProps, div, remVal, beat) {
     return { remainingValue: remVal, beat: beat };
@@ -36,27 +36,26 @@ function AddPartial(msr, noteProps, div, remVal, beat) {
 function AddToSmallerDivision(msr, noteProps) {
     let remainingValue = noteProps.Duration;
     let beat = noteProps.Beat;
-    msr.BeatDistribution.forEach(div => {
-        if (remainingValue >= div.value && beat === div.startNumber) {
+    msr.Divisions.forEach(div => {
+        if (remainingValue >= div.Duration && beat === div.Beat) {
             const newNoteProps = {
-                Beat: div.startNumber,
-                Duration: div.value,
+                Beat: div.Beat,
+                Duration: div.Duration,
                 Line: noteProps.Line
             };
-            remainingValue -= div.value;
+            remainingValue -= div.Duration;
             beat += (remainingValue * msr.TimeSignature.bottom);
             msr.AddNote(new Note(newNoteProps));
-            console.log("Should go here");
         }
-        else if (remainingValue < div.value && beat === div.startNumber) {
+        else if (remainingValue < div.Duration && beat === div.Beat) {
             // Get other notes that will be effected
             const notesOnBeat = msr.Notes
-                .filter((note) => note.Beat === div.startNumber);
+                .filter((note) => note.Beat === div.Beat);
             if (notesOnBeat.length === 0) {
                 // If it does not effect any other notes (only rests in div)
-                // We can just add a note of our desired value.
+                // We can just add a note of our desired Duration.
                 const newNoteProps = {
-                    Beat: div.startNumber,
+                    Beat: div.Beat,
                     Duration: remainingValue,
                     Line: noteProps.Line
                 };
@@ -65,7 +64,7 @@ function AddToSmallerDivision(msr, noteProps) {
                 return;
             }
             const newNoteProps = {
-                Beat: div.startNumber,
+                Beat: div.Beat,
                 Duration: remainingValue,
                 Line: noteProps.Line
             };
@@ -74,7 +73,7 @@ function AddToSmallerDivision(msr, noteProps) {
                 let remValue = n.Duration - remainingValue;
                 n.Duration = remainingValue;
                 const newNoteProps = {
-                    Beat: div.startNumber + remainingValue * msr.TimeSignature.bottom,
+                    Beat: div.Beat + remainingValue * msr.TimeSignature.bottom,
                     Duration: remValue,
                     Line: n.Line
                 };
@@ -82,7 +81,6 @@ function AddToSmallerDivision(msr, noteProps) {
             });
         }
     });
-    console.log(msr.Notes);
 }
 function AddToGreaterDivision(msr, noteProps) {
     let beat = noteProps.Beat; // starting beat
@@ -106,7 +104,6 @@ function AllNotesByBeat(msr) {
             notes[nIndex].push(n);
         }
     });
-    console.log(notes);
     return notes;
 }
 export { InputOnMeasure };

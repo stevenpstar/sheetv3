@@ -2,10 +2,10 @@ import { Bounds } from '../Types/Bounds.js';
 import { Camera } from './Camera.js';
 import { Note } from './Note.js';
 
-interface BeatDistribution {
-  startNumber: number;
-  value: number;
-  bounds: Bounds;
+interface Division {
+  Beat: number;
+  Duration: number;
+  Bounds: Bounds;
 }
 
 interface MeasureProps {
@@ -13,7 +13,7 @@ interface MeasureProps {
   Bounds: Bounds;
   TimeSignature: { top: number, bottom: number };
   Notes: Note[];
-  BeatDistribution: { startNumber: number, value: number, bounds: Bounds }[];
+  Divisions: Division[];
   RenderClef: boolean;
 }
 class Measure {
@@ -21,23 +21,27 @@ class Measure {
   Bounds: Bounds;
   TimeSignature: {top: number, bottom: number}
   Notes: Note[];
-  BeatDistribution: { startNumber: number, value: number, bounds: Bounds }[];
+  Divisions: Division[];
   RenderClef: boolean;
 
   XOffset: number; // not sure if this is what we want to go with
+  DivisionMinWidth: number;
+  DivisionMaxWidth: number;
 
   constructor(properties: MeasureProps) {
     this.ID = properties.ID;
     this.Bounds = properties.Bounds;
     this.TimeSignature = properties.TimeSignature;
     this.Notes = properties.Notes;
-    this.BeatDistribution = properties.BeatDistribution
+    this.Divisions = properties.Divisions;
     this.RenderClef = properties.RenderClef;
     this.XOffset = 0;
+    this.DivisionMinWidth = 30;
+    this.DivisionMaxWidth = 50;
     if (this.RenderClef) { this.XOffset = 30; }
 
     // probably always last
-    this.CreateBeatDistribution();
+    this.CreateDivisions();
   }
 
   static GetLineHovered(y: number, msr: Measure, cam: Camera): { num: number, bounds: Bounds } {
@@ -55,17 +59,17 @@ class Measure {
                       this.Bounds.height);
   }
 
-  CreateBeatDistribution() {
-    this.BeatDistribution = []; // empty
+  CreateDivisions() {
+    this.Divisions = []; // empty
     let nextBeat = 0;
     let runningValue = 0; 
     // sort notes first by beat
     if (this.Notes.length === 0) {
-      this.BeatDistribution.push(
+      this.Divisions.push(
         {
-          startNumber: 1,
-          value: 1,
-          bounds: this.CreateBeatBounds(1, 1)
+          Beat: 1,
+          Duration: 1,
+          Bounds: this.CreateBeatBounds(1, 1)
         });
     }
 
@@ -73,24 +77,26 @@ class Measure {
       return a.Beat - b.Beat;
     });
     this.Notes.forEach(n => {
-      if (!this.BeatDistribution.find(div => div.startNumber === n.Beat)) {
-        this.BeatDistribution.push(
+      if (!this.Divisions.find(div => div.Beat === n.Beat)) {
+        this.Divisions.push(
           {
-            startNumber: n.Beat,
-            value: n.Duration,
-            bounds: this.CreateBeatBounds(n.Beat, n.Duration)
+            Beat: n.Beat,
+            Duration: n.Duration,
+            Bounds: this.CreateBeatBounds(n.Beat, n.Duration)
           });
           nextBeat = n.Beat + (n.Duration * this.TimeSignature.bottom);
           runningValue += n.Duration;
       }
     });
-    if (runningValue > 0 && nextBeat <= this.TimeSignature.bottom) {
-      this.BeatDistribution.push({
-        startNumber: nextBeat,
-        value: 1 - runningValue,
-        bounds: this.CreateBeatBounds(nextBeat, (1 - runningValue))
+    if (runningValue > 0 && (nextBeat - 1) < this.TimeSignature.bottom) {
+      this.Divisions.push({
+        Beat: nextBeat,
+        Duration: 1 - runningValue,
+        Bounds: this.CreateBeatBounds(nextBeat, (1 - runningValue))
       });
     }
+    console.log(this.Divisions);
+    this.ResizeDivisions(this.Divisions);
   }
 
   CreateBeatBounds(beat: number, value: number): Bounds {
@@ -101,9 +107,38 @@ class Measure {
     return new Bounds(x, y, width, height);
   }
 
+  ResizeDivisions(divisions: Division[]): void {
+    divisions.forEach((div: Division, i: number) => {
+      if (div.Bounds.width < this.DivisionMinWidth) {
+        div.Bounds.width = this.DivisionMinWidth;
+      }
+      if (div.Bounds.width > this.DivisionMaxWidth) {
+        div.Bounds.width = this.DivisionMaxWidth;
+      }
+      if (i > 0) {
+        const lastDivEnd = divisions[i-1].Bounds.x + divisions[i-1].Bounds.width;
+        if (lastDivEnd !== div.Bounds.x) {
+          div.Bounds.x = lastDivEnd;
+        }
+      }
+
+      if (i === 0 && divisions.length === 1) {
+        div.Bounds.width = this.Bounds.width;
+      }
+    });
+  }
+
+  GetDivisionTotalWidth(): number {
+    let width = 0;
+    this.Divisions.forEach(div => {
+      width += div.Bounds.width;
+    });
+    return width;
+  }
+
   Reposition(prevMsr: Measure): void {
     this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
-    this.CreateBeatDistribution();
+    this.CreateDivisions();
   }
 
   AddNote(note: Note): void {
@@ -111,4 +146,4 @@ class Measure {
   }
 }
 
-export { Measure, MeasureProps, BeatDistribution };
+export { Measure, MeasureProps, Division };

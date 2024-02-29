@@ -13,7 +13,7 @@ const CreateDefaultMeasure = () => {
         Bounds: new Bounds(0, 0, 150, 150),
         TimeSignature: { top: 4, bottom: 4 },
         Notes: [],
-        BeatDistribution: [],
+        Divisions: [],
         RenderClef: true
     };
     return new Measure(props);
@@ -24,7 +24,7 @@ const CreateMeasure = (id, bounds, timeSignature) => {
         Bounds: bounds,
         TimeSignature: timeSignature,
         Notes: [],
-        BeatDistribution: [],
+        Divisions: [],
         RenderClef: false
     };
     return new Measure(props);

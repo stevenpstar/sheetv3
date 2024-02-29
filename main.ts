@@ -9,7 +9,9 @@ const keymaps = {
   "value1": "1",
   "value2": "2",
   "value3": "3",
-  "value4": "4"
+  "value4": "4",
+  "value5": "5",
+  "value6": "6"
 }
 
 interface CanText {
@@ -60,18 +62,24 @@ window.addEventListener("keydown", (e) => {
       Application.ChangeInputMode();
       break;
     case keymaps.value1: 
-      Application.SetNoteValue(0.125);
+      Application.SetNoteValue(0.03125);
       break;
     case keymaps.value2: 
-      Application.SetNoteValue(0.25);
+      Application.SetNoteValue(0.0625);
       break;
     case keymaps.value3: 
-      Application.SetNoteValue(0.5);
+      Application.SetNoteValue(0.125);
       break;
     case keymaps.value4: 
+      Application.SetNoteValue(0.25);
+      break;
+    case keymaps.value5: 
+      Application.SetNoteValue(0.5);
+      break;
+    case keymaps.value5: 
       Application.SetNoteValue(1);
       break;
-    default:
+   default:
   }
 });
 

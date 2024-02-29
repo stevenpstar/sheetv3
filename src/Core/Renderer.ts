@@ -10,7 +10,8 @@ const Renderer = (c: HTMLCanvasElement,
                   measures: Measure[],
                   hovElements: {MeasureID: number},
                   mousePos: {x: number, y: number},
-                 cam: Camera) => {
+                 cam: Camera,
+                 noteInput: boolean) => {
   // reset
   ctx.clearRect(0, 0, c.width, c.height);
   ctx.fillStyle = "black";
@@ -22,7 +23,13 @@ const Renderer = (c: HTMLCanvasElement,
       camera: cam
     }
     const lastMeasure = (i === measures.length - 1);
-    RenderMeasure(m, renderProps, hovElements.MeasureID, mousePos, lastMeasure);
+    RenderMeasure(m,
+                  renderProps,
+                  hovElements.MeasureID,
+                  mousePos,
+                  lastMeasure,
+                  noteInput,
+                  i);
   })
 }
 

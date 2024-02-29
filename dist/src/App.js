@@ -27,6 +27,7 @@ class App {
             this.Sheet = new Sheet(sProps);
         }
         this.NoteInput = false;
+        this.Update(0, 0);
     }
     Hover(x, y) {
         if (this.Dragging) {
@@ -57,6 +58,7 @@ class App {
             return;
         } // no measure over
         InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera);
+        this.ResizeMeasures(this.Sheet.Measures);
         this.Update(x, y);
     }
     Update(x, y) {
@@ -64,13 +66,13 @@ class App {
         this.Render({ x: x, y: y });
     }
     Render(mousePos) {
-        Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.HoveredElements, mousePos, this.Camera);
+        Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.HoveredElements, mousePos, this.Camera, this.NoteInput);
     }
     AddMeasure() {
         const newMeasureID = this.Sheet.Measures.length;
         const prevMsr = this.Sheet.Measures[this.Sheet.Measures.length - 1];
         const x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
-        const newMeasureBounds = new Bounds(x, prevMsr.Bounds.y, prevMsr.Bounds.width, prevMsr.Bounds.height);
+        const newMeasureBounds = new Bounds(x, prevMsr.Bounds.y, 150, prevMsr.Bounds.height);
         const newMsr = CreateMeasure(newMeasureID, newMeasureBounds, prevMsr.TimeSignature);
         this.Sheet.Measures.push(newMsr);
     }
@@ -103,11 +105,20 @@ class App {
     }
     // TEST FUNCTION
     ResizeFirstMeasure() {
-        this.Sheet.Measures[0].Bounds.width += 50;
-        this.Sheet.Measures[0].CreateBeatDistribution();
+        //    this.Sheet.Measures[0].Bounds.width += 50;
+        this.Sheet.Measures[0].CreateDivisions();
         for (let i = 1; i < this.Sheet.Measures.length; i++) {
             this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i - 1]);
         }
+        this.Update(0, 0);
+    }
+    ResizeMeasures(measures) {
+        measures.forEach((msr, i) => {
+            msr.Bounds.width = msr.GetDivisionTotalWidth();
+            if (i > 0) {
+                this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i - 1]);
+            }
+        });
         this.Update(0, 0);
     }
     SetNoteValue(val) {
