@@ -14,6 +14,7 @@ class App {
   Sheet: Sheet;
   HoveredElements: { MeasureID: number };
   NoteInput: boolean;
+  RestInput: boolean;
   Zoom: number;
   Camera: Camera;
   Dragging: boolean;
@@ -47,6 +48,7 @@ class App {
       this.Sheet = new Sheet(sProps);
     }
     this.NoteInput = false;
+    this.RestInput = false;
     this.Update(0, 0);
   }
 
@@ -78,7 +80,7 @@ class App {
 
     if (msrOver === undefined) { return; } // no measure over
 
-    InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera);
+    InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, false);
     this.ResizeMeasures(this.Sheet.Measures);
 
     this.Update(x, y);
@@ -95,7 +97,8 @@ class App {
              this.HoveredElements,
              mousePos, 
              this.Camera,
-             this.NoteInput);
+             this.NoteInput,
+             this.RestInput);
   }
 
   AddMeasure(): void {

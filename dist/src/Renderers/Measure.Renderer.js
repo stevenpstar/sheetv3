@@ -2,14 +2,15 @@ import { Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
-import { RenderNote, RenderRest, RenderStemRevise, renderLedgerLines } from "./Note.Renderer.js";
+import { RenderNote, RenderRest, RenderStemRevise, RenderTies, renderLedgerLines } from "./Note.Renderer.js";
 const line_space = 10;
 const line_width = 1;
 const endsWidth = 2;
 const debug = true;
-function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteInput, index) {
+const noteXBuffer = 9;
+function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteInput, index, restInput) {
     if (hovId === measure.ID)
-        RenderHovered(measure, renderProps, hovId, mousePos, noteInput);
+        RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput);
     if (debug)
         RenderDebug(measure, renderProps, index);
     RenderMeasureBase(measure, renderProps, mousePos, lastMeasure);
@@ -39,11 +40,12 @@ function RenderDebug(measure, renderProps, index) {
         context.fillText("Beat:", fDiv.Bounds.x + camera.x - 30, fDiv.Bounds.y + camera.y + fDiv.Bounds.height + 40);
     }
 }
-function debugGetDurationName(duration) {
+function debugGetDurationName(duration, alpha = 255) {
     let name = "";
     let g = 150;
     let r = 0;
     let b = 0;
+    let a = alpha;
     switch (duration) {
         case 1:
             name = "1";
@@ -77,10 +79,10 @@ function debugGetDurationName(duration) {
             g = 0;
             r = 255;
     }
-    const colour = `rgba(${r}, ${g}, ${b}, 255)`;
+    const colour = `rgba(${r}, ${g}, ${b}, ${a})`;
     return { name: name, colour: colour };
 }
-function RenderHovered(measure, renderProps, hovId, mousePos, noteInput) {
+function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput) {
     const { canvas, context, camera } = renderProps;
     const line = Measure.GetLineHovered(mousePos.y, measure, camera);
     if (noteInput) {
@@ -92,7 +94,7 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput) {
     const divisions = measure.Divisions;
     divisions.forEach(s => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
-            context.fillStyle = "rgb(0, 255, 0, 0.1)";
+            context.fillStyle = debugGetDurationName(s.Duration, 0.2).colour;
             context.fillRect(s.Bounds.x + camera.x, s.Bounds.y + camera.y, s.Bounds.width, s.Bounds.height);
             if (noteInput) {
                 const noteY = measure.Bounds.y + camera.y + (line.num * (line_space / 2) + (line_space / 2));
@@ -100,10 +102,12 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput) {
                 const tempNoteProps = {
                     Beat: s.Beat,
                     Duration: 0.25,
-                    Line: line.num
+                    Line: line.num,
+                    Rest: false,
+                    Tied: false
                 };
                 const tempNote = new Note(tempNoteProps);
-                RenderNote(tempNote, renderProps, new Bounds(s.Bounds.x + 18 + camera.x, noteY, 0, 0), true);
+                RenderNote(tempNote, renderProps, new Bounds(s.Bounds.x + noteXBuffer + camera.x, noteY, 0, 0), true);
             }
         }
     });
@@ -113,8 +117,10 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput) {
 function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
     const { canvas, context, camera } = renderProps;
     context.fillStyle = "black";
+    const lastEndThickness = lastMeasure ?
+        endsWidth * 2 : endsWidth;
     const measureBegin = `M${msr.Bounds.x + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4} h -${endsWidth} Z`;
-    const measureEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4 + 1} h -${endsWidth} Z`;
+    const measureEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${lastEndThickness} v ${line_space * 4 + 1} h -${lastEndThickness} Z`;
     const measureDoubleEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4 + 1} h -${endsWidth} Z`;
     for (let l = 0; l < 5; l++) {
         const lineString = `M${msr.Bounds.x + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + line_space * l + camera.y} h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
@@ -132,7 +138,7 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
 }
 function RenderMeasureClef(c, ctx, msr, clef, cam) {
     const clefVert = (msr.Bounds.height / 2) + (line_space * 2);
-    const clefPath = RenderTrebleClef(msr.Bounds.x + 18 + cam.x, msr.Bounds.y + cam.y + (msr.Bounds.height / 2 + (line_space * 2)));
+    const clefPath = RenderTrebleClef(msr.Bounds.x + 16 + cam.x, msr.Bounds.y + cam.y + (msr.Bounds.height / 2 + (line_space * 2)));
     ctx.fill(new Path2D(clefPath));
 }
 ;
@@ -150,7 +156,7 @@ function RenderNotes(msr, renderProps) {
         divNotes.forEach(n => {
             if (n.Beat === div.Beat) {
                 const yPos = (msr.Bounds.y + camera.y) + (n.Line * (line_space / 2) + 5);
-                RenderNote(n, renderProps, new Bounds(div.Bounds.x + 18 + camera.x, yPos, 0, 0), n.Selected);
+                RenderNote(n, renderProps, new Bounds(div.Bounds.x + noteXBuffer + camera.x, yPos, 0, 0), n.Selected);
                 //        RenderStem(context, msr.Notes, div, camera);                                                     
             }
         });
@@ -206,6 +212,7 @@ function RenderNotes(msr, renderProps) {
     testGroups.DivGroups.forEach(group => {
         RenderStemRevise(renderProps, group.Notes, group.Divisions);
     });
+    RenderTies(renderProps, msr.Divisions, msr.Notes);
 }
 function GetNoteGroups(msr) {
     let startBeat = -1;

@@ -9,7 +9,7 @@ class Measure {
         this.RenderClef = properties.RenderClef;
         this.XOffset = 0;
         this.DivisionMinWidth = 30;
-        this.DivisionMaxWidth = 50;
+        this.DivisionMaxWidth = 40;
         if (this.RenderClef) {
             this.XOffset = 30;
         }
@@ -70,10 +70,10 @@ class Measure {
     }
     ResizeDivisions(divisions) {
         divisions.forEach((div, i) => {
-            if (div.Bounds.width < this.DivisionMinWidth) {
+            if (div.Bounds.width < this.DivisionMinWidth || div.Duration < 0.25) {
                 div.Bounds.width = this.DivisionMinWidth;
             }
-            if (div.Bounds.width > this.DivisionMaxWidth) {
+            if (div.Bounds.width > this.DivisionMaxWidth || div.Duration >= 0.25) {
                 div.Bounds.width = this.DivisionMaxWidth;
             }
             if (i > 0) {

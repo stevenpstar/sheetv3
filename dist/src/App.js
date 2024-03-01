@@ -27,6 +27,7 @@ class App {
             this.Sheet = new Sheet(sProps);
         }
         this.NoteInput = false;
+        this.RestInput = false;
         this.Update(0, 0);
     }
     Hover(x, y) {
@@ -57,7 +58,7 @@ class App {
         if (msrOver === undefined) {
             return;
         } // no measure over
-        InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera);
+        InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, false);
         this.ResizeMeasures(this.Sheet.Measures);
         this.Update(x, y);
     }
@@ -66,7 +67,7 @@ class App {
         this.Render({ x: x, y: y });
     }
     Render(mousePos) {
-        Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.HoveredElements, mousePos, this.Camera, this.NoteInput);
+        Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.HoveredElements, mousePos, this.Camera, this.NoteInput, this.RestInput);
     }
     AddMeasure() {
         const newMeasureID = this.Sheet.Measures.length;

@@ -3,14 +3,19 @@ import { Division, Measure } from "../Core/Measure.js";
 import { Note, NoteProps } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 
-function InputOnMeasure(msr: Measure, noteValue: number, x: number, y: number, cam: Camera): void {
+function InputOnMeasure(msr: Measure,
+                        noteValue: number,
+                        x: number,
+                        y: number,
+                        cam: Camera,
+                        rest: boolean): void {
   let inputtingNote = true;
   const line = Measure.GetLineHovered(y, msr, cam);
   const beatOver = msr
     .Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
   if (beatOver === undefined) { inputtingNote = false; }
   if (inputtingNote) {
-    InputNote(msr, noteValue, beatOver, line);
+    InputNote(msr, noteValue, beatOver, line, rest);
   }
 }
 
@@ -18,42 +23,45 @@ function InputNote(
   msr: Measure,
   noteValue: number,
   division: Division,
-  line: { num: number, bounds: Bounds } 
+  line: { num: number, bounds: Bounds },
+  rest: boolean
   ): void {
     const noteProps: NoteProps = {
       Beat: division.Beat,
       Duration: noteValue,
-      Line: line.num
+      Line: line.num,
+      Rest: rest,
+      Tied: false
     };
     const newNote: Note = new Note(noteProps);
 
     if (division.Duration === noteValue) {
       msr.AddNote(newNote);
-    } else if (noteValue > division.Duration) {
-      AddToSmallerDivision(msr, noteProps);
     } else {
-      AddToSmallerDivision(msr, noteProps);
-    }
-
+      if (MeasureHasRoom(noteProps.Beat, noteProps.Duration, msr)) {
+        AddToDivision(msr, noteProps);
+      }
+    } 
     msr.CreateDivisions();
 }
 
-function AddPartial(msr: Measure, noteProps: NoteProps, div: Division, remVal: number, beat: number): { remainingValue: number, beat: number } {
-
-      return { remainingValue: remVal, beat: beat };
+function MeasureHasRoom(beat: number, duration: number, msr: Measure): boolean {
+  return (beat * duration) <= msr.TimeSignature.top * (1 / msr.TimeSignature.bottom);
 }
 
-function AddToSmallerDivision(msr: Measure, noteProps: NoteProps): void {
+function AddToDivision(msr: Measure, noteProps: NoteProps): void {
   let remainingValue = noteProps.Duration;
   let beat = noteProps.Beat;
-  msr.Divisions.forEach(div => {
+  msr.Divisions.forEach((div: Division, i: number) => {
 
     if (remainingValue >= div.Duration && beat === div.Beat) {
 
       const newNoteProps: NoteProps = {
         Beat: div.Beat,
         Duration: div.Duration,
-        Line: noteProps.Line
+        Line: noteProps.Line,
+        Rest: noteProps.Rest,
+        Tied: true
       };
       remainingValue -= div.Duration;
       beat += (remainingValue * msr.TimeSignature.bottom);
@@ -71,7 +79,9 @@ function AddToSmallerDivision(msr: Measure, noteProps: NoteProps): void {
           const newNoteProps: NoteProps = {
             Beat: div.Beat,
             Duration: remainingValue,
-            Line: noteProps.Line
+            Line: noteProps.Line,
+            Rest: noteProps.Rest,
+            Tied: false
           }
           remainingValue = 0;
           msr.AddNote(new Note(newNoteProps));
@@ -81,7 +91,9 @@ function AddToSmallerDivision(msr: Measure, noteProps: NoteProps): void {
         const newNoteProps: NoteProps = {
           Beat: div.Beat,
           Duration: remainingValue,
-          Line: noteProps.Line
+          Line: noteProps.Line,
+          Rest: noteProps.Rest,
+          Tied: false
         };
         msr.AddNote(new Note(newNoteProps));
 
@@ -92,7 +104,9 @@ function AddToSmallerDivision(msr: Measure, noteProps: NoteProps): void {
           const newNoteProps: NoteProps = {
             Beat: div.Beat + remainingValue * msr.TimeSignature.bottom,
             Duration: remValue,
-            Line: n.Line
+            Line: n.Line,
+            Rest: false,
+            Tied: false,
           };
           msr.AddNote(new Note(newNoteProps));
         });

@@ -15,22 +15,19 @@ const minimHead = 'm3.4871-7.6c-2.8881 1.8199-4.4271 5.1146-3.4804 7.593 1.0097 
 const quaverRest = 'c-.2863.1212-.4577.5392-.326.8318.0397.0418.4556.5392.8736 1.0868.9551 1.0764 1.1182 1.3313 1.3292 1.8288.8339 1.7054.3762 3.877-1.0847 5.2501-.1233.163-.6625.6186-1.1683.9948-1.4525 1.2498-2.1214 1.9604-2.368 2.5874-.0899.1651-.0899.3281-.0899.581-.0397.5789 0 .6291 1.7159 2.6209 2.3262 2.7922 3.9919 4.7506 4.1215 4.8739l.1233.1212-.163-.0815c-2.2948-.9551-4.8739-1.4128-5.7475-.9948-.2947.1212-.4661.2926-.5873.5789-.3365.7106-.2466 1.7556.2529 3.2897.4556 1.3794 1.371 3.2082 2.2844 4.5813.3762.5873 1.0868 1.5006 1.1683 1.5424.1233.1233.2947.0815.4159 0 .1233-.163.1233-.2947-.1212-.5789-.8736-1.2498-1.2895-3.8372-.7921-5.2104.2027-.6186.4577-.9551.9133-1.1662 1.208-.5392 3.879.1296 4.9972 1.2477.0815.0836.2529.255.3344.2947.2947.1233.7106-.0397.8339-.3344.1714-.2947.0815-.4974-.2947-.9551-.7022-.8339-2.8257-3.3315-3.1183-3.7077-.7524-.8736-1.0868-1.7054-1.1683-2.7504-.0397-1.3313.4974-2.7421 1.5027-3.6659.1212-.163.6604-.6207 1.16-.9948 1.5424-1.2916 2.1715-2.0001 2.416-2.671.1714-.5392.0899-1.0366-.2863-1.4943-.1296-.1212-1.5842-1.9186-3.2897-3.9585-2.3345-2.7442-3.1684-3.7474-3.2897-3.7892-.1714-.0397-.3762-.0397-.5476.0418z';
 const quaverFlag = 'c11.7122 2.9669 6.3069 13.252 5.2534 16.885 9.622-13.142-5.1221-18.5026-5.2534-26.47z';
 const quaverFlagInverted = 'c10.7362-2.7197 5.7813-12.1477 4.8156-15.4779 8.8202 12.0469-4.6953 16.9607-4.8156 24.2642z';
+const noteXBuffer = 9;
 // TODO: This is because we are using temporary SVG files for rendering, will need to
 // create custom SVGs so our note heads are consistent (but we can do that much later in dev)
 const mHeadXOffset = 3.4871;
 const mHeadYOffset = -7.6;
-// TODO: Re-work this function a bit, so many parameters and the note itself
-// isn't even being passed in?
 function RenderNote(note, renderProps, Bounds, selected, colour = "black") {
     const { x, y, width, height } = Bounds;
     const { canvas, context, camera } = renderProps;
     const posString = 'm' + x.toString() + ' ' + (y - 1).toString();
     let noteString = '';
-    let flagString = '';
     switch (note.Duration) {
         case 0.125:
             noteString = posString + noteHead;
-            //      context.fill(new Path2D(flagString));
             break;
         case 0.25:
             noteString = posString + noteHead;
@@ -47,7 +44,7 @@ function RenderNote(note, renderProps, Bounds, selected, colour = "black") {
     context.fill(new Path2D(noteString));
 }
 function RenderRest(ctx, div, cam) {
-    let x = div.Bounds.x + cam.x + 18;
+    let x = div.Bounds.x + cam.x + noteXBuffer;
     let y = div.Bounds.y + cam.y + (12 * 5);
     let path = `m${x} ${y}`;
     ctx.fillStyle = "black";
@@ -69,6 +66,52 @@ function RenderRest(ctx, div, cam) {
             path = path + quaverRest;
             ctx.fill(new Path2D(path));
     }
+}
+function RenderTies(renderProps, divs, notes) {
+    const { canvas, context, camera } = renderProps;
+    divs.forEach((div, i) => {
+        if (i === divs.length - 1) {
+            return;
+        }
+        const divNotes = notes.filter((note) => note.Beat === div.Beat);
+        divNotes.sort((a, b) => {
+            return a.Line - b.Line;
+        });
+        const nextDivNotes = notes.filter((note) => note.Beat === divs[i + 1].Beat);
+        nextDivNotes.sort((a, b) => {
+            return a.Line - b.Line;
+        });
+        divNotes.forEach(note => {
+            if (!note.Tied || note.Rest) {
+                return;
+            }
+            console.log("note: ");
+            console.log(note);
+            console.log("next div notes");
+            console.log(nextDivNotes);
+            const tiedTo = nextDivNotes.filter(n => n.Line === note.Line);
+            if (tiedTo.length === 0) {
+                console.error("No tied note found");
+                return;
+            }
+            const nextNote = tiedTo[0];
+            console.log("next Note: ");
+            console.log(nextNote);
+            const x1 = div.Bounds.x + noteXBuffer + camera.x;
+            const y1 = div.Bounds.y + (note.Line * 5) + camera.y;
+            const x2 = divs[i + 1].Bounds.x + noteXBuffer + camera.x;
+            const y2 = divs[i + 1].Bounds.y + (nextNote.Line * 5) + camera.y;
+            //TODO: This is a temporary representation of a tie or slur
+            context.fillStyle = "black";
+            context.beginPath();
+            context.fillRect(x1, y1, x2 - x1, 2);
+            context.moveTo(x1 + (noteXBuffer / 2), y1 + 8);
+            //     context.arcTo(x1, y1, x2, y1, 90);
+            //      context.arc((x2 - x1) / 2, y1, 50, 0, 2 * Math.PI);
+            context.quadraticCurveTo((x1 + (noteXBuffer / 2)) + ((x2 - x1) / 2), y1 + 15, x2 + (noteXBuffer / 2), y2 + 8);
+            context.stroke();
+        });
+    });
 }
 function RenderStemRevise(renderProps, notes, divisions) {
     // Check that divisions and note arrays match
@@ -126,7 +169,7 @@ function RenderStemRevise(renderProps, notes, divisions) {
     // Render stems
     divisions.forEach((div, i) => {
         const xBuffer = stemDirection === StemDirection.Up ? 10 : 0;
-        const stemX = Math.floor(div.Bounds.x + xBuffer + camera.x + 18);
+        const stemX = Math.floor(div.Bounds.x + xBuffer + camera.x + noteXBuffer);
         if (i === 0) {
             beamStartX = stemX;
         }
@@ -163,14 +206,26 @@ function RenderStemRevise(renderProps, notes, divisions) {
                 }
             }
         }
+        else if (divisions.length > 1 && divisions[0].Duration < 0.25 &&
+            i !== divisions.length - 1) {
+            context.fillStyle = "black";
+            const nextDiv = divisions[i + 1];
+            const beamLoop = GetFlagCount(nextDiv.Duration);
+            const yBuffer = (stemDirection === StemDirection.Up) ?
+                0 : -5;
+            const nextStemX = nextDiv.Bounds.x + camera.x + xBuffer + noteXBuffer;
+            for (let i = 0; i < beamLoop; i++) {
+                context.fillRect(stemX, stemEndY + yBuffer + (7 * i), nextStemX - stemX, 5);
+            }
+        }
     });
     // Render straight beam only for now
-    if (beamDirection === BeamDirection.Flat && divisions.length > 1) {
-        context.fillStyle = "black";
-        const yBuffer = (stemDirection === StemDirection.Up) ?
-            0 : -5;
-        context.fillRect(beamStartX, stemEndY + yBuffer, beamEndX - beamStartX, 5);
-    }
+    //    if (beamDirection === BeamDirection.Flat && divisions.length > 1) {
+    //      context.fillStyle = "black";
+    //      const yBuffer = (stemDirection === StemDirection.Up) ? 
+    //        0 : -5;
+    //      context.fillRect(beamStartX, stemEndY + yBuffer, beamEndX - beamStartX, 5);
+    //    }
 }
 function GetFlagCount(value) {
     let count = 1;
@@ -216,12 +271,12 @@ function RenderStem(ctx, notes, div, cam) {
             diff = yPos2 - (16 * 5);
         }
     }
-    const flagPosX = (Math.floor(div.Bounds.x + 18 + xBuffer) + cam.x);
+    const flagPosX = (Math.floor(div.Bounds.x + noteXBuffer + xBuffer) + cam.x);
     const flagPosY = (startPos - 5) + cam.y + -diff;
     ctx.fillStyle = "black";
     // TODO: investigate changing note-head size so that it doesn't end on half
     // pixel
-    ctx.fillRect(Math.floor(div.Bounds.x + 18 + xBuffer) + cam.x, (startPos - 5) + cam.y, 2, -diff);
+    ctx.fillRect(Math.floor(div.Bounds.x + noteXBuffer + xBuffer) + cam.x, (startPos - 5) + cam.y, 2, -diff);
     // render flags
     if (div.Duration < 0.25) {
         const flagString = `m${flagPosX} ${flagPosY}`; // + quaverFlag; // rough testing for flag
@@ -232,12 +287,12 @@ function RenderStem(ctx, notes, div, cam) {
             ctx.fill(new Path2D(flagString + quaverFlagInverted));
         }
     }
-    //  const stem = `M${beatD.Bounds.x + 18 + 10} ${yPos - 5} h ${2} v -${diff} h -${2} Z`;
+    //  const stem = `M${beatD.Bounds.x + noteXBuffer + 10} ${yPos - 5} h ${2} v -${diff} h -${2} Z`;
     //  ctx.fill(new Path2D(stem));
 }
 function renderLedgerLines(notes, division, renderProps) {
     const { canvas, context, camera } = renderProps;
-    const ledgerX = (division.Bounds.x + 18) - 6 + camera.x;
+    const ledgerX = (division.Bounds.x + noteXBuffer) - 6 + camera.x;
     //const ledgerString = `m ${x - 6} ${y - 5} h 22 v 2 h-20 v-2 Z`;
     const ledgerString = `h 22 v 2 h-20 v-2 Z`;
     const bdNotes = notes.filter((note) => note.Beat === division.Beat);
@@ -257,4 +312,4 @@ function renderLedgerLines(notes, division, renderProps) {
         context.fill(new Path2D(path));
     }
 }
-export { RenderNote, RenderStem, RenderRest, renderLedgerLines, RenderStemRevise };
+export { RenderNote, RenderStem, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies };

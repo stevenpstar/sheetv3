@@ -1,7 +1,7 @@
 import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
 const renderDebug = false;
 const scaleV = 1;
-const Renderer = (c, ctx, measures, hovElements, mousePos, cam, noteInput) => {
+const Renderer = (c, ctx, measures, hovElements, mousePos, cam, noteInput, restInput) => {
     // reset
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.fillStyle = "black";
@@ -12,7 +12,7 @@ const Renderer = (c, ctx, measures, hovElements, mousePos, cam, noteInput) => {
             camera: cam
         };
         const lastMeasure = (i === measures.length - 1);
-        RenderMeasure(m, renderProps, hovElements.MeasureID, mousePos, lastMeasure, noteInput, i);
+        RenderMeasure(m, renderProps, hovElements.MeasureID, mousePos, lastMeasure, noteInput, i, restInput);
     });
 };
 export { Renderer };

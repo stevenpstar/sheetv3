@@ -3,7 +3,7 @@
 import { App } from './src/App.js';
 
 const keymaps = {
-  "rerender": "r",
+  "rerender": "'",
   "addmeasure": "a",
   "changeinputmode": "n",
   "value1": "1",
@@ -11,7 +11,8 @@ const keymaps = {
   "value3": "3",
   "value4": "4",
   "value5": "5",
-  "value6": "6"
+  "value6": "6",
+  "restInput": "r"
 }
 
 interface CanText {
@@ -78,6 +79,9 @@ window.addEventListener("keydown", (e) => {
       break;
     case keymaps.value5: 
       Application.SetNoteValue(1);
+      break;
+    case keymaps.restInput:
+      Application.RestInput = !Application.RestInput;
       break;
    default:
   }

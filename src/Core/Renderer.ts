@@ -11,7 +11,8 @@ const Renderer = (c: HTMLCanvasElement,
                   hovElements: {MeasureID: number},
                   mousePos: {x: number, y: number},
                  cam: Camera,
-                 noteInput: boolean) => {
+                 noteInput: boolean,
+                 restInput: boolean) => {
   // reset
   ctx.clearRect(0, 0, c.width, c.height);
   ctx.fillStyle = "black";
@@ -29,7 +30,8 @@ const Renderer = (c: HTMLCanvasElement,
                   mousePos,
                   lastMeasure,
                   noteInput,
-                  i);
+                  i,
+                  restInput);
   })
 }
 
