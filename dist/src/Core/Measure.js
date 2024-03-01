@@ -29,13 +29,21 @@ class Measure {
         this.Divisions = []; // empty
         let nextBeat = 0;
         let runningValue = 0;
-        // sort notes first by beat
         if (this.Notes.length === 0) {
+            // add a rest note
+            const restProps = {
+                Beat: 1,
+                Duration: 1,
+                Line: 16,
+                Rest: true,
+                Tied: false
+            };
             this.Divisions.push({
                 Beat: 1,
                 Duration: 1,
                 Bounds: this.CreateBeatBounds(1, 1)
             });
+            //      this.AddNote(new Note(restProps));
         }
         this.Notes.sort((a, b) => {
             return a.Beat - b.Beat;
@@ -58,7 +66,6 @@ class Measure {
                 Bounds: this.CreateBeatBounds(nextBeat, (1 - runningValue))
             });
         }
-        console.log(this.Divisions);
         this.ResizeDivisions(this.Divisions);
     }
     CreateBeatBounds(beat, value) {
@@ -99,7 +106,23 @@ class Measure {
         this.CreateDivisions();
     }
     AddNote(note) {
+        this.RemoveRestNote(note);
         this.Notes.push(note);
+    }
+    RemoveRestNote(addedNote) {
+        if (addedNote.Rest) {
+            return;
+        }
+        let restIndex = -1;
+        this.Notes.forEach((n, i) => {
+            if (n.Rest && n.Beat === addedNote.Beat) {
+                restIndex = i;
+            }
+        });
+        if (restIndex !== -1) {
+            this.Notes.splice(restIndex, 1);
+            console.log("removed rest");
+        }
     }
 }
 export { Measure };

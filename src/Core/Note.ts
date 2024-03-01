@@ -25,6 +25,10 @@ class Note {
     this.Tied = props.Tied;
 
     this.Selected = false;
+    this.Bounds = new Bounds(0, 0, 0, 0);
+    this.Bounds.width = 12;
+    this.Bounds.height = 10;
+    // note position is not based on bounds property
   }
 
   SetBounds(bounds: Bounds): void {

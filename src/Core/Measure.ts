@@ -1,6 +1,6 @@
 import { Bounds } from '../Types/Bounds.js';
 import { Camera } from './Camera.js';
-import { Note } from './Note.js';
+import { Note, NoteProps } from './Note.js';
 
 interface Division {
   Beat: number;
@@ -63,16 +63,24 @@ class Measure {
     this.Divisions = []; // empty
     let nextBeat = 0;
     let runningValue = 0; 
-    // sort notes first by beat
     if (this.Notes.length === 0) {
-      this.Divisions.push(
-        {
-          Beat: 1,
-          Duration: 1,
-          Bounds: this.CreateBeatBounds(1, 1)
-        });
-    }
+      // add a rest note
+      const restProps: NoteProps = {
+        Beat: 1,
+        Duration: 1,
+        Line: 16,
+        Rest: true,
+        Tied: false
+      }
+       this.Divisions.push(
+          {
+            Beat: 1,
+            Duration: 1,
+            Bounds: this.CreateBeatBounds(1, 1)
+          });
 
+//      this.AddNote(new Note(restProps));
+    }
     this.Notes.sort((a: Note, b: Note) => {
       return a.Beat - b.Beat;
     });
@@ -95,7 +103,6 @@ class Measure {
         Bounds: this.CreateBeatBounds(nextBeat, (1 - runningValue))
       });
     }
-    console.log(this.Divisions);
     this.ResizeDivisions(this.Divisions);
   }
 
@@ -142,7 +149,22 @@ class Measure {
   }
 
   AddNote(note: Note): void {
+    this.RemoveRestNote(note);
     this.Notes.push(note);
+  }
+
+  RemoveRestNote(addedNote: Note): void {
+    if (addedNote.Rest) { return; }
+    let restIndex = -1;
+    this.Notes.forEach((n: Note, i: number) => {
+      if (n.Rest && n.Beat === addedNote.Beat) {
+        restIndex = i;
+      }
+    });
+    if (restIndex !== -1) {
+      this.Notes.splice(restIndex, 1);
+      console.log("removed rest");
+    }
   }
 }
 

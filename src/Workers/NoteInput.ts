@@ -42,11 +42,57 @@ function InputNote(
         AddToDivision(msr, noteProps);
       }
     } 
+    //FillRests(msr);
     msr.CreateDivisions();
 }
 
 function MeasureHasRoom(beat: number, duration: number, msr: Measure): boolean {
   return (beat * duration) <= msr.TimeSignature.top * (1 / msr.TimeSignature.bottom);
+}
+
+function FillRests(msr: Measure): void {
+  const sortedNotes = AllNotesByBeat(msr);
+  // this will need to do some stuff with standard values
+  // eventually
+  let lastBeat = 1;
+  let lastDuration = 1;
+  const restProperties: NoteProps = {
+    Beat: 0,
+    Duration: 0,
+    Line: 15,
+    Rest: true,
+    Tied: false
+  }
+  sortedNotes.forEach((notes: Note[], i: number) => {
+    if (notes[0].Rest) { return; }
+    if (i === 0) {
+      lastBeat = notes[0].Beat;
+      lastDuration = notes[0].Duration * msr.TimeSignature.bottom;
+    } else {
+      let thisBeat = notes[0].Beat;
+      let thisDuration = notes[0].Duration * msr.TimeSignature.bottom;
+      const diff = thisBeat - (lastBeat + lastDuration);
+      if (diff > 0) {
+        restProperties.Beat = thisBeat - thisDuration;
+        restProperties.Duration = diff / msr.TimeSignature.bottom;
+        msr.AddNote(new Note(restProperties));
+      }
+      lastBeat = notes[0].Beat;
+      lastDuration = notes[0].Duration * msr.TimeSignature.bottom;
+      if (i === sortedNotes.length - 1) {
+        // last note, we need to fill remaining measure with rests
+        const remaining = 
+          (msr.TimeSignature.bottom + 1) - (lastBeat + lastDuration);
+        if (remaining > 0) {
+          restProperties.Beat = 
+            (msr.TimeSignature.bottom + 1) - remaining;
+          restProperties.Duration =
+            remaining / msr.TimeSignature.bottom;
+          msr.AddNote(new Note(restProperties));
+        }
+      }
+    }
+  });
 }
 
 function AddToDivision(msr: Measure, noteProps: NoteProps): void {

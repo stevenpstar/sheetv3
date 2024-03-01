@@ -35,7 +35,8 @@ function RenderNote(note: Note,
   const { x, y, width, height } = Bounds;
   const { canvas, context, camera } = renderProps;
 
-  const posString = 'm' + x.toString() + ' ' + (y - 1).toString();
+//  const posString = 'm' + x.toString() + ' ' + (y - 1).toString();
+    const posString = `m ${x + camera.x} ${y + 5 - 1 + camera.y}`;
 
   let noteString = '';
   switch (note.Duration) {
@@ -51,10 +52,18 @@ function RenderNote(note: Note,
     default:
       noteString = posString + noteHead;
   }
+  context.fillStyle = "black";
   if (selected) {
     context.fillStyle = "blue";
   }
   context.fill(new Path2D(noteString));
+
+  let debug = false;
+  if (debug) {
+    context.fillStyle = "rgba(200, 0, 0, 0.5)";
+    context.fillRect(x + camera.x, y + camera.y - 5, width, height);
+    context.fillStyle = "black";
+  }
 }
 
 function RenderRest(
@@ -105,27 +114,23 @@ function RenderTies(renderProps: RenderProperties, divs: Division[], notes: Note
       if (!note.Tied || note.Rest) {
         return;
       }
-      console.log("note: ");
-      console.log(note);
-      console.log("next div notes");
-      console.log(nextDivNotes);
       const tiedTo = nextDivNotes.filter(n => n.Line === note.Line);
       if (tiedTo.length === 0) { console.error("No tied note found"); return; }
       const nextNote = tiedTo[0];
-      console.log("next Note: ")
-      console.log(nextNote);
       const x1 = div.Bounds.x + noteXBuffer + camera.x;
       const y1 = div.Bounds.y + (note.Line * 5) + camera.y;
       const x2 = divs[i+1].Bounds.x + noteXBuffer + camera.x;
       const y2 = divs[i+1].Bounds.y + (nextNote.Line * 5) + camera.y;
+      const curveOffset = (note.Line < 15) ? -15 : 15;
+      const curveStartOffset = (note.Line < 15) ? -8 : 8;
       //TODO: This is a temporary representation of a tie or slur
       context.fillStyle = "black";
       context.beginPath();
-      context.fillRect(x1, y1, x2 - x1, 2);
-      context.moveTo(x1 + (noteXBuffer / 2), y1 + 8);
- //     context.arcTo(x1, y1, x2, y1, 90);
-//      context.arc((x2 - x1) / 2, y1, 50, 0, 2 * Math.PI);
-      context.quadraticCurveTo((x1 + (noteXBuffer / 2)) + ((x2 - x1) / 2), y1 + 15, x2 + (noteXBuffer / 2), y2 + 8);
+      context.moveTo(x1 + (noteXBuffer / 2), y1 + curveStartOffset);
+      context.quadraticCurveTo((x1 + (noteXBuffer / 2)) + ((x2 - x1) / 2),
+                               y1 + curveOffset,
+                               x2 + (noteXBuffer / 2),
+                               y2 + curveStartOffset);
       context.stroke();
     })
   })
@@ -347,12 +352,14 @@ function renderLedgerLines(
     const ledgerString = `h 22 v 2 h-20 v-2 Z`;
     
     const bdNotes = notes.filter((note: Note) => note.Beat === division.Beat);
+    if (bdNotes.length === 0) { return; }
     bdNotes.sort((a: Note, b: Note) => {
       return a.Line - b.Line;
     });
 
     const highestLine = bdNotes[0];
     const lowestLine = bdNotes[bdNotes.length-1];
+    context.fillStyle = "black";
 
     for (let l=9; l >= highestLine.Line; l -= 2) {
       const ledgerY = (l * 5) + camera.y;

@@ -136,10 +136,10 @@ function RenderHovered(
       const divisions = measure.Divisions;
       divisions.forEach(s => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
-          context.fillStyle = debugGetDurationName(s.Duration, 0.2).colour; 
-          context.fillRect(s.Bounds.x + camera.x, s.Bounds.y + camera.y, s.Bounds.width, s.Bounds.height);
           if (noteInput) {
-            const noteY = measure.Bounds.y + camera.y + (line.num * (line_space / 2) + (line_space / 2));
+            context.fillStyle = debugGetDurationName(s.Duration, 0.2).colour; 
+            context.fillRect(s.Bounds.x + camera.x, s.Bounds.y + camera.y, s.Bounds.width, s.Bounds.height);
+            const noteY = measure.Bounds.y + (line.num * (line_space / 2));// + (line_space / 2));
             // temp note
             const tempNoteProps = {
               Beat: s.Beat,
@@ -147,12 +147,12 @@ function RenderHovered(
               Line: line.num,
               Rest: false,
               Tied: false
-            }
+            } 
 
             const tempNote = new Note(tempNoteProps);
             RenderNote(tempNote,
                        renderProps,
-                       new Bounds(s.Bounds.x + noteXBuffer + camera.x,
+                       new Bounds(s.Bounds.x + noteXBuffer,
                        noteY, 0, 0), true);
           }
         }
@@ -234,9 +234,13 @@ function RenderNotes(
       return a.Line - b.Line;
     });
     divNotes.forEach(n => {
-      if (n.Beat === div.Beat) {
-        const yPos = (msr.Bounds.y + camera.y) + (n.Line * (line_space / 2) + 5);
-        RenderNote(n, renderProps, new Bounds(div.Bounds.x + noteXBuffer + camera.x, yPos, 0, 0), n.Selected);      
+      if (n.Beat === div.Beat && n.Rest === false) {
+//        const yPos = (msr.Bounds.y + camera.y) + (n.Line * (line_space / 2) + 5);
+        const yPos = msr.Bounds.y + n.Line * 5;
+        RenderNote(n,
+                   renderProps,
+                   new Bounds(div.Bounds.x + noteXBuffer, yPos, 10, 10),
+                   n.Selected);      
 //        RenderStem(context, msr.Notes, div, camera);                                                     
       }
     });

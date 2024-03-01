@@ -48,9 +48,6 @@ class App {
     }
     Input(x, y) {
         // will move this code elsewhere, testing note input
-        if (!this.NoteInput) {
-            return;
-        }
         this.HoveredElements.MeasureID = -1;
         const msrOver = this.Sheet
             .Measures
@@ -58,6 +55,27 @@ class App {
         if (msrOver === undefined) {
             return;
         } // no measure over
+        if (!this.NoteInput) {
+            // TODO: Move this elsewhere but for now we prototype it here
+            msrOver.Divisions.forEach((div) => {
+                const divNotes = msrOver.Notes.filter((note) => note.Beat === div.Beat);
+                divNotes.forEach((n) => {
+                    const nx = div.Bounds.x + 9;
+                    const ny = div.Bounds.y + (n.Line * 5) - 5;
+                    const width = n.Bounds.width;
+                    const height = n.Bounds.height;
+                    const noteBounds = new Bounds(nx, ny, width, height);
+                    if (noteBounds.IsHovered(x, y, this.Camera)) {
+                        n.Selected = true;
+                    }
+                    else {
+                        n.Selected = false;
+                    }
+                });
+            });
+            this.Update(0, 0);
+            return;
+        }
         InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, false);
         this.ResizeMeasures(this.Sheet.Measures);
         this.Update(x, y);
