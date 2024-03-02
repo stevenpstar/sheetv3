@@ -1,17 +1,20 @@
 import { Sheet } from "./Core/Sheet.js";
 import { Renderer } from "./Core/Renderer.js";
 import { CreateDefaultMeasure, CreateDefaultPiano, CreateMeasure } from "./Factory/Instrument.Factory.js";
+import { Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
 import { InputOnMeasure } from "./Workers/NoteInput.js";
+import { Selector } from "./Workers/Selector.js";
 class App {
     constructor(canvas, context, load = false) {
         this.Canvas = canvas;
+        this.Selector = new Selector();
         this.Context = context;
         this.Load = load;
         this.HoveredElements = { MeasureID: -1 };
         this.Zoom = 1;
-        this.Dragging = false;
+        this.CamDragging = false;
         this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
         this.Camera = new Camera(0, 0);
         this.NoteValue = 0.25;
@@ -31,11 +34,14 @@ class App {
         this.Update(0, 0);
     }
     Hover(x, y) {
-        if (this.Dragging) {
+        if (this.CamDragging) {
             this.Camera.x = Math.floor(this.Camera.oldX + x - this.DraggingPositions.x1);
             this.Camera.y = Math.floor(this.Camera.oldY + y - this.DraggingPositions.y1);
             this.Update(x, y);
             return;
+        }
+        if (this.DraggingNote) {
+            this.DragNote(x, y);
         }
         this.HoveredElements.MeasureID = -1;
         this.Sheet.Measures.forEach(measure => {
@@ -46,33 +52,30 @@ class App {
         });
         this.Update(x, y);
     }
-    Input(x, y) {
+    Delete() {
+        for (let [msr, notes] of this.Selector.Notes) {
+            msr.DeleteSelected();
+        }
+    }
+    Input(x, y, shiftKey) {
         // will move this code elsewhere, testing note input
         this.HoveredElements.MeasureID = -1;
         const msrOver = this.Sheet
             .Measures
             .find((msr) => msr.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
         if (msrOver === undefined) {
+            if (!shiftKey) {
+                this.Selector.DeselectAll();
+                this.Update(x, y);
+            }
             return;
         } // no measure over
         if (!this.NoteInput) {
-            // TODO: Move this elsewhere but for now we prototype it here
-            msrOver.Divisions.forEach((div) => {
-                const divNotes = msrOver.Notes.filter((note) => note.Beat === div.Beat);
-                divNotes.forEach((n) => {
-                    const nx = div.Bounds.x + 9;
-                    const ny = div.Bounds.y + (n.Line * 5) - 5;
-                    const width = n.Bounds.width;
-                    const height = n.Bounds.height;
-                    const noteBounds = new Bounds(nx, ny, width, height);
-                    if (noteBounds.IsHovered(x, y, this.Camera)) {
-                        n.Selected = true;
-                    }
-                    else {
-                        n.Selected = false;
-                    }
-                });
-            });
+            this.Selector.SelectNote(msrOver, x, y, this.Camera, shiftKey);
+            if (!this.DraggingNote) {
+                this.DraggingNote = true;
+            }
+            this.StartLine = Measure.GetLineHovered(y, msrOver, this.Camera).num;
             this.Update(0, 0);
             return;
         }
@@ -98,9 +101,34 @@ class App {
     ChangeInputMode() {
         this.NoteInput = !this.NoteInput;
     }
-    SetDragging(dragging, x, y) {
-        this.Dragging = dragging;
-        if (this.Dragging) {
+    DragNote(x, y) {
+        const msrOver = this.Sheet
+            .Measures.find(m => m.Bounds.IsHovered(x, y, this.Camera));
+        if (msrOver === undefined) {
+            this.DraggingNote = false;
+            this.StartLine = -1;
+            this.EndLine = -1;
+            return;
+        }
+        this.EndLine = Measure.GetLineHovered(y, msrOver, this.Camera).num;
+        const lineDiff = this.EndLine - this.StartLine;
+        for (let [msr, notes] of this.Selector.Notes) {
+            notes.forEach(n => {
+                n.Line += lineDiff;
+            });
+        }
+        this.StartLine = this.EndLine;
+    }
+    StopNoteDrag(x, y) {
+        if (this.DraggingNote) {
+            this.StartLine = -1;
+            this.EndLine = -1;
+            this.DraggingNote = false;
+        }
+    }
+    SetCameraDragging(dragging, x, y) {
+        this.CamDragging = dragging;
+        if (this.CamDragging) {
             // set initial drag position
             this.DraggingPositions.x1 = x;
             this.DraggingPositions.y1 = y;

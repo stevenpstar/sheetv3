@@ -12,7 +12,8 @@ const keymaps = {
   "value4": "4",
   "value5": "5",
   "value6": "6",
-  "restInput": "r"
+  "restInput": "r",
+  "delete": "d"
 }
 
 interface CanText {
@@ -83,6 +84,9 @@ window.addEventListener("keydown", (e) => {
     case keymaps.restInput:
       Application.RestInput = !Application.RestInput;
       break;
+    case keymaps.delete:
+      Application.Delete();
+      break;
    default:
   }
 });
@@ -92,16 +96,21 @@ window.addEventListener("mousedown", (e) => {
   let mouseX = e.clientX - rect.left;
   let mouseY = e.clientY - rect.top;
   if (Application && e.buttons === 1) {
-    Application.Input(mouseX, mouseY);
+    Application.Input(mouseX, mouseY, e.shiftKey);
   }
   if (e.buttons === 4) {
     // set dragging
-    Application.SetDragging(true, mouseX, mouseY);
+    Application.SetCameraDragging(true, mouseX, mouseY);
   }
 });
 
 window.addEventListener("mouseup", (e) => {
-  Application.SetDragging(false, 0, 0)
+  const rect = canvas.getBoundingClientRect();
+  let mouseX = e.clientX - rect.left;
+  let mouseY = e.clientY - rect.top;
+
+  Application.SetCameraDragging(false, 0, 0)
+  Application.StopNoteDrag(mouseX, mouseY);
 })
 
 window.addEventListener("mousemove", (e) => {

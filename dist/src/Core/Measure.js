@@ -106,8 +106,15 @@ class Measure {
         this.CreateDivisions();
     }
     AddNote(note) {
-        this.RemoveRestNote(note);
+        //    this.RemoveRestNote(note);
         this.Notes.push(note);
+    }
+    DeleteSelected() {
+        for (let n = this.Notes.length - 1; n >= 0; n--) {
+            if (this.Notes[n].Selected) {
+                this.Notes.splice(n, 1);
+            }
+        }
     }
     RemoveRestNote(addedNote) {
         if (addedNote.Rest) {
@@ -121,7 +128,6 @@ class Measure {
         });
         if (restIndex !== -1) {
             this.Notes.splice(restIndex, 1);
-            console.log("removed rest");
         }
     }
 }
