@@ -7,6 +7,7 @@ import { Note } from "./Core/Note.js";
 import { Camera } from "./Core/Camera.js";
 import { InputOnMeasure } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
+import { GetDivisionTotalWidth } from "./Core/Division.js";
 
 class App { 
   Canvas: HTMLCanvasElement;
@@ -132,11 +133,20 @@ class App {
   }
 
   AddMeasure(): void {
+    const line = Math.floor(this.Sheet.Measures.length / 4);
+    // TODO: This is a test
+    let y = line * 200;
+    const newLine = false;//(this.Sheet.Measures.length % 4 === 0 && line !== 0);
+    // TODO: End testing for "new line formatting"
     const newMeasureID = this.Sheet.Measures.length;
     const prevMsr = this.Sheet.Measures[this.Sheet.Measures.length-1];
-    const x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
-    const newMeasureBounds = new Bounds(x, prevMsr.Bounds.y, 150, prevMsr.Bounds.height);
-    const newMsr = CreateMeasure(newMeasureID, newMeasureBounds, prevMsr.TimeSignature);
+    let x = 0;
+    if (!newLine) {
+      x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
+      y = prevMsr.Bounds.y;
+    } 
+    const newMeasureBounds = new Bounds(x, y, 150, prevMsr.Bounds.height);
+    const newMsr = CreateMeasure(newMeasureID, newMeasureBounds, prevMsr.TimeSignature, newLine);
     this.Sheet.Measures.push(newMsr);
   }
 
@@ -210,7 +220,7 @@ class App {
 
   ResizeMeasures(measures: Measure[]): void {
     measures.forEach((msr: Measure, i: number) => {
-      msr.Bounds.width = msr.GetDivisionTotalWidth();
+      msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
       if (i > 0) {
         this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i-1]);
       }

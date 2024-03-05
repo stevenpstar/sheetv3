@@ -25,7 +25,8 @@ const CreateDefaultMeasure = (): Measure => {
 
 const CreateMeasure = (id: number, 
                     bounds: Bounds,
-                    timeSignature: { top: number, bottom: number }): Measure =>
+                    timeSignature: { top: number, bottom: number },
+                    renderClef: boolean = false): Measure =>
   {
     const props: MeasureProps = {
       ID: id,

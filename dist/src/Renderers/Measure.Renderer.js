@@ -119,11 +119,11 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
     context.fillStyle = "black";
     const lastEndThickness = lastMeasure ?
         endsWidth * 2 : endsWidth;
-    const measureBegin = `M${msr.Bounds.x + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4} h -${endsWidth} Z`;
-    const measureEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${lastEndThickness} v ${line_space * 4 + 1} h -${lastEndThickness} Z`;
-    const measureDoubleEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} ${(msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4 + 1} h -${endsWidth} Z`;
+    const measureBegin = `M${msr.Bounds.x + camera.x} ${msr.Bounds.y + (msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4} h -${endsWidth} Z`;
+    const measureEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} ${msr.Bounds.y + (msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${lastEndThickness} v ${line_space * 4 + 1} h -${lastEndThickness} Z`;
+    const measureDoubleEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} ${msr.Bounds.y + (msr.Bounds.height / 2) - (line_space * 2) + camera.y} h ${endsWidth} v ${line_space * 4 + 1} h -${endsWidth} Z`;
     for (let l = 0; l < 5; l++) {
-        const lineString = `M${msr.Bounds.x + camera.x} ${(msr.Bounds.height / 2) - (line_space * 2) + line_space * l + camera.y} h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
+        const lineString = `M${msr.Bounds.x + camera.x} ${msr.Bounds.y + (msr.Bounds.height / 2) - (line_space * 2) + line_space * l + camera.y} h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
         const linePath = new Path2D(lineString);
         context.fill(linePath);
     }

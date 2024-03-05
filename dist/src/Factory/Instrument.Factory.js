@@ -18,7 +18,7 @@ const CreateDefaultMeasure = () => {
     };
     return new Measure(props);
 };
-const CreateMeasure = (id, bounds, timeSignature) => {
+const CreateMeasure = (id, bounds, timeSignature, renderClef = false) => {
     const props = {
         ID: id,
         Bounds: bounds,
