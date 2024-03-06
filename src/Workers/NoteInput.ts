@@ -107,14 +107,16 @@ function AddToDivision(msr: Measure, noteProps: NoteProps): void {
         Duration: div.Duration,
         Line: noteProps.Line,
         Rest: noteProps.Rest,
-        Tied: true
+        Tied: (remainingValue - div.Duration) > 0 ? true : false
       };
+
       remainingValue -= div.Duration;
-      beat += (remainingValue * msr.TimeSignature.bottom);
+      beat += (div.Duration * msr.TimeSignature.bottom);
       msr.AddNote(new Note(newNoteProps));
 
     } 
-    else if (remainingValue < div.Duration && beat === div.Beat) {
+    else if (remainingValue < div.Duration && beat === div.Beat
+            && remainingValue > 0) {
         // Get other notes that will be effected
         const notesOnBeat = msr.Notes
           .filter((note: Note) => note.Beat === div.Beat);
@@ -146,9 +148,9 @@ function AddToDivision(msr: Measure, noteProps: NoteProps): void {
         notesOnBeat.forEach(n => {
           let remValue = n.Duration - remainingValue;
           n.Duration = remainingValue;
-          
+
           const newNoteProps: NoteProps = {
-            Beat: div.Beat + remainingValue * msr.TimeSignature.bottom,
+            Beat: div.Beat + remValue * msr.TimeSignature.bottom,
             Duration: remValue,
             Line: n.Line,
             Rest: false,
@@ -158,6 +160,8 @@ function AddToDivision(msr: Measure, noteProps: NoteProps): void {
         });
       }
   });
+  console.log("Notes: ");
+  console.log(msr.Notes);
 }
 
 function AddToGreaterDivision(msr: Measure, noteProps: NoteProps): void {

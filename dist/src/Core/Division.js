@@ -109,7 +109,6 @@ function GenerateMissingBeatDivisions(msr, divisions) {
             sBeat += v * msr.TimeSignature.bottom;
         });
     }
-    console.log(divisionsToAdd);
     divisions.push(...divisionsToAdd);
 }
 function GetDivisionTotalWidth(divisions) {

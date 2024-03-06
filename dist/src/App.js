@@ -113,7 +113,7 @@ class App {
     }
     DragNote(x, y) {
         const msrOver = this.Sheet
-            .Measures.find(m => m.Bounds.IsHovered(x, y, this.Camera));
+            .Measures.find(m => m.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
         if (msrOver === undefined) {
             this.DraggingNote = false;
             this.StartLine = -1;

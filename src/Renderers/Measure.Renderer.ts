@@ -3,6 +3,7 @@ import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { RenderFourTop } from "./Elements/TimeSignature.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderNote, RenderRest, RenderStem, RenderStemRevise, RenderTies, renderLedgerLines } from "./Note.Renderer.js";
 
@@ -137,8 +138,8 @@ function RenderHovered(
       divisions.forEach(s => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
           if (noteInput) {
-            context.fillStyle = debugGetDurationName(s.Duration, 0.2).colour; 
-            context.fillRect(s.Bounds.x + camera.x, s.Bounds.y + camera.y, s.Bounds.width, s.Bounds.height);
+         //   context.fillStyle = debugGetDurationName(s.Duration, 0.2).colour; 
+         //   context.fillRect(s.Bounds.x + camera.x, s.Bounds.y + camera.y, s.Bounds.width, s.Bounds.height);
             const noteY = measure.Bounds.y + (line.num * (line_space / 2));// + (line_space / 2));
             // temp note
             const tempNoteProps = {
@@ -194,6 +195,10 @@ function RenderMeasureBase(
       }
 
       if (msr.RenderClef) { RenderMeasureClef(canvas, context, msr, "treble", camera); }
+      if (msr.RenderTimeSig) { 
+        const xOff = msr.RenderClef ? 32 : 4;
+        RenderTimeSig(renderProps, msr, "4", "4", xOff);
+      }
 }
 
 function RenderMeasureClef(
@@ -204,9 +209,28 @@ function RenderMeasureClef(
   cam: Camera): void {
 
     const clefVert = (msr.Bounds.height / 2) + (line_space * 2);
-    const clefPath = RenderTrebleClef(msr.Bounds.x + 16 + cam.x, msr.Bounds.y + cam.y + (msr.Bounds.height / 2 + (line_space * 2)));
+    const clefPath = RenderTrebleClef(
+      msr.Bounds.x + 16 + cam.x,
+      msr.Bounds.y + cam.y + (msr.Bounds.height / 2 + (line_space * 2)));
 
     ctx.fill(new Path2D(clefPath));
+}
+
+function RenderTimeSig(
+  renderProps: RenderProperties,
+  msr: Measure,
+  top: string,
+  bottom: string,
+  xOffset: number): void {
+    const topString = RenderFourTop(
+      msr.Bounds.x + xOffset + renderProps.camera.x,
+      msr.Bounds.y + renderProps.camera.y + (15 * 5) - 5);
+    const botString = RenderFourTop(
+      msr.Bounds.x + xOffset + renderProps.camera.x,
+      msr.Bounds.y + renderProps.camera.y + (19 * 5) - 4);
+
+    renderProps.context.fill(new Path2D(topString));
+    renderProps.context.fill(new Path2D(botString));
   }
 
 interface DivGroup {
@@ -292,8 +316,10 @@ function RenderNotes(
     }
     renderLedgerLines(msr.Notes, div, renderProps);
   });
-  testGroups.DivGroups.forEach(group => {
-    RenderStemRevise(renderProps, group.Notes, group.Divisions);
+  testGroups.DivGroups.forEach((group: DivGroup, i: number) => {
+    if (group.Divisions.length > 0) {
+      RenderStemRevise(renderProps, group.Notes, group.Divisions);
+    }
   });
   RenderTies(renderProps, msr.Divisions, msr.Notes);
 }

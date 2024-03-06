@@ -18,7 +18,8 @@ const CreateDefaultMeasure = (): Measure => {
     TimeSignature: { top: 4, bottom: 4 },
     Notes: [],
     Divisions: [],
-    RenderClef: true
+    RenderClef: true,
+    RenderTimeSig: true,
   }
   return new Measure(props);
 }
@@ -34,7 +35,8 @@ const CreateMeasure = (id: number,
       TimeSignature: timeSignature,
       Notes: [],
       Divisions: [],
-      RenderClef: false
+      RenderClef: false,
+      RenderTimeSig: false
     }
     return new Measure(props);
   }

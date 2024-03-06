@@ -10,6 +10,7 @@ interface MeasureProps {
   Notes: Note[];
   Divisions: Division[];
   RenderClef: boolean;
+  RenderTimeSig: boolean;
 }
 class Measure {
   ID: number;
@@ -30,6 +31,7 @@ class Measure {
     this.Notes = properties.Notes;
     this.Divisions = properties.Divisions;
     this.RenderClef = properties.RenderClef;
+    this.RenderTimeSig = properties.RenderTimeSig;
     this.SetXOffset();
     
     // probably always last

@@ -83,9 +83,35 @@ class Selector {
             }
           }
         });
+        const nArray = this.Notes.get(msr);
+        nArray.forEach(n => {
+          if (n.Tied) {
+            nArray.push(...SelectTiedNotes(n, msr));
+          }
+        })
+        this.Notes.set(msr, nArray);
       });
       if (!noteHit && !shiftKey) { this.DeselectAll(); }
     }
+}
+
+function SelectTiedNotes(n: Note, msr: Measure): Note[] {
+  let isNoteTied = true;
+  let nArray: Note[] = [];
+  while (isNoteTied) {
+    const nextBeat = n.Beat + n.Duration * msr.TimeSignature.bottom;
+    const tiedNote = msr.Notes.find(note => 
+      note.Beat === nextBeat &&
+      note.Line === n.Line);
+    if (tiedNote) {
+      tiedNote.Selected = true;
+      nArray.push(tiedNote);
+      isNoteTied = tiedNote.Tied;
+    } else {
+      isNoteTied = false;
+    }
+  }
+  return nArray;
 }
 
 export { Selector };
