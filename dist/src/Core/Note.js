@@ -15,5 +15,9 @@ class Note {
     SetBounds(bounds) {
         this.Bounds = bounds;
     }
+    SetTiedStartEnd(s, e) {
+        this.TiedStart = s;
+        this.TiedEnd = e;
+    }
 }
 export { Note };

@@ -50,30 +50,42 @@ class Selector {
                         let nArray = this.Notes.get(msr);
                         if (!nArray.find(na => na === n)) {
                             nArray.push(n);
+                            if (n.Tied) {
+                                nArray.push(...SelectTiedNotes(n, msr));
+                            }
                             this.Notes.set(msr, nArray);
                         }
                     }
                     else {
                         let nArray = [];
                         nArray.push(n);
+                        if (n.Tied) {
+                            nArray.push(...SelectTiedNotes(n, msr));
+                        }
                         this.Notes.set(msr, nArray);
                     }
                     noteHit = true;
                 }
                 else {
                     if (n.Selected && !shiftKey) {
-                        this.DeselectNote(n);
-                        n.Selected = false;
+                        let deselect = true;
+                        if (n.Tied) {
+                            const tiedNotes = msr.Notes.filter(note => {
+                                return note !== n &&
+                                    note.Beat >= n.TiedStart &&
+                                    note.Beat <= n.TiedEnd &&
+                                    note.Line === n.Line &&
+                                    note.Selected === true;
+                            });
+                            deselect = tiedNotes.length === 0;
+                        }
+                        if (deselect) {
+                            this.DeselectNote(n);
+                            n.Selected = false;
+                        }
                     }
                 }
             });
-            const nArray = this.Notes.get(msr);
-            nArray.forEach(n => {
-                if (n.Tied) {
-                    nArray.push(...SelectTiedNotes(n, msr));
-                }
-            });
-            this.Notes.set(msr, nArray);
         });
         if (!noteHit && !shiftKey) {
             this.DeselectAll();
@@ -81,21 +93,19 @@ class Selector {
     }
 }
 function SelectTiedNotes(n, msr) {
-    let isNoteTied = true;
     let nArray = [];
-    while (isNoteTied) {
-        const nextBeat = n.Beat + n.Duration * msr.TimeSignature.bottom;
-        const tiedNote = msr.Notes.find(note => note.Beat === nextBeat &&
-            note.Line === n.Line);
-        if (tiedNote) {
-            tiedNote.Selected = true;
-            nArray.push(tiedNote);
-            isNoteTied = tiedNote.Tied;
-        }
-        else {
-            isNoteTied = false;
-        }
-    }
+    let tStart = n.TiedStart;
+    let tEnd = n.TiedEnd;
+    const tiedNotes = msr.Notes.filter(note => {
+        return note !== n &&
+            note.Beat >= tStart &&
+            note.Beat <= tEnd &&
+            note.Line === n.Line;
+    });
+    tiedNotes.forEach(tn => {
+        tn.Selected = true;
+        nArray.push(tn);
+    });
     return nArray;
 }
 export { Selector };

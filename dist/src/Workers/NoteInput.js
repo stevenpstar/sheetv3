@@ -84,18 +84,33 @@ function FillRests(msr) {
 function AddToDivision(msr, noteProps) {
     let remainingValue = noteProps.Duration;
     let beat = noteProps.Beat;
+    let tying = false;
+    let tStart = -1;
+    let tEnd = -1;
     msr.Divisions.forEach((div, i) => {
         if (remainingValue >= div.Duration && beat === div.Beat) {
+            if (remainingValue > div.Duration && tying === false) {
+                tying = true;
+                tStart = div.Beat;
+                tEnd = div.Beat + remainingValue * msr.TimeSignature.bottom;
+            }
             const newNoteProps = {
                 Beat: div.Beat,
                 Duration: div.Duration,
                 Line: noteProps.Line,
                 Rest: noteProps.Rest,
-                Tied: (remainingValue - div.Duration) > 0 ? true : false
+                Tied: tying
             };
+            const newNote = new Note(newNoteProps);
+            if (tying) {
+                newNote.SetTiedStartEnd(tStart, tEnd);
+                if (remainingValue - div.Duration <= 0) {
+                    tying = false;
+                }
+            }
             remainingValue -= div.Duration;
             beat += (div.Duration * msr.TimeSignature.bottom);
-            msr.AddNote(new Note(newNoteProps));
+            msr.AddNote(newNote);
         }
         else if (remainingValue < div.Duration && beat === div.Beat
             && remainingValue > 0) {
@@ -138,8 +153,6 @@ function AddToDivision(msr, noteProps) {
             });
         }
     });
-    console.log("Notes: ");
-    console.log(msr.Notes);
 }
 function AddToGreaterDivision(msr, noteProps) {
     let beat = noteProps.Beat; // starting beat

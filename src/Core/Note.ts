@@ -13,6 +13,8 @@ class Note {
   Line: number;
   Rest: boolean;
   Tied: boolean;
+  TiedStart: number; // beat
+  TiedEnd: number; // beat
 
   Bounds: Bounds;
   Selected: boolean;
@@ -33,6 +35,11 @@ class Note {
 
   SetBounds(bounds: Bounds): void {
     this.Bounds = bounds;
+  }
+
+  SetTiedStartEnd(s: number, e: number): void {
+    this.TiedStart = s;
+    this.TiedEnd = e;
   }
 }
 

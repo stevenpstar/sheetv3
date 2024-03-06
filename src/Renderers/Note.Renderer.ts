@@ -130,12 +130,16 @@ function RenderTies(renderProps: RenderProperties, divs: Division[], notes: Note
     });
 
     divNotes.forEach(note => {
-      if (!note.Tied || note.Rest) {
+      if (!note.Tied || note.Rest || note.Tied && 
+         note.Beat + note.Duration * 4 >= note.TiedEnd) {
         return;
       }
-      const tiedTo = nextDivNotes.filter(n => n.Line === note.Line);
-      if (tiedTo.length === 0) { console.error("No tied note found: ", note.Beat); return; }
-      const nextNote = tiedTo[0];
+      const tiedTo = nextDivNotes.find(n => 
+        n.Line === note.Line &&
+        n.Tied &&
+        n.Beat < n.TiedEnd);
+      if (tiedTo === undefined) { console.error("No tied note found: ", note.Beat); return; }
+      const nextNote = tiedTo;
       const x1 = div.Bounds.x + noteXBuffer + camera.x;
       const y1 = div.Bounds.y + (note.Line * 5) + camera.y;
       const x2 = divs[i+1].Bounds.x + noteXBuffer + camera.x;
