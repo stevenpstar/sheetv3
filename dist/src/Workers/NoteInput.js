@@ -98,7 +98,6 @@ function AddToDivision(msr, noteProps) {
     let tying = false;
     let tStart = -1;
     let tEnd = -1;
-    console.log("beat: ", beat);
     msr.Divisions.forEach((div, i) => {
         if (tying && noteProps.Rest) {
             tying = false;

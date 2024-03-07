@@ -264,7 +264,6 @@ function IsRestOnBeat(beat: number, notes: Note[]): boolean {
   const notesOnBeat = notes.filter(n => n.Beat === beat);
   const restFound = notesOnBeat.find(n => n.Rest);
   if (restFound && notesOnBeat.length > 1) { 
-    console.log(notesOnBeat);
     console.error("Rest found on beat with multiple notes, beat: ", beat);
   }
   return restFound !== undefined;
@@ -299,9 +298,12 @@ function RenderNotes(
     if (IsRestOnBeat(div.Beat, divNotes)) {
       RenderRest(context, div, camera, divNotes[0]);
       if (startFlag) {
-        testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+        if (divs.length !== 0 || notes.length !== 0) {
+          testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+        }
         divs = [];
         notes = [];
+        startFlag = false;
       }
       return;
     }

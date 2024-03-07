@@ -1,5 +1,6 @@
 import { Bounds } from '../Types/Bounds.js';
 import { CreateDivisions, ResizeDivisions } from './Division.js';
+import { Note } from './Note.js';
 class Measure {
     constructor(properties) {
         this.ID = properties.ID;
@@ -69,7 +70,21 @@ class Measure {
     DeleteSelected() {
         for (let n = this.Notes.length - 1; n >= 0; n--) {
             if (this.Notes[n].Selected) {
+                let beat = this.Notes[n].Beat;
+                let duration = this.Notes[n].Duration;
                 this.Notes.splice(n, 1);
+                const notesOnBeat = this.Notes.filter(n => n.Beat === beat);
+                if (notesOnBeat.length === 0) {
+                    // beat is empty and requires a rest note
+                    const restProps = {
+                        Beat: beat,
+                        Duration: duration,
+                        Line: 15,
+                        Rest: true,
+                        Tied: false
+                    };
+                    this.AddNote(new Note(restProps));
+                }
             }
         }
     }
