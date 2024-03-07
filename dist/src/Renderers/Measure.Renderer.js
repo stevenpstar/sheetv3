@@ -202,9 +202,7 @@ function RenderNotes(msr, renderProps) {
         if (IsRestOnBeat(div.Beat, divNotes)) {
             RenderRest(context, div, camera, divNotes[0]);
             if (startFlag) {
-                if (divs.length !== 0 || notes.length !== 0) {
-                    testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
-                }
+                testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
                 divs = [];
                 notes = [];
                 startFlag = false;
@@ -223,6 +221,12 @@ function RenderNotes(msr, renderProps) {
                 divs.push(div);
                 notes.push(divNotes);
                 startFlag = true;
+                if (i === msr.Divisions.length - 1) {
+                    // end of measure?
+                    testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                    divs = [];
+                    notes = [];
+                }
             }
         }
         else {

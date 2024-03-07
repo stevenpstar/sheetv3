@@ -5,7 +5,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { RenderFourTop } from "./Elements/TimeSignature.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
-import { RenderNote, RenderRest, RenderStem, RenderStemRevise, RenderTies, renderLedgerLines } from "./Note.Renderer.js";
+import { RenderNote, RenderRest, RenderStemRevise, RenderTies, renderLedgerLines } from "./Note.Renderer.js";
 
 const line_space = 10;
 const line_width = 1;
@@ -298,9 +298,7 @@ function RenderNotes(
     if (IsRestOnBeat(div.Beat, divNotes)) {
       RenderRest(context, div, camera, divNotes[0]);
       if (startFlag) {
-        if (divs.length !== 0 || notes.length !== 0) {
-          testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
-        }
+        testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
         divs = [];
         notes = [];
         startFlag = false;
@@ -318,6 +316,12 @@ function RenderNotes(
         divs.push(div);
         notes.push(divNotes);
         startFlag = true;
+        if (i === msr.Divisions.length - 1) {
+          // end of measure?
+          testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+          divs = [];
+          notes = [];
+        }
       }
     } else {
       if (div.Duration > 0.125) { // TODO: Division breaks

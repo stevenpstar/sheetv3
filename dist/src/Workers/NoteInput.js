@@ -95,6 +95,9 @@ function IsRestOnBeat(msr, beat, notes) {
 function AddToDivision(msr, noteProps) {
     let remainingValue = noteProps.Duration;
     let beat = noteProps.Beat;
+    if (noteProps.Rest) {
+        noteProps.Line = 15;
+    }
     let tying = false;
     let tStart = -1;
     let tEnd = -1;

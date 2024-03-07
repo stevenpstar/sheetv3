@@ -58,7 +58,7 @@ function RenderRest(ctx, div, cam, note) {
     let x = div.Bounds.x + cam.x + noteXBuffer;
     let y = div.Bounds.y + cam.y + ((note.Line - 3) * 5);
     let path = `m${x} ${y}`;
-    ctx.fillStyle = "black";
+    ctx.fillStyle = note.Selected ? "blue" : "black";
     switch (div.Duration) {
         case 0.03125:
             y += 7;
@@ -80,11 +80,11 @@ function RenderRest(ctx, div, cam, note) {
             ctx.fill(new Path2D(path));
             break;
         case 0.5:
-            y = div.Bounds.y + cam.y + (15 * 5) - 6;
+            y = div.Bounds.y + cam.y + (note.Line * 5) - 6;
             ctx.fillRect(x, y, 14, 6);
             break;
         case 1:
-            y = div.Bounds.y + cam.y + (13 * 5);
+            y = div.Bounds.y + cam.y + ((note.Line - 2) * 5);
             x = div.Bounds.x + cam.x + (div.Bounds.width / 2) - 7;
             ctx.fillRect(x, y, 14, 6);
             break;
@@ -264,56 +264,6 @@ function GetFlagCount(value) {
     }
     return count;
 }
-function RenderStem(ctx, notes, div, cam) {
-    const bdNotes = notes.filter((note) => note.Beat === div.Beat);
-    bdNotes.sort((a, b) => {
-        return a.Line - b.Line;
-    });
-    const middleLine = 15; // TODO: This will depend on measure height
-    let dirUp = true; // default to true
-    if (bdNotes.length === 1) {
-        if (bdNotes[0].Line < middleLine) {
-            dirUp = false;
-        }
-    }
-    else {
-        dirUp = (bdNotes[bdNotes.length - 1].Line - middleLine > middleLine - bdNotes[0].Line) ? true : false;
-    }
-    const yPos = (bdNotes[bdNotes.length - 1].Line * (10 / 2) + (10 / 2));
-    const yPos2 = (bdNotes[0].Line * (10 / 2) + (10 / 2));
-    let diff = (yPos - yPos2) + 35;
-    let xBuffer = 10;
-    let startPos = yPos;
-    if (bdNotes[0].Line >= middleLine + 7) {
-        diff = yPos - (16 * 5);
-    }
-    if (!dirUp) {
-        diff = -diff;
-        xBuffer = 0;
-        startPos = yPos2;
-        if (bdNotes[bdNotes.length - 1].Line <= middleLine - 7) {
-            diff = yPos2 - (16 * 5);
-        }
-    }
-    const flagPosX = (Math.floor(div.Bounds.x + noteXBuffer + xBuffer) + cam.x);
-    const flagPosY = (startPos - 5) + cam.y + -diff;
-    ctx.fillStyle = "black";
-    // TODO: investigate changing note-head size so that it doesn't end on half
-    // pixel
-    ctx.fillRect(Math.floor(div.Bounds.x + noteXBuffer + xBuffer) + cam.x, (startPos - 5) + cam.y, 2, -diff);
-    // render flags
-    if (div.Duration < 0.25) {
-        const flagString = `m${flagPosX} ${flagPosY}`; // + quaverFlag; // rough testing for flag
-        if (dirUp) {
-            ctx.fill(new Path2D(flagString + quaverFlag));
-        }
-        else {
-            ctx.fill(new Path2D(flagString + quaverFlagInverted));
-        }
-    }
-    //  const stem = `M${beatD.Bounds.x + noteXBuffer + 10} ${yPos - 5} h ${2} v -${diff} h -${2} Z`;
-    //  ctx.fill(new Path2D(stem));
-}
 function renderLedgerLines(notes, division, renderProps) {
     const { canvas, context, camera } = renderProps;
     const ledgerX = (division.Bounds.x + noteXBuffer) - 6 + camera.x;
@@ -340,4 +290,4 @@ function renderLedgerLines(notes, division, renderProps) {
         context.fill(new Path2D(path));
     }
 }
-export { RenderNote, RenderStem, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies };
+export { RenderNote, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies };
