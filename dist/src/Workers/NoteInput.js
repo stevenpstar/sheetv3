@@ -22,6 +22,7 @@ function InputNote(msr, noteValue, division, line, rest) {
     };
     const newNote = new Note(noteProps);
     if (division.Duration === noteValue) {
+        msr.ClearRestNotes(division.Beat);
         msr.AddNote(newNote);
     }
     else {
@@ -29,7 +30,6 @@ function InputNote(msr, noteValue, division, line, rest) {
             AddToDivision(msr, noteProps);
         }
     }
-    //FillRests(msr);
     msr.CreateDivisions();
 }
 function MeasureHasRoom(beat, duration, msr) {
@@ -81,15 +81,32 @@ function FillRests(msr) {
         }
     });
 }
+function IsRestOnBeat(msr, beat, notes) {
+    const notesOnBeat = notes.filter(n => n.Beat === beat);
+    const restFound = notesOnBeat.find(n => n.Rest);
+    if (restFound && notesOnBeat.length > 1) {
+        console.error("Rest found on beat with multiple notes, beat: ", beat);
+    }
+    else if (restFound && notesOnBeat.length === 1) {
+        msr.ClearRestNotes(beat);
+    }
+    return restFound !== undefined;
+}
 function AddToDivision(msr, noteProps) {
     let remainingValue = noteProps.Duration;
     let beat = noteProps.Beat;
     let tying = false;
     let tStart = -1;
     let tEnd = -1;
+    console.log("beat: ", beat);
     msr.Divisions.forEach((div, i) => {
+        if (tying && noteProps.Rest) {
+            tying = false;
+        }
         if (remainingValue >= div.Duration && beat === div.Beat) {
-            if (remainingValue > div.Duration && tying === false) {
+            // clear rests on beat regardless of what we are inputting
+            msr.ClearRestNotes(beat);
+            if (remainingValue > div.Duration && tying === false && !noteProps.Rest) {
                 tying = true;
                 tStart = div.Beat;
                 tEnd = div.Beat + remainingValue * msr.TimeSignature.bottom;
@@ -117,7 +134,7 @@ function AddToDivision(msr, noteProps) {
             // Get other notes that will be effected
             const notesOnBeat = msr.Notes
                 .filter((note) => note.Beat === div.Beat);
-            if (notesOnBeat.length === 0) {
+            if (IsRestOnBeat(msr, beat, notesOnBeat)) {
                 // If it does not effect any other notes (only rests in div)
                 // We can just add a note of our desired Duration.
                 const newNoteProps = {
@@ -125,10 +142,17 @@ function AddToDivision(msr, noteProps) {
                     Duration: remainingValue,
                     Line: noteProps.Line,
                     Rest: noteProps.Rest,
-                    Tied: false
+                    Tied: tying
                 };
+                const newNote = new Note(newNoteProps);
+                if (tying) {
+                    newNote.SetTiedStartEnd(tStart, tEnd);
+                    if (remainingValue - div.Duration <= 0) {
+                        tying = false;
+                    }
+                }
                 remainingValue = 0;
-                msr.AddNote(new Note(newNoteProps));
+                msr.AddNote(newNote);
                 return;
             }
             const newNoteProps = {
@@ -153,9 +177,6 @@ function AddToDivision(msr, noteProps) {
             });
         }
     });
-}
-function AddToGreaterDivision(msr, noteProps) {
-    let beat = noteProps.Beat; // starting beat
 }
 function AllNotesByBeat(msr) {
     const notes = [];

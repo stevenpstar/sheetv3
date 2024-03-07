@@ -80,7 +80,7 @@ class App {
             this.Update(0, 0);
             return;
         }
-        InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, false);
+        InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput);
         this.ResizeMeasures(this.Sheet.Measures);
         this.Update(x, y);
     }

@@ -1,4 +1,5 @@
 import { Bounds } from "../Types/Bounds.js";
+import { Note } from "./Note.js";
 import { GetLargestValues } from "./Values.js";
 const DivisionMinWidth = 30;
 const DivisionMaxWidth = 40;
@@ -10,11 +11,14 @@ function CreateDivisions(msr, notes) {
         return a.Beat - b.Beat;
     });
     if (notes.length === 0) {
-        divisions.push({
+        const restProps = {
             Beat: 1,
             Duration: 1,
-            Bounds: CreateBeatBounds(msr, 1, 1)
-        });
+            Line: 15,
+            Rest: true,
+            Tied: false
+        };
+        msr.AddNote(new Note(restProps));
     }
     notes.forEach(n => {
         if (!divisions.find(div => div.Beat === n.Beat)) {
@@ -29,11 +33,6 @@ function CreateDivisions(msr, notes) {
     });
     if (runningValue > 0 && (nextBeat - 1) < msr.TimeSignature.bottom) {
         GenerateMissingBeatDivisions(msr, divisions);
-        //    divisions.push({
-        //      Beat: nextBeat,
-        //      Duration: 1 - runningValue,
-        //      Bounds: CreateBeatBounds(msr, nextBeat, (1 - runningValue))
-        //    });
     }
     GenerateMissingBeatDivisions(msr, divisions);
     return divisions;
@@ -89,19 +88,43 @@ function GenerateMissingBeatDivisions(msr, divisions) {
                 });
                 sBeat += v * msr.TimeSignature.bottom;
             });
-            startingBeat += val * msr.TimeSignature.bottom;
+            startingBeat = div.Beat + div.Duration * msr.TimeSignature.bottom;
         }
+    });
+    // Add divisions created above and then empty
+    divisions.push(...divisionsToAdd);
+    // add RESTS to division gaps
+    divisionsToAdd.forEach(div => {
+        const notesOnBeat = msr.Notes.find(n => n.Beat === div.Beat);
+        if (notesOnBeat !== undefined) {
+            console.error("Note found in division gap");
+        }
+        const restProps = {
+            Beat: div.Beat,
+            Duration: div.Duration,
+            Line: 15,
+            Rest: true,
+            Tied: false
+        };
+        msr.AddNote(new Note(restProps));
     });
     // check remaining measure for empty divisions
     const msrDuration = (msr.TimeSignature.top / msr.TimeSignature.bottom) * msr.TimeSignature.bottom + 1;
-    const rem = (msrDuration - startingBeat);
+    const reSortedDivs = divisions.sort((divA, divB) => {
+        return divA.Beat - divB.Beat;
+    });
+    const lastDiv = reSortedDivs[reSortedDivs.length - 1];
+    const lastBeat = lastDiv.Beat +
+        lastDiv.Duration * msr.TimeSignature.bottom;
+    const lastDivisionsToAdd = [];
+    const rem = (msrDuration - lastBeat);
     if (rem > 0) {
         let val = rem / msr.TimeSignature.bottom;
         let newDivs = GetLargestValues(val);
-        let sBeat = startingBeat;
+        let sBeat = lastBeat;
         newDivs.sort();
         newDivs.forEach(v => {
-            divisionsToAdd.push({
+            lastDivisionsToAdd.push({
                 Beat: sBeat,
                 Duration: v,
                 Bounds: CreateBeatBounds(msr, sBeat, v)
@@ -109,7 +132,21 @@ function GenerateMissingBeatDivisions(msr, divisions) {
             sBeat += v * msr.TimeSignature.bottom;
         });
     }
-    divisions.push(...divisionsToAdd);
+    divisions.push(...lastDivisionsToAdd);
+    lastDivisionsToAdd.forEach(div => {
+        const notesOnBeat = msr.Notes.find(n => n.Beat === div.Beat);
+        if (notesOnBeat !== undefined) {
+            console.error("Note found in division gap");
+        }
+        const restProps = {
+            Beat: div.Beat,
+            Duration: div.Duration,
+            Line: 15,
+            Rest: true,
+            Tied: false
+        };
+        msr.AddNote(new Note(restProps));
+    });
 }
 function GetDivisionTotalWidth(divisions) {
     let width = 0;

@@ -40,6 +40,23 @@ function RenderDebug(measure, renderProps, index) {
         context.fillText("Dur:", fDiv.Bounds.x + camera.x - 30, fDiv.Bounds.y + camera.y + fDiv.Bounds.height + 25);
         context.fillText("Beat:", fDiv.Bounds.x + camera.x - 30, fDiv.Bounds.y + camera.y + fDiv.Bounds.height + 40);
     }
+    // note details
+    const selectedNotes = measure
+        .Notes
+        .filter(n => n.Selected);
+    if (selectedNotes.length > 0) {
+        const selNote = selectedNotes[0];
+        context.fillStyle = "black";
+        context.font = "8px serif";
+        context.fillText(selNote.Beat.toString(), 10, 10);
+        context.fillText(selNote.Duration.toString(), 10, 20);
+        context.fillText(selNote.Line.toString(), 10, 30);
+        context.fillText(selNote.Tied.toString(), 10, 40);
+        if (selNote.Tied) {
+            context.fillText(selNote.TiedStart.toString(), 40, 40);
+            context.fillText(selNote.TiedEnd.toString(), 60, 40);
+        }
+    }
 }
 function debugGetDurationName(duration, alpha = 255) {
     let name = "";
@@ -95,7 +112,7 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
     const divisions = measure.Divisions;
     divisions.forEach(s => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
-            if (noteInput) {
+            if (noteInput && !restInput) {
                 //   context.fillStyle = debugGetDurationName(s.Duration, 0.2).colour; 
                 //   context.fillRect(s.Bounds.x + camera.x, s.Bounds.y + camera.y, s.Bounds.width, s.Bounds.height);
                 const noteY = measure.Bounds.y + (line.num * (line_space / 2)); // + (line_space / 2));
@@ -153,6 +170,16 @@ function RenderTimeSig(renderProps, msr, top, bottom, xOffset) {
     renderProps.context.fill(new Path2D(botString));
 }
 ;
+// TODO: consider moving this function
+function IsRestOnBeat(beat, notes) {
+    const notesOnBeat = notes.filter(n => n.Beat === beat);
+    const restFound = notesOnBeat.find(n => n.Rest);
+    if (restFound && notesOnBeat.length > 1) {
+        console.log(notesOnBeat);
+        console.error("Rest found on beat with multiple notes, beat: ", beat);
+    }
+    return restFound !== undefined;
+}
 function RenderNotes(msr, renderProps) {
     const { canvas, context, camera } = renderProps;
     const testGroups = { DivGroups: [] };
@@ -166,14 +193,15 @@ function RenderNotes(msr, renderProps) {
         });
         divNotes.forEach(n => {
             if (n.Beat === div.Beat && n.Rest === false) {
-                //        const yPos = (msr.Bounds.y + camera.y) + (n.Line * (line_space / 2) + 5);
                 const yPos = msr.Bounds.y + n.Line * 5;
                 RenderNote(n, renderProps, new Bounds(div.Bounds.x + noteXBuffer, yPos, 10, 10), n.Selected);
-                //        RenderStem(context, msr.Notes, div, camera);                                                     
+            }
+            else if (n.Beat === div.Beat && n.Rest) {
+                RenderRest(context, div, camera, n);
             }
         });
-        if (divNotes.length === 0) {
-            RenderRest(context, div, camera);
+        if (IsRestOnBeat(div.Beat, divNotes)) {
+            RenderRest(context, div, camera, divNotes[0]);
             if (startFlag) {
                 testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
                 divs = [];

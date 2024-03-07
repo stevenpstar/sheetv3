@@ -54,9 +54,9 @@ function RenderNote(note, renderProps, Bounds, selected, colour = "black") {
         context.fillStyle = "black";
     }
 }
-function RenderRest(ctx, div, cam) {
+function RenderRest(ctx, div, cam, note) {
     let x = div.Bounds.x + cam.x + noteXBuffer;
-    let y = div.Bounds.y + cam.y + (12 * 5);
+    let y = div.Bounds.y + cam.y + ((note.Line - 3) * 5);
     let path = `m${x} ${y}`;
     ctx.fillStyle = "black";
     switch (div.Duration) {

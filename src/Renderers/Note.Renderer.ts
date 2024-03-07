@@ -73,9 +73,10 @@ function RenderNote(note: Note,
 function RenderRest(
   ctx: CanvasRenderingContext2D,
   div: Division,
-  cam: Camera): void {
+  cam: Camera,
+  note: Note): void {
     let x = div.Bounds.x + cam.x + noteXBuffer;
-    let y = div.Bounds.y + cam.y + (12 * 5);
+    let y = div.Bounds.y + cam.y + ((note.Line - 3) * 5);
     let path = `m${x} ${y}`;
     ctx.fillStyle = "black";
 

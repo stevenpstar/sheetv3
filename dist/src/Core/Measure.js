@@ -44,7 +44,27 @@ class Measure {
         this.CreateDivisions();
     }
     AddNote(note) {
+        if (note.Rest) {
+            this.ClearNonRestNotes(note.Beat);
+        }
+        else {
+            this.ClearRestNotes(note.Beat);
+        }
         this.Notes.push(note);
+    }
+    ClearNonRestNotes(beat) {
+        for (let n = this.Notes.length - 1; n >= 0; n--) {
+            if (this.Notes[n].Beat === beat && this.Notes[n].Rest === false) {
+                this.Notes.splice(n, 1);
+            }
+        }
+    }
+    ClearRestNotes(beat) {
+        for (let n = this.Notes.length - 1; n >= 0; n--) {
+            if (this.Notes[n].Beat === beat && this.Notes[n].Rest === true) {
+                this.Notes.splice(n, 1);
+            }
+        }
     }
     DeleteSelected() {
         for (let n = this.Notes.length - 1; n >= 0; n--) {
