@@ -5,7 +5,7 @@ import { Division, Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
 import { Camera } from "./Core/Camera.js";
-import { InputOnMeasure } from "./Workers/NoteInput.js";
+import { InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
 import { GetDivisionTotalWidth } from "./Core/Division.js";
 
@@ -169,6 +169,7 @@ class App {
     for (let [msr, notes] of this.Selector.Notes) {
       notes.forEach(n => {
         n.Line += lineDiff;
+        UpdateNoteBounds(msr);
       })
     }
     this.StartLine = this.EndLine;

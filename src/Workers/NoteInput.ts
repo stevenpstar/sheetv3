@@ -1,7 +1,12 @@
 import { Camera } from "../Core/Camera.js";
+import { DivGroup, GetDivisionGroups } from "../Core/Division.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note, NoteProps } from "../Core/Note.js";
+import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
+import { DetermineStemDirection, StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
+
+const noteXBuffer = 9;
 
 function InputOnMeasure(msr: Measure,
                         noteValue: number,
@@ -44,55 +49,37 @@ function InputNote(
       }
     } 
     msr.CreateDivisions();
+    UpdateNoteBounds(msr);
+}
+
+function UpdateNoteBounds(msr: Measure): void {
+    // Maybe should go somewhere else
+    // Maybe should be more optimised
+    // For now seems to update bounds of notes properly
+    const groups = GetDivisionGroups(msr);
+    groups.DivGroups.forEach((g: DivGroup) => {
+      const { Divisions, Notes } = g;
+      const stemDir = DetermineStemDirection(Notes, Divisions);
+      Divisions.forEach((div: Division) => {
+        const divNotes = msr.Notes.filter(n => n.Beat === div.Beat);
+        divNotes.sort((a: Note, b: Note) => {
+          return a.Line - b.Line;
+        });
+        divNotes.forEach((n: Note, i: number) => {
+          const isFlipped = IsFlippedNote(divNotes, i, stemDir);
+          let flipNoteOffset = isFlipped ? 
+            stemDir === StemDirection.Up ? 11 : -11 : 0;
+          if (!n.Rest) {
+            n.Bounds.x = div.Bounds.x + noteXBuffer + flipNoteOffset;
+            n.Bounds.y = div.Bounds.y + (n.Line * 5) - 5;
+          }
+        });
+      });
+    });
 }
 
 function MeasureHasRoom(beat: number, duration: number, msr: Measure): boolean {
   return (beat * duration) <= msr.TimeSignature.top * (1 / msr.TimeSignature.bottom);
-}
-
-function FillRests(msr: Measure): void {
-  const sortedNotes = AllNotesByBeat(msr);
-  // this will need to do some stuff with standard values
-  // eventually
-  let lastBeat = 1;
-  let lastDuration = 1;
-  const restProperties: NoteProps = {
-    Beat: 0,
-    Duration: 0,
-    Line: 15,
-    Rest: true,
-    Tied: false
-  }
-  sortedNotes.forEach((notes: Note[], i: number) => {
-    if (notes[0].Rest) { return; }
-    if (i === 0) {
-      lastBeat = notes[0].Beat;
-      lastDuration = notes[0].Duration * msr.TimeSignature.bottom;
-    } else {
-      let thisBeat = notes[0].Beat;
-      let thisDuration = notes[0].Duration * msr.TimeSignature.bottom;
-      const diff = thisBeat - (lastBeat + lastDuration);
-      if (diff > 0) {
-        restProperties.Beat = thisBeat - thisDuration;
-        restProperties.Duration = diff / msr.TimeSignature.bottom;
-        msr.AddNote(new Note(restProperties));
-      }
-      lastBeat = notes[0].Beat;
-      lastDuration = notes[0].Duration * msr.TimeSignature.bottom;
-      if (i === sortedNotes.length - 1) {
-        // last note, we need to fill remaining measure with rests
-        const remaining = 
-          (msr.TimeSignature.bottom + 1) - (lastBeat + lastDuration);
-        if (remaining > 0) {
-          restProperties.Beat = 
-            (msr.TimeSignature.bottom + 1) - remaining;
-          restProperties.Duration =
-            remaining / msr.TimeSignature.bottom;
-          msr.AddNote(new Note(restProperties));
-        }
-      }
-    }
-  });
 }
 
 function IsRestOnBeat(msr: Measure, beat: number, notes: Note[]): boolean {
@@ -105,7 +92,6 @@ function IsRestOnBeat(msr: Measure, beat: number, notes: Note[]): boolean {
   }
   return restFound !== undefined;
 }
-
 
 function AddToDivision(msr: Measure, noteProps: NoteProps): void {
   let remainingValue = noteProps.Duration;
@@ -226,4 +212,4 @@ function AllNotesByBeat(msr: Measure): Array<Note[]> {
   return notes;
 }
 
-export { InputOnMeasure }
+export { InputOnMeasure, UpdateNoteBounds }

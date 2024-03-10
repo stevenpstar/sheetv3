@@ -1,11 +1,12 @@
 import { Camera } from "../Core/Camera.js";
+import { DivGroup, DivGroups, GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { RenderFourTop } from "./Elements/TimeSignature.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
-import { RenderNote, RenderRest, RenderStemRevise, RenderTies, renderLedgerLines } from "./Note.Renderer.js";
+import { DetermineStemDirection, RenderNote, RenderRest, RenderStemRevise, RenderTies, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
 
 const line_space = 10;
 const line_width = 1;
@@ -171,7 +172,7 @@ function RenderHovered(
             RenderNote(tempNote,
                        renderProps,
                        new Bounds(s.Bounds.x + noteXBuffer,
-                       noteY, 0, 0), true);
+                       noteY, 0, 0), true, false, StemDirection.Up);
           }
         }
       });
@@ -248,25 +249,6 @@ function RenderTimeSig(
 
     renderProps.context.fill(new Path2D(topString));
     renderProps.context.fill(new Path2D(botString));
-  }
-
-interface DivGroup {
-  Divisions: Division[];
-  Notes: Array<Note[]>;
-};
-
-interface DivGroups {
-  DivGroups: DivGroup[];
-}
-
-// TODO: consider moving this function
-function IsRestOnBeat(beat: number, notes: Note[]): boolean {
-  const notesOnBeat = notes.filter(n => n.Beat === beat);
-  const restFound = notesOnBeat.find(n => n.Rest);
-  if (restFound && notesOnBeat.length > 1) { 
-    console.error("Rest found on beat with multiple notes, beat: ", beat);
-  }
-  return restFound !== undefined;
 }
 
 function RenderNotes(
@@ -274,88 +256,89 @@ function RenderNotes(
   renderProps: RenderProperties) {
   
   const { canvas, context, camera } = renderProps;
-  const testGroups: DivGroups = { DivGroups: [] };
-  let startFlag = false;
-  let divs: Division[] = [];
-  let notes: Array<Note[]> = [];
-
   msr.Divisions.forEach((div: Division, i: number) => {
     const divNotes = msr.Notes.filter((note: Note) => note.Beat === div.Beat);
     divNotes.sort((a: Note, b: Note) => {
       return a.Line - b.Line;
     });
-    divNotes.forEach(n => {
-      if (n.Beat === div.Beat && n.Rest === false) {
-        const yPos = msr.Bounds.y + n.Line * 5;
-        RenderNote(n,
-                   renderProps,
-                   new Bounds(div.Bounds.x + noteXBuffer, yPos, 10, 10),
-                   n.Selected);      
-      } else if (n.Beat === div.Beat && n.Rest) {
-        RenderRest(context, div, camera, n);
-      }
-    });
+    
     if (IsRestOnBeat(div.Beat, divNotes)) {
       RenderRest(context, div, camera, divNotes[0]);
-      if (startFlag) {
-        testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
-        divs = [];
-        notes = [];
-        startFlag = false;
-      }
       return;
-    }
-    if (!startFlag) {
-      if (div.Duration > 0.125) {
-        divs.push(div);
-        notes.push(divNotes);
-        testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
-        divs = [];
-        notes = [];
-      } else {
-        divs.push(div);
-        notes.push(divNotes);
-        startFlag = true;
-        if (i === msr.Divisions.length - 1) {
-          // end of measure?
-          testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
-          divs = [];
-          notes = [];
-        }
-      }
-    } else {
-      if (div.Duration > 0.125) { // TODO: Division breaks
-        // End current group
-        startFlag = false;
-        testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
-        divs = [];
-        notes = [];
-
-        // Create a new group
-        divs.push(div);
-        notes.push(divNotes);
-        testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
-        divs = [];
-        notes = [];
-
-      } else {
-        divs.push(div);
-        notes.push(divNotes);
-        if (i === msr.Divisions.length - 1) {
-           testGroups.DivGroups.push({ Divisions: divs, Notes: notes });
-           divs = [];
-           notes = [];
-        }
-      }
     }
     renderLedgerLines(msr.Notes, div, renderProps);
   });
-  testGroups.DivGroups.forEach((group: DivGroup, i: number) => {
+  const dGroups = GetDivisionGroups(msr);
+  dGroups.DivGroups.forEach((group: DivGroup, i: number) => {
     if (group.Divisions.length > 0) {
+      const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
+
       RenderStemRevise(renderProps, group.Notes, group.Divisions);
+
+      group.Divisions.forEach(div => {
+
+        const dN = msr.Notes.filter((note: Note) => note.Beat === div.Beat);
+        dN.sort((a: Note, b: Note) => {
+          return a.Line - b.Line;
+        });
+
+        dN.forEach((n: Note, i: number) => {
+          const yPos = msr.Bounds.y + n.Line * 5;
+          const isFlipped = IsFlippedNote(dN, i, stemDir);
+          let flipNoteOffset = isFlipped ? 
+            stemDir === StemDirection.Up ? 11 : -11 : 0;
+
+          if (n.Rest) {
+            RenderRest(context, div, camera, n);
+          } else {
+            RenderNote(n,
+                     renderProps,
+                     new Bounds(div.Bounds.x + noteXBuffer + flipNoteOffset,
+                                yPos, 10, 10),
+                     n.Selected, isFlipped, stemDir);
+          }
+        });
+      });
     }
   });
   RenderTies(renderProps, msr.Divisions, msr.Notes);
+}
+
+function IsFlippedNote(notes: Note[], index: number, dir: StemDirection): boolean {
+  let flipped = false;
+  let countAbove = 0;
+  let countBelow = 0;
+  const nLine = notes[index].Line;
+  if (notes.length <= 1) { return flipped; }
+  
+  for (let b = index + 1; b <= notes.length - 1; b++) {
+    const line = notes[b].Line;
+    if (line - nLine === b - index) {
+      countBelow++;
+    } else {
+      break;
+    }
+  }
+
+  for (let a = index - 1; a >= 0; a--) {
+    const line = notes[a].Line;
+    if (nLine - line === index - a) {
+      countAbove++;
+    } else {
+      break;
+    }
+  }
+
+  const totalCount = countAbove + countBelow + 1;
+  const notePos = countAbove + 1;
+  if (totalCount % 2 === 0) {
+    flipped = dir === StemDirection.Up ? 
+      notePos % 2 !== 0 : notePos % 2 === 0;
+  } else {
+    flipped = notePos % 2 === 0;
+  }
+  
+  return flipped;
 }
 
 interface NoteGroup {
@@ -371,4 +354,4 @@ function GetNoteGroups(msr: Measure): NoteGroup[] {
   return noteGroups;
 }
 
-export { RenderMeasure }
+export { RenderMeasure, IsFlippedNote }

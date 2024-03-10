@@ -1,4 +1,3 @@
-import { Bounds } from "../Types/Bounds.js";
 class Selector {
     constructor() {
         this.Measures = [];
@@ -41,9 +40,7 @@ class Selector {
         msr.Divisions.forEach((div) => {
             const divNotes = msr.Notes.filter((note) => note.Beat === div.Beat);
             divNotes.forEach((n) => {
-                const nx = div.Bounds.x + 9;
-                const ny = div.Bounds.y + (n.Line * 5) - 5;
-                const noteBounds = new Bounds(nx, ny, n.Bounds.width, n.Bounds.height);
+                const noteBounds = n.Bounds;
                 if (noteBounds.IsHovered(x, y, cam)) {
                     n.Selected = true;
                     if (this.Notes.has(msr)) {

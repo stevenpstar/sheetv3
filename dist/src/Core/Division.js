@@ -1,6 +1,7 @@
 import { Bounds } from "../Types/Bounds.js";
 import { Note } from "./Note.js";
 import { GetLargestValues } from "./Values.js";
+;
 const DivisionMinWidth = 30;
 const DivisionMaxWidth = 40;
 function CreateDivisions(msr, notes) {
@@ -155,4 +156,77 @@ function GetDivisionTotalWidth(divisions) {
     });
     return width;
 }
-export { CreateDivisions, ResizeDivisions, GetDivisionTotalWidth };
+function GetDivisionGroups(msr) {
+    const divGroups = { DivGroups: [] };
+    let divs = [];
+    let notes = [];
+    // started creating a div group or not
+    let startFlag = false;
+    msr.Divisions.forEach((div, i) => {
+        const divNotes = msr.Notes.filter(n => n.Beat === div.Beat);
+        divNotes.sort((a, b) => {
+            return a.Line - b.Line;
+        });
+        const restBeat = IsRestOnBeat(div.Beat, divNotes);
+        // this can definitely be cleaned up but it seems to
+        // work for now, add tests later and then refactor
+        if (restBeat && startFlag) {
+            divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+            divs = [];
+            notes = [];
+            startFlag = false;
+        }
+        else if (!restBeat) {
+            if (!startFlag) {
+                divs.push(div);
+                notes.push(divNotes);
+                if (div.Duration > 0.125) {
+                    divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                    divs = [];
+                    notes = [];
+                }
+                else {
+                    startFlag = true;
+                    if (i === msr.Divisions.length - 1) {
+                        // end of measure
+                        divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                        divs = [];
+                        notes = [];
+                    }
+                }
+            }
+            else {
+                if (div.Duration > 0.125) {
+                    startFlag = false;
+                    divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                    divs = [];
+                    notes = [];
+                    divs.push(div);
+                    notes.push(divNotes);
+                    divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                    divs = [];
+                    notes = [];
+                }
+                else {
+                    divs.push(div);
+                    notes.push(divNotes);
+                    if (i === msr.Divisions.length - 1) {
+                        divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                        divs = [];
+                        notes = [];
+                    }
+                }
+            }
+        }
+    });
+    return divGroups;
+}
+function IsRestOnBeat(beat, notes) {
+    const notesOnBeat = notes.filter(n => n.Beat === beat);
+    const restFound = notesOnBeat.find(n => n.Rest);
+    if (restFound && notesOnBeat.length > 1) {
+        console.error("Rest found on beat with multiple notes, beat: ", beat);
+    }
+    return restFound !== undefined;
+}
+export { CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, IsRestOnBeat, GetDivisionGroups };

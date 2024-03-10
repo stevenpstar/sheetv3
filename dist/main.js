@@ -68,7 +68,7 @@ window.addEventListener("keydown", (e) => {
         case keymaps.value5:
             Application.SetNoteValue(0.5);
             break;
-        case keymaps.value5:
+        case keymaps.value6:
             Application.SetNoteValue(1);
             break;
         case keymaps.restInput:
