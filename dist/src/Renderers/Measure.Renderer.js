@@ -4,6 +4,7 @@ import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderFourTop } from "./Elements/TimeSignature.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
+import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { DetermineStemDirection, RenderNote, RenderRest, RenderStemRevise, RenderTies, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
 const line_space = 10;
 const line_width = 1;
@@ -11,8 +12,8 @@ const endsWidth = 2;
 const debug = true;
 const noteXBuffer = 9;
 function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteInput, index, restInput) {
-    if (hovId === measure.ID)
-        RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput);
+    //    if (hovId === measure.ID)
+    RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput);
     if (debug)
         RenderDebug(measure, renderProps, index);
     RenderMeasureBase(measure, renderProps, mousePos, lastMeasure);
@@ -105,9 +106,9 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
     const { canvas, context, camera } = renderProps;
     const line = Measure.GetLineHovered(mousePos.y, measure, camera);
     if (noteInput) {
-        context.fillStyle = "rgb(0, 0, 255, 0.1)";
-        const lineY = measure.Bounds.y + (line.num * (line_space / 2) - (line_space / 4));
-        context.fillRect(line.bounds.x + camera.x, lineY + camera.y, line.bounds.width, line.bounds.height);
+        // context.fillStyle = "rgb(0, 0, 255, 0.1)"; 
+        // const lineY = measure.Bounds.y + (line.num * (line_space / 2) - (line_space / 4));
+        // context.fillRect(line.bounds.x + camera.x, lineY + camera.y, line.bounds.width, line.bounds.height);
     }
     // now we are going to test "Sections" as they were in v2
     const divisions = measure.Divisions;
@@ -151,11 +152,18 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
     if (lastMeasure) {
         context.fill(new Path2D(measureDoubleEnd));
     }
+    // TODO: Determine xBuffers for key sigs,
+    // will need to wait until sharps are 
+    // correct size/scale etc.
     if (msr.RenderClef) {
         RenderMeasureClef(canvas, context, msr, "treble", camera);
     }
+    if (msr.RenderKey) {
+        const xOff = msr.RenderClef ? 24 : 4;
+        RenderKeySignature(renderProps, msr, "C#Maj/A#min", "treble", xOff);
+    }
     if (msr.RenderTimeSig) {
-        const xOff = msr.RenderClef ? 32 : 4;
+        const xOff = msr.RenderClef ? msr.RenderKey ? 48 : 32 : 4;
         RenderTimeSig(renderProps, msr, "4", "4", xOff);
     }
 }

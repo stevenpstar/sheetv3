@@ -12,7 +12,9 @@ const keymaps = {
     "value5": "5",
     "value6": "6",
     "restInput": "r",
-    "delete": "d"
+    "delete": "d",
+    "sharpen": "+",
+    "flatten": "-"
 };
 function returnCanvas(id) {
     const canvas = document.getElementById(id);
@@ -76,6 +78,12 @@ window.addEventListener("keydown", (e) => {
             break;
         case keymaps.delete:
             Application.Delete();
+            break;
+        case keymaps.sharpen:
+            Application.Sharpen();
+            break;
+        case keymaps.flatten:
+            Application.Flatten();
             break;
         default:
     }

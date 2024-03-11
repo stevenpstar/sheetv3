@@ -1,6 +1,6 @@
 import { Sheet, SheetProps } from "./Core/Sheet.js";
 import { Renderer } from "./Core/Renderer.js";
-import { CreateDefaultMeasure, CreateDefaultPiano, CreateMeasure } from "./Factory/Instrument.Factory.js";
+import { CreateDefaultMeasure, CreateDefaultPiano, CreateInstrument, CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Division, Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
@@ -52,8 +52,12 @@ class App {
         Measures: []
       };
 
-      sProps.Instruments.push(CreateDefaultPiano(0));
-      sProps.Measures.push(CreateDefaultMeasure());
+      sProps.Instruments.push(CreateDefaultPiano());
+      sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[0]));
+
+      sProps.Instruments.push(CreateInstrument(250));
+      sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[1]));
+
 
       this.Sheet = new Sheet(sProps);
     }
@@ -73,12 +77,6 @@ class App {
       this.DragNote(x, y);
     }
     this.HoveredElements.MeasureID = -1;
-    this.Sheet.Measures.forEach(measure => {
-      // TODO: Make this a function of measure probably
-      if (measure.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) { 
-        this.HoveredElements.MeasureID = measure.ID; 
-      }
-    })
     this.Update(x, y);
   }
 
@@ -111,7 +109,7 @@ class App {
       return;
     }
     InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput);
-    this.ResizeMeasures(this.Sheet.Measures);
+    this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === msrOver.Instrument));
 
     this.Update(x, y);
   }
@@ -144,9 +142,11 @@ class App {
       x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
       y = prevMsr.Bounds.y;
     } 
-    const newMeasureBounds = new Bounds(x, y, 150, prevMsr.Bounds.height);
-    const newMsr = CreateMeasure(newMeasureID, newMeasureBounds, prevMsr.TimeSignature, newLine);
-    this.Sheet.Measures.push(newMsr);
+    this.Sheet.Instruments.forEach(i => {
+      const newMeasureBounds = new Bounds(x, i.Position.y, 150, prevMsr.Bounds.height);
+      const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, newLine);
+      this.Sheet.Measures.push(newMsr);
+    })
   }
 
   ChangeInputMode(): void {
@@ -222,7 +222,8 @@ class App {
     measures.forEach((msr: Measure, i: number) => {
       msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
       if (i > 0) {
-        this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i-1]);
+     //   this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i-1]);
+        measures[i].Reposition(measures[i-1]);
       }
     });
     this.Update(0, 0);
@@ -230,6 +231,23 @@ class App {
 
   SetNoteValue(val: number): void {
     this.NoteValue = val;
+  }
+
+  Sharpen(): void {
+    for (let [ msr, notes ] of this.Selector.Notes ) {
+      notes.forEach(n => {
+        n.Accidental += 1;
+        if (n.Accidental > 1) { n.Accidental = 1; }
+      });
+    }
+  }
+  Flatten(): void {
+    for (let [ msr, notes ] of this.Selector.Notes ) {
+      notes.forEach(n => {
+        n.Accidental -= 1;
+        if (n.Accidental < -1) { n.Accidental = -1; }
+      })
+    }
   }
 }
 

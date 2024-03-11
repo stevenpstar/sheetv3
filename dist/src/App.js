@@ -1,6 +1,6 @@
 import { Sheet } from "./Core/Sheet.js";
 import { Renderer } from "./Core/Renderer.js";
-import { CreateDefaultMeasure, CreateDefaultPiano, CreateMeasure } from "./Factory/Instrument.Factory.js";
+import { CreateDefaultMeasure, CreateDefaultPiano, CreateInstrument, CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
@@ -26,8 +26,10 @@ class App {
                 KeySignature: [{ key: "CMaj", measureNo: 0 }],
                 Measures: []
             };
-            sProps.Instruments.push(CreateDefaultPiano(0));
-            sProps.Measures.push(CreateDefaultMeasure());
+            sProps.Instruments.push(CreateDefaultPiano());
+            sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[0]));
+            sProps.Instruments.push(CreateInstrument(250));
+            sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[1]));
             this.Sheet = new Sheet(sProps);
         }
         this.NoteInput = false;
@@ -45,12 +47,6 @@ class App {
             this.DragNote(x, y);
         }
         this.HoveredElements.MeasureID = -1;
-        this.Sheet.Measures.forEach(measure => {
-            // TODO: Make this a function of measure probably
-            if (measure.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) {
-                this.HoveredElements.MeasureID = measure.ID;
-            }
-        });
         this.Update(x, y);
     }
     Delete() {
@@ -81,7 +77,7 @@ class App {
             return;
         }
         InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput);
-        this.ResizeMeasures(this.Sheet.Measures);
+        this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === msrOver.Instrument));
         this.Update(x, y);
     }
     Update(x, y) {
@@ -104,9 +100,11 @@ class App {
             x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
             y = prevMsr.Bounds.y;
         }
-        const newMeasureBounds = new Bounds(x, y, 150, prevMsr.Bounds.height);
-        const newMsr = CreateMeasure(newMeasureID, newMeasureBounds, prevMsr.TimeSignature, newLine);
-        this.Sheet.Measures.push(newMsr);
+        this.Sheet.Instruments.forEach(i => {
+            const newMeasureBounds = new Bounds(x, i.Position.y, 150, prevMsr.Bounds.height);
+            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, newLine);
+            this.Sheet.Measures.push(newMsr);
+        });
     }
     ChangeInputMode() {
         this.NoteInput = !this.NoteInput;
@@ -174,13 +172,34 @@ class App {
         measures.forEach((msr, i) => {
             msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
             if (i > 0) {
-                this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i - 1]);
+                //   this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i-1]);
+                measures[i].Reposition(measures[i - 1]);
             }
         });
         this.Update(0, 0);
     }
     SetNoteValue(val) {
         this.NoteValue = val;
+    }
+    Sharpen() {
+        for (let [msr, notes] of this.Selector.Notes) {
+            notes.forEach(n => {
+                n.Accidental += 1;
+                if (n.Accidental > 1) {
+                    n.Accidental = 1;
+                }
+            });
+        }
+    }
+    Flatten() {
+        for (let [msr, notes] of this.Selector.Notes) {
+            notes.forEach(n => {
+                n.Accidental -= 1;
+                if (n.Accidental < -1) {
+                    n.Accidental = -1;
+                }
+            });
+        }
     }
 }
 export { App };

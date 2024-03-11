@@ -3,6 +3,7 @@ import { Division } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { RenderAccidental } from "./Accidentals.Renderer.js";
 
 enum StemDirection {
   Up,
@@ -39,6 +40,8 @@ function RenderNote(note: Note,
                     flipNote: boolean,
                     stemDir: StemDirection,
                     colour: string = "black"): void {
+  
+  if (note.Accidental !== 0) { RenderAccidental(renderProps, note, note.Accidental); }
   const { x, y, width, height } = Bounds;
   const { canvas, context, camera } = renderProps;
 

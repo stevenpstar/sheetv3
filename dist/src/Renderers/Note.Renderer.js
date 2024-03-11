@@ -1,3 +1,4 @@
+import { RenderAccidental } from "./Accidentals.Renderer.js";
 var StemDirection;
 (function (StemDirection) {
     StemDirection[StemDirection["Up"] = 0] = "Up";
@@ -25,6 +26,9 @@ const noteXBuffer = 9;
 const mHeadXOffset = 3.4871;
 const mHeadYOffset = -7.6;
 function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colour = "black") {
+    if (note.Accidental !== 0) {
+        RenderAccidental(renderProps, note, note.Accidental);
+    }
     const { x, y, width, height } = Bounds;
     const { canvas, context, camera } = renderProps;
     //  const posString = 'm' + x.toString() + ' ' + (y - 1).toString();

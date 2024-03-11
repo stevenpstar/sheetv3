@@ -7,12 +7,15 @@ interface NoteProps {
   Rest: boolean;
   Tied: boolean;
 }
+
 class Note {
   Beat: number;
   Duration: number;
   Line: number;
   Rest: boolean;
   Tied: boolean;
+  Accidental: number
+
   TiedStart: number; // beat
   TiedEnd: number; // beat
 
@@ -25,6 +28,7 @@ class Note {
     this.Line = props.Line;
     this.Rest = props.Rest;
     this.Tied = props.Tied;
+    this.Accidental = 0;
 
     this.Selected = false;
     this.Bounds = new Bounds(0, 0, 0, 0);

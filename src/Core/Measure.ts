@@ -1,10 +1,11 @@
 import { Bounds } from '../Types/Bounds.js';
 import { Camera } from './Camera.js';
 import { CreateDivisions, Division, ResizeDivisions } from './Division.js';
+import { Instrument } from './Instrument.js';
 import { Note, NoteProps } from './Note.js';
 
 interface MeasureProps {
-  ID: number;
+  Instrument: Instrument,
   Bounds: Bounds;
   TimeSignature: { top: number, bottom: number };
   Notes: Note[];
@@ -13,7 +14,7 @@ interface MeasureProps {
   RenderTimeSig: boolean;
 }
 class Measure {
-  ID: number;
+  Instrument: Instrument;
   Bounds: Bounds;
   TimeSignature: {top: number, bottom: number}
   Notes: Note[];
@@ -25,12 +26,13 @@ class Measure {
   XOffset: number; // not sure if this is what we want to go with
 
   constructor(properties: MeasureProps) {
-    this.ID = properties.ID;
+    this.Instrument = properties.Instrument;
     this.Bounds = properties.Bounds;
     this.TimeSignature = properties.TimeSignature;
     this.Notes = properties.Notes;
     this.Divisions = properties.Divisions;
     this.RenderClef = properties.RenderClef;
+    this.RenderKey = true;
     this.RenderTimeSig = properties.RenderTimeSig;
     this.SetXOffset();
     
