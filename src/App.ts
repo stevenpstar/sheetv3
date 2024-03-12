@@ -1,7 +1,7 @@
 import { Sheet, SheetProps } from "./Core/Sheet.js";
 import { Renderer } from "./Core/Renderer.js";
 import { CreateDefaultMeasure, CreateDefaultPiano, CreateInstrument, CreateMeasure } from "./Factory/Instrument.Factory.js";
-import { Division, Measure } from "./Core/Measure.js";
+import { Clef, Division, Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
 import { Camera } from "./Core/Camera.js";
@@ -55,7 +55,7 @@ class App {
       sProps.Instruments.push(CreateDefaultPiano());
       sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[0]));
 
-      sProps.Instruments.push(CreateInstrument(250));
+      sProps.Instruments.push(CreateInstrument(170));
       sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[1]));
 
 
@@ -144,8 +144,15 @@ class App {
     } 
     this.Sheet.Instruments.forEach(i => {
       const newMeasureBounds = new Bounds(x, i.Position.y, 150, prevMsr.Bounds.height);
-      const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, newLine);
+      const newMsr = CreateMeasure(
+        i,
+       newMeasureBounds,
+       prevMsr.TimeSignature,
+       prevMsr.KeySignature,
+       prevMsr.Clefs[prevMsr.Clefs.length-1].Type,
+       newLine);
       this.Sheet.Measures.push(newMsr);
+      this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
     })
   }
 
@@ -222,7 +229,6 @@ class App {
     measures.forEach((msr: Measure, i: number) => {
       msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
       if (i > 0) {
-     //   this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i-1]);
         measures[i].Reposition(measures[i-1]);
       }
     });
@@ -237,7 +243,7 @@ class App {
     for (let [ msr, notes ] of this.Selector.Notes ) {
       notes.forEach(n => {
         n.Accidental += 1;
-        if (n.Accidental > 1) { n.Accidental = 1; }
+        if (n.Accidental > 2) { n.Accidental = 2; }
       });
     }
   }
@@ -245,9 +251,24 @@ class App {
     for (let [ msr, notes ] of this.Selector.Notes ) {
       notes.forEach(n => {
         n.Accidental -= 1;
-        if (n.Accidental < -1) { n.Accidental = -1; }
+        if (n.Accidental < -2) { n.Accidental = -2; }
       })
     }
+  }
+
+  Test_AddClefMiddle(): void {
+    const msr = this.Sheet.Measures[0];
+    const clef: Clef = {Type: "treble", Beat: 3};
+    let clefExist = false;
+    msr.Clefs.forEach((c: Clef) => {
+      if (c.Beat === clef.Beat && c.Type === clef.Type) {
+        clefExist = true;
+      }
+    });
+    if (!clefExist)
+      msr.Clefs.push(clef);
+
+    console.log(msr.Clefs);
   }
 }
 

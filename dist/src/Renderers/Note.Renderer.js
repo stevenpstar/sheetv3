@@ -1,3 +1,4 @@
+import { NoteValues } from "../Core/Values.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
 var StemDirection;
 (function (StemDirection) {
@@ -26,6 +27,7 @@ const noteXBuffer = 9;
 const mHeadXOffset = 3.4871;
 const mHeadYOffset = -7.6;
 function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colour = "black") {
+    // TODO: This will be determined by key signature
     if (note.Accidental !== 0) {
         RenderAccidental(renderProps, note, note.Accidental);
     }
@@ -36,6 +38,36 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
         stemDir === StemDirection.Up ? 11 : -11 : 0;
     let posString = `m ${x + camera.x} ${y + 5 - 1 + camera.y}`;
     let noteString = '';
+    let dotCount = 0;
+    //doing two separate switches for now
+    switch (note.Duration) {
+        case NoteValues.n32d:
+        case NoteValues.n16d:
+        case NoteValues.n8d:
+        case NoteValues.n4d:
+        case NoteValues.n2d:
+        case NoteValues.n1d:
+            dotCount = 1;
+            break;
+        case NoteValues.n32dd:
+        case NoteValues.n16dd:
+        case NoteValues.n8dd:
+        case NoteValues.n4dd:
+        case NoteValues.n2dd:
+        case NoteValues.n1dd:
+            dotCount = 2;
+            break;
+        case NoteValues.n32ddd:
+        case NoteValues.n16ddd:
+        case NoteValues.n8ddd:
+        case NoteValues.n4ddd:
+        case NoteValues.n2ddd:
+        case NoteValues.n1ddd:
+            dotCount = 3;
+            break;
+        default:
+            dotCount = 0;
+    }
     switch (note.Duration) {
         case 0.125:
             noteString = posString + noteHead;
@@ -58,6 +90,9 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
         context.fillStyle = "blue";
     }
     context.fill(new Path2D(noteString));
+    for (let d = 0; d < dotCount; d++) {
+        context.fillRect(x + camera.x + 12 + (d * 4), y + camera.y - 2, 3, 3);
+    }
     let debug = false;
     if (debug) {
         context.fillStyle = "rgba(200, 0, 0, 0.5)";
@@ -118,6 +153,7 @@ function RenderTies(renderProps, divs, notes) {
         nextDivNotes.sort((a, b) => {
             return a.Line - b.Line;
         });
+        // TODO: Change * 4 to be measure time sig bottom
         divNotes.forEach(note => {
             if (!note.Tied || note.Rest || note.Tied &&
                 note.Beat + note.Duration * 4 >= note.TiedEnd) {
@@ -328,12 +364,12 @@ function renderLedgerLines(notes, division, renderProps) {
     const lowestLine = bdNotes[bdNotes.length - 1];
     context.fillStyle = "black";
     for (let l = 9; l >= highestLine.Line; l -= 2) {
-        const ledgerY = (l * 5) + camera.y;
+        const ledgerY = division.Bounds.y + (l * 5) + camera.y;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));
     }
     for (let h = 21; h <= lowestLine.Line; h += 2) {
-        const ledgerY = (h * 5) + camera.y;
+        const ledgerY = division.Bounds.y + (h * 5) + camera.y;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));
     }

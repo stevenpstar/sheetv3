@@ -23,10 +23,13 @@ const CreateDefaultMeasure = (instr: Instrument): Measure => {
     Instrument: instr,
     Bounds: new Bounds(0, instr.Position.y, 150, 150),
     TimeSignature: { top: 4, bottom: 4 },
+    KeySignature: "CMaj/Amin",
     Notes: [],
     Divisions: [],
+    Clef: "treble",
     RenderClef: true,
     RenderTimeSig: true,
+    RenderKey: false
   }
   return new Measure(props);
 }
@@ -34,16 +37,21 @@ const CreateDefaultMeasure = (instr: Instrument): Measure => {
 const CreateMeasure = (instr: Instrument, 
                     bounds: Bounds,
                     timeSignature: { top: number, bottom: number },
+                    keySignature: string,
+                    clef: string,
                     renderClef: boolean = false): Measure =>
   {
     const props: MeasureProps = {
       Instrument: instr,
       Bounds: bounds,
       TimeSignature: timeSignature,
+      KeySignature: keySignature,
       Notes: [],
       Divisions: [],
+      Clef: clef,
       RenderClef: false,
-      RenderTimeSig: false
+      RenderTimeSig: false,
+      RenderKey: false
     }
     return new Measure(props);
   }

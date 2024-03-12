@@ -17,22 +17,28 @@ const CreateDefaultMeasure = (instr) => {
         Instrument: instr,
         Bounds: new Bounds(0, instr.Position.y, 150, 150),
         TimeSignature: { top: 4, bottom: 4 },
+        KeySignature: "CMaj/Amin",
         Notes: [],
         Divisions: [],
+        Clef: "treble",
         RenderClef: true,
         RenderTimeSig: true,
+        RenderKey: false
     };
     return new Measure(props);
 };
-const CreateMeasure = (instr, bounds, timeSignature, renderClef = false) => {
+const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, renderClef = false) => {
     const props = {
         Instrument: instr,
         Bounds: bounds,
         TimeSignature: timeSignature,
+        KeySignature: keySignature,
         Notes: [],
         Divisions: [],
+        Clef: clef,
         RenderClef: false,
-        RenderTimeSig: false
+        RenderTimeSig: false,
+        RenderKey: false
     };
     return new Measure(props);
 };

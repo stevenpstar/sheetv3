@@ -9,7 +9,7 @@ import { DetermineStemDirection, RenderNote, RenderRest, RenderStemRevise, Rende
 const line_space = 10;
 const line_width = 1;
 const endsWidth = 2;
-const debug = true;
+const debug = false;
 const noteXBuffer = 9;
 function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteInput, index, restInput) {
     //    if (hovId === measure.ID)
@@ -159,8 +159,15 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
         RenderMeasureClef(canvas, context, msr, "treble", camera);
     }
     if (msr.RenderKey) {
-        const xOff = msr.RenderClef ? 24 : 4;
-        RenderKeySignature(renderProps, msr, "C#Maj/A#min", "treble", xOff);
+        const key = "CMaj/Amin";
+        if (key !== "CMaj/Amin") {
+            const xOff = msr.RenderClef ? 24 : 4;
+            RenderKeySignature(renderProps, msr, "CMaj/Amin", "treble", xOff);
+        }
+        else {
+            msr.RenderKey = false;
+            // This is a temporary fix for dev
+        }
     }
     if (msr.RenderTimeSig) {
         const xOff = msr.RenderClef ? msr.RenderKey ? 48 : 32 : 4;
@@ -168,9 +175,21 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
     }
 }
 function RenderMeasureClef(c, ctx, msr, clef, cam) {
-    const clefVert = (msr.Bounds.height / 2) + (line_space * 2);
-    const clefPath = RenderTrebleClef(msr.Bounds.x + 16 + cam.x, msr.Bounds.y + cam.y + (msr.Bounds.height / 2 + (line_space * 2)));
-    ctx.fill(new Path2D(clefPath));
+    msr.Clefs.forEach((clef) => {
+        if (clef.Beat === 1) {
+            if (clef.Type === "treble") {
+                const clefVert = (msr.Bounds.height / 2) + (line_space * 2);
+                const clefPath = RenderTrebleClef(msr.Bounds.x + 16 + cam.x, msr.Bounds.y + cam.y + (msr.Bounds.height / 2 + (line_space * 2)));
+                ctx.fill(new Path2D(clefPath));
+            }
+        }
+        else {
+            const div = msr.Divisions.find(d => d.Beat === clef.Beat);
+            const clefVert = (msr.Bounds.height / 2) + (line_space * 2);
+            const clefPath = RenderTrebleClef(div.Bounds.x + cam.x, msr.Bounds.y + cam.y + (msr.Bounds.height / 2 + (line_space * 2)));
+            ctx.fill(new Path2D(clefPath));
+        }
+    });
 }
 function RenderTimeSig(renderProps, msr, top, bottom, xOffset) {
     const topString = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (15 * 5) - 5);

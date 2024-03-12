@@ -8,15 +8,26 @@ interface MeasureProps {
   Instrument: Instrument,
   Bounds: Bounds;
   TimeSignature: { top: number, bottom: number };
+  KeySignature: string;
   Notes: Note[];
   Divisions: Division[];
+  Clef: string;
   RenderClef: boolean;
   RenderTimeSig: boolean;
+  RenderKey: boolean;
 }
+
+interface Clef {
+  Type: string;
+  Beat: number;
+}
+
 class Measure {
   Instrument: Instrument;
   Bounds: Bounds;
+  Clefs: Clef[] = [];
   TimeSignature: {top: number, bottom: number}
+  KeySignature: string;
   Notes: Note[];
   Divisions: Division[];
   RenderClef: boolean;
@@ -29,11 +40,15 @@ class Measure {
     this.Instrument = properties.Instrument;
     this.Bounds = properties.Bounds;
     this.TimeSignature = properties.TimeSignature;
+    this.KeySignature = properties.KeySignature;
     this.Notes = properties.Notes;
     this.Divisions = properties.Divisions;
     this.RenderClef = properties.RenderClef;
-    this.RenderKey = true;
+    this.RenderKey = properties.RenderKey;
     this.RenderTimeSig = properties.RenderTimeSig;
+    if (this.RenderClef) {
+      this.Clefs.push({Type: properties.Clef, Beat: 1});
+    }
     this.SetXOffset();
     
     // probably always last
@@ -124,4 +139,4 @@ class Measure {
   }
 }
 
-export { Measure, MeasureProps, Division };
+export { Measure, MeasureProps, Division, Clef };

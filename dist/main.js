@@ -1,6 +1,7 @@
 /* Development Mode (getting canvas from document etc.) */
 //import * as keymaps from './keymaps.json';
 import { App } from './src/App.js';
+import { NoteValues } from './src/Core/Values.js';
 const keymaps = {
     "rerender": "'",
     "addmeasure": "a",
@@ -46,8 +47,7 @@ window.addEventListener("keydown", (e) => {
     const key = e.key;
     switch (key) {
         case keymaps.rerender:
-            //      if (Application) { Application.Render({x: 0,y: 0}); };
-            Application.ResizeFirstMeasure();
+            Application.Test_AddClefMiddle();
             break;
         case keymaps.addmeasure:
             Application.AddMeasure();
@@ -71,7 +71,7 @@ window.addEventListener("keydown", (e) => {
             Application.SetNoteValue(0.5);
             break;
         case keymaps.value6:
-            Application.SetNoteValue(1);
+            Application.SetNoteValue(NoteValues.n4ddd);
             break;
         case keymaps.restInput:
             Application.RestInput = !Application.RestInput;

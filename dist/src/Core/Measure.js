@@ -3,14 +3,19 @@ import { CreateDivisions, ResizeDivisions } from './Division.js';
 import { Note } from './Note.js';
 class Measure {
     constructor(properties) {
+        this.Clefs = [];
         this.Instrument = properties.Instrument;
         this.Bounds = properties.Bounds;
         this.TimeSignature = properties.TimeSignature;
+        this.KeySignature = properties.KeySignature;
         this.Notes = properties.Notes;
         this.Divisions = properties.Divisions;
         this.RenderClef = properties.RenderClef;
-        this.RenderKey = true;
+        this.RenderKey = properties.RenderKey;
         this.RenderTimeSig = properties.RenderTimeSig;
+        if (this.RenderClef) {
+            this.Clefs.push({ Type: properties.Clef, Beat: 1 });
+        }
         this.SetXOffset();
         // probably always last
         this.CreateDivisions();

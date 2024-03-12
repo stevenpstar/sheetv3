@@ -1,6 +1,7 @@
 import { Camera } from "../Core/Camera.js";
 import { Division } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
+import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
@@ -41,7 +42,10 @@ function RenderNote(note: Note,
                     stemDir: StemDirection,
                     colour: string = "black"): void {
   
-  if (note.Accidental !== 0) { RenderAccidental(renderProps, note, note.Accidental); }
+  // TODO: This will be determined by key signature
+  if (note.Accidental !== 0) { 
+    RenderAccidental(renderProps, note, note.Accidental); 
+  }
   const { x, y, width, height } = Bounds;
   const { canvas, context, camera } = renderProps;
 
@@ -51,6 +55,36 @@ function RenderNote(note: Note,
     let posString = `m ${x + camera.x} ${y + 5 - 1 + camera.y}`;
 
   let noteString = '';
+  let dotCount = 0;
+  //doing two separate switches for now
+  switch (note.Duration) {
+    case NoteValues.n32d:
+    case NoteValues.n16d:
+    case NoteValues.n8d:
+    case NoteValues.n4d:
+    case NoteValues.n2d:
+    case NoteValues.n1d:
+      dotCount = 1;
+      break;
+    case NoteValues.n32dd:
+    case NoteValues.n16dd:
+    case NoteValues.n8dd:
+    case NoteValues.n4dd:
+    case NoteValues.n2dd:
+    case NoteValues.n1dd:
+      dotCount = 2;
+      break;
+    case NoteValues.n32ddd:
+    case NoteValues.n16ddd:
+    case NoteValues.n8ddd:
+    case NoteValues.n4ddd:
+    case NoteValues.n2ddd:
+    case NoteValues.n1ddd:
+      dotCount = 3;
+      break;
+    default:
+      dotCount = 0;
+  }
   switch (note.Duration) {
     case 0.125:
       noteString = posString + noteHead;
@@ -73,6 +107,9 @@ function RenderNote(note: Note,
     context.fillStyle = "blue";
   }
   context.fill(new Path2D(noteString));
+  for (let d = 0; d < dotCount; d++) {
+    context.fillRect(x + camera.x + 12 + (d * 4), y + camera.y - 2, 3, 3);
+  }
 
   let debug = false;
   if (debug) {
@@ -142,6 +179,7 @@ function RenderTies(renderProps: RenderProperties, divs: Division[], notes: Note
       return a.Line - b.Line;
     });
 
+    // TODO: Change * 4 to be measure time sig bottom
     divNotes.forEach(note => {
       if (!note.Tied || note.Rest || note.Tied && 
          note.Beat + note.Duration * 4 >= note.TiedEnd) {
@@ -387,12 +425,12 @@ function renderLedgerLines(
     context.fillStyle = "black";
 
     for (let l=9; l >= highestLine.Line; l -= 2) {
-      const ledgerY = (l * 5) + camera.y;
+      const ledgerY = division.Bounds.y + (l * 5) + camera.y;
       const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
       context.fill(new Path2D(path));
     }
     for (let h=21; h <= lowestLine.Line; h += 2) {
-      const ledgerY = (h * 5) + camera.y;
+      const ledgerY = division.Bounds.y + (h * 5) + camera.y;
       const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
       context.fill(new Path2D(path));
     }
