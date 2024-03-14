@@ -102,7 +102,7 @@ class App {
         }
         this.Sheet.Instruments.forEach(i => {
             const newMeasureBounds = new Bounds(x, i.Position.y, 150, prevMsr.Bounds.height);
-            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, prevMsr.Clefs[prevMsr.Clefs.length - 1].Type, newLine);
+            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, "bass", newLine);
             this.Sheet.Measures.push(newMsr);
             this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
         });
@@ -203,7 +203,7 @@ class App {
     }
     Test_AddClefMiddle() {
         const msr = this.Sheet.Measures[0];
-        const clef = { Type: "treble", Beat: 3 };
+        const clef = { Type: "bass", Beat: 3 };
         let clefExist = false;
         msr.Clefs.forEach((c) => {
             if (c.Beat === clef.Beat && c.Type === clef.Type) {

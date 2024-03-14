@@ -38,6 +38,37 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
         stemDir === StemDirection.Up ? 11 : -11 : 0;
     let posString = `m ${x + camera.x} ${y + 5 - 1 + camera.y}`;
     let noteString = '';
+    switch (note.Duration) {
+        case 0.125:
+            noteString = posString + noteHead;
+            break;
+        case 0.25:
+            noteString = posString + noteHead;
+            break;
+        case 0.5:
+            noteString = posString + minimHead; //( + offsets)
+            break;
+        case 1:
+            posString = `m ${x + 3.5 + camera.x} ${y + 5 + camera.y}`;
+            noteString = posString + semibreveHead;
+            break;
+        default:
+            noteString = posString + noteHead;
+    }
+    context.fillStyle = "black";
+    if (selected) {
+        context.fillStyle = "blue";
+    }
+    context.fill(new Path2D(noteString));
+    let debug = false;
+    if (debug) {
+        context.fillStyle = "rgba(200, 0, 0, 0.5)";
+        context.fillRect(x + camera.x, y + camera.y - 5, width, height);
+        context.fillStyle = "black";
+    }
+}
+function RenderDots(renderProps, note, dotXStart) {
+    const { canvas, context, camera } = renderProps;
     let dotCount = 0;
     //doing two separate switches for now
     switch (note.Duration) {
@@ -68,36 +99,15 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
         default:
             dotCount = 0;
     }
-    switch (note.Duration) {
-        case 0.125:
-            noteString = posString + noteHead;
-            break;
-        case 0.25:
-            noteString = posString + noteHead;
-            break;
-        case 0.5:
-            noteString = posString + minimHead; //( + offsets)
-            break;
-        case 1:
-            posString = `m ${x + 3.5 + camera.x} ${y + 5 + camera.y}`;
-            noteString = posString + semibreveHead;
-            break;
-        default:
-            noteString = posString + noteHead;
-    }
-    context.fillStyle = "black";
-    if (selected) {
-        context.fillStyle = "blue";
-    }
-    context.fill(new Path2D(noteString));
+    const circle = 'a1.485 1.485 90 10-2.97 0 1.485 1.485 90 102.97 0';
     for (let d = 0; d < dotCount; d++) {
-        context.fillRect(x + camera.x + 12 + (d * 4), y + camera.y - 2, 3, 3);
-    }
-    let debug = false;
-    if (debug) {
-        context.fillStyle = "rgba(200, 0, 0, 0.5)";
-        context.fillRect(x + camera.x, y + camera.y - 5, width, height);
-        context.fillStyle = "black";
+        let lineY = note.Line * 5;
+        if (note.Line % 2 !== 0) {
+            lineY = (note.Line - 1) * 5;
+        }
+        const cpath = `m${dotXStart + camera.x + 17 + (d * 5)} 
+      ${lineY + camera.y}` + circle;
+        context.fill(new Path2D(cpath));
     }
 }
 function RenderRest(ctx, div, cam, note) {
@@ -374,4 +384,4 @@ function renderLedgerLines(notes, division, renderProps) {
         context.fill(new Path2D(path));
     }
 }
-export { RenderNote, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies, DetermineStemDirection, StemDirection };
+export { RenderNote, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies, DetermineStemDirection, RenderDots, StemDirection };

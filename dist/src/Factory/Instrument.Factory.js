@@ -36,7 +36,7 @@ const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, renderC
         Notes: [],
         Divisions: [],
         Clef: clef,
-        RenderClef: false,
+        RenderClef: true,
         RenderTimeSig: false,
         RenderKey: false
     };

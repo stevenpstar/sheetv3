@@ -149,7 +149,7 @@ class App {
        newMeasureBounds,
        prevMsr.TimeSignature,
        prevMsr.KeySignature,
-       prevMsr.Clefs[prevMsr.Clefs.length-1].Type,
+       "bass",
        newLine);
       this.Sheet.Measures.push(newMsr);
       this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
@@ -258,7 +258,7 @@ class App {
 
   Test_AddClefMiddle(): void {
     const msr = this.Sheet.Measures[0];
-    const clef: Clef = {Type: "treble", Beat: 3};
+    const clef: Clef = {Type: "bass", Beat: 3};
     let clefExist = false;
     msr.Clefs.forEach((c: Clef) => {
       if (c.Beat === clef.Beat && c.Type === clef.Type) {

@@ -31,7 +31,7 @@ function returnCanvas(id) {
         canvas.style.height = '1080px';
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
-        //    context.scale(4, 4);
+        //context.scale(4, 4);
     }
     return { canvas: canvas, context: context };
 }
