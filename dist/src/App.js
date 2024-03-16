@@ -1,6 +1,6 @@
 import { Sheet } from "./Core/Sheet.js";
 import { Renderer } from "./Core/Renderer.js";
-import { CreateDefaultMeasure, CreateDefaultPiano, CreateInstrument, CreateMeasure } from "./Factory/Instrument.Factory.js";
+import { CreateDefaultMeasure, CreateDefaultPiano, CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
@@ -28,8 +28,6 @@ class App {
             };
             sProps.Instruments.push(CreateDefaultPiano());
             sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[0]));
-            sProps.Instruments.push(CreateInstrument(170));
-            sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[1]));
             this.Sheet = new Sheet(sProps);
         }
         this.NoteInput = false;
@@ -102,7 +100,7 @@ class App {
         }
         this.Sheet.Instruments.forEach(i => {
             const newMeasureBounds = new Bounds(x, i.Position.y, 150, prevMsr.Bounds.height);
-            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, "bass", newLine);
+            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, "treble", newLine);
             this.Sheet.Measures.push(newMsr);
             this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
         });
@@ -124,7 +122,7 @@ class App {
         for (let [msr, notes] of this.Selector.Notes) {
             notes.forEach(n => {
                 n.Line += lineDiff;
-                UpdateNoteBounds(msr);
+                UpdateNoteBounds(msr, n.Staff);
             });
         }
         this.StartLine = this.EndLine;

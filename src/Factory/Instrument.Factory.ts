@@ -1,10 +1,11 @@
-import { Instrument } from "../Core/Instrument";
+import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Measure, MeasureProps } from "../Core/Measure.js";
 import { Bounds } from "../Types/Bounds.js";
 
 const CreateDefaultPiano = (): Instrument => {
   const defaultPiano: Instrument = {
-    Position: {x: 0, y: 0}
+    Position: {x: 0, y: 0},
+    Staff: StaffType.Grand
   }
 
   return defaultPiano;
@@ -12,16 +13,20 @@ const CreateDefaultPiano = (): Instrument => {
 
 function CreateInstrument(y: number): Instrument {
   const instr: Instrument = {
-    Position: { x: 0, y: y }
+    Position: { x: 0, y: y },
+    Staff: StaffType.Single
   }
 
   return instr;
 }
 
 const CreateDefaultMeasure = (instr: Instrument): Measure => {
+
+  const msrHeight = instr.Staff === StaffType.Grand ? 300 : 150;
+
   const props: MeasureProps = {
     Instrument: instr,
-    Bounds: new Bounds(0, instr.Position.y, 150, 150),
+    Bounds: new Bounds(0, instr.Position.y, 150, msrHeight),
     TimeSignature: { top: 4, bottom: 4 },
     KeySignature: "CMaj/Amin",
     Notes: [],
@@ -49,7 +54,7 @@ const CreateMeasure = (instr: Instrument,
       Notes: [],
       Divisions: [],
       Clef: clef,
-      RenderClef: true,
+      RenderClef: false,
       RenderTimeSig: false,
       RenderKey: false
     }

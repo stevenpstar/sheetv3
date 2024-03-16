@@ -6,6 +6,7 @@ interface NoteProps {
   Line: number;
   Rest: boolean;
   Tied: boolean;
+  Staff: number;
 }
 
 class Note {
@@ -22,6 +23,8 @@ class Note {
   Bounds: Bounds;
   Selected: boolean;
 
+  Staff: number;
+
   constructor(props: NoteProps) {
     this.Beat = props.Beat;
     this.Duration = props.Duration;
@@ -29,6 +32,7 @@ class Note {
     this.Rest = props.Rest;
     this.Tied = props.Tied;
     this.Accidental = 0;
+    this.Staff = props.Staff;
 
     this.Selected = false;
     this.Bounds = new Bounds(0, 0, 0, 0);

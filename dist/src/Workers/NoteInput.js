@@ -22,11 +22,12 @@ function InputNote(msr, noteValue, division, line, rest) {
         Duration: noteValue,
         Line: line.num,
         Rest: rest,
-        Tied: false
+        Tied: false,
+        Staff: division.Staff
     };
     const newNote = new Note(noteProps);
     if (division.Duration === noteValue) {
-        msr.ClearRestNotes(division.Beat);
+        msr.ClearRestNotes(division.Beat, division.Staff);
         msr.AddNote(newNote);
     }
     else {
@@ -35,13 +36,13 @@ function InputNote(msr, noteValue, division, line, rest) {
         }
     }
     msr.CreateDivisions();
-    UpdateNoteBounds(msr);
+    UpdateNoteBounds(msr, division.Staff);
 }
-function UpdateNoteBounds(msr) {
+function UpdateNoteBounds(msr, staff) {
     // Maybe should go somewhere else
     // Maybe should be more optimised
     // For now seems to update bounds of notes properly
-    const groups = GetDivisionGroups(msr);
+    const groups = GetDivisionGroups(msr, staff);
     groups.DivGroups.forEach((g) => {
         const { Divisions, Notes } = g;
         const stemDir = DetermineStemDirection(Notes, Divisions);
@@ -65,14 +66,14 @@ function UpdateNoteBounds(msr) {
 function MeasureHasRoom(beat, duration, msr) {
     return (beat * duration) <= msr.TimeSignature.top * (1 / msr.TimeSignature.bottom);
 }
-function IsRestOnBeat(msr, beat, notes) {
-    const notesOnBeat = notes.filter(n => n.Beat === beat);
+function IsRestOnBeat(msr, beat, notes, staff) {
+    const notesOnBeat = notes.filter(n => n.Beat === beat && n.Staff === staff);
     const restFound = notesOnBeat.find(n => n.Rest);
     if (restFound && notesOnBeat.length > 1) {
         console.error("Rest found on beat with multiple notes, beat: ", beat);
     }
     else if (restFound && notesOnBeat.length === 1) {
-        msr.ClearRestNotes(beat);
+        msr.ClearRestNotes(beat, notesOnBeat[0].Staff);
     }
     return restFound !== undefined;
 }
@@ -91,7 +92,7 @@ function AddToDivision(msr, noteProps) {
         }
         if (remainingValue >= div.Duration && beat === div.Beat) {
             // clear rests on beat regardless of what we are inputting
-            msr.ClearRestNotes(beat);
+            msr.ClearRestNotes(beat, noteProps.Staff);
             if (remainingValue > div.Duration && tying === false && !noteProps.Rest) {
                 tying = true;
                 tStart = div.Beat;
@@ -102,7 +103,8 @@ function AddToDivision(msr, noteProps) {
                 Duration: div.Duration,
                 Line: noteProps.Line,
                 Rest: noteProps.Rest,
-                Tied: tying
+                Tied: tying,
+                Staff: div.Staff
             };
             const newNote = new Note(newNoteProps);
             if (tying) {
@@ -120,7 +122,7 @@ function AddToDivision(msr, noteProps) {
             // Get other notes that will be effected
             const notesOnBeat = msr.Notes
                 .filter((note) => note.Beat === div.Beat);
-            if (IsRestOnBeat(msr, beat, notesOnBeat)) {
+            if (IsRestOnBeat(msr, beat, notesOnBeat, div.Staff)) {
                 // If it does not effect any other notes (only rests in div)
                 // We can just add a note of our desired Duration.
                 const newNoteProps = {
@@ -128,7 +130,8 @@ function AddToDivision(msr, noteProps) {
                     Duration: remainingValue,
                     Line: noteProps.Line,
                     Rest: noteProps.Rest,
-                    Tied: tying
+                    Tied: tying,
+                    Staff: div.Staff
                 };
                 const newNote = new Note(newNoteProps);
                 if (tying) {
@@ -146,7 +149,8 @@ function AddToDivision(msr, noteProps) {
                 Duration: remainingValue,
                 Line: noteProps.Line,
                 Rest: noteProps.Rest,
-                Tied: false
+                Tied: false,
+                Staff: div.Staff
             };
             msr.AddNote(new Note(newNoteProps));
             notesOnBeat.forEach(n => {
@@ -158,6 +162,7 @@ function AddToDivision(msr, noteProps) {
                     Line: n.Line,
                     Rest: false,
                     Tied: false,
+                    Staff: div.Staff
                 };
                 msr.AddNote(new Note(newNoteProps));
             });

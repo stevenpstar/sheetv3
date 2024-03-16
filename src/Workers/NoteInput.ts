@@ -36,12 +36,13 @@ function InputNote(
       Duration: noteValue,
       Line: line.num,
       Rest: rest,
-      Tied: false
+      Tied: false,
+      Staff: division.Staff
     };
     const newNote: Note = new Note(noteProps);
 
     if (division.Duration === noteValue) {
-      msr.ClearRestNotes(division.Beat);
+      msr.ClearRestNotes(division.Beat, division.Staff);
       msr.AddNote(newNote);
     } else {
       if (MeasureHasRoom(noteProps.Beat, noteProps.Duration, msr)) {
@@ -49,14 +50,14 @@ function InputNote(
       }
     } 
     msr.CreateDivisions();
-    UpdateNoteBounds(msr);
+    UpdateNoteBounds(msr, division.Staff);
 }
 
-function UpdateNoteBounds(msr: Measure): void {
+function UpdateNoteBounds(msr: Measure, staff: number): void {
     // Maybe should go somewhere else
     // Maybe should be more optimised
     // For now seems to update bounds of notes properly
-    const groups = GetDivisionGroups(msr);
+    const groups = GetDivisionGroups(msr, staff);
     groups.DivGroups.forEach((g: DivGroup) => {
       const { Divisions, Notes } = g;
       const stemDir = DetermineStemDirection(Notes, Divisions);
@@ -82,13 +83,13 @@ function MeasureHasRoom(beat: number, duration: number, msr: Measure): boolean {
   return (beat * duration) <= msr.TimeSignature.top * (1 / msr.TimeSignature.bottom);
 }
 
-function IsRestOnBeat(msr: Measure, beat: number, notes: Note[]): boolean {
-  const notesOnBeat = notes.filter(n => n.Beat === beat);
+function IsRestOnBeat(msr: Measure, beat: number, notes: Note[], staff: number): boolean {
+  const notesOnBeat = notes.filter(n => n.Beat === beat && n.Staff === staff);
   const restFound = notesOnBeat.find(n => n.Rest);
   if (restFound && notesOnBeat.length > 1) { 
     console.error("Rest found on beat with multiple notes, beat: ", beat);
   } else if (restFound && notesOnBeat.length === 1) {
-    msr.ClearRestNotes(beat);
+    msr.ClearRestNotes(beat, notesOnBeat[0].Staff);
   }
   return restFound !== undefined;
 }
@@ -106,7 +107,7 @@ function AddToDivision(msr: Measure, noteProps: NoteProps): void {
     if (remainingValue >= div.Duration && beat === div.Beat) {
 
       // clear rests on beat regardless of what we are inputting
-      msr.ClearRestNotes(beat);
+      msr.ClearRestNotes(beat, noteProps.Staff);
 
       if (remainingValue > div.Duration && tying === false && !noteProps.Rest) {
         tying = true;
@@ -119,7 +120,8 @@ function AddToDivision(msr: Measure, noteProps: NoteProps): void {
         Duration: div.Duration,
         Line: noteProps.Line,
         Rest: noteProps.Rest,
-        Tied: tying
+        Tied: tying,
+        Staff: div.Staff
       };
 
       const newNote = new Note(newNoteProps);
@@ -141,7 +143,7 @@ function AddToDivision(msr: Measure, noteProps: NoteProps): void {
         const notesOnBeat = msr.Notes
           .filter((note: Note) => note.Beat === div.Beat);
 
-        if (IsRestOnBeat(msr, beat, notesOnBeat)) {
+        if (IsRestOnBeat(msr, beat, notesOnBeat, div.Staff)) {
           // If it does not effect any other notes (only rests in div)
           // We can just add a note of our desired Duration.
           const newNoteProps: NoteProps = {
@@ -149,7 +151,8 @@ function AddToDivision(msr: Measure, noteProps: NoteProps): void {
             Duration: remainingValue,
             Line: noteProps.Line,
             Rest: noteProps.Rest,
-            Tied: tying
+            Tied: tying,
+            Staff: div.Staff
           }
           const newNote = new Note(newNoteProps);
 
@@ -170,7 +173,8 @@ function AddToDivision(msr: Measure, noteProps: NoteProps): void {
           Duration: remainingValue,
           Line: noteProps.Line,
           Rest: noteProps.Rest,
-          Tied: false
+          Tied: false,
+          Staff: div.Staff
         };
         msr.AddNote(new Note(newNoteProps));
 
@@ -184,6 +188,7 @@ function AddToDivision(msr: Measure, noteProps: NoteProps): void {
             Line: n.Line,
             Rest: false,
             Tied: false,
+            Staff: div.Staff
           };
           msr.AddNote(new Note(newNoteProps));
         });

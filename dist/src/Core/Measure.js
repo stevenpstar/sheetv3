@@ -1,20 +1,25 @@
 import { Bounds } from '../Types/Bounds.js';
 import { CreateDivisions, ResizeDivisions } from './Division.js';
+import { StaffType } from './Instrument.js';
 import { Note } from './Note.js';
 class Measure {
     constructor(properties) {
         this.Clefs = [];
+        this.GrandClefs = [];
         this.Instrument = properties.Instrument;
         this.Bounds = properties.Bounds;
         this.TimeSignature = properties.TimeSignature;
         this.KeySignature = properties.KeySignature;
         this.Notes = properties.Notes;
+        this.BNotes = [];
         this.Divisions = properties.Divisions;
+        this.BDivisions = [];
         this.RenderClef = properties.RenderClef;
         this.RenderKey = properties.RenderKey;
         this.RenderTimeSig = properties.RenderTimeSig;
-        if (this.RenderClef) {
-            this.Clefs.push({ Type: properties.Clef, Beat: 1 });
+        this.Clefs.push({ Type: properties.Clef, Beat: 1 });
+        if (this.Instrument.Staff === StaffType.Grand) {
+            this.GrandClefs.push({ Type: "bass", Beat: 1 });
         }
         this.SetXOffset();
         // probably always last
@@ -43,8 +48,14 @@ class Measure {
     }
     CreateDivisions() {
         this.Divisions = [];
-        this.Divisions = CreateDivisions(this, this.Notes);
+        this.BDivisions = [];
+        this.Divisions = CreateDivisions(this, this.Notes, 0);
+        if (this.Instrument.Staff === StaffType.Grand) {
+            this.BDivisions = CreateDivisions(this, this.Notes, 1);
+            ResizeDivisions(this, this.BDivisions);
+        }
         ResizeDivisions(this, this.Divisions);
+        console.log(this.Notes);
     }
     Reposition(prevMsr) {
         this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
@@ -52,23 +63,29 @@ class Measure {
     }
     AddNote(note) {
         if (note.Rest) {
-            this.ClearNonRestNotes(note.Beat);
+            this.ClearNonRestNotes(note.Beat, note.Staff);
+            console.log("here?");
         }
         else {
-            this.ClearRestNotes(note.Beat);
+            this.ClearRestNotes(note.Beat, note.Staff);
         }
         this.Notes.push(note);
     }
-    ClearNonRestNotes(beat) {
+    ClearNonRestNotes(beat, staff) {
         for (let n = this.Notes.length - 1; n >= 0; n--) {
-            if (this.Notes[n].Beat === beat && this.Notes[n].Rest === false) {
+            if (this.Notes[n].Beat === beat &&
+                this.Notes[n].Rest === false &&
+                this.Notes[n].Staff === staff) {
                 this.Notes.splice(n, 1);
             }
         }
     }
-    ClearRestNotes(beat) {
+    ClearRestNotes(beat, staff) {
         for (let n = this.Notes.length - 1; n >= 0; n--) {
-            if (this.Notes[n].Beat === beat && this.Notes[n].Rest === true) {
+            if (this.Notes[n].Beat === beat &&
+                this.Notes[n].Rest === true &&
+                this.Notes[n].Staff === staff) {
+                console.log("Clearing rest from ", staff);
                 this.Notes.splice(n, 1);
             }
         }
@@ -78,6 +95,7 @@ class Measure {
             if (this.Notes[n].Selected) {
                 let beat = this.Notes[n].Beat;
                 let duration = this.Notes[n].Duration;
+                let staff = this.Notes[n].Staff;
                 this.Notes.splice(n, 1);
                 const notesOnBeat = this.Notes.filter(n => n.Beat === beat);
                 if (notesOnBeat.length === 0) {
@@ -87,7 +105,8 @@ class Measure {
                         Duration: duration,
                         Line: 15,
                         Rest: true,
-                        Tied: false
+                        Tied: false,
+                        Staff: staff
                     };
                     this.AddNote(new Note(restProps));
                 }

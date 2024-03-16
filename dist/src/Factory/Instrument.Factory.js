@@ -1,21 +1,25 @@
+import { StaffType } from "../Core/Instrument.js";
 import { Measure } from "../Core/Measure.js";
 import { Bounds } from "../Types/Bounds.js";
 const CreateDefaultPiano = () => {
     const defaultPiano = {
-        Position: { x: 0, y: 0 }
+        Position: { x: 0, y: 0 },
+        Staff: StaffType.Grand
     };
     return defaultPiano;
 };
 function CreateInstrument(y) {
     const instr = {
-        Position: { x: 0, y: y }
+        Position: { x: 0, y: y },
+        Staff: StaffType.Single
     };
     return instr;
 }
 const CreateDefaultMeasure = (instr) => {
+    const msrHeight = instr.Staff === StaffType.Grand ? 300 : 150;
     const props = {
         Instrument: instr,
-        Bounds: new Bounds(0, instr.Position.y, 150, 150),
+        Bounds: new Bounds(0, instr.Position.y, 150, msrHeight),
         TimeSignature: { top: 4, bottom: 4 },
         KeySignature: "CMaj/Amin",
         Notes: [],
@@ -36,7 +40,7 @@ const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, renderC
         Notes: [],
         Divisions: [],
         Clef: clef,
-        RenderClef: true,
+        RenderClef: false,
         RenderTimeSig: false,
         RenderKey: false
     };

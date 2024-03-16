@@ -55,10 +55,6 @@ class App {
       sProps.Instruments.push(CreateDefaultPiano());
       sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[0]));
 
-      sProps.Instruments.push(CreateInstrument(170));
-      sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[1]));
-
-
       this.Sheet = new Sheet(sProps);
     }
     this.NoteInput = false;
@@ -149,7 +145,7 @@ class App {
        newMeasureBounds,
        prevMsr.TimeSignature,
        prevMsr.KeySignature,
-       "bass",
+       "treble",
        newLine);
       this.Sheet.Measures.push(newMsr);
       this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
@@ -176,7 +172,7 @@ class App {
     for (let [msr, notes] of this.Selector.Notes) {
       notes.forEach(n => {
         n.Line += lineDiff;
-        UpdateNoteBounds(msr);
+        UpdateNoteBounds(msr, n.Staff);
       })
     }
     this.StartLine = this.EndLine;

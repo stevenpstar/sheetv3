@@ -1,4 +1,5 @@
 import { Bounds } from "../Types/Bounds.js";
+import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
 import { Note, NoteProps } from "./Note.js";
 import { GetLargestValues } from "./Values.js";
@@ -7,6 +8,7 @@ interface Division {
   Beat: number;
   Duration: number;
   Bounds: Bounds;
+  Staff: number;
 }
 
 interface DivGroup {
@@ -21,7 +23,7 @@ interface DivGroups {
 const DivisionMinWidth = 30;
 const DivisionMaxWidth = 40;
 
-function CreateDivisions(msr: Measure, notes: Note[]): Division[] {
+function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[] {
   const divisions: Division[] = [];
   let nextBeat = 0;
   let runningValue = 0; 
@@ -30,39 +32,46 @@ function CreateDivisions(msr: Measure, notes: Note[]): Division[] {
     return a.Beat - b.Beat;
   });
 
-  if (notes.length === 0) {
+  if (notes.filter(n => n.Staff === staff).length === 0) {
+    console.log("Is 0");
+    console.log("staff: ", staff);
     const restProps: NoteProps = {
       Beat: 1,
       Duration: 1,
       Line: 15,
       Rest: true,
-      Tied: false
+      Tied: false,
+      Staff: staff
     };
     msr.AddNote(new Note(restProps));
+    console.log("?");
+    console.log(msr.Notes);
   }
-  notes.forEach(n => {
+  notes.filter(n => n.Staff === staff).forEach(n => {
+    console.log("n : ", n);
     if (!divisions.find(div => div.Beat === n.Beat)) {
       divisions.push(
         {
           Beat: n.Beat,
           Duration: n.Duration,
-          Bounds: CreateBeatBounds(msr, n.Beat, n.Duration)
+          Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff),
+          Staff: staff
         });
         nextBeat = n.Beat + (n.Duration * msr.TimeSignature.bottom);
         runningValue += n.Duration;
     }
   });
   if (runningValue > 0 && (nextBeat - 1) < msr.TimeSignature.bottom) {
-    GenerateMissingBeatDivisions(msr, divisions);
+    GenerateMissingBeatDivisions(msr, divisions, staff);
   }
-  GenerateMissingBeatDivisions(msr, divisions);
+  GenerateMissingBeatDivisions(msr, divisions, staff);
   return divisions;
 }
 
-function CreateBeatBounds(msr: Measure, beat: number, duration: number): Bounds {
-  const height = msr.Bounds.height; // height will always be max
+function CreateBeatBounds(msr: Measure, beat: number, duration: number, staff: number): Bounds {
+  const height = msr.Bounds.height / 2; // height will always be max
   const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
-  const y = msr.Bounds.y;
+  const y = staff === 0 ? msr.Bounds.y : msr.Bounds.y + (msr.Bounds.height / 2);
   const x = msr.Bounds.x + msr.XOffset + ((beat - 1) / msr.TimeSignature.bottom) * msr.Bounds.width;
   return new Bounds(x, y, width, height);
 }
@@ -88,7 +97,7 @@ function ResizeDivisions(msr: Measure, divisions: Division[]): void {
   });
 }
 
-function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[]): void {
+function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff: number): void {
   const sortedDivs = divisions.sort((divA: Division, divB: Division) => {
     return divA.Beat - divB.Beat;
   });
@@ -109,7 +118,8 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[]): void
           {
             Beat: sBeat,
             Duration: v,
-            Bounds: CreateBeatBounds(msr, sBeat, v)
+            Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff),
+            Staff: div.Staff
           });
           sBeat += v * msr.TimeSignature.bottom;
       });
@@ -130,7 +140,8 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[]): void
       Duration: div.Duration,
       Line: 15,
       Rest: true,
-      Tied: false
+      Tied: false,
+      Staff: div.Staff
     };
     msr.AddNote(new Note(restProps));
   });
@@ -157,7 +168,8 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[]): void
         {
           Beat: sBeat,
           Duration: v,
-          Bounds: CreateBeatBounds(msr, sBeat, v)
+          Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff),
+          Staff: staff
         });
         sBeat += v * msr.TimeSignature.bottom;
     });
@@ -173,7 +185,8 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[]): void
       Duration: div.Duration,
       Line: 15,
       Rest: true,
-      Tied: false
+      Tied: false,
+      Staff: div.Staff
     };
     msr.AddNote(new Note(restProps));
   });
@@ -188,20 +201,22 @@ function GetDivisionTotalWidth(divisions: Division[]): number {
   return width;
 }
 
-function GetDivisionGroups(msr: Measure): DivGroups {
+function GetDivisionGroups(msr: Measure, staff: number): DivGroups {
   const divGroups: DivGroups = { DivGroups: [] };
   let divs: Division[] = [];
   let notes: Array<Note[]> = [];
   // started creating a div group or not
   let startFlag = false;
 
-  msr.Divisions.forEach((div: Division, i: number) => {
+  const mDivs = msr.Divisions.filter(d => d.Staff === staff);
+
+  mDivs.forEach((div: Division, i: number) => {
     const divNotes = msr.Notes.filter(n => n.Beat === div.Beat);
     divNotes.sort((a: Note, b: Note) => {
       return a.Line - b.Line;
     });
 
-    const restBeat = IsRestOnBeat(div.Beat, divNotes);
+    const restBeat = IsRestOnBeat(div.Beat, divNotes, div.Staff);
 
     // this can definitely be cleaned up but it seems to
     // work for now, add tests later and then refactor
@@ -254,8 +269,8 @@ function GetDivisionGroups(msr: Measure): DivGroups {
   return divGroups;
 }
 
-function IsRestOnBeat(beat: number, notes: Note[]): boolean {
-  const notesOnBeat = notes.filter(n => n.Beat === beat);
+function IsRestOnBeat(beat: number, notes: Note[], staff: number): boolean {
+  const notesOnBeat = notes.filter(n => n.Beat === beat && n.Staff === staff);
   const restFound = notesOnBeat.find(n => n.Rest);
   if (restFound && notesOnBeat.length > 1) { 
     console.error("Rest found on beat with multiple notes, beat: ", beat);

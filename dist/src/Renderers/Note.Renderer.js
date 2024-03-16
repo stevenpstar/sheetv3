@@ -337,13 +337,6 @@ function RenderStemRevise(renderProps, notes, divisions) {
             }
         }
     });
-    // Render straight beam only for now
-    //    if (beamDirection === BeamDirection.Flat && divisions.length > 1) {
-    //      context.fillStyle = "black";
-    //      const yBuffer = (stemDirection === StemDirection.Up) ? 
-    //        0 : -5;
-    //      context.fillRect(beamStartX, stemEndY + yBuffer, beamEndX - beamStartX, 5);
-    //    }
 }
 function GetFlagCount(value) {
     let count = 1;

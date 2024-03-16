@@ -7,6 +7,7 @@ class Note {
         this.Rest = props.Rest;
         this.Tied = props.Tied;
         this.Accidental = 0;
+        this.Staff = props.Staff;
         this.Selected = false;
         this.Bounds = new Bounds(0, 0, 0, 0);
         this.Bounds.width = 12;
