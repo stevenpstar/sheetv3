@@ -7,8 +7,7 @@ const noteXBuffer = 9;
 function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     let inputtingNote = true;
     const line = Measure.GetLineHovered(y, msr, cam);
-    const beatOver = msr
-        .Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
+    let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
     if (beatOver === undefined) {
         inputtingNote = false;
     }
@@ -32,7 +31,7 @@ function InputNote(msr, noteValue, division, line, rest) {
     }
     else {
         if (MeasureHasRoom(noteProps.Beat, noteProps.Duration, msr)) {
-            AddToDivision(msr, noteProps);
+            AddToDivision(msr, noteProps, division.Staff);
         }
     }
     msr.CreateDivisions();
@@ -77,7 +76,7 @@ function IsRestOnBeat(msr, beat, notes, staff) {
     }
     return restFound !== undefined;
 }
-function AddToDivision(msr, noteProps) {
+function AddToDivision(msr, noteProps, staff) {
     let remainingValue = noteProps.Duration;
     let beat = noteProps.Beat;
     if (noteProps.Rest) {
@@ -86,7 +85,7 @@ function AddToDivision(msr, noteProps) {
     let tying = false;
     let tStart = -1;
     let tEnd = -1;
-    msr.Divisions.forEach((div, i) => {
+    msr.Divisions.filter(d => d.Staff === staff).forEach((div, i) => {
         if (tying && noteProps.Rest) {
             tying = false;
         }

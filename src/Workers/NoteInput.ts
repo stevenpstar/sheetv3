@@ -16,8 +16,8 @@ function InputOnMeasure(msr: Measure,
                         rest: boolean): void {
   let inputtingNote = true;
   const line = Measure.GetLineHovered(y, msr, cam);
-  const beatOver = msr
-    .Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
+  let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
+
   if (beatOver === undefined) { inputtingNote = false; }
   if (inputtingNote) {
     InputNote(msr, noteValue, beatOver, line, rest);
@@ -46,7 +46,7 @@ function InputNote(
       msr.AddNote(newNote);
     } else {
       if (MeasureHasRoom(noteProps.Beat, noteProps.Duration, msr)) {
-        AddToDivision(msr, noteProps);
+        AddToDivision(msr, noteProps, division.Staff);
       }
     } 
     msr.CreateDivisions();
@@ -58,7 +58,7 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
     // Maybe should be more optimised
     // For now seems to update bounds of notes properly
     const groups = GetDivisionGroups(msr, staff);
-    groups.DivGroups.forEach((g: DivGroup) => {
+     groups.DivGroups.forEach((g: DivGroup) => {
       const { Divisions, Notes } = g;
       const stemDir = DetermineStemDirection(Notes, Divisions);
       Divisions.forEach((div: Division) => {
@@ -94,14 +94,14 @@ function IsRestOnBeat(msr: Measure, beat: number, notes: Note[], staff: number):
   return restFound !== undefined;
 }
 
-function AddToDivision(msr: Measure, noteProps: NoteProps): void {
+function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void {
   let remainingValue = noteProps.Duration;
   let beat = noteProps.Beat;
   if (noteProps.Rest) { noteProps.Line = 15; }
   let tying = false;
   let tStart = -1;
   let tEnd = -1;
-  msr.Divisions.forEach((div: Division, i: number) => {
+  msr.Divisions.filter(d => d.Staff === staff).forEach((div: Division, i: number) => {
     if (tying && noteProps.Rest) { tying = false; }
 
     if (remainingValue >= div.Duration && beat === div.Beat) {

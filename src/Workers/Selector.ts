@@ -34,7 +34,6 @@ class Selector {
         this.RemoveDeselected([noteIndex], msr);
       }
     }
-
   }
 
   RemoveDeselected(indexes: number[], key: Measure): void {
@@ -86,6 +85,7 @@ class Selector {
                     note.Beat >= n.TiedStart &&
                     note.Beat <= n.TiedEnd &&
                     note.Line === n.Line &&
+                    note.Staff === n.Staff &&
                     note.Selected === true;
                 });
                 deselect = tiedNotes.length === 0;
@@ -110,6 +110,7 @@ function SelectTiedNotes(n: Note, msr: Measure): Note[] {
     return note !== n &&
       note.Beat >= tStart &&
       note.Beat <= tEnd &&
+      note.Staff === n.Staff &&
       note.Line === n.Line;
   })
   tiedNotes.forEach(tn => {

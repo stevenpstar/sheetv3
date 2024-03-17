@@ -266,16 +266,17 @@ function RenderNotes(msr, renderProps, staff) {
             RenderRest(context, div, camera, divNotes[0]);
             return;
         }
-        renderLedgerLines(msr.Notes, div, renderProps);
+        renderLedgerLines(msr.Notes, div, renderProps, staff);
     });
     const dGroups = GetDivisionGroups(msr, staff);
     dGroups.DivGroups.forEach((group, i) => {
         if (group.Divisions.length > 0) {
             const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
-            RenderStemRevise(renderProps, group.Notes, group.Divisions);
+            RenderStemRevise(renderProps, group.Notes, group.Divisions, staff);
             group.Divisions.forEach(div => {
                 let hasFlipped = false;
-                const dN = msr.Notes.filter((note) => note.Beat === div.Beat);
+                const dN = msr.Notes.filter((note) => note.Beat === div.Beat &&
+                    note.Staff === staff);
                 dN.sort((a, b) => {
                     return a.Line - b.Line;
                 });

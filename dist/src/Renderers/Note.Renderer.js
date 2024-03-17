@@ -226,7 +226,7 @@ function DetermineStemDirection(notes, divisions) {
     }
     return dir;
 }
-function RenderStemRevise(renderProps, notes, divisions) {
+function RenderStemRevise(renderProps, notes, divisions, staff) {
     // Check that divisions and note arrays match
     let match = true;
     divisions.forEach((div, i) => {
@@ -247,7 +247,8 @@ function RenderStemRevise(renderProps, notes, divisions) {
     let stemEndY = 0; // end y position of stem
     let beamStartX = 0;
     let beamEndX = 0;
-    const middleLine = 15; // TODO: Magiccccc (number should be removed)
+    const middleLine = staff === 0 ? 15 : 45; // TODO: Magiccccc (number should be removed)
+    const yLineBuffer = staff === 0 ? 0 : 30;
     const midStemThreshHold = 7;
     const lineHeight = 5;
     // Highest line has a lower number (lines start at 0 from the top 
@@ -265,7 +266,7 @@ function RenderStemRevise(renderProps, notes, divisions) {
     // TODO: Beam Direction
     if (middleLine - highestLine < lowestLine - middleLine) {
         stemDirection = StemDirection.Up;
-        stemEndY = divisions[0].Bounds.y + (highestLine * lineHeight) - 35 + camera.y;
+        stemEndY = divisions[0].Bounds.y + ((highestLine - yLineBuffer) * lineHeight) - 35 + camera.y;
         if (highestLine >= middleLine + midStemThreshHold) {
             stemToMidLine = true;
             stemEndY = divisions[0].Bounds.y + (middleLine * lineHeight) + camera.y;
@@ -273,7 +274,7 @@ function RenderStemRevise(renderProps, notes, divisions) {
     }
     else {
         stemDirection = StemDirection.Down;
-        stemEndY = divisions[0].Bounds.y + (lowestLine * lineHeight) + 35 + camera.y;
+        stemEndY = divisions[0].Bounds.y + ((lowestLine - yLineBuffer) * lineHeight) + 35 + camera.y;
         if (lowestLine <= middleLine - midStemThreshHold) {
             stemToMidLine = true;
             stemEndY = divisions[0].Bounds.y + (middleLine * lineHeight) + camera.y;
@@ -302,8 +303,8 @@ function RenderStemRevise(renderProps, notes, divisions) {
         const highLine = sortedNotes[0].Line;
         const lowLine = sortedNotes[sortedNotes.length - 1].Line;
         const startPos = (stemDirection === StemDirection.Up) ?
-            div.Bounds.y + (lowLine * lineHeight) + camera.y :
-            div.Bounds.y + (highLine * lineHeight) + camera.y;
+            div.Bounds.y + ((lowLine - yLineBuffer) * lineHeight) + camera.y :
+            div.Bounds.y + ((highLine - yLineBuffer) * lineHeight) + camera.y;
         const diff = stemEndY - startPos;
         context.fillStyle = "black";
         context.fillRect(stemX, (startPos), 2, diff);
@@ -351,12 +352,14 @@ function GetFlagCount(value) {
     }
     return count;
 }
-function renderLedgerLines(notes, division, renderProps) {
+function renderLedgerLines(notes, division, renderProps, staff) {
     const { canvas, context, camera } = renderProps;
     const ledgerX = (division.Bounds.x + noteXBuffer) - 6 + camera.x;
     //const ledgerString = `m ${x - 6} ${y - 5} h 22 v 2 h-20 v-2 Z`;
     const ledgerString = `h 22 v 2 h-20 v-2 Z`;
-    const bdNotes = notes.filter((note) => note.Beat === division.Beat);
+    const bdNotes = notes.filter((note) => note.Beat === division.Beat &&
+        note.Staff === division.Staff);
+    const yLineBuffer = staff === 0 ? 0 : 30;
     if (bdNotes.length === 0) {
         return;
     }
@@ -366,12 +369,12 @@ function renderLedgerLines(notes, division, renderProps) {
     const highestLine = bdNotes[0];
     const lowestLine = bdNotes[bdNotes.length - 1];
     context.fillStyle = "black";
-    for (let l = 9; l >= highestLine.Line; l -= 2) {
+    for (let l = (9 + yLineBuffer); l >= highestLine.Line; l -= 2) {
         const ledgerY = division.Bounds.y + (l * 5) + camera.y;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));
     }
-    for (let h = 21; h <= lowestLine.Line; h += 2) {
+    for (let h = (21 + yLineBuffer); h <= lowestLine.Line; h += 2) {
         const ledgerY = division.Bounds.y + (h * 5) + camera.y;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));

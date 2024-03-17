@@ -32,7 +32,6 @@ function RenderMeasure(
     RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput);
    // if (debug)
  //     RenderDebug(measure, renderProps, index);
-
     RenderMeasureBase(measure, renderProps, mousePos, lastMeasure);
     RenderNotes(measure, renderProps, 0);
     if (measure.Instrument.Staff === StaffType.Grand) {
@@ -365,19 +364,20 @@ function RenderNotes(
       RenderRest(context, div, camera, divNotes[0]);
       return;
     }
-    renderLedgerLines(msr.Notes, div, renderProps);
+    renderLedgerLines(msr.Notes, div, renderProps, staff);
   });
   const dGroups = GetDivisionGroups(msr, staff);
   dGroups.DivGroups.forEach((group: DivGroup, i: number) => {
     if (group.Divisions.length > 0) {
       const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
 
-      RenderStemRevise(renderProps, group.Notes, group.Divisions);
+      RenderStemRevise(renderProps, group.Notes, group.Divisions, staff);
 
       group.Divisions.forEach(div => {
         let hasFlipped = false;
 
-        const dN = msr.Notes.filter((note: Note) => note.Beat === div.Beat);
+        const dN = msr.Notes.filter((note: Note) => note.Beat === div.Beat &&
+                                   note.Staff === staff);
         dN.sort((a: Note, b: Note) => {
           return a.Line - b.Line;
         });

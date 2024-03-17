@@ -86,13 +86,12 @@ class Measure {
   CreateDivisions() {
     this.Divisions = [];
     this.BDivisions = [];
-    this.Divisions = CreateDivisions(this, this.Notes, 0);
+    this.Divisions.push(...CreateDivisions(this, this.Notes, 0));
     if (this.Instrument.Staff === StaffType.Grand) {
-      this.BDivisions = CreateDivisions(this, this.Notes, 1);
-      ResizeDivisions(this, this.BDivisions);
+      this.Divisions.push(...CreateDivisions(this, this.Notes, 1));
+      ResizeDivisions(this, this.Divisions, 1);
     }
-    ResizeDivisions(this, this.Divisions);
-    console.log(this.Notes);
+  ResizeDivisions(this, this.Divisions, 0);
   }
 
   Reposition(prevMsr: Measure): void {
@@ -103,7 +102,6 @@ class Measure {
   AddNote(note: Note): void {
     if (note.Rest) {
       this.ClearNonRestNotes(note.Beat, note.Staff);
-      console.log("here?");
     } else {
       this.ClearRestNotes(note.Beat, note.Staff);
     }
@@ -125,7 +123,6 @@ class Measure {
       if (this.Notes[n].Beat === beat &&
           this.Notes[n].Rest === true &&
           this.Notes[n].Staff === staff) {
-        console.log("Clearing rest from ", staff);
         this.Notes.splice(n, 1);
       }
     }

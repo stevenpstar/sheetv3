@@ -33,9 +33,7 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[]
   });
 
   if (notes.filter(n => n.Staff === staff).length === 0) {
-    console.log("Is 0");
-    console.log("staff: ", staff);
-    const restProps: NoteProps = {
+      const restProps: NoteProps = {
       Beat: 1,
       Duration: 1,
       Line: 15,
@@ -44,12 +42,9 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[]
       Staff: staff
     };
     msr.AddNote(new Note(restProps));
-    console.log("?");
-    console.log(msr.Notes);
   }
   notes.filter(n => n.Staff === staff).forEach(n => {
-    console.log("n : ", n);
-    if (!divisions.find(div => div.Beat === n.Beat)) {
+    if (!divisions.find(div => div.Beat === n.Beat && div.Staff === n.Staff)) {
       divisions.push(
         {
           Beat: n.Beat,
@@ -76,8 +71,12 @@ function CreateBeatBounds(msr: Measure, beat: number, duration: number, staff: n
   return new Bounds(x, y, width, height);
 }
 
-function ResizeDivisions(msr: Measure, divisions: Division[]): void {
-  divisions.forEach((div: Division, i: number) => {
+function ResizeDivisions(msr: Measure, divisions: Division[], staff: number): void {
+  const divs = divisions.filter(d => d.Staff === staff);
+  divs.sort((a: Division, b: Division) => {
+    return a.Beat - b.Beat;
+  });
+  divs.forEach((div: Division, i: number) => {
     if (div.Bounds.width < DivisionMinWidth || div.Duration < 0.25) {
       div.Bounds.width = DivisionMinWidth;
     }
@@ -85,13 +84,13 @@ function ResizeDivisions(msr: Measure, divisions: Division[]): void {
       div.Bounds.width = DivisionMaxWidth;
     }
     if (i > 0) {
-      const lastDivEnd = divisions[i-1].Bounds.x + divisions[i-1].Bounds.width;
+      const lastDivEnd = divs[i-1].Bounds.x + divs[i-1].Bounds.width;
       if (lastDivEnd !== div.Bounds.x) {
         div.Bounds.x = lastDivEnd;
       }
     }
 
-    if (i === 0 && divisions.length === 1) {
+    if (i === 0 && divs.length === 1) {
       div.Bounds.width = msr.Bounds.width;
     }
   });
@@ -103,7 +102,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
   });
   let startingBeat = 1; // always start at the beginning
   const divisionsToAdd: Division[] = [];
-  sortedDivs.forEach((div: Division, i: number) => {
+  sortedDivs.filter(d => d.Staff === staff).forEach((div: Division, i: number) => {
     if (div.Beat === startingBeat) {
       // there is a div for this beat, set the startingBeat to the next
       // expected division
@@ -148,8 +147,8 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
 
   // check remaining measure for empty divisions
   const msrDuration = (msr.TimeSignature.top / msr.TimeSignature.bottom) * msr.TimeSignature.bottom + 1;
-
-  const reSortedDivs = divisions.sort((divA: Division, divB: Division) => {
+  let reSortedDivs = divisions.filter(div => div.Staff === staff);
+  reSortedDivs = divisions.sort((divA: Division, divB: Division) => {
     return divA.Beat - divB.Beat;
   });
   const lastDiv = reSortedDivs[reSortedDivs.length-1];
@@ -176,7 +175,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
   }
   divisions.push(...lastDivisionsToAdd);
   lastDivisionsToAdd.forEach(div => {
-    const notesOnBeat = msr.Notes.find(n => n.Beat === div.Beat);
+    const notesOnBeat = msr.Notes.find(n => n.Beat === div.Beat && n.Staff === div.Staff);
     if (notesOnBeat !== undefined) {
       console.error("Note found in division gap");
     }
@@ -190,14 +189,21 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
     };
     msr.AddNote(new Note(restProps));
   });
-
 }
 
 function GetDivisionTotalWidth(divisions: Division[]): number {
   let width = 0;
-  divisions.forEach(div => {
-    width += div.Bounds.width;
+  let staff0w = 0;
+  let staff1w = 0;
+  divisions.filter(d => d.Staff === 0).forEach(div => {
+    staff0w += div.Bounds.width;
   });
+  divisions.filter(d => d.Staff === 1).forEach(div => {
+    staff1w += div.Bounds.width;
+  });
+
+  width = staff0w > staff1w ? staff0w : staff1w;
+
   return width;
 }
 
@@ -211,12 +217,13 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroups {
   const mDivs = msr.Divisions.filter(d => d.Staff === staff);
 
   mDivs.forEach((div: Division, i: number) => {
-    const divNotes = msr.Notes.filter(n => n.Beat === div.Beat);
+    const divNotes = msr.Notes.filter(n => n.Beat === div.Beat &&
+                                     n.Staff === staff);
     divNotes.sort((a: Note, b: Note) => {
       return a.Line - b.Line;
     });
 
-    const restBeat = IsRestOnBeat(div.Beat, divNotes, div.Staff);
+    const restBeat = IsRestOnBeat(div.Beat, divNotes, staff);
 
     // this can definitely be cleaned up but it seems to
     // work for now, add tests later and then refactor
@@ -235,7 +242,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroups {
           notes = [];
         } else {
           startFlag = true;
-          if (i === msr.Divisions.length - 1) {
+          if (i === msr.Divisions.filter(d => d.Staff === staff).length - 1) {
             // end of measure
             divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
             divs = [];
@@ -257,7 +264,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroups {
         } else {
           divs.push(div);
           notes.push(divNotes);
-          if (i === msr.Divisions.length - 1) {
+          if (i === msr.Divisions.filter(d => d.Staff === staff).length - 1) {
             divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
             divs = [];
             notes = [];
