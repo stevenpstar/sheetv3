@@ -62,7 +62,8 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
       const { Divisions, Notes } = g;
       const stemDir = DetermineStemDirection(Notes, Divisions);
       Divisions.forEach((div: Division) => {
-        const divNotes = msr.Notes.filter(n => n.Beat === div.Beat);
+        const divNotes = msr.Notes.filter(n => n.Beat === div.Beat &&
+                                         n.Staff === staff);
         divNotes.sort((a: Note, b: Note) => {
           return a.Line - b.Line;
         });
@@ -71,8 +72,9 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
           let flipNoteOffset = isFlipped ? 
             stemDir === StemDirection.Up ? 11 : -11 : 0;
           if (!n.Rest) {
+            const lineSubt = n.Staff === 0 ? 0 : 30;
             n.Bounds.x = div.Bounds.x + noteXBuffer + flipNoteOffset;
-            n.Bounds.y = div.Bounds.y + (n.Line * 5) - 5;
+            n.Bounds.y = div.Bounds.y + ((n.Line - lineSubt) * 5) - 5;
           }
         });
       });

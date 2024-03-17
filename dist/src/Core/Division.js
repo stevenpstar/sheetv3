@@ -1,4 +1,5 @@
 import { Bounds } from "../Types/Bounds.js";
+import { StaffType } from "./Instrument.js";
 import { Note } from "./Note.js";
 import { GetLargestValues } from "./Values.js";
 ;
@@ -41,7 +42,8 @@ function CreateDivisions(msr, notes, staff) {
     return divisions;
 }
 function CreateBeatBounds(msr, beat, duration, staff) {
-    const height = msr.Bounds.height / 2; // height will always be max
+    const height = msr.Instrument.Staff === StaffType.Grand ?
+        msr.Bounds.height / 2 : msr.Bounds.height; // height will always be max
     const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
     const y = staff === 0 ? msr.Bounds.y : msr.Bounds.y + (msr.Bounds.height / 2);
     const x = msr.Bounds.x + msr.XOffset + ((beat - 1) / msr.TimeSignature.bottom) * msr.Bounds.width;

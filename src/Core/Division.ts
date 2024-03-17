@@ -64,7 +64,8 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[]
 }
 
 function CreateBeatBounds(msr: Measure, beat: number, duration: number, staff: number): Bounds {
-  const height = msr.Bounds.height / 2; // height will always be max
+  const height = msr.Instrument.Staff === StaffType.Grand ? 
+    msr.Bounds.height / 2 : msr.Bounds.height; // height will always be max
   const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
   const y = staff === 0 ? msr.Bounds.y : msr.Bounds.y + (msr.Bounds.height / 2);
   const x = msr.Bounds.x + msr.XOffset + ((beat - 1) / msr.TimeSignature.bottom) * msr.Bounds.width;

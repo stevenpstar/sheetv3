@@ -187,7 +187,7 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
         }
     }
     if (msr.RenderTimeSig) {
-        const xOff = msr.RenderClef ? msr.RenderKey ? 48 : 32 : 4;
+        const xOff = msr.RenderClef ? msr.RenderKey ? 48 : 36 : 4;
         RenderTimeSig(renderProps, msr, "4", "4", xOff);
     }
 }
@@ -250,8 +250,14 @@ function RenderMeasureClef(renderProps, msr) {
 function RenderTimeSig(renderProps, msr, top, bottom, xOffset) {
     const topString = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (15 * 5) - 5);
     const botString = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (19 * 5) - 4);
+    const topStringB = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (45 * 5) - 4);
+    const botStringB = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (49 * 5) - 4);
     renderProps.context.fill(new Path2D(topString));
     renderProps.context.fill(new Path2D(botString));
+    if (msr.Instrument.Staff === StaffType.Grand) {
+        renderProps.context.fill(new Path2D(topStringB));
+        renderProps.context.fill(new Path2D(botStringB));
+    }
 }
 function RenderNotes(msr, renderProps, staff) {
     const { canvas, context, camera } = renderProps;

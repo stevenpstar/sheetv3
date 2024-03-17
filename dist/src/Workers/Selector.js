@@ -37,17 +37,12 @@ class Selector {
     }
     SelectNote(msr, x, y, cam, shiftKey) {
         let noteHit = false;
-        console.log("Trying to select");
         msr.Divisions.forEach((div) => {
             const divNotes = msr.Notes.filter((note) => note.Beat === div.Beat);
             divNotes.forEach((n) => {
                 const noteBounds = n.Bounds;
-                console.log("n: ", n);
                 if (noteBounds.IsHovered(x, y, cam)) {
-                    console.log("x, y: ", x, y);
-                    console.log("n sel: ", n);
                     n.Selected = true;
-                    console.log("n staff: ", n.Staff);
                     if (this.Notes.has(msr)) {
                         let nArray = this.Notes.get(msr);
                         if (!nArray.find(na => na === n)) {
