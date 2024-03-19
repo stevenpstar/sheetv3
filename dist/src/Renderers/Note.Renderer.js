@@ -269,7 +269,7 @@ function RenderStemRevise(renderProps, notes, divisions, staff) {
         stemEndY = divisions[0].Bounds.y + ((highestLine - yLineBuffer) * lineHeight) - 35 + camera.y;
         if (highestLine >= middleLine + midStemThreshHold) {
             stemToMidLine = true;
-            stemEndY = divisions[0].Bounds.y + (middleLine * lineHeight) + camera.y;
+            stemEndY = divisions[0].Bounds.y + ((middleLine - yLineBuffer) * lineHeight) + camera.y;
         }
     }
     else {
@@ -277,7 +277,7 @@ function RenderStemRevise(renderProps, notes, divisions, staff) {
         stemEndY = divisions[0].Bounds.y + ((lowestLine - yLineBuffer) * lineHeight) + 35 + camera.y;
         if (lowestLine <= middleLine - midStemThreshHold) {
             stemToMidLine = true;
-            stemEndY = divisions[0].Bounds.y + (middleLine * lineHeight) + camera.y;
+            stemEndY = divisions[0].Bounds.y + ((middleLine - yLineBuffer) * lineHeight) + camera.y;
         }
     }
     // Render stems
@@ -370,12 +370,12 @@ function renderLedgerLines(notes, division, renderProps, staff) {
     const lowestLine = bdNotes[bdNotes.length - 1];
     context.fillStyle = "black";
     for (let l = (9 + yLineBuffer); l >= highestLine.Line; l -= 2) {
-        const ledgerY = division.Bounds.y + (l * 5) + camera.y;
+        const ledgerY = division.Bounds.y + ((l - yLineBuffer) * 5) + camera.y;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));
     }
     for (let h = (21 + yLineBuffer); h <= lowestLine.Line; h += 2) {
-        const ledgerY = division.Bounds.y + (h * 5) + camera.y;
+        const ledgerY = division.Bounds.y + ((h - yLineBuffer) * 5) + camera.y;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));
     }

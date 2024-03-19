@@ -39,6 +39,17 @@ class Measure {
 
   XOffset: number; // not sure if this is what we want to go with
 
+  // Staff line number properties
+  // Staff A
+  SALineTop: number;
+  SALineMid: number;
+  SALineBot: number;
+  // Staff B
+  SBLineTop: number;
+  SBLineMid: number;
+  SBLineBot: number;
+  SBOffset: number;
+
   constructor(properties: MeasureProps) {
     this.Instrument = properties.Instrument;
     this.Bounds = properties.Bounds;
@@ -59,6 +70,16 @@ class Measure {
     
     // probably always last
     this.CreateDivisions();
+
+    this.SALineTop = 5;
+    this.SALineMid = 15;
+    this.SALineBot = 24;
+
+    this.SBLineTop = 1035;
+    this.SBLineMid = 1045;
+    this.SBLineBot = 1044;
+
+    this.SBOffset = 1000;
   }
 
   static GetLineHovered(y: number, msr: Measure, cam: Camera): { num: number, bounds: Bounds } {
