@@ -15,15 +15,15 @@ const noteXBuffer = 9;
 function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteInput, index, restInput) {
     //    if (hovId === measure.ID)
     RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput);
-    // if (debug)
-    //     RenderDebug(measure, renderProps, index);
+    if (debug)
+        RenderDebug(measure, renderProps, index, mousePos);
     RenderMeasureBase(measure, renderProps, mousePos, lastMeasure);
     RenderNotes(measure, renderProps, 0);
     if (measure.Instrument.Staff === StaffType.Grand) {
         RenderNotes(measure, renderProps, 1);
     }
 }
-function RenderDebug(measure, renderProps, index) {
+function RenderDebug(measure, renderProps, index, mousePos) {
     const { canvas, context, camera } = renderProps;
     if (measure.Divisions.length === 0) {
         console.error("measure has no divisions");
@@ -46,6 +46,13 @@ function RenderDebug(measure, renderProps, index) {
         context.fillText("Dur:", fDiv.Bounds.x + camera.x - 30, fDiv.Bounds.y + camera.y + fDiv.Bounds.height + 25);
         context.fillText("Beat:", fDiv.Bounds.x + camera.x - 30, fDiv.Bounds.y + camera.y + fDiv.Bounds.height + 40);
     }
+    const renderNoteBounds = false;
+    if (renderNoteBounds) {
+        measure.Notes.forEach(n => {
+            context.fillStyle = "rgba(0 ,0, 255, 0.8)";
+            context.fillRect(n.Bounds.x + camera.x, n.Bounds.y + camera.y, n.Bounds.width, n.Bounds.height);
+        });
+    }
     // note details
     const selectedNotes = measure
         .Notes
@@ -54,15 +61,23 @@ function RenderDebug(measure, renderProps, index) {
         const selNote = selectedNotes[0];
         context.fillStyle = "black";
         context.font = "8px serif";
-        context.fillText(selNote.Beat.toString(), 10, 10);
-        context.fillText(selNote.Duration.toString(), 10, 20);
-        context.fillText(selNote.Line.toString(), 10, 30);
-        context.fillText(selNote.Tied.toString(), 10, 40);
+        context.fillText('Beat: ' + selNote.Beat.toString(), 10, 10);
+        context.fillText('Duration: ' + selNote.Duration.toString(), 10, 20);
+        context.fillText('Line: ' + selNote.Line.toString(), 10, 30);
+        context.fillText('Tied: ' + selNote.Tied.toString(), 10, 40);
         if (selNote.Tied) {
             context.fillText(selNote.TiedStart.toString(), 40, 40);
             context.fillText(selNote.TiedEnd.toString(), 60, 40);
         }
     }
+    // line details
+    // const lineY = measure.Bounds.y + (line.num * (line_space / 2) - (line_space / 4));
+    // context.fillRect(line.bounds.x + camera.x, lineY + camera.y, line.bounds.width, line.bounds.height);
+    const line = Measure.GetLineHovered(mousePos.y, measure, camera);
+    context.fillStyle = "black";
+    context.font = "8px serif";
+    let lineNum = line.num + measure.SALineTop;
+    context.fillText("Line Hovered: " + lineNum.toString(), 130, 10);
 }
 function debugGetDurationName(duration, alpha = 255) {
     let name = "";
@@ -141,22 +156,23 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
 // time signatures
 function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
     const { canvas, context, camera } = renderProps;
+    const msrMidLine = 15 - msr.SALineTop;
     context.fillStyle = "black";
     const lastEndThickness = lastMeasure ?
         endsWidth * 2 : endsWidth;
     const msrLineHeight = msr.Instrument.Staff === StaffType.Grand ?
         line_space * 4 + (30 * 5) + 1 : line_space * 4 + 1;
     const measureBegin = `M${msr.Bounds.x + camera.x} 
-          ${msr.Bounds.y + (5 * 15) - (line_space * 2) + camera.y} h 
+          ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + camera.y} h 
           ${endsWidth} v ${msrLineHeight} h -${endsWidth} Z`;
     const measureEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} 
-        ${msr.Bounds.y + (5 * 15) - (line_space * 2) + camera.y} h 
+        ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + camera.y} h 
         ${lastEndThickness} v ${msrLineHeight} h -${lastEndThickness} Z`;
     const measureDoubleEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} 
-          ${msr.Bounds.y + (5 * 15) - (line_space * 2) + camera.y} h 
+          ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + camera.y} h 
           ${endsWidth} v ${msrLineHeight} h -${endsWidth} Z`;
     for (let l = 0; l < 5; l++) {
-        const lineString = `M${msr.Bounds.x + camera.x} ${msr.Bounds.y + (5 * 15) - (line_space * 2) + line_space * l + camera.y} h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
+        const lineString = `M${msr.Bounds.x + camera.x} ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + line_space * l + camera.y} h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
         const linePath = new Path2D(lineString);
         context.fill(linePath);
     }
@@ -196,27 +212,28 @@ const bassClef = 'm0 0c0-1.276 1.012-2.288 2.288-2.288s2.288 1.012 2.288 2.288-1
 const bassClefSmall = 'm0 0c0-1.0208.8096-1.8304 1.8304-1.8304s1.8304.8096 1.8304 1.8304-.8096 1.8304-1.8304 1.8304-1.8304-.8096-1.8304-1.8304zm0-8.8c0-1.0208.8096-1.8304 1.8304-1.8304s1.8304.8096 1.8304 1.8304-.8096 1.8304-1.8304 1.8304-1.8304-.8096-1.8304-1.8304zm-11.3696-4.7872c6.0192 0 10.2784 3.0272 10.2784 8.7296 0 9.2576-9.2928 14.608-18.1984 18.3392-.0704.0704-.176.1056-.2816.1056-.2112 0-.3872-.176-.3872-.3872 0-.1056.0352-.2112.1056-.2816 7.1456-4.1536 14.608-9.328 14.608-17.3888 0-4.2592-2.2528-8.3424-6.1248-8.3424-2.7808 0-4.8576 2.0064-5.7728 4.6816.4928-.2816.9856-.4576 1.5136-.4576 1.936 0 3.52 1.584 3.52 3.52 0 2.0416-1.5488 3.7664-3.52 3.7664-2.112 0-3.9424-1.6896-3.9424-3.7664 0-4.6464 3.6256-8.5184 8.2016-8.5184z';
 function RenderMeasureClef(renderProps, msr) {
     const { canvas, context, camera } = renderProps;
+    const msrMidLine = Measure.GetMeasureMidLine(msr);
     msr.Clefs.forEach((clef) => {
         if (clef.Beat === 1) {
             if (clef.Type === "treble") {
-                const clefPath = RenderTrebleClef(msr.Bounds.x + 16 + camera.x, msr.Bounds.y + camera.y + (5 * 15 + (line_space * 2)));
+                const clefPath = RenderTrebleClef(msr.Bounds.x + 16 + camera.x, msr.Bounds.y + camera.y + (5 * msrMidLine + (line_space * 2)));
                 context.fill(new Path2D(clefPath));
             }
             else if (clef.Type === "bass") {
                 const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
-            ${msr.Bounds.y + camera.y + (15 * 5) - 2}` + bassClef;
+            ${msr.Bounds.y + camera.y + (msrMidLine * 5) - 2}` + bassClef;
                 context.fill(new Path2D(clefPath));
             }
         }
         else {
             const div = msr.Divisions.find(d => d.Beat === clef.Beat);
             if (clef.Type === "treble") {
-                const clefPath = RenderTrebleClef(div.Bounds.x + camera.x, msr.Bounds.y + camera.y + (5 * 15 + (line_space * 2)));
+                const clefPath = RenderTrebleClef(div.Bounds.x + camera.x, msr.Bounds.y + camera.y + (5 * msrMidLine + (line_space * 2)));
                 context.fill(new Path2D(clefPath));
             }
             else if (clef.Type === "bass") {
                 const clefPath = `m ${div.Bounds.x + camera.x} 
-            ${msr.Bounds.y + camera.y + (15 * 5) - 5}` + bassClefSmall;
+            ${msr.Bounds.y + camera.y + (msrMidLine * 5) - 5}` + bassClefSmall;
                 context.fill(new Path2D(clefPath));
             }
         }
@@ -248,8 +265,9 @@ function RenderMeasureClef(renderProps, msr) {
     });
 }
 function RenderTimeSig(renderProps, msr, top, bottom, xOffset) {
-    const topString = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (15 * 5) - 5);
-    const botString = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (19 * 5) - 4);
+    const msrMidLine = Measure.GetMeasureMidLine(msr);
+    const topString = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (msrMidLine * 5) - 5);
+    const botString = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + ((msrMidLine + 4) * 5) - 4);
     const topStringB = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (45 * 5) - 4);
     const botStringB = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (49 * 5) - 4);
     renderProps.context.fill(new Path2D(topString));
@@ -269,16 +287,16 @@ function RenderNotes(msr, renderProps, staff) {
             return a.Line - b.Line;
         });
         if (IsRestOnBeat(div.Beat, divNotes, div.Staff)) {
-            RenderRest(context, div, camera, divNotes[0]);
+            RenderRest(context, div, camera, divNotes[0], msr);
             return;
         }
-        renderLedgerLines(msr.Notes, div, renderProps, staff);
+        renderLedgerLines(msr.Notes, div, renderProps, staff, msr);
     });
     const dGroups = GetDivisionGroups(msr, staff);
     dGroups.DivGroups.forEach((group, i) => {
         if (group.Divisions.length > 0) {
             const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
-            RenderStemRevise(renderProps, group.Notes, group.Divisions, staff);
+            RenderStemRevise(renderProps, group.Notes, group.Divisions, staff, msr);
             group.Divisions.forEach(div => {
                 let hasFlipped = false;
                 const dN = msr.Notes.filter((note) => note.Beat === div.Beat &&
@@ -287,7 +305,7 @@ function RenderNotes(msr, renderProps, staff) {
                     return a.Line - b.Line;
                 });
                 dN.forEach((n, i) => {
-                    const yPos = msr.Bounds.y + n.Line * 5;
+                    const yPos = msr.Bounds.y + (n.Line - msr.SALineTop) * 5;
                     const isFlipped = IsFlippedNote(dN, i, stemDir);
                     if (isFlipped) {
                         hasFlipped = true;
@@ -295,7 +313,7 @@ function RenderNotes(msr, renderProps, staff) {
                     let flipNoteOffset = isFlipped ?
                         stemDir === StemDirection.Up ? 11 : -11 : 0;
                     if (n.Rest) {
-                        RenderRest(context, div, camera, n);
+                        RenderRest(context, div, camera, n, msr);
                     }
                     else {
                         RenderNote(n, renderProps, new Bounds(div.Bounds.x + noteXBuffer + flipNoteOffset, yPos, 10, 10), n.Selected, isFlipped, stemDir);

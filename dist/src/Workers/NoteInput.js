@@ -7,6 +7,8 @@ const noteXBuffer = 9;
 function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     let inputtingNote = true;
     const line = Measure.GetLineHovered(y, msr, cam);
+    line.num += msr.SALineTop;
+    console.log("line num: ", line.num);
     let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
     if (beatOver === undefined) {
         inputtingNote = false;
@@ -56,7 +58,7 @@ function UpdateNoteBounds(msr, staff) {
                 let flipNoteOffset = isFlipped ?
                     stemDir === StemDirection.Up ? 11 : -11 : 0;
                 if (!n.Rest) {
-                    const lineSubt = n.Staff === 0 ? 0 : 30;
+                    const lineSubt = n.Staff === 0 ? 0 + msr.SALineTop : 30;
                     n.Bounds.x = div.Bounds.x + noteXBuffer + flipNoteOffset;
                     n.Bounds.y = div.Bounds.y + ((n.Line - lineSubt) * 5) - 5;
                 }

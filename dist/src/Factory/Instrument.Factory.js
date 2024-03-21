@@ -1,10 +1,15 @@
 import { StaffType } from "../Core/Instrument.js";
 import { Measure } from "../Core/Measure.js";
 import { Bounds } from "../Types/Bounds.js";
+// Defaults, these will be moved somewhere else but fine here for now
+const sTopLine = 5;
+const sBotLine = 24;
+const lineHeight = 5;
+const mh = (sBotLine - sTopLine) * lineHeight;
 const CreateDefaultPiano = () => {
     const defaultPiano = {
         Position: { x: 0, y: 0 },
-        Staff: StaffType.Grand
+        Staff: StaffType.Single
     };
     return defaultPiano;
 };
@@ -16,7 +21,7 @@ function CreateInstrument(y) {
     return instr;
 }
 const CreateDefaultMeasure = (instr) => {
-    const msrHeight = instr.Staff === StaffType.Grand ? 300 : 150;
+    const msrHeight = instr.Staff === StaffType.Grand ? mh * 2 : mh;
     const props = {
         Instrument: instr,
         Bounds: new Bounds(0, instr.Position.y, 150, msrHeight),

@@ -1,5 +1,5 @@
 import { Camera } from "../Core/Camera.js";
-import { Division } from "../Core/Measure.js";
+import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
@@ -142,9 +142,11 @@ function RenderRest(
   ctx: CanvasRenderingContext2D,
   div: Division,
   cam: Camera,
-  note: Note): void {
+  note: Note,
+  msr: Measure): void {
+
     let x = div.Bounds.x + cam.x + noteXBuffer;
-    let y = div.Bounds.y + cam.y + ((note.Line - 3) * 5);
+    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
     let path = `m${x} ${y}`;
     ctx.fillStyle = note.Selected ? "blue" : "black";
 
@@ -173,7 +175,7 @@ function RenderRest(
         ctx.fillRect(x, y, 14, 6);
         break;
       case 1:
-        y = div.Bounds.y + cam.y + ((note.Line - 2) * 5);
+        y = div.Bounds.y + cam.y + ((note.Line - 2 - msr.SALineTop) * 5);
         x = div.Bounds.x + cam.x + (div.Bounds.width / 2) - 7;
         ctx.fillRect(x, y, 14, 6);
         break;
@@ -275,7 +277,8 @@ function RenderStemRevise(
   renderProps: RenderProperties,
   notes: Array<Note[]>,
   divisions: Division[],
-  staff: number): void {
+  staff: number,
+  msr: Measure): void {
 
     // Check that divisions and note arrays match
     let match = true;
@@ -304,8 +307,9 @@ function RenderStemRevise(
     let beamStartX = 0;
     let beamEndX = 0;
 
-    const middleLine = staff === 0 ? 15 : 45; // TODO: Magiccccc (number should be removed)
-    const yLineBuffer = staff === 0 ? 0 : 30;
+    const middleLine = staff === 0 ? Measure.GetMeasureMidLine(msr) : 45; // TODO: Magiccccc (number should be removed)
+    const yLineBuffer = staff === 0 ? 0 + msr.SALineTop : 30 + msr.SBLineTop;
+    const staffTopLine = staff === 0 ? msr.SALineTop : msr.SBLineTop;
     const midStemThreshHold = 7;
     const lineHeight = 5;
 
@@ -323,20 +327,21 @@ function RenderStemRevise(
     });
     // TODO: Beam Direction
 
-    if (middleLine - highestLine < lowestLine - middleLine) {
+    if (middleLine - highestLine + staffTopLine < lowestLine - middleLine - staffTopLine) {
       stemDirection = StemDirection.Up;
       stemEndY = divisions[0].Bounds.y + ((highestLine - yLineBuffer) * lineHeight) - 35 + camera.y;
-      if (highestLine >= middleLine + midStemThreshHold) {
+      if (highestLine - staffTopLine >= middleLine + midStemThreshHold) {
         stemToMidLine = true;
-        stemEndY = divisions[0].Bounds.y + ((middleLine - yLineBuffer) * lineHeight) + camera.y;
+        stemEndY = divisions[0].Bounds.y + (middleLine * lineHeight) + camera.y;
       }
 
     } else {
       stemDirection = StemDirection.Down;
       stemEndY = divisions[0].Bounds.y + ((lowestLine - yLineBuffer) * lineHeight) + 35 + camera.y;
-      if (lowestLine <= middleLine - midStemThreshHold) {
+      if (lowestLine - staffTopLine <= middleLine - midStemThreshHold) {
+        console.log("is it here?");
         stemToMidLine = true;
-        stemEndY = divisions[0].Bounds.y + ((middleLine - yLineBuffer) * lineHeight) + camera.y;
+        stemEndY = divisions[0].Bounds.y + (middleLine * lineHeight) + camera.y;
       }
     }
 
@@ -417,7 +422,8 @@ function renderLedgerLines(
   notes: Note[],
   division: Division,
   renderProps: RenderProperties,
-  staff: number): void {
+  staff: number,
+  msr: Measure): void {
 
     const { canvas, context, camera } = renderProps;
 
@@ -425,6 +431,8 @@ function renderLedgerLines(
 
     //const ledgerString = `m ${x - 6} ${y - 5} h 22 v 2 h-20 v-2 Z`;
     const ledgerString = `h 22 v 2 h-20 v-2 Z`;
+
+    const msrMidLine = Measure.GetMeasureMidLine(msr);
     
     const bdNotes = notes.filter((note: Note) => note.Beat === division.Beat &&
                                 note.Staff === division.Staff);
@@ -439,12 +447,12 @@ function renderLedgerLines(
     context.fillStyle = "black";
 
     for (let l=(9 + yLineBuffer); l >= highestLine.Line; l -= 2) {
-      const ledgerY = division.Bounds.y + ((l - yLineBuffer) * 5) + camera.y;
+      const ledgerY = division.Bounds.y + ((l - msr.SALineTop - yLineBuffer) * 5) + camera.y;
       const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
       context.fill(new Path2D(path));
     }
     for (let h=(21 + yLineBuffer); h <= lowestLine.Line; h += 2) {
-      const ledgerY = division.Bounds.y + ((h - yLineBuffer) * 5) + camera.y;
+      const ledgerY = division.Bounds.y + ((h - msr.SALineTop - yLineBuffer) * 5) + camera.y;
       const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
       context.fill(new Path2D(path));
     }

@@ -1,3 +1,4 @@
+import { Measure } from "../Core/Measure.js";
 import { NoteValues } from "../Core/Values.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
 var StemDirection;
@@ -110,9 +111,9 @@ function RenderDots(renderProps, note, dotXStart) {
         context.fill(new Path2D(cpath));
     }
 }
-function RenderRest(ctx, div, cam, note) {
+function RenderRest(ctx, div, cam, note, msr) {
     let x = div.Bounds.x + cam.x + noteXBuffer;
-    let y = div.Bounds.y + cam.y + ((note.Line - 3) * 5);
+    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
     let path = `m${x} ${y}`;
     ctx.fillStyle = note.Selected ? "blue" : "black";
     switch (div.Duration) {
@@ -140,7 +141,7 @@ function RenderRest(ctx, div, cam, note) {
             ctx.fillRect(x, y, 14, 6);
             break;
         case 1:
-            y = div.Bounds.y + cam.y + ((note.Line - 2) * 5);
+            y = div.Bounds.y + cam.y + ((note.Line - 2 - msr.SALineTop) * 5);
             x = div.Bounds.x + cam.x + (div.Bounds.width / 2) - 7;
             ctx.fillRect(x, y, 14, 6);
             break;
@@ -226,7 +227,7 @@ function DetermineStemDirection(notes, divisions) {
     }
     return dir;
 }
-function RenderStemRevise(renderProps, notes, divisions, staff) {
+function RenderStemRevise(renderProps, notes, divisions, staff, msr) {
     // Check that divisions and note arrays match
     let match = true;
     divisions.forEach((div, i) => {
@@ -247,8 +248,9 @@ function RenderStemRevise(renderProps, notes, divisions, staff) {
     let stemEndY = 0; // end y position of stem
     let beamStartX = 0;
     let beamEndX = 0;
-    const middleLine = staff === 0 ? 15 : 45; // TODO: Magiccccc (number should be removed)
-    const yLineBuffer = staff === 0 ? 0 : 30;
+    const middleLine = staff === 0 ? Measure.GetMeasureMidLine(msr) : 45; // TODO: Magiccccc (number should be removed)
+    const yLineBuffer = staff === 0 ? 0 + msr.SALineTop : 30 + msr.SBLineTop;
+    const staffTopLine = staff === 0 ? msr.SALineTop : msr.SBLineTop;
     const midStemThreshHold = 7;
     const lineHeight = 5;
     // Highest line has a lower number (lines start at 0 from the top 
@@ -264,20 +266,21 @@ function RenderStemRevise(renderProps, notes, divisions, staff) {
         });
     });
     // TODO: Beam Direction
-    if (middleLine - highestLine < lowestLine - middleLine) {
+    if (middleLine - highestLine + staffTopLine < lowestLine - middleLine - staffTopLine) {
         stemDirection = StemDirection.Up;
         stemEndY = divisions[0].Bounds.y + ((highestLine - yLineBuffer) * lineHeight) - 35 + camera.y;
-        if (highestLine >= middleLine + midStemThreshHold) {
+        if (highestLine - staffTopLine >= middleLine + midStemThreshHold) {
             stemToMidLine = true;
-            stemEndY = divisions[0].Bounds.y + ((middleLine - yLineBuffer) * lineHeight) + camera.y;
+            stemEndY = divisions[0].Bounds.y + (middleLine * lineHeight) + camera.y;
         }
     }
     else {
         stemDirection = StemDirection.Down;
         stemEndY = divisions[0].Bounds.y + ((lowestLine - yLineBuffer) * lineHeight) + 35 + camera.y;
-        if (lowestLine <= middleLine - midStemThreshHold) {
+        if (lowestLine - staffTopLine <= middleLine - midStemThreshHold) {
+            console.log("is it here?");
             stemToMidLine = true;
-            stemEndY = divisions[0].Bounds.y + ((middleLine - yLineBuffer) * lineHeight) + camera.y;
+            stemEndY = divisions[0].Bounds.y + (middleLine * lineHeight) + camera.y;
         }
     }
     // Render stems
@@ -352,11 +355,12 @@ function GetFlagCount(value) {
     }
     return count;
 }
-function renderLedgerLines(notes, division, renderProps, staff) {
+function renderLedgerLines(notes, division, renderProps, staff, msr) {
     const { canvas, context, camera } = renderProps;
     const ledgerX = (division.Bounds.x + noteXBuffer) - 6 + camera.x;
     //const ledgerString = `m ${x - 6} ${y - 5} h 22 v 2 h-20 v-2 Z`;
     const ledgerString = `h 22 v 2 h-20 v-2 Z`;
+    const msrMidLine = Measure.GetMeasureMidLine(msr);
     const bdNotes = notes.filter((note) => note.Beat === division.Beat &&
         note.Staff === division.Staff);
     const yLineBuffer = staff === 0 ? 0 : 30;
@@ -370,12 +374,12 @@ function renderLedgerLines(notes, division, renderProps, staff) {
     const lowestLine = bdNotes[bdNotes.length - 1];
     context.fillStyle = "black";
     for (let l = (9 + yLineBuffer); l >= highestLine.Line; l -= 2) {
-        const ledgerY = division.Bounds.y + ((l - yLineBuffer) * 5) + camera.y;
+        const ledgerY = division.Bounds.y + ((l - msr.SALineTop - yLineBuffer) * 5) + camera.y;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));
     }
     for (let h = (21 + yLineBuffer); h <= lowestLine.Line; h += 2) {
-        const ledgerY = division.Bounds.y + ((h - yLineBuffer) * 5) + camera.y;
+        const ledgerY = division.Bounds.y + ((h - msr.SALineTop - yLineBuffer) * 5) + camera.y;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));
     }

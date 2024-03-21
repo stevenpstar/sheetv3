@@ -90,6 +90,16 @@ class Measure {
                          msr.Bounds.width + msr.XOffset, 5) };
   }
 
+  static GetMeasureHeight(msr: Measure): number {
+    return ( msr.SALineTop + msr.SALineBot ) * 5;
+    // expand on this to include grand staffs and have line height (5) be 
+    // a constant that is defined somewhere
+  }
+
+  static GetMeasureMidLine(msr: Measure): number {
+    return ( msr.SALineMid - msr.SALineTop);
+  }
+
   GetBoundsWithOffset(): Bounds {
     return new Bounds(this.Bounds.x, 
                       this.Bounds.y,
@@ -106,7 +116,6 @@ class Measure {
 
   CreateDivisions() {
     this.Divisions = [];
-    this.BDivisions = [];
     this.Divisions.push(...CreateDivisions(this, this.Notes, 0));
     if (this.Instrument.Staff === StaffType.Grand) {
       this.Divisions.push(...CreateDivisions(this, this.Notes, 1));
