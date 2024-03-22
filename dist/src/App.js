@@ -45,6 +45,44 @@ class App {
             this.DragNote(x, y);
         }
         this.HoveredElements.MeasureID = -1;
+        if (this.NoteInput) {
+            this.Sheet.Measures.forEach((m) => {
+                if (m.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) {
+                    const lineOver = Measure.GetLineHovered(y, m, this.Camera);
+                    lineOver.num += m.SALineTop;
+                    //          console.log("LineOver/BotLine");
+                    console.log(lineOver.num);
+                    //          console.log(m.SALineBot);
+                    if (lineOver.num <= m.SALineTop + 1) {
+                        console.log('1');
+                        // resize measure bounds
+                        m.ReHeightenTop(true, lineOver.num);
+                        this.Update(x, y);
+                    }
+                    else if (lineOver.num > m.SALineTop + 2 &&
+                        lineOver.num < m.SALineBot - 2) {
+                        console.log('2');
+                        m.ReHeightenTop(false, lineOver.num);
+                        m.ReHeightenBot(false, lineOver.num);
+                        this.Update(x, y);
+                    }
+                    else if (lineOver.num >= m.SALineBot - 2) {
+                        console.log('3');
+                        m.ReHeightenBot(true, lineOver.num);
+                        this.Update(x, y);
+                    }
+                    else if (lineOver.num < m.SALineBot - 2 &&
+                        lineOver.num > m.SALineTop + 2) {
+                        console.log("ay?");
+                        m.ReHeightenBot(false, lineOver.num);
+                        this.Update(x, y);
+                    }
+                }
+                else {
+                    m.ResetTopHeight();
+                }
+            });
+        }
         this.Update(x, y);
     }
     Delete() {

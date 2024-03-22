@@ -21,16 +21,20 @@ class Measure {
         if (this.Instrument.Staff === StaffType.Grand) {
             this.GrandClefs.push({ Type: "bass", Beat: 1 });
         }
+        this.PrefBoundsY = this.Bounds.y;
+        this.PrevBoundsH = this.Bounds.height;
         this.SetXOffset();
-        // probably always last
-        this.CreateDivisions();
         this.SALineTop = 5;
         this.SALineMid = 15;
         this.SALineBot = 24;
+        this.SALineTopSave = this.SALineTop;
+        this.SALineBotSave = this.SALineBot;
         this.SBLineTop = 1035;
         this.SBLineMid = 1045;
         this.SBLineBot = 1044;
         this.SBOffset = 1000;
+        // probably always last
+        this.CreateDivisions();
     }
     static GetLineHovered(y, msr, cam) {
         const relYPos = y - msr.Bounds.y - cam.y;
@@ -72,6 +76,47 @@ class Measure {
     }
     Reposition(prevMsr) {
         this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
+        this.CreateDivisions();
+    }
+    // name change later I'm too tired to think of actual function name
+    ReHeightenTop(expand, lineOver) {
+        if (expand) {
+            const dist = lineOver - this.SALineTop;
+            this.SALineTop = lineOver - dist - 1;
+            this.Bounds.y -= 5;
+        }
+        else {
+            if (lineOver >= this.SALineTopSave) {
+                this.SALineTop = this.SALineTopSave;
+                this.Bounds.y = this.PrefBoundsY;
+            }
+            else {
+                this.SALineTop += 1;
+                this.Bounds.y += 5;
+            }
+        }
+        this.CreateDivisions();
+    }
+    ReHeightenBot(expand, lineOver) {
+        if (expand) {
+            this.SALineBot = lineOver + 2;
+            this.Bounds.height += 5;
+        }
+        else {
+            if (lineOver <= this.SALineBotSave) {
+                this.SALineBot = this.SALineBotSave;
+                this.Bounds.height = this.PrevBoundsH;
+            }
+            else {
+                this.SALineBot -= 1;
+                this.Bounds.height -= 5;
+            }
+        }
+        this.CreateDivisions();
+    }
+    ResetTopHeight() {
+        this.SALineTop = this.SALineTopSave;
+        this.Bounds.y = this.PrefBoundsY;
         this.CreateDivisions();
     }
     AddNote(note) {

@@ -30,6 +30,7 @@ function CreateInstrument(y: number): Instrument {
 const CreateDefaultMeasure = (instr: Instrument): Measure => {
 
   const msrHeight = instr.Staff === StaffType.Grand ? mh * 2 : mh;
+  console.log('mh: ', mh);
 
   const props: MeasureProps = {
     Instrument: instr,

@@ -39,11 +39,18 @@ class Measure {
 
   XOffset: number; // not sure if this is what we want to go with
 
+
+  // TODO: Move this, this is prototyping and messy
   // Staff line number properties
   // Staff A
   SALineTop: number;
   SALineMid: number;
   SALineBot: number;
+
+  SALineTopSave: number;
+  SALineBotSave: number;
+  PrefBoundsY: number;
+  PrevBoundsH: number;
   // Staff B
   SBLineTop: number;
   SBLineMid: number;
@@ -66,20 +73,27 @@ class Measure {
     if (this.Instrument.Staff === StaffType.Grand) {
       this.GrandClefs.push({Type: "bass", Beat: 1});
     }
+
+    this.PrefBoundsY = this.Bounds.y;
+    this.PrevBoundsH = this.Bounds.height;
     this.SetXOffset();
-    
-    // probably always last
-    this.CreateDivisions();
 
     this.SALineTop = 5;
     this.SALineMid = 15;
     this.SALineBot = 24;
+
+    this.SALineTopSave = this.SALineTop;
+    this.SALineBotSave = this.SALineBot;
 
     this.SBLineTop = 1035;
     this.SBLineMid = 1045;
     this.SBLineBot = 1044;
 
     this.SBOffset = 1000;
+    
+    // probably always last
+    this.CreateDivisions();
+
   }
 
   static GetLineHovered(y: number, msr: Measure, cam: Camera): { num: number, bounds: Bounds } {
@@ -126,6 +140,47 @@ class Measure {
 
   Reposition(prevMsr: Measure): void {
     this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
+    this.CreateDivisions();
+  }
+
+  // name change later I'm too tired to think of actual function name
+  ReHeightenTop(expand: boolean, lineOver: number): void {
+    if (expand) {
+      const dist = lineOver - this.SALineTop;
+      this.SALineTop = lineOver - dist - 1;
+      this.Bounds.y -= 5;
+    } else {
+      if (lineOver >= this.SALineTopSave) {
+        this.SALineTop = this.SALineTopSave;
+        this.Bounds.y = this.PrefBoundsY;
+      } else {
+        this.SALineTop += 1;
+        this.Bounds.y += 5;
+      }
+    }
+    this.CreateDivisions();
+  }
+
+  ReHeightenBot(expand: boolean, lineOver: number): void {
+    if (expand) {
+      this.SALineBot = lineOver + 2;
+      this.Bounds.height += 5;
+    } else {
+      if (lineOver <= this.SALineBotSave) {
+        this.SALineBot = this.SALineBotSave;
+        this.Bounds.height = this.PrevBoundsH;
+      } else {
+        this.SALineBot -= 1;
+        this.Bounds.height -= 5;
+      }
+    }
+
+    this.CreateDivisions();
+  }
+
+  ResetTopHeight(): void {
+    this.SALineTop = this.SALineTopSave;
+    this.Bounds.y = this.PrefBoundsY;
     this.CreateDivisions();
   }
 
