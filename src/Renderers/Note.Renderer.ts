@@ -171,7 +171,7 @@ function RenderRest(
         ctx.fill(new Path2D(path));
         break;
       case 0.5:
-        y = div.Bounds.y + cam.y + (note.Line * 5) - 6;
+        y = div.Bounds.y + cam.y + ((note.Line - msr.SALineTop) * 5) - 6;
         ctx.fillRect(x, y, 14, 6);
         break;
       case 1:
@@ -339,7 +339,6 @@ function RenderStemRevise(
       stemDirection = StemDirection.Down;
       stemEndY = divisions[0].Bounds.y + ((lowestLine - yLineBuffer) * lineHeight) + 35 + camera.y;
       if (lowestLine - staffTopLine <= middleLine - midStemThreshHold) {
-        console.log("is it here?");
         stemToMidLine = true;
         stemEndY = divisions[0].Bounds.y + (middleLine * lineHeight) + camera.y;
       }

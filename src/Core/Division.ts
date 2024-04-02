@@ -65,7 +65,7 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[]
 
 function CreateBeatBounds(msr: Measure, beat: number, duration: number, staff: number): Bounds {
   // single height
-  const singleHeight = (msr.SALineBot - msr.SALineTop) * 5;
+  const singleHeight = msr.GetMeasureHeight();
     const height = msr.Instrument.Staff === StaffType.Grand ? 
     msr.Bounds.height / 2 : singleHeight; // height will always be max
   const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)

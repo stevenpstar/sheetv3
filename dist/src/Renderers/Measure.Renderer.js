@@ -78,6 +78,8 @@ function RenderDebug(measure, renderProps, index, mousePos) {
     context.font = "8px serif";
     let lineNum = line.num + measure.SALineTop;
     context.fillText("Line Hovered: " + lineNum.toString(), 130, 10);
+    context.fillStyle = "rgba(0, 0, 50, 0.3)";
+    context.fillRect(measure.Bounds.x + camera.x + measure.XOffset, measure.Bounds.y + camera.y, measure.Bounds.width, measure.Bounds.height);
 }
 function debugGetDurationName(duration, alpha = 255) {
     let name = "";

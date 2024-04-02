@@ -18,7 +18,6 @@ function InputOnMeasure(msr: Measure,
   const line = Measure.GetLineHovered(y, msr, cam);
   line.num += msr.SALineTop;
 
-  console.log("line num: ", line.num);
   let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
 
   if (beatOver === undefined) { inputtingNote = false; }
@@ -52,7 +51,7 @@ function InputNote(
         AddToDivision(msr, noteProps, division.Staff);
       }
     } 
-    msr.CreateDivisions();
+    msr.CreateDivisions(true);
     UpdateNoteBounds(msr, division.Staff);
 }
 

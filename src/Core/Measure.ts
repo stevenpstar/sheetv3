@@ -49,12 +49,22 @@ class Measure {
 
   SALineTopSave: number;
   SALineBotSave: number;
+
+  SALineTopDef: number;
+  SALineBotDef: number;
+
   PrefBoundsY: number;
   PrevBoundsH: number;
+
   // Staff B
   SBLineTop: number;
   SBLineMid: number;
   SBLineBot: number;
+  SBLineTopSave: number;
+  SBLineBotSave: number;
+  SBLineTopDef: number;
+  SBLineBotDef: number;
+
   SBOffset: number;
 
   constructor(properties: MeasureProps) {
@@ -84,6 +94,9 @@ class Measure {
 
     this.SALineTopSave = this.SALineTop;
     this.SALineBotSave = this.SALineBot;
+
+    this.SALineTopDef = this.SALineTop;
+    this.SALineBotDef = this.SALineBot;
 
     this.SBLineTop = 1035;
     this.SBLineMid = 1045;
@@ -128,7 +141,10 @@ class Measure {
     if (this.RenderTimeSig) { this.XOffset += 30; }
   }
 
-  CreateDivisions() {
+  CreateDivisions(afterInput: boolean = false) {
+    if (afterInput) {
+      this.ResetHeight();
+    }
     this.Divisions = [];
     this.Divisions.push(...CreateDivisions(this, this.Notes, 0));
     if (this.Instrument.Staff === StaffType.Grand) {
@@ -143,12 +159,31 @@ class Measure {
     this.CreateDivisions();
   }
 
+  // set height of measure based off of notes in measure
+  // eventually will be determined by instrument / row etc.
+  
+  GetMeasureHeight(): number {
+    const lineHeight = 5; // constant should be set elsewhere
+    const topNegative = this.SALineTop < 0;
+    const heightInLines = topNegative ? 
+      this.SALineBot + Math.abs(this.SALineTop) :
+      this.SALineBot - this.SALineTop;
+    return heightInLines * lineHeight;
+  }
+
+  ResetHeight(): void {
+    const height = this.GetMeasureHeight();
+    this.Bounds.height = height;
+    this.PrevBoundsH = height;
+  }
+
   // name change later I'm too tired to think of actual function name
   ReHeightenTop(expand: boolean, lineOver: number): void {
     if (expand) {
       const dist = lineOver - this.SALineTop;
       this.SALineTop = lineOver - dist - 1;
       this.Bounds.y -= 5;
+      this.Bounds.height += 5;
     } else {
       if (lineOver >= this.SALineTopSave) {
         this.SALineTop = this.SALineTopSave;
@@ -181,6 +216,7 @@ class Measure {
   ResetTopHeight(): void {
     this.SALineTop = this.SALineTopSave;
     this.Bounds.y = this.PrefBoundsY;
+    this.Bounds.height = this.PrevBoundsH;
     this.CreateDivisions();
   }
 

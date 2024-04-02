@@ -29,6 +29,8 @@ class Measure {
         this.SALineBot = 24;
         this.SALineTopSave = this.SALineTop;
         this.SALineBotSave = this.SALineBot;
+        this.SALineTopDef = this.SALineTop;
+        this.SALineBotDef = this.SALineBot;
         this.SBLineTop = 1035;
         this.SBLineMid = 1045;
         this.SBLineBot = 1044;
@@ -65,7 +67,10 @@ class Measure {
             this.XOffset += 30;
         }
     }
-    CreateDivisions() {
+    CreateDivisions(afterInput = false) {
+        if (afterInput) {
+            this.ResetHeight();
+        }
         this.Divisions = [];
         this.Divisions.push(...CreateDivisions(this, this.Notes, 0));
         if (this.Instrument.Staff === StaffType.Grand) {
@@ -78,12 +83,28 @@ class Measure {
         this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
         this.CreateDivisions();
     }
+    // set height of measure based off of notes in measure
+    // eventually will be determined by instrument / row etc.
+    GetMeasureHeight() {
+        const lineHeight = 5; // constant should be set elsewhere
+        const topNegative = this.SALineTop < 0;
+        const heightInLines = topNegative ?
+            this.SALineBot + Math.abs(this.SALineTop) :
+            this.SALineBot - this.SALineTop;
+        return heightInLines * lineHeight;
+    }
+    ResetHeight() {
+        const height = this.GetMeasureHeight();
+        this.Bounds.height = height;
+        this.PrevBoundsH = height;
+    }
     // name change later I'm too tired to think of actual function name
     ReHeightenTop(expand, lineOver) {
         if (expand) {
             const dist = lineOver - this.SALineTop;
             this.SALineTop = lineOver - dist - 1;
             this.Bounds.y -= 5;
+            this.Bounds.height += 5;
         }
         else {
             if (lineOver >= this.SALineTopSave) {
@@ -117,6 +138,7 @@ class Measure {
     ResetTopHeight() {
         this.SALineTop = this.SALineTopSave;
         this.Bounds.y = this.PrefBoundsY;
+        this.Bounds.height = this.PrevBoundsH;
         this.CreateDivisions();
     }
     AddNote(note) {
