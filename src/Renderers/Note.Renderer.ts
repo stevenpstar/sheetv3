@@ -150,6 +150,9 @@ function RenderRest(
     let path = `m${x} ${y}`;
     ctx.fillStyle = note.Selected ? "blue" : "black";
 
+    //TODO: render staff 1 notes/rests
+    if (div.Staff === 1) { return; }
+
     switch (div.Duration) {
       case 0.03125:
         y += 7;

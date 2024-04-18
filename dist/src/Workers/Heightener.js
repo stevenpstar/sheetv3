@@ -4,19 +4,34 @@ function ManageHeight(msr, staff, x, y, cam) {
     msrNotes.sort((n, b) => {
         return n.Line - b.Line;
     });
-    if (staff === 1) {
-        return;
-    }
     const highestLine = msrNotes[0].Line;
     const lowestLine = msrNotes[msrNotes.length - 1].Line;
+    let lTop = staff === 0 ?
+        msr.SALineTop : msr.SBLineTop;
+    let lBot = staff === 0 ?
+        msr.SALineTop : msr.SBLineBot;
     if (staff === 0) {
         if (highestLine < msr.SALineTop) {
             msr.SALineTop = highestLine - 1;
             msr.SALineTopSave = msr.SALineTop;
+            lTop = msr.SALineTop;
         }
         if (lowestLine > msr.SALineBot) {
             msr.SALineBot = lowestLine + 1;
             msr.SALineBotSave = msr.SALineBot;
+            lBot = msr.SALineBot;
+        }
+    }
+    else if (staff === 1) {
+        if (highestLine < msr.SBLineTop) {
+            msr.SBLineTop = highestLine - 1;
+            msr.SBLineTopSave = msr.SBLineTop;
+            lTop = msr.SBLineTop;
+        }
+        if (lowestLine > msr.SBLineBot) {
+            msr.SBLineBot = lowestLine + 1;
+            msr.SBLineBotSave = msr.SBLineBot;
+            lBot = msr.SBLineBot;
         }
     }
     if (msr.GetBoundsWithOffset().IsHovered(x, y, cam)) {

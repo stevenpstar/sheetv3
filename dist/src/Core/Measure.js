@@ -33,7 +33,7 @@ class Measure {
         this.SALineBotDef = this.SALineBot;
         this.SBLineTop = 1035;
         this.SBLineMid = 1045;
-        this.SBLineBot = 1044;
+        this.SBLineBot = 1054;
         this.SBOffset = 1000;
         // probably always last
         this.CreateDivisions();
@@ -92,6 +92,18 @@ class Measure {
             this.SALineBot + Math.abs(this.SALineTop) :
             this.SALineBot - this.SALineTop;
         return heightInLines * lineHeight;
+    }
+    GetGrandMeasureHeight() {
+        const lineHeight = 5; // constant should be set elsewhere
+        const topStaffHeight = this.GetMeasureHeight();
+        const topNegative = (this.SBLineTop - this.SBOffset) < 0;
+        const heightInLines = topNegative ?
+            (this.SBLineBot - this.SBOffset) + (Math.abs(this.SBLineTop - this.SBOffset)) :
+            (this.SBLineBot - this.SBOffset) - (this.SBLineTop - this.SBOffset);
+        return topStaffHeight + (heightInLines * lineHeight);
+    }
+    GetGrandMeasureMidLine() {
+        return this.SBLineMid - this.SBLineTop;
     }
     ResetHeight() {
         const height = this.GetMeasureHeight();

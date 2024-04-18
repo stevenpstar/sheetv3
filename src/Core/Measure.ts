@@ -100,7 +100,7 @@ class Measure {
 
     this.SBLineTop = 1035;
     this.SBLineMid = 1045;
-    this.SBLineBot = 1044;
+    this.SBLineBot = 1054;
 
     this.SBOffset = 1000;
     
@@ -152,7 +152,7 @@ class Measure {
       ResizeDivisions(this, this.Divisions, 1);
     }
   ResizeDivisions(this, this.Divisions, 0);
-  }
+}
 
   Reposition(prevMsr: Measure): void {
     this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
@@ -169,6 +169,20 @@ class Measure {
       this.SALineBot + Math.abs(this.SALineTop) :
       this.SALineBot - this.SALineTop;
     return heightInLines * lineHeight;
+  }
+
+  GetGrandMeasureHeight(): number {
+    const lineHeight = 5; // constant should be set elsewhere
+    const topStaffHeight = this.GetMeasureHeight();
+    const topNegative = (this.SBLineTop - this.SBOffset) < 0;
+    const heightInLines = topNegative ?
+      (this.SBLineBot - this.SBOffset) + (Math.abs(this.SBLineTop - this.SBOffset)) :
+      (this.SBLineBot - this.SBOffset) - (this.SBLineTop - this.SBOffset);
+    return topStaffHeight + (heightInLines * lineHeight);
+  }
+
+  GetGrandMeasureMidLine(): number {
+    return this.SBLineMid - this.SBLineTop;
   }
 
   ResetHeight(): void {

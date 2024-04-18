@@ -30,21 +30,26 @@ function RenderDebug(measure, renderProps, index, mousePos) {
         return;
     }
     const fDiv = measure.Divisions[0];
+    const renderDurations = false;
     measure.Divisions.forEach((div, i) => {
-        const x = div.Bounds.x + camera.x + 2;
-        const y = div.Bounds.y + div.Bounds.height + camera.y;
-        context.fillStyle = debugGetDurationName(div.Duration).colour;
-        context.fillRect(x, y + 10, div.Bounds.width - 4, 5);
-        context.fillStyle = "black";
-        context.font = "8px serif";
-        context.fillText(debugGetDurationName(div.Duration).name, x, y + 25);
-        context.fillStyle = "black";
-        context.fillText(div.Beat.toString(), x, y + 40);
+        if (renderDurations) {
+            const x = div.Bounds.x + camera.x + 2;
+            const y = div.Bounds.y + div.Bounds.height + camera.y;
+            context.fillStyle = debugGetDurationName(div.Duration).colour;
+            context.fillRect(x, y + 10, div.Bounds.width - 4, 5);
+            context.fillStyle = "black";
+            context.font = "8px serif";
+            context.fillText(debugGetDurationName(div.Duration).name, x, y + 25);
+            context.fillStyle = "black";
+            context.fillText(div.Beat.toString(), x, y + 40);
+        }
     });
     if (index === 0) {
-        context.fillStyle = "black";
-        context.fillText("Dur:", fDiv.Bounds.x + camera.x - 30, fDiv.Bounds.y + camera.y + fDiv.Bounds.height + 25);
-        context.fillText("Beat:", fDiv.Bounds.x + camera.x - 30, fDiv.Bounds.y + camera.y + fDiv.Bounds.height + 40);
+        if (renderDurations) {
+            context.fillStyle = "black";
+            context.fillText("Dur:", fDiv.Bounds.x + camera.x - 30, fDiv.Bounds.y + camera.y + fDiv.Bounds.height + 25);
+            context.fillText("Beat:", fDiv.Bounds.x + camera.x - 30, fDiv.Bounds.y + camera.y + fDiv.Bounds.height + 40);
+        }
     }
     const renderNoteBounds = false;
     if (renderNoteBounds) {
@@ -79,7 +84,17 @@ function RenderDebug(measure, renderProps, index, mousePos) {
     let lineNum = line.num + measure.SALineTop;
     context.fillText("Line Hovered: " + lineNum.toString(), 130, 10);
     context.fillStyle = "rgba(0, 0, 50, 0.3)";
-    context.fillRect(measure.Bounds.x + camera.x + measure.XOffset, measure.Bounds.y + camera.y, measure.Bounds.width, measure.Bounds.height);
+    const div1 = measure.Divisions.filter(d => d.Staff === 0)[0];
+    const div2 = measure.Divisions.filter(d => d.Staff === 1)[0];
+    //   context.fillRect(div1.Bounds.x + camera.x,
+    //                    div1.Bounds.y + camera.y, 
+    //                    div1.Bounds.width,
+    //                    div1.Bounds.height);
+    //   context.fillStyle = "rgba(0, 50, 0, 0.3)";
+    //   context.fillRect(div2.Bounds.x + camera.x,
+    //                    div2.Bounds.y + camera.y, 
+    //                    div2.Bounds.width,
+    //                    div2.Bounds.height);
 }
 function debugGetDurationName(duration, alpha = 255) {
     let name = "";
@@ -159,20 +174,26 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
 function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
     const { canvas, context, camera } = renderProps;
     const msrMidLine = 15 - msr.SALineTop;
+    const grndMsrMidLine = msr.GetGrandMeasureMidLine();
     context.fillStyle = "black";
     const lastEndThickness = lastMeasure ?
         endsWidth * 2 : endsWidth;
+    const grandMsrHeight = msr.GetGrandMeasureHeight();
     const msrLineHeight = msr.Instrument.Staff === StaffType.Grand ?
-        line_space * 4 + (30 * 5) + 1 : line_space * 4 + 1;
+        grandMsrHeight : msr.GetMeasureHeight();
+    // TODO: Please clean this method up omg
+    const lineTopStaff = msr.Bounds.y + (5 * msrMidLine - (line_space * 2));
+    const lineBotStaff = msr.Bounds.y + msr.GetMeasureHeight() + (5 * grndMsrMidLine + (line_space * 2));
+    const grandLineHeight = lineBotStaff - lineTopStaff;
     const measureBegin = `M${msr.Bounds.x + camera.x} 
           ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + camera.y} h 
-          ${endsWidth} v ${msrLineHeight} h -${endsWidth} Z`;
+          ${endsWidth} v ${grandLineHeight} h -${endsWidth} Z`;
     const measureEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} 
         ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + camera.y} h 
-        ${lastEndThickness} v ${msrLineHeight} h -${lastEndThickness} Z`;
+        ${lastEndThickness} v ${grandLineHeight} h -${lastEndThickness} Z`;
     const measureDoubleEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} 
           ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + camera.y} h 
-          ${endsWidth} v ${msrLineHeight} h -${endsWidth} Z`;
+          ${endsWidth} v ${grandLineHeight} h -${endsWidth} Z`;
     for (let l = 0; l < 5; l++) {
         const lineString = `M${msr.Bounds.x + camera.x} ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + line_space * l + camera.y} h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
         const linePath = new Path2D(lineString);
@@ -180,7 +201,9 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
     }
     if (msr.Instrument.Staff === StaffType.Grand) {
         for (let l = 0; l < 5; l++) {
-            const lineString = `M${msr.Bounds.x + camera.x} ${msr.Bounds.y + (5 * 45) - (line_space * 2) + line_space * l + camera.y} h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
+            const lineString = `M${msr.Bounds.x + camera.x} 
+            ${msr.Bounds.y + msr.GetMeasureHeight() + (5 * msr.GetGrandMeasureMidLine()) - (line_space * 2) + line_space * l + camera.y} 
+            h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
             const linePath = new Path2D(lineString);
             context.fill(linePath);
         }
@@ -215,6 +238,7 @@ const bassClefSmall = 'm0 0c0-1.0208.8096-1.8304 1.8304-1.8304s1.8304.8096 1.830
 function RenderMeasureClef(renderProps, msr) {
     const { canvas, context, camera } = renderProps;
     const msrMidLine = Measure.GetMeasureMidLine(msr);
+    const gMsrMidLine = msr.GetGrandMeasureMidLine();
     msr.Clefs.forEach((clef) => {
         if (clef.Beat === 1) {
             if (clef.Type === "treble") {
@@ -248,7 +272,7 @@ function RenderMeasureClef(renderProps, msr) {
             }
             else if (clef.Type === "bass") {
                 const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
-            ${msr.Bounds.y + camera.y + (45 * 5) - 2}` + bassClef;
+            ${msr.Bounds.y + msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 2}` + bassClef;
                 context.fill(new Path2D(clefPath));
             }
         }
@@ -260,7 +284,7 @@ function RenderMeasureClef(renderProps, msr) {
             }
             else if (clef.Type === "bass") {
                 const clefPath = `m ${div.Bounds.x + camera.x} 
-            ${msr.Bounds.y + camera.y + (45 * 5) - 5}` + bassClefSmall;
+            ${msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 5}` + bassClefSmall;
                 context.fill(new Path2D(clefPath));
             }
         }
@@ -268,10 +292,11 @@ function RenderMeasureClef(renderProps, msr) {
 }
 function RenderTimeSig(renderProps, msr, top, bottom, xOffset) {
     const msrMidLine = Measure.GetMeasureMidLine(msr);
+    const gMsrY = msr.Bounds.y + msr.GetMeasureHeight() + renderProps.camera.y + (msr.GetGrandMeasureMidLine() * 5);
     const topString = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (msrMidLine * 5) - 5);
     const botString = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + ((msrMidLine + 4) * 5) - 4);
-    const topStringB = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (45 * 5) - 4);
-    const botStringB = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, msr.Bounds.y + renderProps.camera.y + (49 * 5) - 4);
+    const topStringB = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, gMsrY - 4);
+    const botStringB = RenderFourTop(msr.Bounds.x + xOffset + renderProps.camera.x, gMsrY + (3 * 5) + 1);
     renderProps.context.fill(new Path2D(topString));
     renderProps.context.fill(new Path2D(botString));
     if (msr.Instrument.Staff === StaffType.Grand) {

@@ -44,11 +44,12 @@ function CreateDivisions(msr, notes, staff) {
 function CreateBeatBounds(msr, beat, duration, staff) {
     // single height
     const singleHeight = msr.GetMeasureHeight();
-    console.log("stafftype grand?: ", StaffType.Grand);
-    const height = msr.Instrument.Staff === StaffType.Grand ?
-        msr.Bounds.height / 2 : singleHeight; // height will always be max
+    const grandHeight = msr.GetGrandMeasureHeight() - singleHeight;
+    const height = staff === StaffType.Grand ?
+        grandHeight : singleHeight; // height will always be max
     const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
-    const y = staff === 0 ? msr.Bounds.y : msr.Bounds.y + (msr.Bounds.height / 2);
+    const y = staff === 0 ? msr.Bounds.y :
+        msr.Bounds.y + singleHeight;
     const x = msr.Bounds.x + msr.XOffset + ((beat - 1) / msr.TimeSignature.bottom) * msr.Bounds.width;
     return new Bounds(x, y, width, height);
 }

@@ -11,8 +11,10 @@ function ManageHeight(msr: Measure, staff: number, x: number, y: number, cam: Ca
   const highestLine = msrNotes[0].Line;
   const lowestLine = msrNotes[msrNotes.length-1].Line;
 
-  let lTop: number = highestLine;
-  let lBot: number = lowestLine;
+  let lTop: number = staff === 0 ? 
+    msr.SALineTop : msr.SBLineTop;
+  let lBot: number = staff === 0 ? 
+    msr.SALineTop : msr.SBLineBot;
 
   if (staff === 0) {
     if (highestLine < msr.SALineTop) {
