@@ -37,7 +37,7 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
     //  const posString = 'm' + x.toString() + ' ' + (y - 1).toString();
     let flipNoteOffset = flipNote ?
         stemDir === StemDirection.Up ? 11 : -11 : 0;
-    let posString = `m ${x + camera.x} ${y + 5 - 1 + camera.y}`;
+    let posString = `m ${x + camera.x} ${y + 7.5 - 1 + camera.y}`;
     let noteString = '';
     switch (note.Duration) {
         case 0.125:
@@ -113,13 +113,10 @@ function RenderDots(renderProps, note, dotXStart) {
 }
 function RenderRest(ctx, div, cam, note, msr) {
     let x = div.Bounds.x + cam.x + noteXBuffer;
-    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
+    //    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
+    let y = Measure.GetNotePositionOnLine(msr, note.Line - 3) + cam.y;
     let path = `m${x} ${y}`;
     ctx.fillStyle = note.Selected ? "blue" : "black";
-    //TODO: render staff 1 notes/rests
-    if (div.Staff === 1) {
-        return;
-    }
     switch (div.Duration) {
         case 0.03125:
             y += 7;
@@ -141,11 +138,13 @@ function RenderRest(ctx, div, cam, note, msr) {
             ctx.fill(new Path2D(path));
             break;
         case 0.5:
-            y = div.Bounds.y + cam.y + ((note.Line - msr.SALineTop) * 5) - 6;
+            //        y = div.Bounds.y + cam.y + ((note.Line - msr.SALineTop) * 5) - 6;
+            y = Measure.GetNotePositionOnLine(msr, note.Line) - 6 + cam.y;
             ctx.fillRect(x, y, 14, 6);
             break;
         case 1:
-            y = div.Bounds.y + cam.y + ((note.Line - 2 - msr.SALineTop) * 5);
+            //y = div.Bounds.y + cam.y + ((note.Line - 2 - msr.SALineTop) * 5);
+            y = Measure.GetNotePositionOnLine(msr, note.Line - 2) + cam.y;
             x = div.Bounds.x + cam.x + (div.Bounds.width / 2) - 7;
             ctx.fillRect(x, y, 14, 6);
             break;
@@ -154,8 +153,12 @@ function RenderRest(ctx, div, cam, note, msr) {
             ctx.fill(new Path2D(path));
     }
 }
-function RenderTies(renderProps, divs, notes) {
+function RenderTies(renderProps, divisions, notes, staff, msr) {
     const { canvas, context, camera } = renderProps;
+    const divs = divisions.filter(d => d.Staff === staff);
+    divs.sort((a, b) => {
+        return a.Beat - b.Beat;
+    });
     divs.forEach((div, i) => {
         if (i === divs.length - 1) {
             return;
@@ -183,9 +186,9 @@ function RenderTies(renderProps, divs, notes) {
             }
             const nextNote = tiedTo;
             const x1 = div.Bounds.x + noteXBuffer + camera.x;
-            const y1 = div.Bounds.y + (note.Line * 5) + camera.y;
+            const y1 = Measure.GetNotePositionOnLine(msr, note.Line) + camera.y;
             const x2 = divs[i + 1].Bounds.x + noteXBuffer + camera.x;
-            const y2 = divs[i + 1].Bounds.y + (nextNote.Line * 5) + camera.y;
+            const y2 = Measure.GetNotePositionOnLine(msr, nextNote.Line) + camera.y;
             const curveOffset = (note.Line < 15) ? -15 : 15;
             const curveStartOffset = (note.Line < 15) ? -8 : 8;
             //TODO: This is a temporary representation of a tie or slur
@@ -252,8 +255,8 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr) {
     let stemEndY = 0; // end y position of stem
     let beamStartX = 0;
     let beamEndX = 0;
-    const middleLine = staff === 0 ? Measure.GetMeasureMidLine(msr) : 45; // TODO: Magiccccc (number should be removed)
-    const yLineBuffer = staff === 0 ? 0 + msr.SALineTop : 30 + msr.SBLineTop;
+    const middleLine = staff === 0 ? Measure.GetMeasureMidLine(msr) : msr.GetGrandMeasureMidLine(); // TODO: Magiccccc (number should be removed)
+    const yLineBuffer = staff === 0 ? 0 + msr.SALineTop : msr.SBLineTop;
     const staffTopLine = staff === 0 ? msr.SALineTop : msr.SBLineTop;
     const midStemThreshHold = 7;
     const lineHeight = 5;
@@ -363,10 +366,10 @@ function renderLedgerLines(notes, division, renderProps, staff, msr) {
     const ledgerX = (division.Bounds.x + noteXBuffer) - 6 + camera.x;
     //const ledgerString = `m ${x - 6} ${y - 5} h 22 v 2 h-20 v-2 Z`;
     const ledgerString = `h 22 v 2 h-20 v-2 Z`;
-    const msrMidLine = Measure.GetMeasureMidLine(msr);
     const bdNotes = notes.filter((note) => note.Beat === division.Beat &&
         note.Staff === division.Staff);
-    const yLineBuffer = staff === 0 ? 0 : 30;
+    const yLineBuffer = staff === 0 ? Measure.GetMeasureMidLine(msr) : msr.GetGrandMeasureMidLine();
+    const midLine = staff === 0 ? msr.SALineMid : msr.SBLineMid;
     if (bdNotes.length === 0) {
         return;
     }
@@ -376,13 +379,13 @@ function renderLedgerLines(notes, division, renderProps, staff, msr) {
     const highestLine = bdNotes[0];
     const lowestLine = bdNotes[bdNotes.length - 1];
     context.fillStyle = "black";
-    for (let l = (9 + yLineBuffer); l >= highestLine.Line; l -= 2) {
-        const ledgerY = division.Bounds.y + ((l - msr.SALineTop - yLineBuffer) * 5) + camera.y;
+    for (let l = midLine - 6; l >= highestLine.Line; l -= 2) {
+        const ledgerY = Measure.GetNotePositionOnLine(msr, l) + camera.y + 2.5;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));
     }
-    for (let h = (21 + yLineBuffer); h <= lowestLine.Line; h += 2) {
-        const ledgerY = division.Bounds.y + ((h - msr.SALineTop - yLineBuffer) * 5) + camera.y;
+    for (let h = midLine + 6; h <= lowestLine.Line; h += 2) {
+        const ledgerY = Measure.GetNotePositionOnLine(msr, h) + camera.y + 2.5;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
         context.fill(new Path2D(path));
     }

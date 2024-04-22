@@ -16,7 +16,7 @@ function CreateDivisions(msr, notes, staff) {
         const restProps = {
             Beat: 1,
             Duration: 1,
-            Line: 15,
+            Line: staff === 0 ? msr.SALineMid : msr.SBLineMid,
             Rest: true,
             Tied: false,
             Staff: staff
@@ -116,7 +116,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
         const restProps = {
             Beat: div.Beat,
             Duration: div.Duration,
-            Line: 15,
+            Line: div.Staff === 0 ? msr.SALineMid : msr.SBLineMid,
             Rest: true,
             Tied: false,
             Staff: div.Staff
@@ -158,7 +158,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
         const restProps = {
             Beat: div.Beat,
             Duration: div.Duration,
-            Line: 15,
+            Line: div.Staff === 0 ? msr.SALineMid : msr.SBLineMid,
             Rest: true,
             Tied: false,
             Staff: div.Staff

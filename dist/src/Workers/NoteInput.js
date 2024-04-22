@@ -7,7 +7,6 @@ const noteXBuffer = 9;
 function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     let inputtingNote = true;
     const line = Measure.GetLineHovered(y, msr, cam);
-    line.num += msr.SALineTop;
     let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
     if (beatOver === undefined) {
         inputtingNote = false;
@@ -26,6 +25,7 @@ function InputNote(msr, noteValue, division, line, rest) {
         Staff: division.Staff
     };
     const newNote = new Note(noteProps);
+    console.log(newNote);
     if (division.Duration === noteValue) {
         msr.ClearRestNotes(division.Beat, division.Staff);
         msr.AddNote(newNote);
@@ -57,9 +57,11 @@ function UpdateNoteBounds(msr, staff) {
                 let flipNoteOffset = isFlipped ?
                     stemDir === StemDirection.Up ? 11 : -11 : 0;
                 if (!n.Rest) {
-                    const lineSubt = n.Staff === 0 ? 0 + msr.SALineTop : 30;
+                    const lineSubt = n.Staff === 0 ?
+                        0 + msr.SALineTop :
+                        msr.SBLineTop;
                     n.Bounds.x = div.Bounds.x + noteXBuffer + flipNoteOffset;
-                    n.Bounds.y = div.Bounds.y + ((n.Line - lineSubt) * 5) - 5;
+                    n.Bounds.y = Measure.GetNotePositionOnLine(msr, n.Line);
                 }
             });
         });
@@ -83,7 +85,7 @@ function AddToDivision(msr, noteProps, staff) {
     let remainingValue = noteProps.Duration;
     let beat = noteProps.Beat;
     if (noteProps.Rest) {
-        noteProps.Line = 15;
+        noteProps.Line = staff === 0 ? msr.SALineMid : msr.SBLineMid;
     }
     let tying = false;
     let tStart = -1;

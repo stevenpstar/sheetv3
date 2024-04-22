@@ -1,5 +1,6 @@
 import { Camera } from "../Core/Camera.js";
 import { DivGroup, GetDivisionGroups } from "../Core/Division.js";
+import { StaffType } from "../Core/Instrument.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note, NoteProps } from "../Core/Note.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
@@ -16,7 +17,6 @@ function InputOnMeasure(msr: Measure,
                         rest: boolean): void {
   let inputtingNote = true;
   const line = Measure.GetLineHovered(y, msr, cam);
-  line.num += msr.SALineTop;
 
   let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
 
@@ -43,6 +43,7 @@ function InputNote(
     };
     const newNote: Note = new Note(noteProps);
 
+    console.log(newNote);
     if (division.Duration === noteValue) {
       msr.ClearRestNotes(division.Beat, division.Staff);
       msr.AddNote(newNote);
@@ -74,9 +75,11 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
           let flipNoteOffset = isFlipped ? 
             stemDir === StemDirection.Up ? 11 : -11 : 0;
           if (!n.Rest) {
-            const lineSubt = n.Staff === 0 ? 0 + msr.SALineTop : 30;
+            const lineSubt = n.Staff === 0 ?
+              0 + msr.SALineTop :
+              msr.SBLineTop;
             n.Bounds.x = div.Bounds.x + noteXBuffer + flipNoteOffset;
-            n.Bounds.y = div.Bounds.y + ((n.Line - lineSubt) * 5) - 5;
+            n.Bounds.y = Measure.GetNotePositionOnLine(msr, n.Line);
           }
         });
       });
@@ -101,7 +104,7 @@ function IsRestOnBeat(msr: Measure, beat: number, notes: Note[], staff: number):
 function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void {
   let remainingValue = noteProps.Duration;
   let beat = noteProps.Beat;
-  if (noteProps.Rest) { noteProps.Line = 15; }
+  if (noteProps.Rest) { noteProps.Line = staff === 0 ? msr.SALineMid : msr.SBLineMid; }
   let tying = false;
   let tStart = -1;
   let tEnd = -1;
@@ -127,6 +130,8 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
         Tied: tying,
         Staff: div.Staff
       };
+
+
 
       const newNote = new Note(newNoteProps);
 

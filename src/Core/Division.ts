@@ -36,7 +36,7 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[]
       const restProps: NoteProps = {
       Beat: 1,
       Duration: 1,
-      Line: 15,
+      Line: staff === 0 ? msr.SALineMid : msr.SBLineMid,
       Rest: true,
       Tied: false,
       Staff: staff
@@ -142,7 +142,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
     const restProps: NoteProps = {
       Beat: div.Beat,
       Duration: div.Duration,
-      Line: 15,
+      Line: div.Staff === 0 ? msr.SALineMid : msr.SBLineMid,
       Rest: true,
       Tied: false,
       Staff: div.Staff
@@ -187,7 +187,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
     const restProps: NoteProps = {
       Beat: div.Beat,
       Duration: div.Duration,
-      Line: 15,
+      Line: div.Staff === 0 ? msr.SALineMid : msr.SBLineMid,
       Rest: true,
       Tied: false,
       Staff: div.Staff

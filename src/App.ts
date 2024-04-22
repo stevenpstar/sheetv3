@@ -65,6 +65,9 @@ class App {
   }
 
   Hover(x: number, y: number): void {
+    this.Context.fillStyle = "black";
+    this.Context.font = "12px serif";
+    this.Context.fillText(`x: ${x}, y: ${y}`, 5 + this.Camera.x, 5 + this.Camera.y);
     if (this.CamDragging) {
       this.Camera.x = Math.floor(this.Camera.oldX + x - this.DraggingPositions.x1);
       this.Camera.y = Math.floor(this.Camera.oldY + y - this.DraggingPositions.y1);
@@ -78,7 +81,18 @@ class App {
     // TODO: Move all this elsewhere
     if (this.NoteInput) {
       this.Sheet.Measures.forEach((m: Measure) => {
-        ManageHeight(m, 0, x, y, this.Camera);
+        if (m.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) {
+          m.Divisions.forEach((d: Division) => {
+            if (d.Bounds.IsHovered(x, y, this.Camera)) {
+              ManageHeight(m, d.Staff, x, y, this.Camera,);
+              // TODO: Move this so it only is called 
+              // at the appropriate time
+              UpdateNoteBounds(m, 0);
+              UpdateNoteBounds(m, 1);
+            }
+          })
+        } else { 
+          m.ResetHeight(); }
       });
     }
     this.Update(x, y);

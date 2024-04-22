@@ -102,6 +102,12 @@ class Measure {
     this.SBLineMid = 1045;
     this.SBLineBot = 1054;
 
+    this.SBLineTopSave = this.SBLineTop;
+    this.SBLineBotSave = this.SBLineBot;
+
+    this.SBLineTopDef = this.SBLineTop;
+    this.SBLineBotDef = this.SBLineBot;
+
     this.SBOffset = 1000;
     
     // probably always last
@@ -111,10 +117,30 @@ class Measure {
 
   static GetLineHovered(y: number, msr: Measure, cam: Camera): { num: number, bounds: Bounds } {
     const relYPos = y - msr.Bounds.y - cam.y;
-    const line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
-    return { num: line, 
-      bounds: new Bounds(msr.Bounds.x, msr.Bounds.y + ((line * 5) - 2.5),
-                         msr.Bounds.width + msr.XOffset, 5) };
+    let line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
+    let actualLine = line + msr.SALineTop;
+    const bounds = new Bounds(msr.Bounds.x, 0, msr.Bounds.width + msr.XOffset, 5);
+    if (actualLine > msr.SALineBot) {
+      const diff = actualLine - msr.SALineBot;
+      actualLine = msr.SBLineTop + diff;
+      bounds.y = msr.Bounds.y + msr.GetMeasureHeight() + ((diff * 5) - 2.5);
+    } else {
+      bounds.y = msr.Bounds.y + ((line * 5) - 2.5);
+    }
+    return { num: actualLine, 
+      bounds: bounds};
+  }
+
+  //STATIC? WHY? I DUNNO
+  // Get note position relative to staff/measure
+  static GetNotePositionOnLine(msr: Measure, line: number): number {
+    let y = 0;
+    if (line <= msr.SALineBot) {
+      y = msr.Bounds.y + (line - msr.SALineTop) * 5;
+    } else {
+      y = msr.Bounds.y + msr.GetMeasureHeight() + ((line - msr.SBLineTop) * 5);
+    }
+    return y - 2.5;
   }
 
   static GetMeasureHeight(msr: Measure): number {
@@ -186,7 +212,8 @@ class Measure {
   }
 
   ResetHeight(): void {
-    const height = this.GetMeasureHeight();
+    const height = this.Instrument.Staff === StaffType.Single ? 
+      this.GetMeasureHeight() : this.GetGrandMeasureHeight();
     this.Bounds.height = height;
     this.PrevBoundsH = height;
   }
@@ -223,7 +250,40 @@ class Measure {
         this.Bounds.height -= 5;
       }
     }
+    this.CreateDivisions();
+  }
 
+  ReHeightenTopGrand(expand: boolean, lineOver: number): void {
+    if (expand) {
+      const dist = lineOver - this.SBLineTop;
+      this.SBLineTop = lineOver - dist - 1;
+      this.Bounds.y -= 5;
+      this.Bounds.height += 5;
+    } else {
+      if (lineOver >= this.SBLineTopSave) {
+        this.SBLineTop = this.SBLineTopSave;
+        this.Bounds.y = this.PrefBoundsY;
+      } else {
+        this.SBLineTop += 1;
+        this.Bounds.y += 5;
+      }
+    }
+    this.CreateDivisions();
+  }
+
+  ReHeightenBotGrand(expand: boolean, lineOver: number): void {
+    if (expand) {
+      this.SBLineBot = lineOver + 2;
+      this.Bounds.height += 5;
+    } else {
+      if (lineOver <= this.SBLineBotSave) {
+        this.SBLineBot = this.SBLineBotSave;
+        this.Bounds.height = this.PrevBoundsH;
+      } else {
+        this.SBLineBot -= 1;
+        this.Bounds.height -= 5;
+      }
+    }
     this.CreateDivisions();
   }
 

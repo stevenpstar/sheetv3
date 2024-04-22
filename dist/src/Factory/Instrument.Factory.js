@@ -16,7 +16,7 @@ const CreateDefaultPiano = () => {
 function CreateInstrument(y) {
     const instr = {
         Position: { x: 0, y: y },
-        Staff: StaffType.Single
+        Staff: StaffType.Grand
     };
     return instr;
 }

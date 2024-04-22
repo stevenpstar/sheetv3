@@ -10,7 +10,7 @@ import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderStemR
 const line_space = 10;
 const line_width = 1;
 const endsWidth = 2;
-const debug = true;
+const debug = false;
 const noteXBuffer = 9;
 function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteInput, index, restInput) {
     //    if (hovId === measure.ID)
@@ -31,6 +31,10 @@ function RenderDebug(measure, renderProps, index, mousePos) {
     }
     const fDiv = measure.Divisions[0];
     const renderDurations = false;
+    const mousePositionString = `x: ${mousePos.x}, y: ${mousePos.y}`;
+    context.fillStyle = "black";
+    context.font = "12px serif";
+    context.fillText(mousePositionString, 10, 100);
     measure.Divisions.forEach((div, i) => {
         if (renderDurations) {
             const x = div.Bounds.x + camera.x + 2;
@@ -78,23 +82,25 @@ function RenderDebug(measure, renderProps, index, mousePos) {
     // line details
     // const lineY = measure.Bounds.y + (line.num * (line_space / 2) - (line_space / 4));
     // context.fillRect(line.bounds.x + camera.x, lineY + camera.y, line.bounds.width, line.bounds.height);
+    // TODO: Line numbers for grand staff are wrong in debug
+    // OR they are wrong in staff 0 if we don't add the top line number
     const line = Measure.GetLineHovered(mousePos.y, measure, camera);
+    //    context.fillRect(line.bounds.x + camera.x,
+    //                     line.bounds.y + camera.y,
+    //                     line.bounds.width,
+    //                     line.bounds.height);
     context.fillStyle = "black";
     context.font = "8px serif";
     let lineNum = line.num + measure.SALineTop;
     context.fillText("Line Hovered: " + lineNum.toString(), 130, 10);
-    context.fillStyle = "rgba(0, 0, 50, 0.3)";
+    context.fillStyle = "rgba(0, 0, 50, 0.2)";
     const div1 = measure.Divisions.filter(d => d.Staff === 0)[0];
     const div2 = measure.Divisions.filter(d => d.Staff === 1)[0];
-    //   context.fillRect(div1.Bounds.x + camera.x,
-    //                    div1.Bounds.y + camera.y, 
-    //                    div1.Bounds.width,
-    //                    div1.Bounds.height);
-    //   context.fillStyle = "rgba(0, 50, 0, 0.3)";
-    //   context.fillRect(div2.Bounds.x + camera.x,
-    //                    div2.Bounds.y + camera.y, 
-    //                    div2.Bounds.width,
-    //                    div2.Bounds.height);
+    context.fillRect(div1.Bounds.x + camera.x, div1.Bounds.y + camera.y, div1.Bounds.width, div1.Bounds.height);
+    context.fillStyle = "rgba(0, 50, 0, 0.2)";
+    context.fillRect(div2.Bounds.x + camera.x, div2.Bounds.y + camera.y, div2.Bounds.width, div2.Bounds.height);
+    context.strokeStyle = "black";
+    context.strokeRect(measure.Bounds.x + measure.XOffset + camera.x, measure.Bounds.y + camera.y, measure.Bounds.width, measure.Bounds.height);
 }
 function debugGetDurationName(duration, alpha = 255) {
     let name = "";
@@ -164,7 +170,7 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
                     Staff: s.Staff
                 };
                 const tempNote = new Note(tempNoteProps);
-                RenderNote(tempNote, renderProps, new Bounds(s.Bounds.x + noteXBuffer, noteY, 0, 0), true, false, StemDirection.Up);
+                RenderNote(tempNote, renderProps, new Bounds(s.Bounds.x + noteXBuffer, line.bounds.y, 0, 0), true, false, StemDirection.Up);
             }
         }
     });
@@ -343,7 +349,7 @@ function RenderNotes(msr, renderProps, staff) {
                         RenderRest(context, div, camera, n, msr);
                     }
                     else {
-                        RenderNote(n, renderProps, new Bounds(div.Bounds.x + noteXBuffer + flipNoteOffset, yPos, 10, 10), n.Selected, isFlipped, stemDir);
+                        RenderNote(n, renderProps, n.Bounds, n.Selected, isFlipped, stemDir);
                     }
                 });
                 // render dots
@@ -355,7 +361,10 @@ function RenderNotes(msr, renderProps, staff) {
             });
         }
     });
-    RenderTies(renderProps, msr.Divisions, msr.Notes);
+    RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Single, msr);
+    if (msr.Instrument.Staff === StaffType.Grand) {
+        RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Grand, msr);
+    }
 }
 function IsFlippedNote(notes, index, dir) {
     let flipped = false;
