@@ -6,7 +6,7 @@ import { DetermineStemDirection, StemDirection } from "../Renderers/Note.Rendere
 const noteXBuffer = 9;
 function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     let inputtingNote = true;
-    const line = Measure.GetLineHovered(y, msr, cam);
+    const line = Measure.GetLineHovered(y, msr);
     let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
     if (beatOver === undefined) {
         inputtingNote = false;
@@ -25,7 +25,6 @@ function InputNote(msr, noteValue, division, line, rest) {
         Staff: division.Staff
     };
     const newNote = new Note(noteProps);
-    console.log(newNote);
     if (division.Duration === noteValue) {
         msr.ClearRestNotes(division.Beat, division.Staff);
         msr.AddNote(newNote);
@@ -35,7 +34,7 @@ function InputNote(msr, noteValue, division, line, rest) {
             AddToDivision(msr, noteProps, division.Staff);
         }
     }
-    msr.CreateDivisions(true);
+    msr.CreateDivisions(msr.Camera, true);
     UpdateNoteBounds(msr, division.Staff);
 }
 function UpdateNoteBounds(msr, staff) {

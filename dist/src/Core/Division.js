@@ -5,7 +5,7 @@ import { GetLargestValues } from "./Values.js";
 ;
 const DivisionMinWidth = 30;
 const DivisionMaxWidth = 40;
-function CreateDivisions(msr, notes, staff) {
+function CreateDivisions(msr, notes, staff, cam) {
     const divisions = [];
     let nextBeat = 0;
     let runningValue = 0;
@@ -28,7 +28,7 @@ function CreateDivisions(msr, notes, staff) {
             divisions.push({
                 Beat: n.Beat,
                 Duration: n.Duration,
-                Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff),
+                Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff, cam),
                 Staff: staff
             });
             nextBeat = n.Beat + (n.Duration * msr.TimeSignature.bottom);
@@ -41,7 +41,7 @@ function CreateDivisions(msr, notes, staff) {
     GenerateMissingBeatDivisions(msr, divisions, staff);
     return divisions;
 }
-function CreateBeatBounds(msr, beat, duration, staff) {
+function CreateBeatBounds(msr, beat, duration, staff, cam) {
     // single height
     const singleHeight = msr.GetMeasureHeight();
     const grandHeight = msr.GetGrandMeasureHeight() - singleHeight;
@@ -97,7 +97,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
                 divisionsToAdd.push({
                     Beat: sBeat,
                     Duration: v,
-                    Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff),
+                    Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff, msr.Camera),
                     Staff: div.Staff
                 });
                 sBeat += v * msr.TimeSignature.bottom;
@@ -143,7 +143,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
             lastDivisionsToAdd.push({
                 Beat: sBeat,
                 Duration: v,
-                Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff),
+                Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff, msr.Camera),
                 Staff: staff
             });
             sBeat += v * msr.TimeSignature.bottom;

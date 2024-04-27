@@ -40,10 +40,11 @@ class App {
     this.Context = context;
     this.Load = load;
     this.HoveredElements = { MeasureID: -1 };
-    this.Zoom = 1;
+    this.Zoom = 2;
     this.CamDragging = false;
     this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.Camera = new Camera(0, 0);
+    this.Camera.Zoom = 1;
     this.NoteValue = 0.25;
 
     if (!this.Load) {
@@ -55,7 +56,7 @@ class App {
       };
 
       sProps.Instruments.push(CreateDefaultPiano());
-      sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[0]));
+      sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[0], this.Camera));
 
       this.Sheet = new Sheet(sProps);
     }
@@ -65,9 +66,11 @@ class App {
   }
 
   Hover(x: number, y: number): void {
+    x = x / this.Camera.Zoom;
+    y = y / this.Camera.Zoom;
+
     this.Context.fillStyle = "black";
     this.Context.font = "12px serif";
-    this.Context.fillText(`x: ${x}, y: ${y}`, 5 + this.Camera.x, 5 + this.Camera.y);
     if (this.CamDragging) {
       this.Camera.x = Math.floor(this.Camera.oldX + x - this.DraggingPositions.x1);
       this.Camera.y = Math.floor(this.Camera.oldY + y - this.DraggingPositions.y1);
@@ -84,7 +87,7 @@ class App {
         if (m.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) {
           m.Divisions.forEach((d: Division) => {
             if (d.Bounds.IsHovered(x, y, this.Camera)) {
-              ManageHeight(m, d.Staff, x, y, this.Camera,);
+              ManageHeight(m, d.Staff, x, y, this.Camera, this.Sheet.Measures);
               // TODO: Move this so it only is called 
               // at the appropriate time
               UpdateNoteBounds(m, 0);
@@ -106,6 +109,8 @@ class App {
 
   Input(x: number, y: number, shiftKey: boolean): void {
     // will move this code elsewhere, testing note input
+    x = x / this.Camera.Zoom;
+    y = y / this.Camera.Zoom;
     this.HoveredElements.MeasureID = -1;
     const msrOver: Measure | undefined = this.Sheet
       .Measures
@@ -122,8 +127,8 @@ class App {
     if (!this.NoteInput) {
       this.Selector.SelectNote(msrOver, x, y, this.Camera, shiftKey);
       if (!this.DraggingNote) { this.DraggingNote = true; }
-      this.StartLine = Measure.GetLineHovered(y, msrOver, this.Camera).num;
-      this.Update(0, 0);
+      this.StartLine = Measure.GetLineHovered(y, msrOver).num;
+      this.Update(x, y);
       return;
     }
     InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput);
@@ -168,6 +173,7 @@ class App {
        prevMsr.TimeSignature,
        prevMsr.KeySignature,
        "treble",
+       this.Camera,
        newLine);
       this.Sheet.Measures.push(newMsr);
       this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
@@ -189,7 +195,7 @@ class App {
       return; 
     }
 
-    this.EndLine = Measure.GetLineHovered(y, msrOver, this.Camera).num;
+    this.EndLine = Measure.GetLineHovered(y, msrOver).num;
     const lineDiff = this.EndLine - this.StartLine;
     for (let [msr, notes] of this.Selector.Notes) {
       notes.forEach(n => {
@@ -212,8 +218,8 @@ class App {
     this.CamDragging = dragging;
     if (this.CamDragging) {
       // set initial drag position
-      this.DraggingPositions.x1 = x;
-      this.DraggingPositions.y1 = y;
+      this.DraggingPositions.x1 = (x / this.Camera.Zoom);
+      this.DraggingPositions.y1 = (y / this.Camera.Zoom);
     } else {
       // reset drag positions
       this.DraggingPositions.x1 = 0;
@@ -228,15 +234,14 @@ class App {
   AlterZoom(num: number): void {
     this.Zoom += num;
     this.Camera.Zoom = this.Zoom;
-    // This kind of works but I will need to change mouse position values etc.
-    // Kinda doesn't work, zoom value seems to not reduce consistently.
-    //this.Context.scale(this.Zoom, this.Zoom);
+    this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
+    this.Update(0, 0);
   }
 
   // TEST FUNCTION
   ResizeFirstMeasure(): void {
 //    this.Sheet.Measures[0].Bounds.width += 50;
-    this.Sheet.Measures[0].CreateDivisions();
+    this.Sheet.Measures[0].CreateDivisions(this.Camera);
     for (let i = 1; i < this.Sheet.Measures.length; i++) {
       this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i-1]);
     }
@@ -274,6 +279,16 @@ class App {
     }
   }
 
+  //TODO: Remove this test function
+  ScaleToggle(): number {
+    if (this.Camera.Zoom === 1) {
+      this.Camera.Zoom = 2;
+    } else {
+      this.Camera.Zoom = 1;
+    }
+    return this.Camera.Zoom;
+  }
+
   Test_AddClefMiddle(): void {
     const msr = this.Sheet.Measures[0];
     const clef: Clef = {Type: "bass", Beat: 3};
@@ -285,8 +300,6 @@ class App {
     });
     if (!clefExist)
       msr.Clefs.push(clef);
-
-    console.log(msr.Clefs);
   }
 }
 

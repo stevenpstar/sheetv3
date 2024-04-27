@@ -1,3 +1,4 @@
+import { Camera } from "../Core/Camera.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Measure, MeasureProps } from "../Core/Measure.js";
 import { Bounds } from "../Types/Bounds.js";
@@ -27,7 +28,7 @@ function CreateInstrument(y: number): Instrument {
   return instr;
 }
 
-const CreateDefaultMeasure = (instr: Instrument): Measure => {
+const CreateDefaultMeasure = (instr: Instrument, cam: Camera): Measure => {
 
   const msrHeight = instr.Staff === StaffType.Grand ? mh * 2 : mh;
 
@@ -41,7 +42,8 @@ const CreateDefaultMeasure = (instr: Instrument): Measure => {
     Clef: "treble",
     RenderClef: true,
     RenderTimeSig: true,
-    RenderKey: false
+    RenderKey: false,
+    Camera: cam
   }
   return new Measure(props);
 }
@@ -51,6 +53,7 @@ const CreateMeasure = (instr: Instrument,
                     timeSignature: { top: number, bottom: number },
                     keySignature: string,
                     clef: string,
+                    cam: Camera,
                     renderClef: boolean = false): Measure =>
   {
     const props: MeasureProps = {
@@ -63,7 +66,8 @@ const CreateMeasure = (instr: Instrument,
       Clef: clef,
       RenderClef: false,
       RenderTimeSig: false,
-      RenderKey: false
+      RenderKey: false,
+      Camera: cam
     }
     return new Measure(props);
   }

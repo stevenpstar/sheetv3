@@ -1,4 +1,5 @@
 import { Bounds } from "../Types/Bounds.js";
+import { Camera } from "./Camera.js";
 import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
 import { Note, NoteProps } from "./Note.js";
@@ -23,7 +24,7 @@ interface DivGroups {
 const DivisionMinWidth = 30;
 const DivisionMaxWidth = 40;
 
-function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[] {
+function CreateDivisions(msr: Measure, notes: Note[], staff: number, cam: Camera): Division[] {
   const divisions: Division[] = [];
   let nextBeat = 0;
   let runningValue = 0; 
@@ -49,7 +50,7 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[]
         {
           Beat: n.Beat,
           Duration: n.Duration,
-          Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff),
+          Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff, cam),
           Staff: staff
         });
         nextBeat = n.Beat + (n.Duration * msr.TimeSignature.bottom);
@@ -63,7 +64,7 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[]
   return divisions;
 }
 
-function CreateBeatBounds(msr: Measure, beat: number, duration: number, staff: number): Bounds {
+function CreateBeatBounds(msr: Measure, beat: number, duration: number, staff: number, cam: Camera): Bounds {
   // single height
   const singleHeight = msr.GetMeasureHeight();
   const grandHeight = msr.GetGrandMeasureHeight() - singleHeight;
@@ -122,7 +123,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
           {
             Beat: sBeat,
             Duration: v,
-            Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff),
+            Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff, msr.Camera),
             Staff: div.Staff
           });
           sBeat += v * msr.TimeSignature.bottom;
@@ -172,7 +173,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
         {
           Beat: sBeat,
           Duration: v,
-          Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff),
+          Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff, msr.Camera),
           Staff: staff
         });
         sBeat += v * msr.TimeSignature.bottom;

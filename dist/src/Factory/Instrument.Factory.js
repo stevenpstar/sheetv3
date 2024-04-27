@@ -20,7 +20,7 @@ function CreateInstrument(y) {
     };
     return instr;
 }
-const CreateDefaultMeasure = (instr) => {
+const CreateDefaultMeasure = (instr, cam) => {
     const msrHeight = instr.Staff === StaffType.Grand ? mh * 2 : mh;
     const props = {
         Instrument: instr,
@@ -32,11 +32,12 @@ const CreateDefaultMeasure = (instr) => {
         Clef: "treble",
         RenderClef: true,
         RenderTimeSig: true,
-        RenderKey: false
+        RenderKey: false,
+        Camera: cam
     };
     return new Measure(props);
 };
-const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, renderClef = false) => {
+const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, renderClef = false) => {
     const props = {
         Instrument: instr,
         Bounds: bounds,
@@ -47,7 +48,8 @@ const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, renderC
         Clef: clef,
         RenderClef: false,
         RenderTimeSig: false,
-        RenderKey: false
+        RenderKey: false,
+        Camera: cam
     };
     return new Measure(props);
 };

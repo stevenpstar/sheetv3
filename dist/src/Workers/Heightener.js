@@ -1,9 +1,11 @@
 import { Measure } from "../Core/Measure.js";
-function ManageHeight(msr, staff, x, y, cam) {
+function ManageHeight(msr, staff, x, y, cam, measures) {
     const msrNotes = msr.Notes.filter(n => n.Staff === staff);
     msrNotes.sort((n, b) => {
         return n.Line - b.Line;
     });
+    const line = msr.Line;
+    const msrs = measures.filter(m => m.Line === line);
     const highestLine = msrNotes[0].Line;
     const lowestLine = msrNotes[msrNotes.length - 1].Line;
     let lTop = staff === 0 ?
@@ -36,45 +38,64 @@ function ManageHeight(msr, staff, x, y, cam) {
             lBot = msr.SBLineBot;
         }
     }
-    const lineOver = Measure.GetLineHovered(y, msr, cam);
-    console.log("lineOver: ", lineOver);
+    const lineOver = Measure.GetLineHovered(y, msr);
     //    lineOver.num += msr.SALineTop;
     //    TODO: Fix this prototype code
     if (staff === 0) {
         if (lineOver.num <= msr.SALineTop + 1) {
             // resize measure bounds
-            msr.ReHeightenTop(true, lineOver.num);
+            ReHeightenTop(true, lineOver.num, msrs);
         }
         else if (lineOver.num > msr.SALineTop + 2 &&
             lineOver.num < msr.SALineBot - 2) {
-            msr.ReHeightenTop(false, lineOver.num);
-            msr.ReHeightenBot(false, lineOver.num);
+            ReHeightenTop(false, lineOver.num, msrs);
+            ReHeightenBot(false, lineOver.num, msrs);
         }
         else if (lineOver.num >= msr.SALineBot - 1) {
-            msr.ReHeightenBot(true, lineOver.num);
+            ReHeightenBot(true, lineOver.num, msrs);
         }
         else if (lineOver.num < msr.SALineBot - 2 &&
             lineOver.num > msr.SALineTop + 2) {
-            msr.ReHeightenBot(false, lineOver.num);
+            ReHeightenBot(false, lineOver.num, msrs);
         }
     }
     else {
         if (lineOver.num <= msr.SBLineTop + 1) {
             // resize measure bounds
-            msr.ReHeightenTopGrand(true, lineOver.num);
+            ReHeightenTopGrand(true, lineOver.num, msrs);
         }
         else if (lineOver.num > msr.SBLineTop + 2 &&
             lineOver.num < msr.SBLineBot - 2) {
-            msr.ReHeightenTopGrand(false, lineOver.num);
-            msr.ReHeightenBotGrand(false, lineOver.num);
+            ReHeightenTopGrand(false, lineOver.num, msrs);
+            ReHeightenBotGrand(false, lineOver.num, msrs);
         }
         else if (lineOver.num >= msr.SBLineBot - 1) {
-            msr.ReHeightenBotGrand(true, lineOver.num);
+            ReHeightenBotGrand(true, lineOver.num, msrs);
         }
         else if (lineOver.num < msr.SBLineBot - 2 &&
             lineOver.num > msr.SBLineTop + 2) {
-            msr.ReHeightenBotGrand(false, lineOver.num);
+            ReHeightenBotGrand(false, lineOver.num, msrs);
         }
     }
+}
+function ReHeightenTop(expand, lineOver, measures) {
+    measures.forEach(m => {
+        m.ReHeightenTop(expand, lineOver);
+    });
+}
+function ReHeightenBot(expand, lineOver, measures) {
+    measures.forEach(m => {
+        m.ReHeightenBot(expand, lineOver);
+    });
+}
+function ReHeightenTopGrand(expand, lineOver, measures) {
+    measures.forEach(m => {
+        m.ReHeightenTopGrand(expand, lineOver);
+    });
+}
+function ReHeightenBotGrand(expand, lineOver, measures) {
+    measures.forEach(m => {
+        m.ReHeightenBotGrand(expand, lineOver);
+    });
 }
 export { ManageHeight };

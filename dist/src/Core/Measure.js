@@ -7,6 +7,7 @@ class Measure {
         this.Clefs = [];
         this.GrandClefs = [];
         this.Instrument = properties.Instrument;
+        this.Line = 0;
         this.Bounds = properties.Bounds;
         this.TimeSignature = properties.TimeSignature;
         this.KeySignature = properties.KeySignature;
@@ -16,6 +17,7 @@ class Measure {
         this.BDivisions = [];
         this.RenderClef = properties.RenderClef;
         this.RenderKey = properties.RenderKey;
+        this.Camera = properties.Camera;
         this.RenderTimeSig = properties.RenderTimeSig;
         this.Clefs.push({ Type: properties.Clef, Beat: 1 });
         if (this.Instrument.Staff === StaffType.Grand) {
@@ -40,20 +42,21 @@ class Measure {
         this.SBLineBotDef = this.SBLineBot;
         this.SBOffset = 1000;
         // probably always last
-        this.CreateDivisions();
+        this.CreateDivisions(this.Camera);
     }
-    static GetLineHovered(y, msr, cam) {
-        const relYPos = y - msr.Bounds.y - cam.y;
-        let line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
+    static GetLineHovered(y, msr) {
+        const cam = msr.Camera;
+        const relYPos = y - msr.Bounds.y - cam.y; //TODO: Dunno about scaling by zoom here
+        let line = Math.floor(relYPos / (5)); // this should be a constant, line_height (defined somewhere)
         let actualLine = line + msr.SALineTop;
-        const bounds = new Bounds(msr.Bounds.x, 0, msr.Bounds.width + msr.XOffset, 5);
+        const bounds = new Bounds(msr.Bounds.x, 0, msr.Bounds.width + msr.XOffset, (5));
         if (actualLine > msr.SALineBot) {
             const diff = actualLine - msr.SALineBot;
             actualLine = msr.SBLineTop + diff;
-            bounds.y = msr.Bounds.y + msr.GetMeasureHeight() + ((diff * 5) - 2.5);
+            bounds.y = msr.Bounds.y + msr.GetMeasureHeight() + ((diff * (5)) - 2.5);
         }
         else {
-            bounds.y = msr.Bounds.y + ((line * 5) - 2.5);
+            bounds.y = msr.Bounds.y + ((line * (5)) - 2.5);
         }
         return { num: actualLine,
             bounds: bounds };
@@ -61,17 +64,18 @@ class Measure {
     //STATIC? WHY? I DUNNO
     // Get note position relative to staff/measure
     static GetNotePositionOnLine(msr, line) {
+        const cam = msr.Camera;
         let y = 0;
         if (line <= msr.SALineBot) {
-            y = msr.Bounds.y + (line - msr.SALineTop) * 5;
+            y = msr.Bounds.y + (line - msr.SALineTop) * (5);
         }
         else {
-            y = msr.Bounds.y + msr.GetMeasureHeight() + ((line - msr.SBLineTop) * 5);
+            y = msr.Bounds.y + msr.GetMeasureHeight() + ((line - msr.SBLineTop) * (5));
         }
         return y - 2.5;
     }
-    static GetMeasureHeight(msr) {
-        return (msr.SALineTop + msr.SALineBot) * 5;
+    static GetMeasureHeight(msr, cam) {
+        return (msr.SALineTop + msr.SALineBot) * (5);
         // expand on this to include grand staffs and have line height (5) be 
         // a constant that is defined somewhere
     }
@@ -84,35 +88,35 @@ class Measure {
     SetXOffset() {
         this.XOffset = 0;
         if (this.RenderClef) {
-            this.XOffset += 30;
+            this.XOffset += (30);
         }
         if (this.RenderKey) {
-            this.XOffset += 30;
+            this.XOffset += (30);
         }
         if (this.RenderTimeSig) {
-            this.XOffset += 30;
+            this.XOffset += (30);
         }
     }
-    CreateDivisions(afterInput = false) {
+    CreateDivisions(cam, afterInput = false) {
         if (afterInput) {
             this.ResetHeight();
         }
         this.Divisions = [];
-        this.Divisions.push(...CreateDivisions(this, this.Notes, 0));
+        this.Divisions.push(...CreateDivisions(this, this.Notes, 0, cam));
         if (this.Instrument.Staff === StaffType.Grand) {
-            this.Divisions.push(...CreateDivisions(this, this.Notes, 1));
+            this.Divisions.push(...CreateDivisions(this, this.Notes, 1, cam));
             ResizeDivisions(this, this.Divisions, 1);
         }
         ResizeDivisions(this, this.Divisions, 0);
     }
     Reposition(prevMsr) {
         this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
-        this.CreateDivisions();
+        this.CreateDivisions(this.Camera);
     }
     // set height of measure based off of notes in measure
     // eventually will be determined by instrument / row etc.
     GetMeasureHeight() {
-        const lineHeight = 5; // constant should be set elsewhere
+        const lineHeight = (5); // constant should be set elsewhere
         const topNegative = this.SALineTop < 0;
         const heightInLines = topNegative ?
             this.SALineBot + Math.abs(this.SALineTop) :
@@ -120,7 +124,7 @@ class Measure {
         return heightInLines * lineHeight;
     }
     GetGrandMeasureHeight() {
-        const lineHeight = 5; // constant should be set elsewhere
+        const lineHeight = (5); // constant should be set elsewhere
         const topStaffHeight = this.GetMeasureHeight();
         const topNegative = (this.SBLineTop - this.SBOffset) < 0;
         const heightInLines = topNegative ?
@@ -155,7 +159,7 @@ class Measure {
                 this.Bounds.y += 5;
             }
         }
-        this.CreateDivisions();
+        this.CreateDivisions(this.Camera);
     }
     ReHeightenBot(expand, lineOver) {
         if (expand) {
@@ -172,7 +176,7 @@ class Measure {
                 this.Bounds.height -= 5;
             }
         }
-        this.CreateDivisions();
+        this.CreateDivisions(this.Camera);
     }
     ReHeightenTopGrand(expand, lineOver) {
         if (expand) {
@@ -191,7 +195,7 @@ class Measure {
                 this.Bounds.y += 5;
             }
         }
-        this.CreateDivisions();
+        this.CreateDivisions(this.Camera);
     }
     ReHeightenBotGrand(expand, lineOver) {
         if (expand) {
@@ -208,13 +212,13 @@ class Measure {
                 this.Bounds.height -= 5;
             }
         }
-        this.CreateDivisions();
+        this.CreateDivisions(this.Camera);
     }
     ResetTopHeight() {
         this.SALineTop = this.SALineTopSave;
         this.Bounds.y = this.PrefBoundsY;
         this.Bounds.height = this.PrevBoundsH;
-        this.CreateDivisions();
+        this.CreateDivisions(this.Camera);
     }
     AddNote(note) {
         if (note.Rest) {

@@ -19,7 +19,7 @@ const line_space = 10;
 const line_width = 1;
 const endsWidth = 2;
 
-const debug = false;
+const debug = true;
 const noteXBuffer = 9;
 
 function RenderMeasure(
@@ -58,6 +58,17 @@ function RenderDebug(
         context.font = "12px serif";
         context.fillText(mousePositionString, 10, 100);
 
+        const camPositionString = `x: ${measure.Camera.x}, y: ${measure.Camera.y}`;
+        context.fillStyle = "black";
+        context.font = "12px serif";
+        context.fillText(camPositionString, 10, 200);
+
+    // Render measure bounds
+    context.strokeStyle = "green";
+    context.strokeRect(measure.Bounds.x + measure.Camera.x, measure.Bounds.y + measure.Camera.y, measure.Bounds.width,
+                       measure.Bounds.height);
+
+
     measure.Divisions.forEach((div: Division, i: number) => {
       if (renderDurations) {
         const x = div.Bounds.x + camera.x + 2;
@@ -69,7 +80,6 @@ function RenderDebug(
         context.font = "8px serif";
         context.fillText(debugGetDurationName(div.Duration).name, x,
                          y + 25);
-
 
         context.fillStyle = "black";
         context.fillText(div.Beat.toString(), x,
@@ -88,7 +98,7 @@ function RenderDebug(
       }
     }
 
-    const renderNoteBounds = false;
+    const renderNoteBounds = true;
     if (renderNoteBounds) {
       measure.Notes.forEach(n => {
         context.fillStyle = "rgba(0 ,0, 255, 0.8)";
@@ -120,12 +130,12 @@ function RenderDebug(
 
    // TODO: Line numbers for grand staff are wrong in debug
     // OR they are wrong in staff 0 if we don't add the top line number
-    const line = Measure.GetLineHovered(mousePos.y, measure, camera);
+    const line = Measure.GetLineHovered(mousePos.y, measure);
 
-//    context.fillRect(line.bounds.x + camera.x,
-//                     line.bounds.y + camera.y,
-//                     line.bounds.width,
-//                     line.bounds.height);
+    context.fillRect(line.bounds.x + camera.x,
+                     line.bounds.y + camera.y,
+                     line.bounds.width,
+                     line.bounds.height);
     context.fillStyle = "black";
     context.font = "8px serif";
     let lineNum = line.num + measure.SALineTop;
@@ -210,7 +220,7 @@ function RenderHovered(
     
     const { canvas, context, camera } = renderProps;
 
-    const line = Measure.GetLineHovered(mousePos.y, measure, camera);
+    const line = Measure.GetLineHovered(mousePos.y, measure);
       if (noteInput) {
        // context.fillStyle = "rgb(0, 0, 255, 0.1)"; 
        // const lineY = measure.Bounds.y + (line.num * (line_space / 2) - (line_space / 4));
@@ -273,29 +283,33 @@ function RenderMeasureBase(
 
     const measureBegin = 
       `M${msr.Bounds.x + camera.x} 
-          ${ msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + camera.y} h 
+          ${ msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
           ${endsWidth} v ${grandLineHeight} h -${endsWidth} Z`;
 
     const measureEnd = 
       `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} 
-        ${ msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + camera.y} h 
+        ${ msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
         ${lastEndThickness} v ${grandLineHeight} h -${lastEndThickness} Z`;
 
     const measureDoubleEnd = 
       `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} 
-          ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + camera.y} h 
+          ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
           ${endsWidth} v ${grandLineHeight} h -${endsWidth} Z`;
 
     for (let l=0;l<5;l++) {
-          const lineString = `M${msr.Bounds.x + camera.x} ${msr.Bounds.y + (5 * msrMidLine) - (line_space * 2) + line_space * l + camera.y} h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
+          const lineString = `M${msr.Bounds.x + camera.x} 
+          ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + line_space * l + camera.y} h 
+          ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
+
           const linePath = new Path2D(lineString);
           context.fill(linePath);
     }
+
     if (msr.Instrument.Staff === StaffType.Grand) {
       for (let l=0;l<5;l++) {
             const lineString = 
             `M${msr.Bounds.x + camera.x} 
-            ${msr.Bounds.y + msr.GetMeasureHeight() + (5 * msr.GetGrandMeasureMidLine()) - (line_space * 2) + line_space * l + camera.y} 
+            ${msr.Bounds.y + msr.GetMeasureHeight() + ((5) * msr.GetGrandMeasureMidLine()) - (line_space * 2) + line_space * l + camera.y} 
             h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
 
             const linePath = new Path2D(lineString);

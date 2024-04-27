@@ -16,7 +16,8 @@ const keymaps = {
   "restInput": "r",
   "delete": "d",
   "sharpen": "+",
-  "flatten": "-"
+  "flatten": "-",
+  "scaleToggle": "s"
 }
 
 interface CanText {
@@ -37,7 +38,7 @@ function returnCanvas(id: string): CanText {
     canvas.style.height = '1080px';
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-    //context.scale(4, 4);
+    context.setTransform(1 ,0, 0, 1, 0, 0);
   }
 
   return { canvas: canvas, context: context };
@@ -95,6 +96,11 @@ window.addEventListener("keydown", (e) => {
     case keymaps.flatten:
       Application.Flatten();
       break;
+    case keymaps.scaleToggle:
+      let zoom = Application.ScaleToggle();
+      context.setTransform(zoom, 0, 0, zoom, 0, 0);
+      //context.setTransform(1, 0, 0, 1, 0, 0)
+      break;
    default:
   }
 });
@@ -125,6 +131,7 @@ window.addEventListener("mousemove", (e) => {
   const rect = canvas.getBoundingClientRect();
   let mouseX = e.clientX - rect.left;
   let mouseY = e.clientY - rect.top;
+ 
   if (Application) {
     Application.Hover(mouseX, mouseY);
   }
@@ -132,8 +139,8 @@ window.addEventListener("mousemove", (e) => {
 
 window.addEventListener("wheel", (e) => {
   const scale = e.deltaY * -0.01;
-  if (scale > 0) { Application.AlterZoom(0.1); }
-  else if (scale < 0) { Application.AlterZoom(-0.1); }
+  if (scale > 0) { Application.AlterZoom(0.05); }
+  else if (scale < 0) { Application.AlterZoom(-0.05); }
 })
 
 function main(): void {
