@@ -2,11 +2,19 @@ import { Camera } from "../Core/Camera.js";
 import { Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 
-function ManageHeight(msr: Measure, staff: number, x: number, y: number, cam: Camera, measures: Measure[]): void {
+function ManageHeight(msr: Measure, staff: number, x: number, y: number, cam: Camera, measures: Measure[], 
+                     dragging: boolean = false): void {
   const msrNotes = msr.Notes.filter(n => n.Staff === staff);
   msrNotes.sort((n: Note, b: Note) => {
     return n.Line - b.Line; 
   });
+
+  // PROTOTYPE: height limits for non-dragging heightening
+  const saTopLimit = -5;
+  const saBotLimit = 34;
+
+  const sbTopLimit = 1025;
+  const sbBotLimit = 1064;
 
   const line = msr.Line;
   const msrs = measures.filter(m => m.Line === line);
@@ -50,6 +58,7 @@ function ManageHeight(msr: Measure, staff: number, x: number, y: number, cam: Ca
 //    lineOver.num += msr.SALineTop;
     //    TODO: Fix this prototype code
     if (staff === 0) {
+      if (lineOver.num <= saTopLimit || lineOver.num >= saBotLimit) { return; }
       if (lineOver.num <= msr.SALineTop + 1) {
         // resize measure bounds
         ReHeightenTop(true, lineOver.num, msrs);

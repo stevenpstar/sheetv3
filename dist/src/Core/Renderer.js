@@ -1,3 +1,4 @@
+import { RenderPanel } from "../Renderers/Debug.Renderer.js";
 import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
 const renderDebug = false;
 const scaleV = 1;
@@ -15,4 +16,12 @@ const Renderer = (c, ctx, measures, hovElements, mousePos, cam, noteInput, restI
         RenderMeasure(m, renderProps, hovElements.MeasureID, mousePos, lastMeasure, noteInput, i, restInput);
     });
 };
-export { Renderer };
+const RenderDebug = (c, ctx, sheet, mousePos, cam, selector) => {
+    const renderProps = {
+        canvas: c,
+        context: ctx,
+        camera: cam
+    };
+    RenderPanel(renderProps);
+};
+export { Renderer, RenderDebug };

@@ -88,6 +88,7 @@ window.addEventListener("keydown", (e) => {
             break;
         case keymaps.scaleToggle:
             let zoom = Application.ScaleToggle();
+            /* Development Mode (getting canvas from document etc.) */
             context.setTransform(zoom, 0, 0, zoom, 0, 0);
             //context.setTransform(1, 0, 0, 1, 0, 0)
             break;

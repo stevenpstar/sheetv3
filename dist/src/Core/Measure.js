@@ -140,6 +140,12 @@ class Measure {
             this.GetMeasureHeight() : this.GetGrandMeasureHeight();
         this.Bounds.height = height;
         this.PrevBoundsH = height;
+        // move this somewhere else
+        this.SALineTop = this.SALineTopSave;
+        this.SALineBot = this.SALineBotSave;
+        this.SBLineTop = this.SBLineTopSave;
+        this.SBLineBot = this.SBLineBotSave;
+        this.Bounds.y = this.PrefBoundsY;
     }
     // name change later I'm too tired to think of actual function name
     ReHeightenTop(expand, lineOver) {

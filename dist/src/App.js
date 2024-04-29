@@ -1,5 +1,5 @@
 import { Sheet } from "./Core/Sheet.js";
-import { Renderer } from "./Core/Renderer.js";
+import { RenderDebug, Renderer } from "./Core/Renderer.js";
 import { CreateDefaultMeasure, CreateDefaultPiano, CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
@@ -10,12 +10,13 @@ import { GetDivisionTotalWidth } from "./Core/Division.js";
 import { ManageHeight } from "./Workers/Heightener.js";
 class App {
     constructor(canvas, context, load = false) {
+        this.Debug = true;
         this.Canvas = canvas;
         this.Selector = new Selector();
         this.Context = context;
         this.Load = load;
         this.HoveredElements = { MeasureID: -1 };
-        this.Zoom = 2;
+        this.Zoom = 1;
         this.CamDragging = false;
         this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
         this.Camera = new Camera(0, 0);
@@ -111,6 +112,9 @@ class App {
     }
     Render(mousePos) {
         Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.HoveredElements, mousePos, this.Camera, this.NoteInput, this.RestInput);
+        if (this.Debug) {
+            RenderDebug(this.Canvas, this.Context, this.Sheet, mousePos, this.Camera, this.Selector);
+        }
     }
     AddMeasure() {
         const line = Math.floor(this.Sheet.Measures.length / 4);
@@ -227,8 +231,9 @@ class App {
     }
     //TODO: Remove this test function
     ScaleToggle() {
-        if (this.Camera.Zoom === 1) {
-            this.Camera.Zoom = 2;
+        if (this.Camera.Zoom !== 1) {
+            this.Camera.Zoom = 1;
+            this.Zoom = 1;
         }
         else {
             this.Camera.Zoom = 1;

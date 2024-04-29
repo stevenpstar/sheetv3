@@ -1,6 +1,9 @@
+import { RenderPanel } from "../Renderers/Debug.Renderer.js";
 import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
+import { Selector } from "../Workers/Selector.js";
 import { Camera } from "./Camera.js";
 import { Measure } from "./Measure.js";
+import { Sheet } from "./Sheet.js";
 
 const renderDebug = false;
 const scaleV = 1;
@@ -35,4 +38,18 @@ const Renderer = (c: HTMLCanvasElement,
   })
 }
 
-export { Renderer };
+const RenderDebug = (c: HTMLCanvasElement,
+                  ctx: CanvasRenderingContext2D,
+                  sheet: Sheet,
+                  mousePos: {x: number, y: number },
+                  cam: Camera,
+                  selector: Selector): void => {
+                    const renderProps = {
+                      canvas: c,
+                      context: ctx,
+                      camera: cam
+                    };
+                    RenderPanel(renderProps);
+                  }
+
+export { Renderer, RenderDebug };
