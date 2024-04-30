@@ -1,6 +1,6 @@
 import { Bounds } from '../Types/Bounds.js';
 import { Camera } from './Camera.js';
-import { CreateDivisions, Division, ResizeDivisions } from './Division.js';
+import { CreateDivisions, type Division, ResizeDivisions } from './Division.js';
 import { Instrument, StaffType } from './Instrument.js';
 import { Note, NoteProps } from './Note.js';
 

@@ -4,7 +4,8 @@
   },
   "scripts": {
     "tsc": "tsc",
-    "start": "live-server"
+    "start": "live-server",
+    "debug": "rm -rf ../debugSheetV3/debugsheetv3/sheetsrc && cp -r src ../debugSheetV3/debugsheetv3/sheetsrc"
   }
 
 }

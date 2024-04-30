@@ -10,6 +10,7 @@ import { Selector } from "./Workers/Selector.js";
 import { GetDivisionTotalWidth } from "./Core/Division.js";
 import { Instrument } from "./Core/Instrument.js";
 import { ManageHeight } from "./Workers/Heightener.js";
+import { KeyMapping, KeyPress } from "./Workers/Mappings.js";
 
 class App { 
   Canvas: HTMLCanvasElement;
@@ -25,6 +26,7 @@ class App {
   DraggingPositions: { x1: number, y1: number, x2: number, y2: number };
   NoteValue: number;
   Selector: Selector;
+  NotifyCallback: (msg: string) => void;
 
   // TODO: Off load some of this work to other classes/functions 
   // For now we prototype here
@@ -36,7 +38,9 @@ class App {
 
   constructor (canvas: HTMLCanvasElement, 
              context: CanvasRenderingContext2D,
-             load: boolean = false) {
+             notifyCallback: (msg: string) => void,
+              load = false) {
+    this.NotifyCallback = notifyCallback;
     this.Debug = true;
     this.Canvas = canvas;
     this.Selector = new Selector();
@@ -138,6 +142,7 @@ class App {
     this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === msrOver.Instrument));
 
     this.Update(x, y);
+    this.NotifyCallback("notify");
   }
   Update(x: number, y : number): void {
 
@@ -312,6 +317,11 @@ class App {
     });
     if (!clefExist)
       msr.Clefs.push(clef);
+  }
+
+  KeyInput(key: string, keymaps: KeyMapping): void {
+    KeyPress(this, key, keymaps);
+    this.NotifyCallback("notify");
   }
 }
 

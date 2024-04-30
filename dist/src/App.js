@@ -8,8 +8,10 @@ import { InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
 import { GetDivisionTotalWidth } from "./Core/Division.js";
 import { ManageHeight } from "./Workers/Heightener.js";
+import { KeyPress } from "./Workers/Mappings.js";
 class App {
-    constructor(canvas, context, load = false) {
+    constructor(canvas, context, notifyCallback, load = false) {
+        this.NotifyCallback = notifyCallback;
         this.Debug = true;
         this.Canvas = canvas;
         this.Selector = new Selector();
@@ -105,6 +107,7 @@ class App {
         InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput);
         this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === msrOver.Instrument));
         this.Update(x, y);
+        this.NotifyCallback("notify");
     }
     Update(x, y) {
         // this should be the only place that calls render
@@ -251,6 +254,10 @@ class App {
         });
         if (!clefExist)
             msr.Clefs.push(clef);
+    }
+    KeyInput(key, keymaps) {
+        KeyPress(this, key, keymaps);
+        this.NotifyCallback("notify");
     }
 }
 export { App };
