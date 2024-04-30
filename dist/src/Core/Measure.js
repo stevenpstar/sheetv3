@@ -3,9 +3,10 @@ import { CreateDivisions, ResizeDivisions } from './Division.js';
 import { StaffType } from './Instrument.js';
 import { Note } from './Note.js';
 class Measure {
-    constructor(properties) {
+    constructor(properties, runningId) {
         this.Clefs = [];
         this.GrandClefs = [];
+        this.RunningID = runningId;
         this.Instrument = properties.Instrument;
         this.Line = 0;
         this.Bounds = properties.Bounds;
@@ -233,6 +234,10 @@ class Measure {
         else {
             this.ClearRestNotes(note.Beat, note.Staff);
         }
+        note.SetID(this.RunningID.count);
+        this.RunningID.count++;
+        console.log("note: ");
+        console.log(note);
         this.Notes.push(note);
     }
     ClearNonRestNotes(beat, staff) {

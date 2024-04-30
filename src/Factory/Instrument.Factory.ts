@@ -28,7 +28,7 @@ function CreateInstrument(y: number): Instrument {
   return instr;
 }
 
-const CreateDefaultMeasure = (instr: Instrument, cam: Camera): Measure => {
+const CreateDefaultMeasure = (id: { count: number }, instr: Instrument, cam: Camera): Measure => {
 
   const msrHeight = instr.Staff === StaffType.Grand ? mh * 2 : mh;
 
@@ -45,7 +45,7 @@ const CreateDefaultMeasure = (instr: Instrument, cam: Camera): Measure => {
     RenderKey: false,
     Camera: cam
   }
-  return new Measure(props);
+  return new Measure(props, id);
 }
 
 const CreateMeasure = (instr: Instrument, 
@@ -54,6 +54,7 @@ const CreateMeasure = (instr: Instrument,
                     keySignature: string,
                     clef: string,
                     cam: Camera,
+                    runningId: { count: number },
                     renderClef: boolean = false): Measure =>
   {
     const props: MeasureProps = {
@@ -69,7 +70,7 @@ const CreateMeasure = (instr: Instrument,
       RenderKey: false,
       Camera: cam
     }
-    return new Measure(props);
+    return new Measure(props, runningId);
   }
 
 

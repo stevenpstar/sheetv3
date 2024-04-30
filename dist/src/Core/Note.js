@@ -12,10 +12,14 @@ class Note {
         this.Bounds = new Bounds(0, 0, 0, 0);
         this.Bounds.width = 12;
         this.Bounds.height = 10;
+        this.ID = -1;
         // note position is not based on bounds property
     }
     SetBounds(bounds) {
         this.Bounds = bounds;
+    }
+    SetID(id) {
+        this.ID = id;
     }
     SetTiedStartEnd(s, e) {
         this.TiedStart = s;

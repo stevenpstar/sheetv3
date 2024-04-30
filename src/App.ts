@@ -27,6 +27,7 @@ class App {
   NoteValue: number;
   Selector: Selector;
   NotifyCallback: (msg: string) => void;
+  RunningID: { count: number };
 
   // TODO: Off load some of this work to other classes/functions 
   // For now we prototype here
@@ -48,6 +49,7 @@ class App {
     this.Load = load;
     this.HoveredElements = { MeasureID: -1 };
     this.Zoom = 1;
+    this.RunningID = { count: 0 };
     this.CamDragging = false;
     this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.Camera = new Camera(0, 0);
@@ -63,7 +65,7 @@ class App {
       };
 
       sProps.Instruments.push(CreateDefaultPiano());
-      sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[0], this.Camera));
+      sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], this.Camera));
 
       this.Sheet = new Sheet(sProps);
     }
@@ -190,6 +192,7 @@ class App {
        prevMsr.KeySignature,
        "treble",
        this.Camera,
+       this.RunningID,
        newLine);
       this.Sheet.Measures.push(newMsr);
       this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));

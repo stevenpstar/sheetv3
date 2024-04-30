@@ -16,6 +16,7 @@ class Note {
   Rest: boolean;
   Tied: boolean;
   Accidental: number
+  ID: number;
 
   TiedStart: number; // beat
   TiedEnd: number; // beat
@@ -38,11 +39,16 @@ class Note {
     this.Bounds = new Bounds(0, 0, 0, 0);
     this.Bounds.width = 12;
     this.Bounds.height = 10;
+    this.ID = -1;
     // note position is not based on bounds property
   }
 
   SetBounds(bounds: Bounds): void {
     this.Bounds = bounds;
+  }
+
+  SetID(id: number): void {
+    this.ID = id;
   }
 
   SetTiedStartEnd(s: number, e: number): void {

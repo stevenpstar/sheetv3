@@ -19,6 +19,7 @@ class App {
         this.Load = load;
         this.HoveredElements = { MeasureID: -1 };
         this.Zoom = 1;
+        this.RunningID = { count: 0 };
         this.CamDragging = false;
         this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
         this.Camera = new Camera(0, 0);
@@ -32,7 +33,7 @@ class App {
                 Measures: []
             };
             sProps.Instruments.push(CreateDefaultPiano());
-            sProps.Measures.push(CreateDefaultMeasure(sProps.Instruments[0], this.Camera));
+            sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], this.Camera));
             this.Sheet = new Sheet(sProps);
         }
         this.NoteInput = false;
@@ -134,7 +135,7 @@ class App {
         }
         this.Sheet.Instruments.forEach(i => {
             const newMeasureBounds = new Bounds(x, i.Position.y, 150, prevMsr.Bounds.height);
-            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, "treble", this.Camera, newLine);
+            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, "treble", this.Camera, this.RunningID, newLine);
             this.Sheet.Measures.push(newMsr);
             this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
         });

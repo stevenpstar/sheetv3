@@ -71,8 +71,10 @@ class Measure {
 
   // Grouping of measures on a line/for formatting
   Line: number;
+  RunningID: { count: number };
 
-  constructor(properties: MeasureProps) {
+  constructor(properties: MeasureProps, runningId: { count: number }) {
+    this.RunningID = runningId;
     this.Instrument = properties.Instrument;
     this.Line = 0;
     this.Bounds = properties.Bounds;
@@ -315,6 +317,8 @@ class Measure {
     } else {
       this.ClearRestNotes(note.Beat, note.Staff);
     }
+    note.SetID(this.RunningID.count);
+    this.RunningID.count++;
     this.Notes.push(note);
   }
 
