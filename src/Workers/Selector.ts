@@ -46,6 +46,27 @@ class Selector {
     }
   }
 
+  SelectById(
+    measures: Measure[],
+    id: number): void {
+      this.DeselectAll();
+      measures.forEach(m => {
+        // check here for measure selection when implemented
+        // maybe also div/beam/stem/clef/sig/artic etc.
+        m.Notes.forEach(n => {
+          if (n.ID === id) {
+            n.Selected = true;
+            let nArray = [];
+            nArray.push(n);
+            if (n.Tied) {
+              nArray.push(...SelectTiedNotes(n, m));
+            }
+            this.Notes.set(m, nArray);
+          }
+        })
+      })
+    }
+
   SelectNote(
     msr: Measure,
     x: number, y: number,

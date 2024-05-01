@@ -14,6 +14,7 @@ import { KeyMapping, KeyPress } from "./Workers/Mappings.js";
 
 class App { 
   Canvas: HTMLCanvasElement;
+  Container: HTMLElement;
   Context: CanvasRenderingContext2D;
   Load: boolean;
   Sheet: Sheet;
@@ -38,12 +39,14 @@ class App {
   Debug: boolean;
 
   constructor (canvas: HTMLCanvasElement, 
+               container: HTMLElement,
              context: CanvasRenderingContext2D,
              notifyCallback: (msg: string) => void,
               load = false) {
     this.NotifyCallback = notifyCallback;
     this.Debug = true;
     this.Canvas = canvas;
+    this.Container = container;
     this.Selector = new Selector();
     this.Context = context;
     this.Load = load;
@@ -147,7 +150,9 @@ class App {
     this.NotifyCallback("notify");
   }
   Update(x: number, y : number): void {
-
+//    this.Canvas.width = this.Container.clientWidth;
+//    this.Canvas.height = 4000;
+//    this.Container.style.height = this.Canvas.height + 'px';
     // this should be the only place that calls render
     this.Render({ x: x, y: y });
   }
@@ -288,6 +293,7 @@ class App {
         if (n.Accidental > 2) { n.Accidental = 2; }
       });
     }
+    this.Update(0, 0);
   }
   Flatten(): void {
     for (let [ msr, notes ] of this.Selector.Notes ) {
@@ -296,6 +302,7 @@ class App {
         if (n.Accidental < -2) { n.Accidental = -2; }
       })
     }
+    this.Update(0, 0);
   }
 
   //TODO: Remove this test function
@@ -325,6 +332,10 @@ class App {
   KeyInput(key: string, keymaps: KeyMapping): void {
     KeyPress(this, key, keymaps);
     this.NotifyCallback("notify");
+  }
+
+  SelectById(id: number): void {
+    this.Selector.SelectById(this.Sheet.Measures, id);
   }
 }
 

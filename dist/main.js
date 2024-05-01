@@ -26,10 +26,10 @@ function returnCanvas(id) {
         // set defaults for canvas
         //    canvas.width = 1920;
         //    canvas.height = 1080;
-        canvas.style.width = '1920px';
-        canvas.style.height = '1080px';
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
+        //    canvas.style.width = '1920px';
+        //    canvas.style.height = '1080px';
+        //    canvas.width = canvas.clientWidth;
+        //    canvas.height = canvas.clientHeight;
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
     return { canvas: canvas, context: context };
@@ -42,6 +42,6 @@ const { canvas, context } = returnCanvas("canvas");
 let Application;
 function main() {
     // Application = new App(canvas, context);
-    Application = sheet.CreateApp(canvas, document, keymaps, notify);
+    Application = sheet.CreateApp(canvas, document.getElementById("canvas-container"), document, keymaps, notify);
 }
 main();

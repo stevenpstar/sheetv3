@@ -236,8 +236,6 @@ class Measure {
         }
         note.SetID(this.RunningID.count);
         this.RunningID.count++;
-        console.log("note: ");
-        console.log(note);
         this.Notes.push(note);
     }
     ClearNonRestNotes(beat, staff) {

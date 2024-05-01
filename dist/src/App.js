@@ -10,10 +10,11 @@ import { GetDivisionTotalWidth } from "./Core/Division.js";
 import { ManageHeight } from "./Workers/Heightener.js";
 import { KeyPress } from "./Workers/Mappings.js";
 class App {
-    constructor(canvas, context, notifyCallback, load = false) {
+    constructor(canvas, container, context, notifyCallback, load = false) {
         this.NotifyCallback = notifyCallback;
         this.Debug = true;
         this.Canvas = canvas;
+        this.Container = container;
         this.Selector = new Selector();
         this.Context = context;
         this.Load = load;
@@ -111,6 +112,9 @@ class App {
         this.NotifyCallback("notify");
     }
     Update(x, y) {
+        //    this.Canvas.width = this.Container.clientWidth;
+        //    this.Canvas.height = 4000;
+        //    this.Container.style.height = this.Canvas.height + 'px';
         // this should be the only place that calls render
         this.Render({ x: x, y: y });
     }
@@ -222,6 +226,7 @@ class App {
                 }
             });
         }
+        this.Update(0, 0);
     }
     Flatten() {
         for (let [msr, notes] of this.Selector.Notes) {
@@ -232,6 +237,7 @@ class App {
                 }
             });
         }
+        this.Update(0, 0);
     }
     //TODO: Remove this test function
     ScaleToggle() {
@@ -259,6 +265,9 @@ class App {
     KeyInput(key, keymaps) {
         KeyPress(this, key, keymaps);
         this.NotifyCallback("notify");
+    }
+    SelectById(id) {
+        this.Selector.SelectById(this.Sheet.Measures, id);
     }
 }
 export { App };
