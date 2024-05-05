@@ -1,4 +1,5 @@
 import { App } from "./App.js";
+import ISelectable from "./Types/ISelectable.js";
 import { KeyMapping } from "./Workers/Mappings.js";
 
 let gSheet: App;
@@ -52,17 +53,16 @@ function keyDown(app: App, keymaps: any, e: KeyboardEvent): void {
 }
 
 function zoom(app: App, e: WheelEvent): void {
-  console.log("zooming? ");
-  console.log(e.ctrlKey);
-  if (e.ctrlKey) {
+    if (e.ctrlKey) {
     e.preventDefault();
     const scale = e.deltaY * -0.01;
     scale > 0 ? app.AlterZoom(0.05) : app.AlterZoom(-0.05);
   }
 }
 
-function resize(canvas: HTMLCanvasElement, container: HTMLElement): void {
+function resize(app: App, canvas: HTMLCanvasElement, container: HTMLElement): void {
   canvas.width = container.clientWidth;
+  app.Update(0, 0);
 }
 
 export module sheet {
@@ -78,7 +78,7 @@ export module sheet {
     canvas.addEventListener("mousedown", (e) => mouseDown(app, canvas, e));
     canvas.addEventListener("mouseup", (e) => mouseUp(app, canvas, e));
     doc.addEventListener("keydown", (e) => keyDown(app, keyMap, e));
-    doc.addEventListener("resize", () => resize(canvas, container));
+    window.addEventListener("resize", () => resize(app, canvas, container));
     canvas.addEventListener("wheel", (e) => zoom(app, e));
     gSheet = app;
     canvas.width = container.clientWidth;
@@ -110,7 +110,11 @@ export module sheet {
     gSheet.Delete();
   }
 
-  export function SelectById(id: number): void {
-    gSheet.SelectById(id);
+  export function SelectById(id: number): ISelectable {
+    return gSheet.SelectById(id);
+  }
+
+  export function ToggleFormatting(): void {
+    gSheet.ToggleFormatting();
   }
 }

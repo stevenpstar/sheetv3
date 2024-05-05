@@ -1,8 +1,10 @@
 import { RenderPanel } from "../Renderers/Debug.Renderer.js";
 import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
+import { RenderPage } from "../Renderers/Page.Renderer.js";
 import { Selector } from "../Workers/Selector.js";
 import { Camera } from "./Camera.js";
 import { Measure } from "./Measure.js";
+import { Page } from "./Page.js";
 import { Sheet } from "./Sheet.js";
 
 const renderDebug = false;
@@ -11,14 +13,14 @@ const scaleV = 1;
 const Renderer = (c: HTMLCanvasElement, 
                   ctx: CanvasRenderingContext2D,
                   measures: Measure[],
+                  pages: Page[],
                   hovElements: {MeasureID: number},
                   mousePos: {x: number, y: number},
                  cam: Camera,
                  noteInput: boolean,
-                 restInput: boolean) => {
+                 restInput: boolean,
+                 formatting: boolean) => {
   // reset
-    const a4w = 210;
-  const a4h = 297;
   ctx.fillStyle = "grey";
 
   ctx.save();
@@ -26,8 +28,9 @@ const Renderer = (c: HTMLCanvasElement,
   ctx.clearRect(0, 0, c.width, c.height);
   ctx.fillRect(0, 0, c.width, c.height);
   ctx.restore();
-  ctx.fillStyle = "white";
-  ctx.fillRect(-80 + cam.x, -80 + cam.y, a4w * 5, a4h * 5);
+  pages.forEach(page => {
+    RenderPage(page, c, ctx, cam, formatting);
+  });
   ctx.fillStyle = "black";
 
   measures.forEach((m: Measure, i: number) => {

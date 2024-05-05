@@ -36,6 +36,7 @@ class Selector {
         }
     }
     SelectById(measures, id) {
+        let selectable;
         this.DeselectAll();
         measures.forEach(m => {
             // check here for measure selection when implemented
@@ -43,6 +44,7 @@ class Selector {
             m.Notes.forEach(n => {
                 if (n.ID === id) {
                     n.Selected = true;
+                    selectable = n;
                     let nArray = [];
                     nArray.push(n);
                     if (n.Tied) {
@@ -52,6 +54,7 @@ class Selector {
                 }
             });
         });
+        return selectable;
     }
     SelectNote(msr, x, y, cam, shiftKey) {
         let noteHit = false;

@@ -1,4 +1,5 @@
 import { Bounds } from "../Types/Bounds.js";
+import ISelectable from "../Types/ISelectable.js";
 
 interface NoteProps {
   Beat: number;
@@ -9,7 +10,7 @@ interface NoteProps {
   Staff: number;
 }
 
-class Note {
+class Note implements ISelectable {
   Beat: number;
   Duration: number;
   Line: number;

@@ -45,16 +45,15 @@ function keyDown(app, keymaps, e) {
     app.KeyInput(key, keymaps);
 }
 function zoom(app, e) {
-    console.log("zooming? ");
-    console.log(e.ctrlKey);
     if (e.ctrlKey) {
         e.preventDefault();
         const scale = e.deltaY * -0.01;
         scale > 0 ? app.AlterZoom(0.05) : app.AlterZoom(-0.05);
     }
 }
-function resize(canvas, container) {
+function resize(app, canvas, container) {
     canvas.width = container.clientWidth;
+    app.Update(0, 0);
 }
 export var sheet;
 (function (sheet) {
@@ -65,7 +64,7 @@ export var sheet;
         canvas.addEventListener("mousedown", (e) => mouseDown(app, canvas, e));
         canvas.addEventListener("mouseup", (e) => mouseUp(app, canvas, e));
         doc.addEventListener("keydown", (e) => keyDown(app, keyMap, e));
-        doc.addEventListener("resize", () => resize(canvas, container));
+        window.addEventListener("resize", () => resize(app, canvas, container));
         canvas.addEventListener("wheel", (e) => zoom(app, e));
         gSheet = app;
         canvas.width = container.clientWidth;
@@ -98,7 +97,11 @@ export var sheet;
     }
     sheet.Delete = Delete;
     function SelectById(id) {
-        gSheet.SelectById(id);
+        return gSheet.SelectById(id);
     }
     sheet.SelectById = SelectById;
+    function ToggleFormatting() {
+        gSheet.ToggleFormatting();
+    }
+    sheet.ToggleFormatting = ToggleFormatting;
 })(sheet || (sheet = {}));

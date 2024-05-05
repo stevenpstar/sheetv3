@@ -1,8 +1,10 @@
 import { Bounds } from '../Types/Bounds.js';
+import { UpdateNoteBounds } from '../Workers/NoteInput.js';
 import { Camera } from './Camera.js';
 import { CreateDivisions, type Division, ResizeDivisions } from './Division.js';
 import { Instrument, StaffType } from './Instrument.js';
 import { Note, NoteProps } from './Note.js';
+import { Page } from './Page.js';
 
 interface MeasureProps {
   Instrument: Instrument,
@@ -16,6 +18,7 @@ interface MeasureProps {
   RenderTimeSig: boolean;
   RenderKey: boolean;
   Camera: Camera;
+  Page: Page;
 }
 
 interface Clef {
@@ -38,6 +41,8 @@ class Measure {
   RenderKey: boolean;
   RenderTimeSig: boolean;
   Camera: Camera;
+  Page: Page;
+  PageLine: Number;
 
   XOffset: number; // not sure if this is what we want to go with
 
@@ -92,6 +97,8 @@ class Measure {
     if (this.Instrument.Staff === StaffType.Grand) {
       this.GrandClefs.push({Type: "bass", Beat: 1});
     }
+    this.Page = properties.Page;
+    this.PageLine = properties.Page.PageLines[0].Number;
 
     this.PrefBoundsY = this.Bounds.y;
     this.PrevBoundsH = this.Bounds.height;
@@ -189,6 +196,8 @@ class Measure {
       ResizeDivisions(this, this.Divisions, 1);
     }
   ResizeDivisions(this, this.Divisions, 0);
+  UpdateNoteBounds(this, 0);
+  UpdateNoteBounds(this, 1);
 }
 
   Reposition(prevMsr: Measure): void {

@@ -1,4 +1,5 @@
 import { Bounds } from '../Types/Bounds.js';
+import { UpdateNoteBounds } from '../Workers/NoteInput.js';
 import { CreateDivisions, ResizeDivisions } from './Division.js';
 import { StaffType } from './Instrument.js';
 import { Note } from './Note.js';
@@ -24,6 +25,8 @@ class Measure {
         if (this.Instrument.Staff === StaffType.Grand) {
             this.GrandClefs.push({ Type: "bass", Beat: 1 });
         }
+        this.Page = properties.Page;
+        this.PageLine = properties.Page.PageLines[0].Number;
         this.PrefBoundsY = this.Bounds.y;
         this.PrevBoundsH = this.Bounds.height;
         this.SetXOffset();
@@ -109,6 +112,8 @@ class Measure {
             ResizeDivisions(this, this.Divisions, 1);
         }
         ResizeDivisions(this, this.Divisions, 0);
+        UpdateNoteBounds(this, 0);
+        UpdateNoteBounds(this, 1);
     }
     Reposition(prevMsr) {
         this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;

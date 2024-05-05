@@ -2,6 +2,7 @@ import { Camera } from "../Core/Camera.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
+import ISelectable from "../Types/ISelectable.js";
 class Selector {
   Measures: Measure[];
  // Notes: { msr: Measure, note: Note }[];
@@ -48,7 +49,8 @@ class Selector {
 
   SelectById(
     measures: Measure[],
-    id: number): void {
+    id: number): ISelectable {
+      let selectable: ISelectable;
       this.DeselectAll();
       measures.forEach(m => {
         // check here for measure selection when implemented
@@ -56,6 +58,7 @@ class Selector {
         m.Notes.forEach(n => {
           if (n.ID === id) {
             n.Selected = true;
+            selectable = n;
             let nArray = [];
             nArray.push(n);
             if (n.Tied) {
@@ -64,7 +67,8 @@ class Selector {
             this.Notes.set(m, nArray);
           }
         })
-      })
+      });
+      return selectable;
     }
 
   SelectNote(

@@ -8,7 +8,7 @@ const lineHeight = 5;
 const mh = (sBotLine - sTopLine) * lineHeight;
 const CreateDefaultPiano = () => {
     const defaultPiano = {
-        Position: { x: 0, y: 0 },
+        Position: { x: 100, y: 100 },
         Staff: StaffType.Grand
     };
     return defaultPiano;
@@ -20,11 +20,11 @@ function CreateInstrument(y) {
     };
     return instr;
 }
-const CreateDefaultMeasure = (id, instr, cam) => {
+const CreateDefaultMeasure = (id, instr, page, cam) => {
     const msrHeight = instr.Staff === StaffType.Grand ? mh * 2 : mh;
     const props = {
         Instrument: instr,
-        Bounds: new Bounds(0, instr.Position.y, 150, msrHeight),
+        Bounds: new Bounds(instr.Position.x, instr.Position.y, 150, msrHeight),
         TimeSignature: { top: 4, bottom: 4 },
         KeySignature: "CMaj/Amin",
         Notes: [],
@@ -33,11 +33,12 @@ const CreateDefaultMeasure = (id, instr, cam) => {
         RenderClef: true,
         RenderTimeSig: true,
         RenderKey: false,
-        Camera: cam
+        Camera: cam,
+        Page: page,
     };
     return new Measure(props, id);
 };
-const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, runningId, renderClef = false) => {
+const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, runningId, page, renderClef = false) => {
     const props = {
         Instrument: instr,
         Bounds: bounds,
@@ -49,7 +50,8 @@ const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, ru
         RenderClef: false,
         RenderTimeSig: false,
         RenderKey: false,
-        Camera: cam
+        Camera: cam,
+        Page: page
     };
     return new Measure(props, runningId);
 };
