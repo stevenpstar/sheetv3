@@ -1,7 +1,8 @@
 import { Bounds } from '../Types/Bounds.js';
+import ISelectable from '../Types/ISelectable.js';
 import { UpdateNoteBounds } from '../Workers/NoteInput.js';
 import { Camera } from './Camera.js';
-import { CreateDivisions, type Division, ResizeDivisions } from './Division.js';
+import { CreateDivisions, type Division, ResizeDivisions, DivisionMinWidth } from './Division.js';
 import { Instrument, StaffType } from './Instrument.js';
 import { Note, NoteProps } from './Note.js';
 import { Page } from './Page.js';
@@ -26,7 +27,9 @@ interface Clef {
   Beat: number;
 }
 
-class Measure {
+class Measure implements ISelectable {
+  ID: number;
+  Selected: boolean;
   Instrument: Instrument;
   Bounds: Bounds;
   Clefs: Clef[] = [];
@@ -80,6 +83,8 @@ class Measure {
 
   constructor(properties: MeasureProps, runningId: { count: number }) {
     this.RunningID = runningId;
+    this.ID = 0;
+    this.Selected = false;
     this.Instrument = properties.Instrument;
     this.Line = 0;
     this.Bounds = properties.Bounds;
@@ -374,6 +379,16 @@ class Measure {
         }
       }
     }
+  }
+
+  GetMinimumWidth(): number {
+    if (this.Notes.filter(n => n.Rest !== true).length === 0) {
+      return DivisionMinWidth * 4;
+    }
+    const staffZeroDivs = this.Divisions.filter(div => div.Staff === 0);
+    const staffOneDivs = this.Divisions.filter(div => div.Staff === 1);
+    const count = staffZeroDivs.length > staffOneDivs.length ? staffZeroDivs.length : staffOneDivs.length;
+    return count * DivisionMinWidth;
   }
 }
 

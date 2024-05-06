@@ -6,9 +6,9 @@ import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
 import { InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
-import { GetDivisionTotalWidth } from "./Core/Division.js";
 import { KeyPress } from "./Workers/Mappings.js";
 import { Page } from "./Core/Page.js";
+import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 class App {
     constructor(canvas, container, context, notifyCallback, load = false) {
         this.NotifyCallback = notifyCallback;
@@ -45,7 +45,7 @@ class App {
         }
         this.NoteInput = false;
         this.RestInput = false;
-        this.Formatting = true;
+        this.Formatting = false;
         this.Update(0, 0);
     }
     Hover(x, y) {
@@ -111,8 +111,12 @@ class App {
             }
             return;
         } // no measure over
-        if (!this.NoteInput && !this.Formatting) {
-            this.Selector.SelectNote(msrOver, x, y, this.Camera, shiftKey);
+        if (!this.NoteInput) {
+            const selectedNote = this.Selector.SelectNote(msrOver, x, y, this.Camera, shiftKey);
+            console.log("SelectedNote: ", selectedNote);
+            if (!selectedNote) {
+                this.Selector.SelectMeasure(msrOver);
+            }
             if (!this.DraggingNote) {
                 this.DraggingNote = true;
             }
@@ -146,15 +150,15 @@ class App {
         let x = 0;
         this.Sheet.Instruments.forEach(i => {
             let latestLine = this.Sheet.Pages[0].PageLines[this.Sheet.Pages[0].PageLines.length - 1];
-            const msrCountOnLine = this.Sheet.Measures.filter(m => m.PageLine === latestLine.Number);
-            if (msrCountOnLine.length > 3) {
-                latestLine = this.Sheet.Pages[0].AddLine();
-            }
-            console.log(this.Sheet.Pages[0]);
+            //    const msrCountOnLine = this.Sheet.Measures.filter(m => m.PageLine === latestLine.Number);
+            //    if (msrCountOnLine.length > 3) {
+            //      latestLine = this.Sheet.Pages[0].AddLine();
+            //    }
+            //    console.log(this.Sheet.Pages[0]);
             const newMeasureBounds = new Bounds(x, latestLine.LineBounds.y, 150, prevMsr.Bounds.height);
             const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, "treble", this.Camera, this.RunningID, this.Sheet.Pages[0], // Page will need to be determined
             false);
-            newMsr.PageLine = latestLine.Number;
+            //      newMsr.PageLine = latestLine.Number;
             this.Sheet.Measures.push(newMsr);
             this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
         });
@@ -267,33 +271,42 @@ class App {
         // TODO: Prototyping stuff so refactor later
         const maxMeasuresPerLine = 4;
         const minMeasuresPerLine = 3;
-        const page = this.Sheet.Pages[0];
-        const msrOnPage1 = measures.filter(m => m.Page.Number === 1);
-        const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
-        msrOnPage1.forEach((msr, i) => {
-            //      msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
-            //
-            const msrPageLine = msr.PageLine;
-            const msrsOnLine = msrOnPage1.filter(m => m.PageLine === msrPageLine);
-            if (msrsOnLine.length < 3) {
-                msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
-            }
-            else {
-                msr.Bounds.width = (pageSize / msrsOnLine.length) - msr.XOffset - 2;
-            }
-            if (msr === msrsOnLine[0]) {
-                msr.Bounds.x = msr.Page.Bounds.x + msr.Page.Margins.left;
-                console.log(msr.Bounds.x);
-                // TODO: STILL PROTOTYPING BASICALLY THIS WHOLE METHOD
-                msr.RenderClef = true;
-                msr.RenderTimeSig = true;
-                msr.SetXOffset();
-                msr.CreateDivisions(this.Camera);
-            }
-            else {
-                measures[i].Reposition(measures[i - 1]);
-            }
-        });
+        SetPagesAndLines(measures, this.Sheet.Pages[0]);
+        ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera);
+        //  const page = this.Sheet.Pages[0];
+        //  const msrOnPage1 = measures.filter(m => m.Page.Number === 1);
+        //  const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
+        //  msrOnPage1.forEach((msr: Measure, i: number) => {
+        ////      msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
+        //    //
+        //    const msrPageLine = msr.PageLine;
+        //    const msrsOnLine = msrOnPage1.filter(m => m.PageLine === msrPageLine);
+        //    let msrsLineWidth = 0;
+        //    msrsOnLine.forEach(m => {
+        //      msrsLineWidth += m.GetMinimumWidth() + m.XOffset;
+        //    })
+        //    const fillWidth = pageSize - msrsLineWidth;
+        //    console.log("fillWidth: ", fillWidth);
+        //    if (msrsOnLine.length < 3) {
+        //      //msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
+        //      msr.Bounds.width = msr.GetMinimumWidth();
+        //    }
+        //    else {
+        ////        msr.Bounds.width = (pageSize / msrsOnLine.length) - msr.XOffset - 2;
+        //        msr.Bounds.width = msr.GetMinimumWidth() + (fillWidth / msrsOnLine.length);
+        //    }
+        //    if (msr === msrsOnLine[0]) {
+        //      msr.Bounds.x = msr.Page.Bounds.x + msr.Page.Margins.left;
+        //      console.log(msr.Bounds.x);
+        //      // TODO: STILL PROTOTYPING BASICALLY THIS WHOLE METHOD
+        //      msr.RenderClef = true;
+        //      msr.RenderTimeSig = true;
+        //      msr.SetXOffset();
+        //      msr.CreateDivisions(this.Camera);
+        //    } else {
+        //      measures[i].Reposition(measures[i-1]);
+        //    }
+        //  });
         this.Update(0, 0);
     }
     SetNoteValue(val) {

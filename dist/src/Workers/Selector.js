@@ -56,6 +56,20 @@ class Selector {
         });
         return selectable;
     }
+    SelectMeasure(msr) {
+        console.log("msr: ", msr.ID);
+        console.log("msrs: ", this.Measures);
+        if (this.Measures.find(m => m.ID === msr.ID)) {
+            console.log("found");
+            const index = this.Measures.indexOf(msr);
+            msr.Selected = false;
+            this.Measures.splice(index, 1);
+        }
+        else {
+            this.Measures.push(msr);
+            msr.Selected = true;
+        }
+    }
     SelectNote(msr, x, y, cam, shiftKey) {
         let noteHit = false;
         msr.Divisions.forEach((div) => {
@@ -108,7 +122,9 @@ class Selector {
         });
         if (!noteHit && !shiftKey) {
             this.DeselectAll();
+            return false;
         }
+        return true;
     }
 }
 function SelectTiedNotes(n, msr) {

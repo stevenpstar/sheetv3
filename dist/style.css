@@ -4,7 +4,7 @@ html, body {
 }
 
 main {
-  overflow: scroll;
+  overflow: hidden;
   height: 100%;
 }
 

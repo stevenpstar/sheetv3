@@ -1,6 +1,6 @@
 import { Bounds } from '../Types/Bounds.js';
 import { UpdateNoteBounds } from '../Workers/NoteInput.js';
-import { CreateDivisions, ResizeDivisions } from './Division.js';
+import { CreateDivisions, ResizeDivisions, DivisionMinWidth } from './Division.js';
 import { StaffType } from './Instrument.js';
 import { Note } from './Note.js';
 class Measure {
@@ -8,6 +8,8 @@ class Measure {
         this.Clefs = [];
         this.GrandClefs = [];
         this.RunningID = runningId;
+        this.ID = 0;
+        this.Selected = false;
         this.Instrument = properties.Instrument;
         this.Line = 0;
         this.Bounds = properties.Bounds;
@@ -283,6 +285,15 @@ class Measure {
                 }
             }
         }
+    }
+    GetMinimumWidth() {
+        if (this.Notes.filter(n => n.Rest !== true).length === 0) {
+            return DivisionMinWidth * 4;
+        }
+        const staffZeroDivs = this.Divisions.filter(div => div.Staff === 0);
+        const staffOneDivs = this.Divisions.filter(div => div.Staff === 1);
+        const count = staffZeroDivs.length > staffOneDivs.length ? staffZeroDivs.length : staffOneDivs.length;
+        return count * DivisionMinWidth;
     }
 }
 export { Measure };

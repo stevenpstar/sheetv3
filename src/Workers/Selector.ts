@@ -20,7 +20,6 @@ class Selector {
       });
       this.Notes.delete(measure);
     };
-
   }
 
   DeselectNote(note: Note): void {
@@ -71,11 +70,25 @@ class Selector {
       return selectable;
     }
 
+  SelectMeasure(msr: Measure): void {
+    console.log("msr: ", msr.ID);
+    console.log("msrs: ", this.Measures);
+    if (this.Measures.find(m => m.ID === msr.ID)) {
+      console.log("found");
+      const index = this.Measures.indexOf(msr);
+      msr.Selected = false;
+      this.Measures.splice(index, 1);
+    } else {
+      this.Measures.push(msr);
+      msr.Selected = true;
+    }
+  }
+
   SelectNote(
     msr: Measure,
     x: number, y: number,
     cam: Camera,
-    shiftKey: boolean): void {
+    shiftKey: boolean): boolean {
       let noteHit = false;
       msr.Divisions.forEach((div: Division) => {
         const divNotes = msr.Notes.filter((note: Note) => note.Beat === div.Beat);
@@ -123,7 +136,9 @@ class Selector {
           }
         });
       });
-      if (!noteHit && !shiftKey) { this.DeselectAll(); }
+      if (!noteHit && !shiftKey) { this.DeselectAll();
+        return false}
+      return true;
     }
 }
 

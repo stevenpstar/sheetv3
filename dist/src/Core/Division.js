@@ -254,4 +254,4 @@ function IsRestOnBeat(beat, notes, staff) {
     }
     return restFound !== undefined;
 }
-export { CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, IsRestOnBeat, GetDivisionGroups };
+export { CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, IsRestOnBeat, GetDivisionGroups, DivisionMinWidth, DivisionMaxWidth };

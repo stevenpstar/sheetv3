@@ -1,6 +1,7 @@
 import { Camera } from "../Core/Camera.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
+import { Stem } from "../Core/Stem.js";
 import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
@@ -307,7 +308,8 @@ function RenderStemRevise(
 
     let stemDirection = StemDirection.Up;  
     let stemToMidLine = false;
-    let beamDirection = BeamDirection.Flat;
+    //TODO: We are just going to see what happens with up
+    let beamDirection = BeamDirection.Up;
 
     let stemEndY = 0; // end y position of stem
 
@@ -351,7 +353,7 @@ function RenderStemRevise(
       }
     }
 
-    // Render stems
+    // Render stems TODO: Move stem creation logic elsewhere
     divisions.forEach((div: Division, i: number) => {
       if (div.Duration === 1) { return; }
       const xBuffer = stemDirection === StemDirection.Up ? 10 : 0;
@@ -377,9 +379,11 @@ function RenderStemRevise(
                       div.Bounds.y + ((lowLine - yLineBuffer) * lineHeight) + camera.y :
                       div.Bounds.y + ((highLine - yLineBuffer) * lineHeight) + camera.y;
       const diff = stemEndY - startPos;
-      context.fillStyle = "black";
-      context.fillRect(stemX, (startPos),
-               2, diff);
+      const newStem = new Stem(new Bounds(stemX, startPos, 2, diff));
+      newStem.Render(context, camera);
+//      context.fillStyle = "black";
+//      context.fillRect(stemX, (startPos),
+//               2, diff);
       if (divisions.length === 1 && divisions[0].Duration < 0.25) {
         const flagLoop = GetFlagCount(div.Duration);
         if (stemDirection === StemDirection.Up) {
@@ -401,13 +405,15 @@ function RenderStemRevise(
         const yBuffer = (stemDirection === StemDirection.Up) ?
           0 : -5;
         const nextStemX = nextDiv.Bounds.x + camera.x + xBuffer + noteXBuffer; 
-        for (let i = 0; i < beamLoop; i++) {
-          const beamY = stemDirection === StemDirection.Up ?
-            stemEndY + yBuffer + (7 * i) : stemEndY + yBuffer - (7 * i);
-          context.fillRect(stemX, beamY, nextStemX - stemX, 5); 
-        }
+//        for (let i = 0; i < beamLoop; i++) {
+//          const beamY = stemDirection === StemDirection.Up ?
+//            stemEndY + yBuffer + (7 * i) : stemEndY + yBuffer - (7 * i);
+//          context.fillRect(stemX, beamY, nextStemX - stemX, 5); 
+//        }
       }
     });
+
+    //TODO: Actual prototype code here
 }
 
 function GetFlagCount(value: number): number {

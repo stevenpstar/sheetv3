@@ -299,5 +299,7 @@ export { Division,
   DivGroups,
   DivGroup,
   IsRestOnBeat,
-  GetDivisionGroups}
+  GetDivisionGroups,
+  DivisionMinWidth,
+  DivisionMaxWidth}
 

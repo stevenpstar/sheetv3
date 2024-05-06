@@ -68,7 +68,7 @@ export var sheet;
         canvas.addEventListener("wheel", (e) => zoom(app, e));
         gSheet = app;
         canvas.width = container.clientWidth;
-        canvas.height = 4000;
+        canvas.height = container.clientHeight;
         return app;
     }
     sheet.CreateApp = CreateApp;

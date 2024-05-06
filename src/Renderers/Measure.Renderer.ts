@@ -91,6 +91,15 @@ function RenderMeasureBase(
 
     const { canvas, context, camera } = renderProps;
 
+    // prob move elsewhere I don't know
+    if (msr.Selected) {
+    context.fillStyle = "rgba(0, 0, 100, 0.1)";
+    context.fillRect(msr.Bounds.x + camera.x,
+                     msr.Bounds.y + camera.y,
+                     msr.Bounds.width + msr.XOffset,
+                     msr.Bounds.height);
+    }
+
     const msrMidLine = 15 - msr.SALineTop;
     const grndMsrMidLine = msr.GetGrandMeasureMidLine();
 
