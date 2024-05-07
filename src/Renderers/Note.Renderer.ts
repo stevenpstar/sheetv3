@@ -1,3 +1,4 @@
+import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
 import { Camera } from "../Core/Camera.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
@@ -13,8 +14,10 @@ enum StemDirection {
 };
 
 enum BeamDirection {
-  Up,
-  Down,
+  UpMax,
+  UpDynamic,
+  DownMax,
+  DownDynamic,
   Flat
 }
 
@@ -286,7 +289,8 @@ function RenderStemRevise(
   notes: Array<Note[]>,
   divisions: Division[],
   staff: number,
-  msr: Measure): void {
+  msr: Measure,
+  beamDir: BeamDirection): void {
 
     // Check that divisions and note arrays match
     let match = true;
@@ -309,7 +313,7 @@ function RenderStemRevise(
     let stemDirection = StemDirection.Up;  
     let stemToMidLine = false;
     //TODO: We are just going to see what happens with up
-    let beamDirection = BeamDirection.Up;
+    let beamDirection = BeamDirection.UpMax;
 
     let stemEndY = 0; // end y position of stem
 
@@ -378,9 +382,9 @@ function RenderStemRevise(
       const startPos = (stemDirection === StemDirection.Up) ? 
                       div.Bounds.y + ((lowLine - yLineBuffer) * lineHeight) + camera.y :
                       div.Bounds.y + ((highLine - yLineBuffer) * lineHeight) + camera.y;
-      const diff = stemEndY - startPos;
-      const newStem = new Stem(new Bounds(stemX, startPos, 2, diff));
-      newStem.Render(context, camera);
+//      const diff = stemEndY - startPos;
+//      const newStem = new Stem(new Bounds(stemX, startPos, 2, diff));
+//      newStem.Render(context, camera);
 //      context.fillStyle = "black";
 //      context.fillRect(stemX, (startPos),
 //               2, diff);
@@ -397,23 +401,64 @@ function RenderStemRevise(
             context.fill(new Path2D(flagString + quaverFlagInverted));
           }
         }
-      } else if (divisions.length > 1 && divisions[0].Duration < 0.25 &&
-                i !== divisions.length - 1) {
+      } else if (divisions.length > 1 && divisions[0].Duration < 0.25) {
         context.fillStyle = "black";
-        const nextDiv = divisions[i+1];
-        const beamLoop = GetFlagCount(nextDiv.Duration);
-        const yBuffer = (stemDirection === StemDirection.Up) ?
-          0 : -5;
-        const nextStemX = nextDiv.Bounds.x + camera.x + xBuffer + noteXBuffer; 
+//        const nextDiv = divisions[i+1];
+//        const beamLoop = GetFlagCount(nextDiv.Duration);
+//        const yBuffer = (stemDirection === StemDirection.Up) ?
+//          0 : -5;
+//        const nextStemX = nextDiv.Bounds.x + camera.x + xBuffer + noteXBuffer; 
+        // getting highest line in division 0
+        let startY = 0;
+        let endY = 0;
+        let xB = stemDirection === StemDirection.Up ? 19 : 9;
+        stemEndY = stemDirection === StemDirection.Up ?
+          Measure.GetNotePositionOnLine(msr, highestLine) - 35 + camera.y :
+          Measure.GetNotePositionOnLine(msr, lowestLine) + 35 + camera.y;
+        if (beamDir === BeamDirection.UpMax) {
+//          stemEndY = Measure.GetNotePositionOnLine(msr, highestLine) - 35 + camera.y;
+          if (stemDirection === StemDirection.Up) {
+            stemEndY -= i * (10 / (divisions.length - 1));
+            endY = stemEndY - 10;
+          } else {
+            stemEndY += i * (10 / (divisions.length - 1));
+            endY = stemEndY + 10;
+          }
+        } else if (beamDir === BeamDirection.DownMax) {
+          if (stemDirection === StemDirection.Up) {
+            stemEndY += i * (10 / (divisions.length - 1));
+            endY = stemEndY + 10;
+          } else {
+            stemEndY -= i * (10 / (divisions.length - 1));
+            endY = stemEndY - 10;
+          }
+        } else {
+          endY = stemEndY;
+        }
+        if (i === 0) {
+          const newBeam = new Beam(
+            new Bounds(divisions[0].Bounds.x + 19,
+                       stemEndY, 5, 5),
+                       { x: divisions[0].Bounds.x + xB, y: stemEndY - camera.y},
+                       { x: divisions[divisions.length-1].Bounds.x + xB, y: endY - camera.y});
+          newBeam.Render(context, camera);
+        }
 //        for (let i = 0; i < beamLoop; i++) {
 //          const beamY = stemDirection === StemDirection.Up ?
 //            stemEndY + yBuffer + (7 * i) : stemEndY + yBuffer - (7 * i);
 //          context.fillRect(stemX, beamY, nextStemX - stemX, 5); 
 //        }
       }
+      const diff = stemEndY - startPos;
+      const newStem = new Stem(new Bounds(stemX, startPos, 2, diff));
+      newStem.Render(context, camera);
     });
-
     //TODO: Actual prototype code here
+}
+
+// TODO: TEST FUNCTION
+function TEST_GetBeamDirection(): BeamDirection {
+  return BeamDirection.Flat;
 }
 
 function GetFlagCount(value: number): number {
@@ -477,5 +522,6 @@ export {
   RenderTies,
   DetermineStemDirection,
   RenderDots,
-  StemDirection
+  StemDirection,
+  BeamDirection
 };

@@ -1,3 +1,4 @@
+import { DetermineBeamDirection, GenerateBeams } from "../Core/Beam.js";
 import { DivGroup, DivGroups, GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
@@ -307,8 +308,11 @@ function RenderNotes(
   dGroups.DivGroups.forEach((group: DivGroup, i: number) => {
     if (group.Divisions.length > 0) {
       const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
+      const beamAngle = DetermineBeamDirection(msr, group, stemDir);
 
-      RenderStemRevise(renderProps, group.Notes, group.Divisions, staff, msr);
+//      const beam = GenerateBeams(msr, group, stemDir);
+//      beam.Render(context, camera);
+      RenderStemRevise(renderProps, group.Notes, group.Divisions, staff, msr, beamAngle);
 
       group.Divisions.forEach(div => {
         let hasFlipped = false;
