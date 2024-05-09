@@ -62,7 +62,7 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
     const groups = GetDivisionGroups(msr, staff);
      groups.DivGroups.forEach((g: DivGroup) => {
       const { Divisions, Notes } = g;
-      const stemDir = DetermineStemDirection(Notes, Divisions);
+      const stemDir = DetermineStemDirection(Notes, Divisions, staff, msr);
       Divisions.forEach((div: Division) => {
         const divNotes = msr.Notes.filter(n => n.Beat === div.Beat &&
                                          n.Staff === staff);

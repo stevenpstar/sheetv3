@@ -20,7 +20,13 @@ interface PageLine {
   LineBounds: Bounds;
 }
 
-const scale = 5;
+interface MarginAdjuster {
+  Name: string;
+  Direction: string;
+  Bounds: Bounds;
+}
+
+const scale = 6;
 const a4w = 210 * scale;
 const a4h = 297 * scale;
 
@@ -30,10 +36,19 @@ class Page {
   Bounds: Bounds;
   Number: number;
   PageLines: PageLine[];
+  MarginAdj: MarginAdjuster[];
   constructor(x: number, y: number, pageNum: number) {
     this.Margins = defaultMargins;
+    this.MarginAdj = [];
     this.Number = pageNum;
     this.Bounds = new Bounds(x, y, a4w, a4h); 
+    // left margin
+    this.MarginAdj.push({
+      Name: "left",
+      Direction: "horizontal",
+      Bounds: new Bounds(this.Bounds.x + this.Margins.left - 12.5,
+                        this.Bounds.y - 25, 25, 25)
+    });
     this.PageLines = []; 
     this.PageLines.push(
       {Number: 1,
@@ -57,4 +72,4 @@ class Page {
     }
 }
 
-export { Page }
+export { Page, MarginAdjuster }

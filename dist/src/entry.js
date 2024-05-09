@@ -13,7 +13,9 @@ const keymaps = {
     "delete": "d",
     "sharpen": "+",
     "flatten": "-",
-    "scaleToggle": "s"
+    "scaleToggle": "'",
+    "save": "s",
+    "load": "l"
 };
 function mouseMove(app, canvas, e) {
     let rect = canvas.getBoundingClientRect();
@@ -104,4 +106,8 @@ export var sheet;
         gSheet.ToggleFormatting();
     }
     sheet.ToggleFormatting = ToggleFormatting;
+    function DeleteSelected() {
+        gSheet.Delete();
+    }
+    sheet.DeleteSelected = DeleteSelected;
 })(sheet || (sheet = {}));

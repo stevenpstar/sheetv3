@@ -206,7 +206,7 @@ function RenderTies(renderProps, divisions, notes, staff, msr) {
     });
 }
 // This will replace some parts of renderStemRevise eventually
-function DetermineStemDirection(notes, divisions) {
+function DetermineStemDirection(notes, divisions, staff, measure) {
     let dir = StemDirection.Up;
     let match = true;
     divisions.forEach((div, i) => {
@@ -218,7 +218,8 @@ function DetermineStemDirection(notes, divisions) {
         console.error("Divisions and note array do not match");
         return;
     }
-    const middleLine = 15; // TODO: Magiccccc (number should be removed)
+    const middleLine = staff === 0 ?
+        measure.SALineMid : measure.SBLineMid;
     let highestLine = Number.MAX_SAFE_INTEGER;
     let lowestLine = Number.MIN_SAFE_INTEGER;
     notes.forEach((na) => {
@@ -381,7 +382,7 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir) {
             }
             if (i === 0) {
                 const newBeam = new Beam(new Bounds(divisions[0].Bounds.x + 19, stemEndY, 5, 5), { x: divisions[0].Bounds.x + xB, y: stemEndY - camera.y }, { x: divisions[divisions.length - 1].Bounds.x + xB, y: endY - camera.y });
-                newBeam.Render(context, camera);
+                newBeam.Render(context, camera, GetFlagCount(divisions[0].Duration), stemDirection);
             }
             //        for (let i = 0; i < beamLoop; i++) {
             //          const beamY = stemDirection === StemDirection.Up ?

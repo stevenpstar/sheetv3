@@ -185,4 +185,4 @@ function debugGetDurationName(duration: number, alpha: number = 255): debugValue
   return { name: name, colour: colour };
 }
 
-export { RenderPanel }
+export { RenderPanel, RenderDebugOld }

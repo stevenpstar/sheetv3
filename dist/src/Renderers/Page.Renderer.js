@@ -1,5 +1,5 @@
 function RenderPage(page, canvas, context, cam, formatting) {
-    const scale = 5;
+    const scale = 6;
     const a4w = 210 * scale;
     const a4h = 297 * scale;
     const x = page.Bounds.x;
@@ -58,9 +58,8 @@ function RenderPage(page, canvas, context, cam, formatting) {
             context.stroke();
         });
         // Render bounds
-        //context.strokeRect(page.LineSelBounds.x + cam.x, page.LineSelBounds.y + cam.y,
-        //                   page.LineSelBounds.width, page.LineSelBounds.height);
-        //context.stroke();
+        context.strokeRect(page.MarginAdj[0].Bounds.x + cam.x, page.MarginAdj[0].Bounds.y + cam.y, page.MarginAdj[0].Bounds.width, page.MarginAdj[0].Bounds.height);
+        context.stroke();
     }
 }
 function RenderAdjuster(x, y, dir, colour, context) {

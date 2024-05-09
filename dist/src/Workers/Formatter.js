@@ -8,11 +8,14 @@ function SetPagesAndLines(measures, pages) {
     let runningWidth = 0;
     let currentPage = 0;
     let currentLine = 1;
+    let msrsOnLine = 0;
     let pageWidth = page.Bounds.width - (page.Margins.left + page.Margins.right);
     measures.forEach((msr, i) => {
+        msrsOnLine++;
         const msrWidth = msr.GetMinimumWidth() + msr.XOffset;
-        if (runningWidth + msrWidth > pageWidth) {
+        if (runningWidth + msrWidth > pageWidth || msrsOnLine > 4) {
             currentLine++;
+            msrsOnLine = 1;
             if (pages.PageLines.length < currentLine) {
                 pages.AddLine();
             }
@@ -56,5 +59,14 @@ function ResizeMeasuresOnPage(measures, page, cam) {
             }
         });
     });
+}
+function GetAdjuster(x, y, page, cam) {
+    let adjuster;
+    page.MarginAdj.forEach((adj) => {
+        if (adj.Bounds.IsHovered(x, y, cam)) {
+            // TODO: Complete
+        }
+    });
+    return adjuster;
 }
 export { SetPagesAndLines, ResizeMeasuresOnPage };

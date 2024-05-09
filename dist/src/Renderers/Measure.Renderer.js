@@ -17,7 +17,7 @@ function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteI
     //    if (hovId === measure.ID)
     RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput);
     //    if (debug)
-    //      RenderDebug(measure, renderProps, index, mousePos);
+    // RenderDebug(measure, renderProps, index, mousePos);
     RenderMeasureBase(measure, renderProps, mousePos, lastMeasure);
     RenderNotes(measure, renderProps, 0);
     if (measure.Instrument.Staff === StaffType.Grand) {
@@ -36,6 +36,8 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
     const divisions = measure.Divisions.concat(measure.BDivisions);
     divisions.forEach(s => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
+            context.fillStyle = "rgb(0, 0, 255, 0.1)";
+            context.fillRect(s.Bounds.x + camera.x, s.Bounds.y + camera.y, s.Bounds.width, s.Bounds.height);
             if (noteInput && !restInput) {
                 const noteY = measure.Bounds.y + (line.num * (line_space / 2)); // + (line_space / 2));
                 // temp note
@@ -213,7 +215,7 @@ function RenderNotes(msr, renderProps, staff) {
     const dGroups = GetDivisionGroups(msr, staff);
     dGroups.DivGroups.forEach((group, i) => {
         if (group.Divisions.length > 0) {
-            const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
+            const stemDir = DetermineStemDirection(group.Notes, group.Divisions, staff, msr);
             const beamAngle = DetermineBeamDirection(msr, group, stemDir);
             //      const beam = GenerateBeams(msr, group, stemDir);
             //      beam.Render(context, camera);

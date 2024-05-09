@@ -7,15 +7,24 @@ class Beam {
         this.StartPoint = start;
         this.EndPoint = end;
     }
-    Render(context, cam) {
+    Render(context, cam, count, stemDir) {
         // TODO: This should eventually be an svg path (probably)
-        const svgLine = `
-        M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + cam.y}
+        const baseThickness = 6;
+        const svgLine = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + cam.y}
         L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + cam.y}
-        V${(this.EndPoint.y + cam.y) + 5} 
-        L${this.StartPoint.x + cam.x} ${this.StartPoint.y + 5 + cam.y} z
-      `;
+        V${(this.EndPoint.y + cam.y) + baseThickness} 
+        L${this.StartPoint.x + cam.x} ${this.StartPoint.y + baseThickness + cam.y} z `;
         context.fill(new Path2D(svgLine));
+        let yBuffer = stemDir === StemDirection.Up ? 2.5 : -8;
+        let flagBuffer = stemDir === StemDirection.Up ? 6 : 0;
+        for (let i = 1; i < count; i++) {
+            const thickness = 6;
+            const line = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + (flagBuffer * i) + (yBuffer * i) + cam.y}
+          L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + (flagBuffer * i) + (yBuffer * i) + cam.y}
+          V${(this.EndPoint.y + (flagBuffer * i) + (yBuffer * i) + cam.y) + thickness} 
+          L${this.StartPoint.x + cam.x} ${this.StartPoint.y + (flagBuffer * i) + (yBuffer * i) + thickness + cam.y} z`;
+            context.fill(new Path2D(line));
+        }
     }
 }
 function DetermineBeamDirection(measure, divGroup, stemDir) {
@@ -29,43 +38,34 @@ function DetermineBeamDirection(measure, divGroup, stemDir) {
         const lastDivTopLine = divGroup.Notes[divGroup.Notes.length - 1].sort((a, b) => {
             return a.Line - b.Line;
         })[0].Line;
-        // Flat beam direction
         if (firstDivTopLine === lastDivTopLine) {
             return BeamDirection.Flat;
         }
-        // get direction
-        let assumedDir = firstDivTopLine < lastDivTopLine ? "down" : "up";
-        let gotDir = false;
-        divisions.forEach((d, i) => {
-            if (i === 0 || gotDir) {
-                return;
-            } // skip first division
-            const divTopLine = divGroup.Notes[i].sort((a, b) => {
-                return a.Line - b.Line;
-            })[0].Line;
-            if (divTopLine < firstDivTopLine) {
-                if (assumedDir === "down") {
-                    assumedDir = "flat";
-                    gotDir = true;
-                }
-            }
-            else {
-                if (assumedDir === "up") {
-                    assumedDir = "flat";
-                    gotDir = true;
-                }
-            }
-        });
-        switch (assumedDir) {
-            case "up":
-                return BeamDirection.UpMax;
-            case "down":
-                return BeamDirection.DownMax;
-            default:
-                return BeamDirection.Flat;
+        else if (firstDivTopLine < lastDivTopLine) {
+            return BeamDirection.DownMax;
+        }
+        else if (firstDivTopLine > lastDivTopLine) {
+            return BeamDirection.UpMax;
         }
     }
-    else { }
+    else {
+        const firstDivBotLine = divGroup.Notes[0].sort((a, b) => {
+            return a.Line - b.Line;
+        })[divGroup.Notes[0].length - 1].Line;
+        const lastDivBotLine = divGroup.Notes[divGroup.Notes.length - 1].sort((a, b) => {
+            return a.Line - b.Line;
+        })[divGroup.Notes[divGroup.Notes.length - 1].length - 1].Line;
+        // Flat beam direction
+        if (firstDivBotLine === lastDivBotLine) {
+            return BeamDirection.Flat;
+        }
+        else if (firstDivBotLine < lastDivBotLine) {
+            return BeamDirection.UpMax;
+        }
+        else if (firstDivBotLine > lastDivBotLine) {
+            return BeamDirection.DownMax;
+        }
+    }
     return BeamDirection.Flat;
 }
 function GenerateBeams(measure, divGroup, stemDir) {

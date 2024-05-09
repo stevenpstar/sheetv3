@@ -17,7 +17,7 @@ class Measure {
         this.KeySignature = properties.KeySignature;
         this.Notes = properties.Notes;
         this.BNotes = [];
-        this.Divisions = properties.Divisions;
+        this.Divisions = [];
         this.BDivisions = [];
         this.RenderClef = properties.RenderClef;
         this.RenderKey = properties.RenderKey;
@@ -292,7 +292,11 @@ class Measure {
         }
         const staffZeroDivs = this.Divisions.filter(div => div.Staff === 0);
         const staffOneDivs = this.Divisions.filter(div => div.Staff === 1);
-        const count = staffZeroDivs.length > staffOneDivs.length ? staffZeroDivs.length : staffOneDivs.length;
+        const lowestValue = this.Divisions.sort((a, b) => {
+            return a.Duration - b.Duration;
+        })[0].Duration;
+        const count = 1 / lowestValue;
+        //const count = staffZeroDivs.length > staffOneDivs.length ? staffZeroDivs.length : staffOneDivs.length;
         return count * DivisionMinWidth;
     }
 }

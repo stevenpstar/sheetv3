@@ -13,7 +13,9 @@ interface KeyMapping {
   delete: string,
   sharpen: string,
   flatten: string,
-  scaleToggle: string
+  scaleToggle: string,
+  save: string,
+  load: string,
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -59,6 +61,11 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
     case keyMaps.scaleToggle:
       //app.ScaleToggle();
       break;
+    case keyMaps.save:
+      app.Save();
+      break;
+    case keyMaps.load:
+      app.LoadSheet();
     default:
   }
 }

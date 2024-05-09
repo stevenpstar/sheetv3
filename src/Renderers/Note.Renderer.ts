@@ -245,7 +245,9 @@ function RenderTies(renderProps: RenderProperties, divisions: Division[], notes:
 // This will replace some parts of renderStemRevise eventually
 function DetermineStemDirection(
   notes: Array<Note[]>,
-  divisions: Division[]): StemDirection {
+  divisions: Division[],
+  staff: number,
+  measure: Measure): StemDirection {
     let dir = StemDirection.Up;
 
     let match = true;
@@ -260,7 +262,8 @@ function DetermineStemDirection(
       return;
     }
 
-    const middleLine = 15; // TODO: Magiccccc (number should be removed)
+    const middleLine = staff === 0 ?
+      measure.SALineMid : measure.SBLineMid;
     let highestLine: number = Number.MAX_SAFE_INTEGER;
     let lowestLine: number = Number.MIN_SAFE_INTEGER;
 
@@ -441,7 +444,7 @@ function RenderStemRevise(
                        stemEndY, 5, 5),
                        { x: divisions[0].Bounds.x + xB, y: stemEndY - camera.y},
                        { x: divisions[divisions.length-1].Bounds.x + xB, y: endY - camera.y});
-          newBeam.Render(context, camera);
+          newBeam.Render(context, camera, GetFlagCount(divisions[0].Duration), stemDirection);
         }
 //        for (let i = 0; i < beamLoop; i++) {
 //          const beamY = stemDirection === StemDirection.Up ?

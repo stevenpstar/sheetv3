@@ -53,18 +53,35 @@ function CreateBeatBounds(msr, beat, duration, staff, cam) {
     const x = msr.Bounds.x + msr.XOffset + ((beat - 1) / msr.TimeSignature.bottom) * msr.Bounds.width;
     return new Bounds(x, y, width, height);
 }
+function PositionDivByBeat(msr, divisions) {
+    const s0divs = divisions.filter(d => d.Staff === 0);
+    const s1divs = divisions.filter(d => d.Staff === 1);
+    if (s1divs.length > s0divs.length) {
+        divisions.forEach((div) => {
+            div.Bounds.x = 0;
+        });
+    }
+    else { }
+}
 function ResizeDivisions(msr, divisions, staff) {
     const divs = divisions.filter(d => d.Staff === staff);
+    const s0divs = divisions.filter(d => d.Staff === 0);
+    const s1divs = divisions.filter(d => d.Staff === 1);
+    let divCount = s1divs.length > s0divs.length ? s1divs.length : s0divs.length;
+    const minWidth = DivisionMinWidth * divCount;
+    const space = msr.Bounds.width - minWidth;
+    const xBuffer = space / divCount;
     divs.sort((a, b) => {
         return a.Beat - b.Beat;
     });
     divs.forEach((div, i) => {
-        if (div.Bounds.width < DivisionMinWidth || div.Duration < 0.25) {
-            div.Bounds.width = DivisionMinWidth;
-        }
-        if (div.Bounds.width > DivisionMaxWidth || div.Duration >= 0.25) {
-            div.Bounds.width = DivisionMaxWidth;
-        }
+        //    if (div.Bounds.width < DivisionMinWidth || div.Duration < 0.25) {
+        //      div.Bounds.width = DivisionMinWidth + xBuffer;
+        //    }
+        //    if (div.Bounds.width > DivisionMaxWidth || div.Duration >= 0.25) {
+        //      div.Bounds.width = DivisionMinWidth + xBuffer;
+        //    }
+        div.Bounds.width = (div.Duration) * msr.Bounds.width;
         if (i > 0) {
             const lastDivEnd = divs[i - 1].Bounds.x + divs[i - 1].Bounds.width;
             if (lastDivEnd !== div.Bounds.x) {
@@ -235,7 +252,8 @@ function GetDivisionGroups(msr, staff) {
                 else {
                     divs.push(div);
                     notes.push(divNotes);
-                    if (i === msr.Divisions.filter(d => d.Staff === staff).length - 1) {
+                    if (i === msr.Divisions.filter(d => d.Staff === staff).length - 1 ||
+                        div.Beat === 2.5) {
                         divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
                         divs = [];
                         notes = [];

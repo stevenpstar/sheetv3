@@ -41,6 +41,11 @@ function KeyPress(app, key, keyMaps) {
         case keyMaps.scaleToggle:
             //app.ScaleToggle();
             break;
+        case keyMaps.save:
+            app.Save();
+            break;
+        case keyMaps.load:
+            app.LoadSheet();
         default:
     }
 }

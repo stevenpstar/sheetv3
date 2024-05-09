@@ -1,6 +1,6 @@
 import { Camera } from "../Core/Camera.js";
 import { Measure } from "../Core/Measure.js";
-import { Page } from "../Core/Page.js";
+import { MarginAdjuster, Page } from "../Core/Page.js";
 
 // TODO: Add pages when necessary but for now we do just lines
 function SetPagesAndLines(measures: Measure[], pages: Page): void {
@@ -12,11 +12,14 @@ function SetPagesAndLines(measures: Measure[], pages: Page): void {
   let runningWidth = 0;
   let currentPage = 0;
   let currentLine = 1;
+  let msrsOnLine = 0;
   let pageWidth = page.Bounds.width - (page.Margins.left + page.Margins.right);
   measures.forEach((msr: Measure, i: number) => {
+    msrsOnLine++;
     const msrWidth = msr.GetMinimumWidth() + msr.XOffset;
-    if (runningWidth + msrWidth > pageWidth) {
+    if (runningWidth + msrWidth > pageWidth || msrsOnLine > 4) {
       currentLine++;
+      msrsOnLine = 1;
       if (pages.PageLines.length < currentLine) {
         pages.AddLine();
       }
@@ -60,6 +63,16 @@ function ResizeMeasuresOnPage(measures: Measure[], page: Page, cam: Camera): voi
       }
     });
   })
+}
+
+function GetAdjuster(x: number, y: number, page: Page, cam: Camera): MarginAdjuster | undefined {
+  let adjuster: MarginAdjuster;
+  page.MarginAdj.forEach((adj: MarginAdjuster) => {
+    if (adj.Bounds.IsHovered(x, y, cam)) {
+      // TODO: Complete
+    }
+  });
+  return adjuster;
 }
 
 export {

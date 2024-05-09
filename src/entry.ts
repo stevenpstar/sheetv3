@@ -17,7 +17,9 @@ const keymaps: KeyMapping = {
   "delete": "d",
   "sharpen": "+",
   "flatten": "-",
-  "scaleToggle": "s"
+  "scaleToggle": "'",
+  "save": "s",
+  "load": "l"
 }
 
 function mouseMove(app: App, canvas: HTMLCanvasElement, e: MouseEvent): void {
@@ -116,5 +118,9 @@ export module sheet {
 
   export function ToggleFormatting(): void {
     gSheet.ToggleFormatting();
+  }
+
+  export function DeleteSelected(): void {
+    gSheet.Delete();
   }
 }

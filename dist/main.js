@@ -14,7 +14,9 @@ const keymaps = {
     "delete": "d",
     "sharpen": "+",
     "flatten": "-",
-    "scaleToggle": "s"
+    "scaleToggle": "'",
+    "save": "s",
+    "load": "l"
 };
 function returnCanvas(id) {
     const canvas = document.getElementById(id);

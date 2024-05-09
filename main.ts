@@ -19,7 +19,10 @@ const keymaps = {
   "delete": "d",
   "sharpen": "+",
   "flatten": "-",
-  "scaleToggle": "s"
+  "scaleToggle": "'",
+  "save": "s",
+  "load": "l"
+
 }
 
 interface CanText {

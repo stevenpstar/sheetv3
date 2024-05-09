@@ -14,6 +14,8 @@ import { KeyMapping, KeyPress } from "./Workers/Mappings.js";
 import ISelectable from "./Types/ISelectable.js";
 import { Page } from "./Core/Page.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
+import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
+import { allSaves, canonSave, saveFile } from "./testsaves.js";
 
 class App { 
   Canvas: HTMLCanvasElement;
@@ -93,7 +95,7 @@ class App {
     }
     this.NoteInput = false;
     this.RestInput = false;
-    this.Formatting = false;
+    this.Formatting = true;
     this.Update(0, 0);
   }
 
@@ -139,6 +141,7 @@ class App {
   Delete(): void {
     for (let [ msr, notes ] of this.Selector.Notes ) {
       msr.DeleteSelected();
+      msr.CreateDivisions(this.Camera);
     }
   }
 
@@ -358,40 +361,6 @@ class App {
     const minMeasuresPerLine = 3;
     SetPagesAndLines(measures, this.Sheet.Pages[0]);
     ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera);
-  //  const page = this.Sheet.Pages[0];
-  //  const msrOnPage1 = measures.filter(m => m.Page.Number === 1);
-  //  const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
-  //  msrOnPage1.forEach((msr: Measure, i: number) => {
-////      msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
-  //    //
-  //    const msrPageLine = msr.PageLine;
-  //    const msrsOnLine = msrOnPage1.filter(m => m.PageLine === msrPageLine);
-  //    let msrsLineWidth = 0;
-  //    msrsOnLine.forEach(m => {
-  //      msrsLineWidth += m.GetMinimumWidth() + m.XOffset;
-  //    })
-  //    const fillWidth = pageSize - msrsLineWidth;
-  //    console.log("fillWidth: ", fillWidth);
-  //    if (msrsOnLine.length < 3) {
-  //      //msr.Bounds.width = GetDivisionTotalWidth(msr.Divisions);
-  //      msr.Bounds.width = msr.GetMinimumWidth();
-  //    }
-  //    else {
-////        msr.Bounds.width = (pageSize / msrsOnLine.length) - msr.XOffset - 2;
-  //        msr.Bounds.width = msr.GetMinimumWidth() + (fillWidth / msrsOnLine.length);
-  //    }
-  //    if (msr === msrsOnLine[0]) {
-  //      msr.Bounds.x = msr.Page.Bounds.x + msr.Page.Margins.left;
-  //      console.log(msr.Bounds.x);
-  //      // TODO: STILL PROTOTYPING BASICALLY THIS WHOLE METHOD
-  //      msr.RenderClef = true;
-  //      msr.RenderTimeSig = true;
-  //      msr.SetXOffset();
-  //      msr.CreateDivisions(this.Camera);
-  //    } else {
-  //      measures[i].Reposition(measures[i-1]);
-  //    }
-  //  });
     this.Update(0, 0);
   }
 
@@ -459,6 +428,25 @@ class App {
       this.NoteInput = false;
       this.RestInput = false;
     }
+  }
+
+  Save(): void {
+    SaveSheet(this.Sheet);
+  }
+
+  LoadSheet(): void {
+    //Clear measures
+    this.Sheet.Measures = [];
+    LoadSheet(this.Sheet,
+              this.Sheet.Pages[0],
+              this.Camera,
+              this.Sheet.Instruments[0], canonSave);
+    this.ResizeMeasures(this.Sheet.Measures);
+    this.Update(0, 0);
+  }
+
+  GetSaveFiles(): saveFile[] {
+    return allSaves;
   }
 }
 

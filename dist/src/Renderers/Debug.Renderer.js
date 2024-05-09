@@ -146,4 +146,4 @@ function debugGetDurationName(duration, alpha = 255) {
     const colour = `rgba(${r}, ${g}, ${b}, ${a})`;
     return { name: name, colour: colour };
 }
-export { RenderPanel };
+export { RenderPanel, RenderDebugOld };
