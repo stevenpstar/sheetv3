@@ -1,5 +1,5 @@
 import { Bounds } from "../Types/Bounds.js";
-import ISelectable from "../Types/ISelectable.js";
+import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 
 interface NoteProps {
   Beat: number;
@@ -18,6 +18,7 @@ class Note implements ISelectable {
   Tied: boolean;
   Accidental: number
   ID: number;
+  SelType: SelectableTypes;
 
   TiedStart: number; // beat
   TiedEnd: number; // beat
@@ -37,6 +38,7 @@ class Note implements ISelectable {
     this.Staff = props.Staff;
 
     this.Selected = false;
+    this.SelType = SelectableTypes.Note;
     this.Bounds = new Bounds(0, 0, 0, 0);
     this.Bounds.width = 12;
     this.Bounds.height = 10;

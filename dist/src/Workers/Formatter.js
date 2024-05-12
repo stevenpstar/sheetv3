@@ -57,6 +57,12 @@ function ResizeMeasuresOnPage(measures, page, cam) {
                 m.Bounds.width = m.GetMinimumWidth() + (fillWidth / msrs.length);
                 msrs[i].Reposition(msrs[i - 1]);
             }
+            m.Clefs.forEach(c => {
+                c.SetBounds(m, 0);
+            });
+            m.GrandClefs.forEach(c => {
+                c.SetBounds(m, 0);
+            });
         });
     });
 }

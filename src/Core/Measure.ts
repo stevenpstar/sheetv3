@@ -1,7 +1,8 @@
 import { Bounds } from '../Types/Bounds.js';
-import ISelectable from '../Types/ISelectable.js';
+import { ISelectable, SelectableTypes } from '../Types/ISelectable.js';
 import { UpdateNoteBounds } from '../Workers/NoteInput.js';
 import { Camera } from './Camera.js';
+import { Clef } from './Clef.js';
 import { CreateDivisions, type Division, ResizeDivisions, DivisionMinWidth } from './Division.js';
 import { Instrument, StaffType } from './Instrument.js';
 import { Note, NoteProps } from './Note.js';
@@ -21,14 +22,10 @@ interface MeasureProps {
   Page: Page;
 }
 
-interface Clef {
-  Type: string;
-  Beat: number;
-}
-
 class Measure implements ISelectable {
   ID: number;
   Selected: boolean;
+  SelType: SelectableTypes;
   Instrument: Instrument;
   Bounds: Bounds;
   Clefs: Clef[] = [];
@@ -84,6 +81,7 @@ class Measure implements ISelectable {
     this.RunningID = runningId;
     this.ID = 0;
     this.Selected = false;
+    this.SelType = SelectableTypes.Measure;
     this.Instrument = properties.Instrument;
     this.Line = 0;
     this.Bounds = properties.Bounds;
@@ -97,10 +95,6 @@ class Measure implements ISelectable {
     this.RenderKey = properties.RenderKey;
     this.Camera = properties.Camera;
     this.RenderTimeSig = properties.RenderTimeSig;
-    this.Clefs.push({Type: properties.Clef, Beat: 1});
-    if (this.Instrument.Staff === StaffType.Grand) {
-      this.GrandClefs.push({Type: "bass", Beat: 1});
-    }
     this.Page = properties.Page;
     this.PageLine = properties.Page.PageLines[0].Number;
 
@@ -129,10 +123,24 @@ class Measure implements ISelectable {
     this.SBLineBotDef = this.SBLineBot;
 
     this.SBOffset = 1000;
+    // create default clef
+    const trebleClef = new Clef(0, {x: 
+      this.Bounds.x + 16, 
+      y: this.Bounds.y + (5 * Measure.GetMeasureMidLine(this) + (10 * 2))}, "treble", 1);
+    trebleClef.SetBounds(this, 0);
+
+    this.Clefs.push(trebleClef);
+    if (this.Instrument.Staff === StaffType.Grand) {
+      const bassClef = new Clef(1, { 
+        x: this.Bounds.x + 30,
+        y: this.Bounds.y + this.GetMeasureHeight() + (this.GetGrandMeasureMidLine() * 5) - 2 
+      }, "bass", 1);
+      bassClef.SetBounds(this, 1);
+      this.GrandClefs.push(bassClef);
+    }
     
     // probably always last
     this.CreateDivisions(this.Camera);
-
   }
 
   static GetLineHovered(y: number, msr: Measure): { num: number, bounds: Bounds } {
@@ -393,6 +401,13 @@ class Measure implements ISelectable {
 
     //const count = staffZeroDivs.length > staffOneDivs.length ? staffZeroDivs.length : staffOneDivs.length;
     return count * DivisionMinWidth;
+  }
+
+  ReturnSelectableElements(): ISelectable[] {
+    const sel: ISelectable[] = [];
+    sel.push(...this.Notes);
+    sel.push(...this.Clefs);
+    return sel;
   }
 }
 

@@ -1,7 +1,9 @@
 class Selector {
     constructor() {
         this.Measures = [];
+        this.Clefs = [];
         this.Notes = new Map();
+        this.Elements = new Map();
     }
     DeselectAll() {
         // TODO: Measure selection
@@ -10,6 +12,14 @@ class Selector {
                 note.Selected = false;
             });
             this.Notes.delete(measure);
+        }
+        ;
+        // This should replace the above eventually
+        for (let [measure, elem] of this.Elements) {
+            elem.forEach(e => {
+                e.Selected = false;
+            });
+            this.Elements.delete(measure);
         }
         ;
     }
@@ -57,10 +67,7 @@ class Selector {
         return selectable;
     }
     SelectMeasure(msr) {
-        console.log("msr: ", msr.ID);
-        console.log("msrs: ", this.Measures);
         if (this.Measures.find(m => m.ID === msr.ID)) {
-            console.log("found");
             const index = this.Measures.indexOf(msr);
             msr.Selected = false;
             this.Measures.splice(index, 1);
@@ -68,6 +75,17 @@ class Selector {
         else {
             this.Measures.push(msr);
             msr.Selected = true;
+        }
+    }
+    SelectClef(clef) {
+        if (this.Clefs.find(c => c.ID === clef.ID)) {
+            const index = this.Clefs.indexOf(clef);
+            clef.Selected = false;
+            this.Clefs.splice(index, 1);
+        }
+        else {
+            this.Clefs.push(clef);
+            clef.Selected = true;
         }
     }
     SelectNote(msr, x, y, cam, shiftKey) {

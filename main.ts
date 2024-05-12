@@ -2,6 +2,7 @@
 //import * as keymaps from './keymaps.json';
 import { App } from './src/App.js';
 import { NoteValues } from './src/Core/Values.js';
+import { Message } from './src/Types/Message.js';
 import { sheet } from './src/entry.js';
 //import { sheet } from './src/entry.js';
 
@@ -49,7 +50,7 @@ function returnCanvas(id: string): CanText {
   return { canvas: canvas, context: context };
 }
 
-function notify(msg: string): void {
+function notify(msg: Message): void {
   console.log(msg);
 }
 

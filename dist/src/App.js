@@ -11,8 +11,10 @@ import { Page } from "./Core/Page.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves, canonSave } from "./testsaves.js";
+import { ClearMessage } from "./Types/Message.js";
 class App {
     constructor(canvas, container, context, notifyCallback, load = false) {
+        this.Message = ClearMessage();
         this.NotifyCallback = notifyCallback;
         this.Debug = true;
         this.Canvas = canvas;
@@ -63,9 +65,11 @@ class App {
         }
         if (this.DraggingNote) {
             this.DragNote(x, y);
+            this.Update(x, y);
         }
         if (this.Formatting && this.DragLining) {
             this.DragLiner(x, y);
+            this.Update(x, y);
         }
         this.HoveredElements.MeasureID = -1;
         // TODO: Move all this elsewhere
@@ -87,6 +91,8 @@ class App {
                 }
             });
         }
+        // This shouldn't always update but will need to do serious work to figure
+        // out all bugs involved when it doesn't
         this.Update(x, y);
     }
     Delete() {
@@ -115,9 +121,17 @@ class App {
             return;
         } // no measure over
         if (!this.NoteInput) {
+            let selectedMeasureElement = false;
+            // Measure Element selection, should be moved elsewhere eventually
+            // (probably Measure? Maybe somewhere else)
+            msrOver.Clefs.forEach((c) => {
+                if (c.Bounds.IsHovered(x, y, this.Camera)) {
+                    this.Selector.SelectClef(c);
+                    selectedMeasureElement = true;
+                }
+            });
             const selectedNote = this.Selector.SelectNote(msrOver, x, y, this.Camera, shiftKey);
-            console.log("SelectedNote: ", selectedNote);
-            if (!selectedNote) {
+            if (!selectedNote && !selectedMeasureElement) {
                 this.Selector.SelectMeasure(msrOver);
             }
             if (!this.DraggingNote) {
@@ -132,13 +146,13 @@ class App {
             this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === msrOver.Instrument));
         }
         this.Update(x, y);
-        this.NotifyCallback("notify");
     }
     Update(x, y) {
         //    this.Canvas.width = this.Container.clientWidth;
         //    this.Canvas.height = 4000;
         //    this.Container.style.height = this.Canvas.height + 'px';
         // this should be the only place that calls render
+        this.NotifyCallback(this.Message);
         this.Render({ x: x, y: y });
     }
     Render(mousePos) {
@@ -204,9 +218,9 @@ class App {
                 if (m.PageLine === this.LineNumber) {
                     m.Bounds.y = this.LinerBounds.y;
                     m.PrefBoundsY = m.Bounds.y;
-                    m.CreateDivisions(this.Camera);
                 }
             });
+            this.ResizeMeasures(this.Sheet.Measures);
         }
     }
     DragNote(x, y) {
@@ -314,21 +328,21 @@ class App {
         }
         return this.Camera.Zoom;
     }
-    Test_AddClefMiddle() {
-        const msr = this.Sheet.Measures[0];
-        const clef = { Type: "bass", Beat: 3 };
-        let clefExist = false;
-        msr.Clefs.forEach((c) => {
-            if (c.Beat === clef.Beat && c.Type === clef.Type) {
-                clefExist = true;
-            }
-        });
-        if (!clefExist)
-            msr.Clefs.push(clef);
-    }
+    // Test_AddClefMiddle(): void {
+    //   const msr = this.Sheet.Measures[0];
+    //   const clef: Clef = {Type: "bass", Beat: 3};
+    //   let clefExist = false;
+    //   msr.Clefs.forEach((c: Clef) => {
+    //     if (c.Beat === clef.Beat && c.Type === clef.Type) {
+    //       clefExist = true;
+    //     }
+    //   });
+    //   if (!clefExist)
+    //     msr.Clefs.push(clef);
+    // }
     KeyInput(key, keymaps) {
         KeyPress(this, key, keymaps);
-        this.NotifyCallback("notify");
+        this.NotifyCallback(this.Message);
     }
     SelectById(id) {
         const sel = this.Selector.SelectById(this.Sheet.Measures, id);

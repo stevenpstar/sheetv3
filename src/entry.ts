@@ -1,5 +1,6 @@
 import { App } from "./App.js";
-import ISelectable from "./Types/ISelectable.js";
+import { ISelectable } from "./Types/ISelectable.js";
+import { Message } from "./Types/Message.js";
 import { KeyMapping } from "./Workers/Mappings.js";
 
 let gSheet: App;
@@ -73,7 +74,7 @@ export module sheet {
     container: HTMLElement,
     doc: Document,
     keyMap: any,
-    notifyCallBack: (msg: string) => void): App {
+    notifyCallBack: (msg: Message) => void): App {
     const ctx = canvas.getContext("2d");
     const app = new App(canvas, container, ctx, notifyCallBack);
     canvas.addEventListener("mousemove", (e) => mouseMove(app, canvas, e));

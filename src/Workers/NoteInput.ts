@@ -111,7 +111,6 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
     if (tying && noteProps.Rest) { tying = false; }
 
     if (remainingValue >= div.Duration && beat === div.Beat) {
-
       // clear rests on beat regardless of what we are inputting
       msr.ClearRestNotes(beat, noteProps.Staff);
 
@@ -129,8 +128,6 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
         Tied: tying,
         Staff: div.Staff
       };
-
-
 
       const newNote = new Note(newNoteProps);
 

@@ -1,4 +1,5 @@
 import { Bounds } from "../Types/Bounds.js";
+import { SelectableTypes } from "../Types/ISelectable.js";
 class Note {
     constructor(props) {
         this.Beat = props.Beat;
@@ -9,6 +10,7 @@ class Note {
         this.Accidental = 0;
         this.Staff = props.Staff;
         this.Selected = false;
+        this.SelType = SelectableTypes.Note;
         this.Bounds = new Bounds(0, 0, 0, 0);
         this.Bounds.width = 12;
         this.Bounds.height = 10;

@@ -11,13 +11,15 @@ import { GetDivisionTotalWidth } from "./Core/Division.js";
 import { Instrument } from "./Core/Instrument.js";
 import { ManageHeight } from "./Workers/Heightener.js";
 import { KeyMapping, KeyPress } from "./Workers/Mappings.js";
-import ISelectable from "./Types/ISelectable.js";
+import { ISelectable } from "./Types/ISelectable.js";
 import { Page } from "./Core/Page.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves, canonSave, saveFile } from "./testsaves.js";
+import { ClearMessage, Message } from "./Types/Message.js";
 
 class App { 
+  Message: Message;
   Canvas: HTMLCanvasElement;
   Container: HTMLElement;
   Context: CanvasRenderingContext2D;
@@ -33,7 +35,7 @@ class App {
   DraggingPositions: { x1: number, y1: number, x2: number, y2: number };
   NoteValue: number;
   Selector: Selector;
-  NotifyCallback: (msg: string) => void;
+  NotifyCallback: (msg: Message) => void;
   RunningID: { count: number };
 
   // TODO: Off load some of this work to other classes/functions 
@@ -54,8 +56,9 @@ class App {
   constructor (canvas: HTMLCanvasElement, 
                container: HTMLElement,
              context: CanvasRenderingContext2D,
-             notifyCallback: (msg: string) => void,
+             notifyCallback: (msg: Message) => void,
               load = false) {
+    this.Message = ClearMessage();
     this.NotifyCallback = notifyCallback;
     this.Debug = true;
     this.Canvas = canvas;
@@ -113,9 +116,11 @@ class App {
     }
     if (this.DraggingNote) {
       this.DragNote(x, y);
+      this.Update(x, y);
     }
     if (this.Formatting && this.DragLining) {
       this.DragLiner(x, y);
+      this.Update(x, y);
     }
     this.HoveredElements.MeasureID = -1;
     // TODO: Move all this elsewhere
@@ -135,6 +140,8 @@ class App {
           m.ResetHeight(); }
       });
     }
+    // This shouldn't always update but will need to do serious work to figure
+    // out all bugs involved when it doesn't
     this.Update(x, y);
   }
 
@@ -167,11 +174,19 @@ class App {
       }
       return;
     } // no measure over
-
+    
     if (!this.NoteInput) {
+      let selectedMeasureElement: boolean = false;
+      // Measure Element selection, should be moved elsewhere eventually
+      // (probably Measure? Maybe somewhere else)
+      msrOver.Clefs.forEach((c: Clef) => {
+        if (c.Bounds.IsHovered(x, y, this.Camera)) {
+          this.Selector.SelectClef(c);
+          selectedMeasureElement = true;
+        }
+      });
       const selectedNote = this.Selector.SelectNote(msrOver, x, y, this.Camera, shiftKey);
-      console.log("SelectedNote: ", selectedNote);
-      if (!selectedNote) {
+      if (!selectedNote && !selectedMeasureElement) {
         this.Selector.SelectMeasure(msrOver);
       }
       if (!this.DraggingNote) { this.DraggingNote = true; }
@@ -185,13 +200,13 @@ class App {
     }
 
     this.Update(x, y);
-    this.NotifyCallback("notify");
   }
   Update(x: number, y : number): void {
 //    this.Canvas.width = this.Container.clientWidth;
 //    this.Canvas.height = 4000;
 //    this.Container.style.height = this.Canvas.height + 'px';
     // this should be the only place that calls render
+    this.NotifyCallback(this.Message);
     this.Render({ x: x, y: y });
   }
   Render(mousePos: {x: number, y: number}): void {
@@ -284,9 +299,9 @@ class App {
         if (m.PageLine === this.LineNumber) {
           m.Bounds.y = this.LinerBounds.y
           m.PrefBoundsY = m.Bounds.y;
-          m.CreateDivisions(this.Camera);
         }
       });
+      this.ResizeMeasures(this.Sheet.Measures);
     }
   }
 
@@ -398,22 +413,22 @@ class App {
     return this.Camera.Zoom;
   }
 
-  Test_AddClefMiddle(): void {
-    const msr = this.Sheet.Measures[0];
-    const clef: Clef = {Type: "bass", Beat: 3};
-    let clefExist = false;
-    msr.Clefs.forEach((c: Clef) => {
-      if (c.Beat === clef.Beat && c.Type === clef.Type) {
-        clefExist = true;
-      }
-    });
-    if (!clefExist)
-      msr.Clefs.push(clef);
-  }
+ // Test_AddClefMiddle(): void {
+ //   const msr = this.Sheet.Measures[0];
+ //   const clef: Clef = {Type: "bass", Beat: 3};
+ //   let clefExist = false;
+ //   msr.Clefs.forEach((c: Clef) => {
+ //     if (c.Beat === clef.Beat && c.Type === clef.Type) {
+ //       clefExist = true;
+ //     }
+ //   });
+ //   if (!clefExist)
+ //     msr.Clefs.push(clef);
+ // }
 
   KeyInput(key: string, keymaps: KeyMapping): void {
     KeyPress(this, key, keymaps);
-    this.NotifyCallback("notify");
+    this.NotifyCallback(this.Message);
   }
 
   SelectById(id: number): ISelectable {

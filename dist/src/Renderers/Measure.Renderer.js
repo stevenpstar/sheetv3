@@ -135,13 +135,10 @@ function RenderMeasureClef(renderProps, msr) {
     msr.Clefs.forEach((clef) => {
         if (clef.Beat === 1) {
             if (clef.Type === "treble") {
-                const clefPath = RenderTrebleClef(msr.Bounds.x + 16 + camera.x, msr.Bounds.y + camera.y + (5 * msrMidLine + (line_space * 2)));
-                context.fill(new Path2D(clefPath));
+                clef.render(context, camera);
             }
             else if (clef.Type === "bass") {
-                const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
-            ${msr.Bounds.y + camera.y + (msrMidLine * 5) - 2}` + bassClef;
-                context.fill(new Path2D(clefPath));
+                clef.render(context, camera);
             }
         }
         else {
@@ -160,8 +157,6 @@ function RenderMeasureClef(renderProps, msr) {
     msr.GrandClefs.forEach((clef) => {
         if (clef.Beat === 1) {
             if (clef.Type === "treble") {
-                const clefPath = RenderTrebleClef(msr.Bounds.x + 16 + camera.x, msr.Bounds.y + camera.y + (5 * 45 + (line_space * 2)));
-                context.fill(new Path2D(clefPath));
             }
             else if (clef.Type === "bass") {
                 const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
