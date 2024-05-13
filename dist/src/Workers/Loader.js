@@ -14,7 +14,10 @@ const LoadSheet = (sheet, page, cam, instr, savedJson) => {
                 Line: n.Line,
                 Rest: n.Rest,
                 Tied: n.Tied,
-                Staff: n.Staff
+                Staff: n.Staff,
+                Tuple: false,
+                TupleIndex: 0,
+                TupleCount: 1 // Loading tuples not implemented
             };
             const newNote = new Note(noteProps);
             notes.push(newNote);

@@ -51,7 +51,7 @@ function returnCanvas(id: string): CanText {
 }
 
 function notify(msg: Message): void {
-  console.log(msg);
+//  console.log(msg);
 }
 
 /* Globals */

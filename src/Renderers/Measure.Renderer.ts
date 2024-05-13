@@ -74,7 +74,10 @@ function RenderHovered(
               Line: line.num,
               Rest: false,
               Tied: false,
-              Staff: s.Staff
+              Staff: s.Staff,
+              Tuple: false,
+              TupleIndex: 0,
+              TupleCount: 1
             } 
             const tempNote = new Note(tempNoteProps);
             RenderNote(tempNote,

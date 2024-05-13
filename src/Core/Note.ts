@@ -8,6 +8,9 @@ interface NoteProps {
   Rest: boolean;
   Tied: boolean;
   Staff: number;
+  Tuple: boolean;
+  TupleIndex: number;
+  TupleCount: number;
 }
 
 class Note implements ISelectable {
@@ -28,6 +31,10 @@ class Note implements ISelectable {
 
   Staff: number;
 
+  Tuple: boolean;
+  TupleIndex: number;
+  TupleCount: number;
+
   constructor(props: NoteProps) {
     this.Beat = props.Beat;
     this.Duration = props.Duration;
@@ -43,6 +50,10 @@ class Note implements ISelectable {
     this.Bounds.width = 12;
     this.Bounds.height = 10;
     this.ID = -1;
+
+    this.Tuple = props.Tuple;
+    this.TupleIndex = props.TupleIndex;
+    this.TupleCount = props.TupleCount;
     // note position is not based on bounds property
   }
 

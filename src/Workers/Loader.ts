@@ -42,7 +42,10 @@ const LoadSheet = (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, sav
         Line: n.Line,
         Rest: n.Rest,
         Tied: n.Tied,
-        Staff: n.Staff
+        Staff: n.Staff,
+        Tuple: false,
+        TupleIndex: 0,
+        TupleCount: 1 // Loading tuples not implemented
       }
       const newNote = new Note(noteProps);
       notes.push(newNote);
@@ -95,4 +98,4 @@ const SaveSheet = (sheet: Sheet): string => {
   return JSON.stringify(saved);
 }
 
-export { LoadSheet, SaveSheet };
+export { LoadSheet, SaveSheet, LoadStructure };

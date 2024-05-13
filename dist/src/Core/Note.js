@@ -15,6 +15,9 @@ class Note {
         this.Bounds.width = 12;
         this.Bounds.height = 10;
         this.ID = -1;
+        this.Tuple = props.Tuple;
+        this.TupleIndex = props.TupleIndex;
+        this.TupleCount = props.TupleCount;
         // note position is not based on bounds property
     }
     SetBounds(bounds) {

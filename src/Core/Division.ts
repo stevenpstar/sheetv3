@@ -40,7 +40,10 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number, cam: Camera
       Line: staff === 0 ? msr.SALineMid : msr.SBLineMid,
       Rest: true,
       Tied: false,
-      Staff: staff
+      Staff: staff,
+      Tuple: false,
+      TupleIndex: 0,
+      TupleCount: 1
     };
     msr.AddNote(new Note(restProps));
   }
@@ -53,7 +56,11 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number, cam: Camera
           Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff, cam),
           Staff: staff
         });
-        nextBeat = n.Beat + (n.Duration * msr.TimeSignature.bottom);
+        if (!n.Tuple) {
+          nextBeat = n.Beat + (n.Duration * msr.TimeSignature.bottom);
+        } else {
+          nextBeat = n.Beat + (n.Duration / n.TupleCount * msr.TimeSignature.bottom);
+        }
         runningValue += n.Duration;
     }
   });
@@ -127,11 +134,15 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
   let startingBeat = 1; // always start at the beginning
   const divisionsToAdd: Division[] = [];
   sortedDivs.filter(d => d.Staff === staff).forEach((div: Division, i: number) => {
+    // Prototype tuple code
+    const notesOnDiv = msr.Notes.filter(n => n.Beat === div.Beat);
+    //
     if (div.Beat === startingBeat) {
       // there is a div for this beat, set the startingBeat to the next
       // expected division
       startingBeat = div.Beat + div.Duration * msr.TimeSignature.bottom;
     } else {
+      console.log("Beat is: ", div.Beat);
       let val = (div.Beat - startingBeat) / msr.TimeSignature.bottom;
       let newDivs = GetLargestValues(val);
       let sBeat = startingBeat;
@@ -164,7 +175,10 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
       Line: div.Staff === 0 ? msr.SALineMid : msr.SBLineMid,
       Rest: true,
       Tied: false,
-      Staff: div.Staff
+      Staff: div.Staff,
+      Tuple: false,
+      TupleIndex: 0,
+      TupleCount: 1
     };
     msr.AddNote(new Note(restProps));
   });
@@ -209,7 +223,10 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
       Line: div.Staff === 0 ? msr.SALineMid : msr.SBLineMid,
       Rest: true,
       Tied: false,
-      Staff: div.Staff
+      Staff: div.Staff,
+      Tuple: false,
+      TupleIndex: 0,
+      TupleCount: 1
     };
     msr.AddNote(new Note(restProps));
   });

@@ -34,6 +34,7 @@ const ValueMap = new Map([
     [0.03125, NoteValues.n32],
 ]);
 function GetLargestValues(duration) {
+    console.log("Duration is: ", duration);
     let remainingDiff = duration;
     let values = [];
     const divByStdVal = duration % NoteValues.n32 === 0;

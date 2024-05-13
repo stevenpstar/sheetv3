@@ -37,7 +37,7 @@ function returnCanvas(id) {
     return { canvas: canvas, context: context };
 }
 function notify(msg) {
-    console.log(msg);
+    //  console.log(msg);
 }
 /* Globals */
 const { canvas, context } = returnCanvas("canvas");

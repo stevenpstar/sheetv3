@@ -39,6 +39,17 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
     }
     const { x, y, width, height } = Bounds;
     const { canvas, context, camera } = renderProps;
+    // TODO: Prototype code here for triplet / tuplet work
+    if (note.Tuple && note.TupleIndex === 1) {
+        context.fillStyle = "black";
+        context.font = "14px serif";
+        if (stemDir === StemDirection.Up) {
+            context.fillText("3", x + camera.x, y - 40 + camera.y);
+        }
+        else {
+            context.fillText("3", x + camera.x, y + 40 + camera.y);
+        }
+    }
     //  const posString = 'm' + x.toString() + ' ' + (y - 1).toString();
     let flipNoteOffset = flipNote ?
         stemDir === StemDirection.Up ? 11 : -11 : 0;
