@@ -21,8 +21,6 @@ function CreateDivisions(msr, notes, staff, cam) {
             Tied: false,
             Staff: staff,
             Tuple: false,
-            TupleIndex: 0,
-            TupleCount: 1
         };
         msr.AddNote(new Note(restProps));
     }
@@ -38,7 +36,7 @@ function CreateDivisions(msr, notes, staff, cam) {
                 nextBeat = n.Beat + (n.Duration * msr.TimeSignature.bottom);
             }
             else {
-                nextBeat = n.Beat + (n.Duration / n.TupleCount * msr.TimeSignature.bottom);
+                nextBeat = n.Beat + (n.Duration / n.TupleDetails.Count * msr.TimeSignature.bottom);
             }
             runningValue += n.Duration;
         }
@@ -117,7 +115,6 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
             startingBeat = div.Beat + div.Duration * msr.TimeSignature.bottom;
         }
         else {
-            console.log("Beat is: ", div.Beat);
             let val = (div.Beat - startingBeat) / msr.TimeSignature.bottom;
             let newDivs = GetLargestValues(val);
             let sBeat = startingBeat;
@@ -150,8 +147,6 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
             Tied: false,
             Staff: div.Staff,
             Tuple: false,
-            TupleIndex: 0,
-            TupleCount: 1
         };
         msr.AddNote(new Note(restProps));
     });
@@ -195,8 +190,6 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
             Tied: false,
             Staff: div.Staff,
             Tuple: false,
-            TupleIndex: 0,
-            TupleCount: 1
         };
         msr.AddNote(new Note(restProps));
     });

@@ -16,7 +16,8 @@ const keymaps = {
     "flatten": "-",
     "scaleToggle": "'",
     "save": "s",
-    "load": "l"
+    "load": "l",
+    "test_triplet": "t",
 };
 function returnCanvas(id) {
     const canvas = document.getElementById(id);

@@ -16,6 +16,7 @@ interface KeyMapping {
   scaleToggle: string,
   save: string,
   load: string,
+  test_triplet: string,
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -66,6 +67,8 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       break;
     case keyMaps.load:
       app.LoadSheet();
+    case keyMaps.test_triplet:
+      app.CreateTriplet();
     default:
   }
 }

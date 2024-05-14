@@ -4,7 +4,7 @@ import { CreateDefaultMeasure, CreateDefaultPiano, CreateMeasure } from "./Facto
 import { Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
-import { InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
+import { CreateTuplet, InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
 import { KeyPress } from "./Workers/Mappings.js";
 import { Page } from "./Core/Page.js";
@@ -368,6 +368,10 @@ class App {
     }
     GetSaveFiles() {
         return allSaves;
+    }
+    // TODO: Prototype code
+    CreateTriplet() {
+        this.NoteValue = CreateTuplet(this.Selector.Notes, 3);
     }
 }
 export { App };

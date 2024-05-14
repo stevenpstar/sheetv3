@@ -15,7 +15,8 @@ const keymaps = {
     "flatten": "-",
     "scaleToggle": "'",
     "save": "s",
-    "load": "l"
+    "load": "l",
+    "test_triplet": "t"
 };
 function mouseMove(app, canvas, e) {
     let rect = canvas.getBoundingClientRect();

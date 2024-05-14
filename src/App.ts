@@ -5,7 +5,7 @@ import { Clef, Division, Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
 import { Camera } from "./Core/Camera.js";
-import { InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
+import { CreateTuplet, InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
 import { GetDivisionTotalWidth } from "./Core/Division.js";
 import { Instrument } from "./Core/Instrument.js";
@@ -462,6 +462,11 @@ class App {
 
   GetSaveFiles(): saveFile[] {
     return allSaves;
+  }
+
+  // TODO: Prototype code
+  CreateTriplet(): void {
+    this.NoteValue = CreateTuplet(this.Selector.Notes, 3);
   }
 }
 

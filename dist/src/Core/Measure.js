@@ -293,8 +293,6 @@ class Measure {
                         Tied: false,
                         Staff: staff,
                         Tuple: false,
-                        TupleIndex: 0,
-                        TupleCount: 1
                     };
                     this.AddNote(new Note(restProps));
                 }

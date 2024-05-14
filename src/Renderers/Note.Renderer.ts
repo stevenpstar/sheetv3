@@ -53,7 +53,7 @@ function RenderNote(note: Note,
   const { x, y, width, height } = Bounds;
   const { canvas, context, camera } = renderProps;
   // TODO: Prototype code here for triplet / tuplet work
-  if (note.Tuple && note.TupleIndex === 1) {
+  if (note.Tuple) {
       context.fillStyle = "black";
       context.font = "14px serif";
       if (stemDir === StemDirection.Up) {
@@ -165,41 +165,70 @@ function RenderRest(
     let path = `m${x} ${y}`;
     ctx.fillStyle = note.Selected ? "blue" : "black";
 
-    switch (div.Duration) {
-      case 0.03125:
-        y += 7;
-        path = `m ${x} ${y}` + demiSemiQuaverRest;
-        ctx.fill(new Path2D(path));
-        break;
-      case 0.0625:
-        y += 9;
-        path = `m ${x} ${y}` + semiQuaverRest;
-        ctx.fill(new Path2D(path));
-        break;
-      case 0.125:
-        y = y + 10;
-        path = `m${x} ${y}` + quaverRest;
-        ctx.fill(new Path2D(path));
-        break;
-      case 0.25:
-        path = path + crotchetRest;
-        ctx.fill(new Path2D(path));
-        break;
-      case 0.5:
-//        y = div.Bounds.y + cam.y + ((note.Line - msr.SALineTop) * 5) - 6;
-        y = Measure.GetNotePositionOnLine(msr, note.Line) - 6 + cam.y;
-        ctx.fillRect(x, y, 14, 6);
-        break;
-      case 1:
-        //y = div.Bounds.y + cam.y + ((note.Line - 2 - msr.SALineTop) * 5);
+    if (div.Duration === 0.3125) {
+      y += 7;
+      path = `m ${x} ${y}` + demiSemiQuaverRest;
+      ctx.fill(new Path2D(path));
+    }
+    else if (div.Duration === 0.0625) {
+      y += 9;
+      path = `m ${x} ${y}` + semiQuaverRest;
+      ctx.fill(new Path2D(path));
+    }
+    else if (div.Duration > 0.0625 && div.Duration <= 0.125) {
+      y = y + 10;
+      path = `m${x} ${y}` + quaverRest;
+      ctx.fill(new Path2D(path));
+    }
+    else if (div.Duration === 0.25) {
+      path = path + crotchetRest;
+      ctx.fill(new Path2D(path));
+    }
+    else if (div.Duration === 0.5) {
+      y = Measure.GetNotePositionOnLine(msr, note.Line) - 6 + cam.y;
+      ctx.fillRect(x, y, 14, 6);
+    }
+    else if (div.Duration === 1) {
         y = Measure.GetNotePositionOnLine(msr, note.Line - 2) + cam.y;
         x = div.Bounds.x + cam.x + (div.Bounds.width / 2) - 7;
         ctx.fillRect(x, y, 14, 6);
-        break;
-      default:
-        path = path + crotchetRest;
-        ctx.fill(new Path2D(path));
     }
+
+//    switch (div.Duration) {
+//      case 0.03125:
+//        y += 7;
+//        path = `m ${x} ${y}` + demiSemiQuaverRest;
+//        ctx.fill(new Path2D(path));
+//        break;
+//      case 0.0625:
+//        y += 9;
+//        path = `m ${x} ${y}` + semiQuaverRest;
+//        ctx.fill(new Path2D(path));
+//        break;
+//      case 0.125:
+//        y = y + 10;
+//        path = `m${x} ${y}` + quaverRest;
+//        ctx.fill(new Path2D(path));
+//        break;
+//      case 0.25:
+//        path = path + crotchetRest;
+//        ctx.fill(new Path2D(path));
+//        break;
+//      case 0.5:
+////        y = div.Bounds.y + cam.y + ((note.Line - msr.SALineTop) * 5) - 6;
+//        y = Measure.GetNotePositionOnLine(msr, note.Line) - 6 + cam.y;
+//        ctx.fillRect(x, y, 14, 6);
+//        break;
+//      case 1:
+//        //y = div.Bounds.y + cam.y + ((note.Line - 2 - msr.SALineTop) * 5);
+//        y = Measure.GetNotePositionOnLine(msr, note.Line - 2) + cam.y;
+//        x = div.Bounds.x + cam.x + (div.Bounds.width / 2) - 7;
+//        ctx.fillRect(x, y, 14, 6);
+//        break;
+//      default:
+//        path = path + crotchetRest;
+//        ctx.fill(new Path2D(path));
+//    }
   }
 
 function RenderTies(renderProps: RenderProperties, divisions: Division[], notes: Note[], staff: number,msr: Measure): void {
@@ -224,14 +253,14 @@ function RenderTies(renderProps: RenderProperties, divisions: Division[], notes:
     // TODO: Change * 4 to be measure time sig bottom
     divNotes.forEach(note => {
       if (!note.Tied || note.Rest || note.Tied && 
-         note.Beat + note.Duration * 4 >= note.TiedEnd) {
+         note.Beat + note.Duration * msr.TimeSignature.bottom > note.TiedEnd) {
         return;
       }
       const tiedTo = nextDivNotes.find(n => 
         n.Line === note.Line &&
         n.Tied &&
-        n.Beat < n.TiedEnd);
-      if (tiedTo === undefined) { console.error("No tied note found: ", note.Beat); return; }
+        n.Beat <= n.TiedEnd);
+      if (tiedTo === undefined) { console.error("No tied note found: ", note); return; }
       const nextNote = tiedTo;
       const x1 = div.Bounds.x + noteXBuffer + camera.x;
       const y1 = Measure.GetNotePositionOnLine(msr, note.Line) + camera.y;
@@ -241,6 +270,8 @@ function RenderTies(renderProps: RenderProperties, divisions: Division[], notes:
       const curveStartOffset = (note.Line < 15) ? -8 : 8;
       //TODO: This is a temporary representation of a tie or slur
       context.fillStyle = "black";
+      context.strokeStyle = "black";
+      context.setLineDash([]);
       context.beginPath();
       context.moveTo(x1 + (noteXBuffer / 2), y1 + curveStartOffset);
       context.quadraticCurveTo((x1 + (noteXBuffer / 2)) + ((x2 - x1) / 2),

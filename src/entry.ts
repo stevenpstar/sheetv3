@@ -20,7 +20,8 @@ const keymaps: KeyMapping = {
   "flatten": "-",
   "scaleToggle": "'",
   "save": "s",
-  "load": "l"
+  "load": "l",
+  "test_triplet": "t"
 }
 
 function mouseMove(app: App, canvas: HTMLCanvasElement, e: MouseEvent): void {

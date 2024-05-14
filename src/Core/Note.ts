@@ -1,6 +1,12 @@
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 
+interface TupleDetails {
+  StartBeat: number;
+  EndBeat: number;
+  Value: number; // Total tuple value, not value of individual note
+  Count: number; // Total tuple count (3 for triplet etc.)
+}
 interface NoteProps {
   Beat: number;
   Duration: number;
@@ -9,8 +15,7 @@ interface NoteProps {
   Tied: boolean;
   Staff: number;
   Tuple: boolean;
-  TupleIndex: number;
-  TupleCount: number;
+  TupleDetails?: TupleDetails;
 }
 
 class Note implements ISelectable {
@@ -32,8 +37,7 @@ class Note implements ISelectable {
   Staff: number;
 
   Tuple: boolean;
-  TupleIndex: number;
-  TupleCount: number;
+  TupleDetails?: TupleDetails;
 
   constructor(props: NoteProps) {
     this.Beat = props.Beat;
@@ -52,8 +56,9 @@ class Note implements ISelectable {
     this.ID = -1;
 
     this.Tuple = props.Tuple;
-    this.TupleIndex = props.TupleIndex;
-    this.TupleCount = props.TupleCount;
+    if (props.TupleDetails) {
+      this.TupleDetails = props.TupleDetails;
+    }
     // note position is not based on bounds property
   }
 
@@ -71,4 +76,4 @@ class Note implements ISelectable {
   }
 }
 
-export { Note, NoteProps }
+export { Note, NoteProps, TupleDetails }
