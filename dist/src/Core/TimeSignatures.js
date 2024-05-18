@@ -2,3 +2,15 @@
 //  ["amin", ""],
 //  ["
 //])
+//
+// Returns beats that should separate note groupings etc.
+function ReturnBreakPoints(timeSig) {
+    const bPoints = [];
+    const timeSigString = timeSig.top.toString() + "/" + timeSig.bottom.toString();
+    switch (timeSigString) {
+        case "4/4":
+        default:
+            bPoints.push(3);
+    }
+    return bPoints;
+}

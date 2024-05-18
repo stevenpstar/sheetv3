@@ -1,5 +1,6 @@
-import { Note } from "../Core/Note";
-import { RenderProperties } from "../Types/RenderProperties";
+import { Note } from "../Core/Note.js";
+import { RenderProperties } from "../Types/RenderProperties.js";
+import { RenderSymbol, StdAccidentals } from "./MusicFont.Renderer.js";
 
 const sharpPath = 'm0 0 0-5.6448 2.4-.6624 0 5.616-2.4.6912zm4.7256-1.3656-1.65.4728 0-5.616 1.65-.4608 0-2.3328-1.65.4608 0-5.7382-.6756 0 0 5.9122-2.4.69 0-5.5798-.6372 0 0 5.7922-1.65.462 0 2.3376 1.65-.4608 0 5.6052-1.65.4596 0 2.328 1.65-.4608 0 5.7058.6372 0 0-5.9098 2.4-.66 0 5.551.6756 0 0-5.7598 1.65-.462 0-2.3364z';
 const doubleSharp = 'c-1.2495-.1955-2.5177-.1955-3.7791-.1938-.0272-.9231.1207-1.904-.2448-2.771-.2448-.5763-.7089-1.0302-1.1203-1.4977-.6579.5882-1.1985 1.3651-1.2512 2.2678-.051.6664-.0136 1.3345-.0255 2.0009-1.2614.0187-2.5347-.0425-3.7791.2057.2397-1.2376.1853-2.5024.2074-3.7553.9605-.0255 1.9873.1122 2.8798-.306.5253-.2465.9724-.6324 1.4178-.9996-.5814-.6579-1.3362-1.2376-2.2474-1.292-.6817-.0544-1.3668-.0153-2.0502-.0272-.0425-1.2444.102-2.5024-.1564-3.7315 1.2308.2227 2.4854.1649 3.7281.1819.0187.8857-.0799 1.8037.17 2.6554.1904.6511.7106 1.1526 1.1441 1.666.6137-.5338 1.1662-1.2036 1.2665-2.0417.0918-.7582.0187-1.5198.0612-2.2797 1.2529-.034 2.5432.1258 3.7553-.2703-.1802 1.2631-.1972 2.5466-.1836 3.8199-.8942.0255-1.8309-.0748-2.6809.2278-.646.2278-1.1543.7276-1.6677 1.1696.5576.5712 1.2291 1.0965 2.0587 1.1747.7616.0714 1.5266.0391 2.2899.0527.0187 1.2495-.0425 2.5109.2074 3.7434z';
@@ -21,6 +22,11 @@ function RenderAccidental(
     case 1:
       posString = `m ${note.Bounds.x + camera.x - 6} ${note.Bounds.y + camera.y + 8}`;
       posString += sharpPath;
+      RenderSymbol(
+        renderProps,
+        StdAccidentals.Sharp,
+        note.Bounds.x - 12,
+        note.Bounds.y + 3);
       break;
     case 2:
       posString = `m ${note.Bounds.x + camera.x - 2} ${note.Bounds.y + camera.y + 10}`;
@@ -37,10 +43,10 @@ function RenderAccidental(
       break;
   }
   context.fillStyle = "black";
-  context.fill(new Path2D(posString));
-  if (type === -2) {
-    context.fill(new Path2D(dflatString));
-  }
+//  context.fill(new Path2D(posString));
+//  if (type === -2) {
+//    context.fill(new Path2D(dflatString));
+//  }
 }
 
 export { RenderAccidental, sharpPath, flatPath }

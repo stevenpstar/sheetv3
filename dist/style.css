@@ -1,4 +1,12 @@
+@font-face {
+  font-family: 'Bravura';
+  font-style: 'normal';
+  font-weight: 'normal';
+  src: local('Bravura'), url('../src/Assets/Fonts/Bravura.otf') format('opentype');
+}
 html, body {
+  font-family: 'Bravura', serif;
+  font-size: 32px;
   overflow: hidden;
   height: 100vh;
 }

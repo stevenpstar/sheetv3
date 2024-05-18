@@ -17,7 +17,6 @@ class Beam {
   }
 
   Render(context: CanvasRenderingContext2D, cam: Camera, count: number, stemDir: StemDirection): void {
-    // TODO: This should eventually be an svg path (probably)
       const baseThickness = 6;
       const svgLine = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + cam.y}
         L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + cam.y}

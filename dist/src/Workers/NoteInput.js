@@ -208,7 +208,6 @@ function AddToDivision(msr, noteProps, staff) {
                     nextBeat = nextBeat + dur * msr.TimeSignature.bottom;
                 });
             });
-            console.log(msr.Notes.filter(n => n.Staff === 0));
             msr.AddNote(new Note(newNoteProps));
         }
     });
@@ -245,7 +244,6 @@ function CreateTuplet(selNotes, count) {
                 lastBeat = newNote.Beat;
                 measure.AddNote(newNote);
             }
-            console.log(measure);
         });
     }
     return duration;

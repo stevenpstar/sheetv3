@@ -8,12 +8,14 @@ import { RenderProperties } from "../Types/RenderProperties.js";
 import { RenderFourTop } from "./Elements/TimeSignature.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
+import { Clefs, RenderSymbol, TimeSigNumbers } from "./MusicFont.Renderer.js";
 import { DetermineStemDirection,
   RenderDots,
   RenderNote,
   RenderRest,
   RenderStemRevise,
   RenderTies,
+  RenderTuples,
   StemDirection, renderLedgerLines } from "./Note.Renderer.js";
 
 const line_space = 10;
@@ -206,7 +208,17 @@ function RenderMeasureClef(
     msr.Clefs.forEach((clef: Clef) => {
       if (clef.Beat === 1) {
         if (clef.Type === "treble") {
-          clef.render(context, camera);
+          // TESTING SOMETHING
+          const topLine = msr.GetMeasureHeight() + (msrMidLine * 5);
+          //context.fillStyle = "black";
+          //context.font = "1.2em Bravura";
+          //context.fillText("\u{E050}", clef.Bounds.x + camera.x, msr.Bounds.y + ((msrMidLine + 2) * 5) + camera.y);
+          RenderSymbol(renderProps,
+                       Clefs.G,
+                       clef.Bounds.x + 3,
+                       msr.Bounds.y + ((msrMidLine + 2) * 5));
+          //
+          //clef.render(context, camera);
         } else if (clef.Type === "bass") {
           clef.render(context, camera);
         }
@@ -249,6 +261,43 @@ function RenderMeasureClef(
     });
 }
 
+function GetTimeSignatureGlyph(n: number): TimeSigNumbers {
+  let glyph: TimeSigNumbers;
+  switch (n) {
+    case 0:
+      glyph = TimeSigNumbers.Zero;
+      break;
+    case 1:
+      glyph = TimeSigNumbers.One;
+      break;
+   case 2:
+      glyph = TimeSigNumbers.Two;
+      break;
+   case 3:
+      glyph = TimeSigNumbers.Three;
+      break;
+   case 4:
+      glyph = TimeSigNumbers.Four;
+      break;
+   case 5:
+      glyph = TimeSigNumbers.Five;
+      break;
+  case 6:
+      glyph = TimeSigNumbers.Six;
+      break;
+  case 7:
+      glyph = TimeSigNumbers.Seven;
+      break;
+  case 8:
+      glyph = TimeSigNumbers.Eight;
+      break;
+  case 9:
+      glyph = TimeSigNumbers.Nine;
+      break;
+  }
+  return glyph;
+}
+
 function RenderTimeSig(
   renderProps: RenderProperties,
   msr: Measure,
@@ -257,27 +306,34 @@ function RenderTimeSig(
   xOffset: number): void {
 
     const msrMidLine = Measure.GetMeasureMidLine(msr);
-    const gMsrY = msr.Bounds.y + msr.GetMeasureHeight() + renderProps.camera.y + (msr.GetGrandMeasureMidLine() * 5);
+    const grandMsrMidLine = msr.GetGrandMeasureMidLine();
+    let TopGlyph: TimeSigNumbers = GetTimeSignatureGlyph(msr.TimeSignature.top);
+    let BotGlyph: TimeSigNumbers = GetTimeSignatureGlyph(msr.TimeSignature.bottom);
+    
+    RenderSymbol(
+      renderProps,
+      TopGlyph,
+      msr.Bounds.x + xOffset,
+      msr.Bounds.y + ((msrMidLine - 2) * 5));
 
-    const topString = RenderFourTop(
-      msr.Bounds.x + xOffset + renderProps.camera.x,
-      msr.Bounds.y + renderProps.camera.y + (msrMidLine * 5) - 5);
-    const botString = RenderFourTop(
-      msr.Bounds.x + xOffset + renderProps.camera.x,
-      msr.Bounds.y + renderProps.camera.y + ((msrMidLine + 4) * 5) - 4);
-    const topStringB = RenderFourTop(
-      msr.Bounds.x + xOffset + renderProps.camera.x,
-      gMsrY - 4);
-    const botStringB = RenderFourTop(
-      msr.Bounds.x + xOffset + renderProps.camera.x,
-      gMsrY + (3 * 5) + 1);
-
-    renderProps.context.fill(new Path2D(topString));
-    renderProps.context.fill(new Path2D(botString));
+    RenderSymbol(
+      renderProps,
+      BotGlyph,
+      msr.Bounds.x + xOffset,
+      msr.Bounds.y + ((msrMidLine + 2) * 5));
 
     if (msr.Instrument.Staff === StaffType.Grand) {
-      renderProps.context.fill(new Path2D(topStringB));
-      renderProps.context.fill(new Path2D(botStringB));
+      RenderSymbol(
+        renderProps,
+        TopGlyph,
+        msr.Bounds.x + xOffset,
+        msr.Bounds.y + msr.GetMeasureHeight() + ((grandMsrMidLine - 2) * 5));
+
+      RenderSymbol(
+        renderProps,
+        BotGlyph,
+        msr.Bounds.x + xOffset,
+        msr.Bounds.y + msr.GetMeasureHeight() + ((grandMsrMidLine + 2) * 5));
     }
 }
 
@@ -345,8 +401,19 @@ function RenderNotes(
     }
   });
   RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Single, msr);
+  RenderTuples(renderProps,
+               msr.Divisions,
+               msr.Notes,
+               StaffType.Single,
+               msr);
+
   if (msr.Instrument.Staff === StaffType.Grand) {
     RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Grand, msr);
+    RenderTuples(renderProps,
+                 msr.Divisions,
+                 msr.Notes,
+                 StaffType.Grand,
+                 msr);
   }
 }
 

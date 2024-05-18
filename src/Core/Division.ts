@@ -132,15 +132,22 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
   let startingBeat = 1; // always start at the beginning
   const divisionsToAdd: Division[] = [];
   sortedDivs.filter(d => d.Staff === staff).forEach((div: Division, i: number) => {
-    // Prototype tuple code
     const notesOnDiv = msr.Notes.filter(n => n.Beat === div.Beat);
-    //
     if (div.Beat === startingBeat) {
       // there is a div for this beat, set the startingBeat to the next
       // expected division
       startingBeat = div.Beat + div.Duration * msr.TimeSignature.bottom;
-    } else {
+      if (notesOnDiv[0].Tuple) {
+        // TODO: This is not finished, currently skipping tuplet divisions
+        // But there may be cases where we need to generate missiong divisions
+        // within a tuplet group (maybe), and this will need to be revisited
+        startingBeat = notesOnDiv[0].TupleDetails.EndBeat;
+      }
+    } else if (div.Beat >= startingBeat) {
       let val = (div.Beat - startingBeat) / msr.TimeSignature.bottom;
+      console.log("divBeat: ", div.Beat);
+      console.log("startingBeat: ", startingBeat);
+      console.log("val: ", val);
       let newDivs = GetLargestValues(val);
       let sBeat = startingBeat;
       newDivs.sort();
@@ -248,7 +255,10 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroups {
   // started creating a div group or not
   let startFlag = false;
 
-  const mDivs = msr.Divisions.filter(d => d.Staff === staff);
+  const mDivs = msr.Divisions.filter(d => d.Staff === staff)
+    .sort((a: Division, b: Division) => {
+      return a.Beat - b.Beat;
+    })
 
   mDivs.forEach((div: Division, i: number) => {
     const divNotes = msr.Notes.filter(n => n.Beat === div.Beat &&
@@ -296,10 +306,15 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroups {
           divs = [];
           notes = [];
         } else {
+          // breakpoint check TODO: Actually implement this is prototype code
+          if (div.Beat === 3) {
+            divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+            divs = [];
+            notes = [];
+          }
           divs.push(div);
           notes.push(divNotes);
-          if (i === msr.Divisions.filter(d => d.Staff === staff).length - 1 ||
-             div.Beat === 2.5) {
+          if (i === msr.Divisions.filter(d => d.Staff === staff).length - 1) {
             divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
             divs = [];
             notes = [];

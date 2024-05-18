@@ -4,6 +4,7 @@ import { Stem } from "../Core/Stem.js";
 import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
+import { NoteHeads, RenderSymbol } from "./MusicFont.Renderer.js";
 var StemDirection;
 (function (StemDirection) {
     StemDirection[StemDirection["Up"] = 0] = "Up";
@@ -37,46 +38,36 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
     if (note.Accidental !== 0) {
         RenderAccidental(renderProps, note, note.Accidental);
     }
-    const { x, y, width, height } = Bounds;
+    let { x, y, width, height } = Bounds;
     const { canvas, context, camera } = renderProps;
-    // TODO: Prototype code here for triplet / tuplet work
-    if (note.Tuple) {
-        context.fillStyle = "black";
-        context.font = "14px serif";
-        if (stemDir === StemDirection.Up) {
-            context.fillText("3", x + camera.x, y - 40 + camera.y);
-        }
-        else {
-            context.fillText("3", x + camera.x, y + 40 + camera.y);
-        }
-    }
-    //  const posString = 'm' + x.toString() + ' ' + (y - 1).toString();
     let flipNoteOffset = flipNote ?
         stemDir === StemDirection.Up ? 11 : -11 : 0;
     let posString = `m ${x + camera.x} ${y + 7.5 - 1 + camera.y}`;
+    // TODO: Move this offset somewhere else to be constant
+    y = y + 3;
+    //
+    colour = selected ? "blue" : "black";
     let noteString = '';
     switch (note.Duration) {
         case 0.125:
-            noteString = posString + noteHead;
-            break;
         case 0.25:
-            noteString = posString + noteHead;
+            //   noteString = posString + noteHead;
+            RenderSymbol(renderProps, NoteHeads.crotchet, x, y, colour);
             break;
         case 0.5:
-            noteString = posString + minimHead; //( + offsets)
+            RenderSymbol(renderProps, NoteHeads.minim, x, y, colour);
             break;
         case 1:
-            posString = `m ${x + 3.5 + camera.x} ${y + 5 + camera.y}`;
-            noteString = posString + semibreveHead;
+            RenderSymbol(renderProps, NoteHeads.whole, x, y, colour);
             break;
         default:
-            noteString = posString + noteHead;
+            RenderSymbol(renderProps, NoteHeads.crotchet, x, y, colour);
     }
     context.fillStyle = "black";
     if (selected) {
         context.fillStyle = "blue";
     }
-    context.fill(new Path2D(noteString));
+    // context.fill(new Path2D(noteString));
     let debug = false;
     if (debug) {
         context.fillStyle = "rgba(200, 0, 0, 0.5)";
@@ -197,6 +188,51 @@ function RenderRest(ctx, div, cam, note, msr) {
     //        ctx.fill(new Path2D(path));
     //    }
 }
+function RenderTupleAnnotation(renderProps, coords, count) {
+    const { canvas, context, camera } = renderProps;
+    const width = coords.x2 - coords.x1;
+    context.font = "14px serif";
+    context.fillStyle = "black";
+    context.fillRect(coords.x1 + camera.x, coords.y1 + camera.y, width, 2);
+    context.fillText(count, coords.x1 + width / 2 - 7 + camera.x, coords.y1 - 5 + camera.y);
+}
+function RenderTuples(renderProps, divisions, notes, staff, msr) {
+    const { canvas, context, camera } = renderProps;
+    const divs = divisions.filter(d => d.Staff === staff);
+    divs.sort((a, b) => {
+        return a.Beat - b.Beat;
+    });
+    let foundTuplet = false;
+    let tupleX = 0;
+    let tupleXEnd = 0;
+    let tupleY = 0;
+    let tupleCount = 0;
+    divs.forEach((div, i) => {
+        const notesInDiv = notes.filter(n => n.Beat === div.Beat
+            && n.Staff === staff);
+        if (!notesInDiv[0].Tuple) {
+            if (foundTuplet) {
+                foundTuplet = false;
+                RenderTupleAnnotation(renderProps, { x1: tupleX, y1: tupleY, x2: tupleXEnd, y2: tupleY }, tupleCount.toString());
+                tupleX = 0;
+                tupleXEnd = 0;
+                tupleY = 0;
+                tupleCount = 0;
+            }
+            return;
+        }
+        if (!foundTuplet) {
+            foundTuplet = true;
+            tupleX = div.Bounds.x + 19;
+            tupleCount = notesInDiv[0].TupleDetails.Count;
+            tupleY = div.Bounds.y;
+            tupleXEnd = div.Bounds.x + 19;
+        }
+        else {
+            tupleXEnd = div.Bounds.x + 19;
+        }
+    });
+}
 function RenderTies(renderProps, divisions, notes, staff, msr) {
     const { canvas, context, camera } = renderProps;
     const divs = divisions.filter(d => d.Staff === staff);
@@ -215,7 +251,6 @@ function RenderTies(renderProps, divisions, notes, staff, msr) {
         nextDivNotes.sort((a, b) => {
             return a.Line - b.Line;
         });
-        // TODO: Change * 4 to be measure time sig bottom
         divNotes.forEach(note => {
             if (!note.Tied || note.Rest || note.Tied &&
                 note.Beat + note.Duration * msr.TimeSignature.bottom > note.TiedEnd) {
@@ -249,9 +284,18 @@ function RenderTies(renderProps, divisions, notes, staff, msr) {
 // This will replace some parts of renderStemRevise eventually
 function DetermineStemDirection(notes, divisions, staff, measure) {
     let dir = StemDirection.Up;
+    // TODO: Not sure we will actually need this, seems like it shouldn't come
+    // out of order in the first place.
+    notes.sort((a, b) => {
+        return a[0].Beat - b[0].Beat;
+    });
     let match = true;
     divisions.forEach((div, i) => {
         if (div.Beat !== notes[i][0].Beat) {
+            console.error("Index: ", i);
+            console.error("Match failed on div: ", div);
+            console.error("Match failed on beat: ", div.Beat);
+            console.error("Match fail note: ", notes[i][0]);
             match = false;
         }
     });
@@ -483,4 +527,4 @@ function renderLedgerLines(notes, division, renderProps, staff, msr) {
         context.fill(new Path2D(path));
     }
 }
-export { RenderNote, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies, DetermineStemDirection, RenderDots, StemDirection, BeamDirection };
+export { RenderNote, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies, DetermineStemDirection, RenderDots, StemDirection, BeamDirection, RenderTuples };
