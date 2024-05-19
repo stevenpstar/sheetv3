@@ -4,7 +4,7 @@ import { Stem } from "../Core/Stem.js";
 import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
-import { NoteHeads, RenderSymbol } from "./MusicFont.Renderer.js";
+import { NoteHeads, RenderSymbol, TupletNumbers } from "./MusicFont.Renderer.js";
 var StemDirection;
 (function (StemDirection) {
     StemDirection[StemDirection["Up"] = 0] = "Up";
@@ -152,51 +152,44 @@ function RenderRest(ctx, div, cam, note, msr) {
         x = div.Bounds.x + cam.x + (div.Bounds.width / 2) - 7;
         ctx.fillRect(x, y, 14, 6);
     }
-    //    switch (div.Duration) {
-    //      case 0.03125:
-    //        y += 7;
-    //        path = `m ${x} ${y}` + demiSemiQuaverRest;
-    //        ctx.fill(new Path2D(path));
-    //        break;
-    //      case 0.0625:
-    //        y += 9;
-    //        path = `m ${x} ${y}` + semiQuaverRest;
-    //        ctx.fill(new Path2D(path));
-    //        break;
-    //      case 0.125:
-    //        y = y + 10;
-    //        path = `m${x} ${y}` + quaverRest;
-    //        ctx.fill(new Path2D(path));
-    //        break;
-    //      case 0.25:
-    //        path = path + crotchetRest;
-    //        ctx.fill(new Path2D(path));
-    //        break;
-    //      case 0.5:
-    ////        y = div.Bounds.y + cam.y + ((note.Line - msr.SALineTop) * 5) - 6;
-    //        y = Measure.GetNotePositionOnLine(msr, note.Line) - 6 + cam.y;
-    //        ctx.fillRect(x, y, 14, 6);
-    //        break;
-    //      case 1:
-    //        //y = div.Bounds.y + cam.y + ((note.Line - 2 - msr.SALineTop) * 5);
-    //        y = Measure.GetNotePositionOnLine(msr, note.Line - 2) + cam.y;
-    //        x = div.Bounds.x + cam.x + (div.Bounds.width / 2) - 7;
-    //        ctx.fillRect(x, y, 14, 6);
-    //        break;
-    //      default:
-    //        path = path + crotchetRest;
-    //        ctx.fill(new Path2D(path));
-    //    }
 }
-function RenderTupleAnnotation(renderProps, coords, count) {
+function RenderTupletAnnotation(renderProps, coords, count) {
     const { canvas, context, camera } = renderProps;
     const width = coords.x2 - coords.x1;
-    context.font = "14px serif";
     context.fillStyle = "black";
-    context.fillRect(coords.x1 + camera.x, coords.y1 + camera.y, width, 2);
-    context.fillText(count, coords.x1 + width / 2 - 7 + camera.x, coords.y1 - 5 + camera.y);
+    context.fillRect(coords.x1 + camera.x, coords.y1 - 12 + camera.y, 1, 6);
+    context.fillRect(coords.x1 + camera.x, coords.y1 - 12 + camera.y, (width / 2) - 14, 1);
+    context.fillRect(coords.x1 + width + camera.x, coords.y1 - 12 + camera.y, 1, 6);
+    context.fillRect(coords.x1 + (width / 2) + 14 + camera.x, coords.y1 - 12 + camera.y, (width / 2) - 14, 1);
+    RenderSymbol(renderProps, GetTupletGlyph(count), coords.x1 + width / 2 - 7, coords.y1 - 5);
 }
-function RenderTuples(renderProps, divisions, notes, staff, msr) {
+function GetTupletGlyph(count) {
+    switch (count) {
+        case "0":
+            return TupletNumbers.Zero;
+        case "1":
+            return TupletNumbers.One;
+        case "2":
+            return TupletNumbers.Two;
+        case "3":
+            return TupletNumbers.Three;
+        case "4":
+            return TupletNumbers.Four;
+        case "5":
+            return TupletNumbers.Five;
+        case "6":
+            return TupletNumbers.Six;
+        case "7":
+            return TupletNumbers.Seven;
+        case "8":
+            return TupletNumbers.Eight;
+        case "9":
+            return TupletNumbers.Nine;
+        default:
+            return TupletNumbers.Three;
+    }
+}
+function RenderTuplets(renderProps, divisions, notes, staff, msr) {
     const { canvas, context, camera } = renderProps;
     const divs = divisions.filter(d => d.Staff === staff);
     divs.sort((a, b) => {
@@ -210,10 +203,12 @@ function RenderTuples(renderProps, divisions, notes, staff, msr) {
     divs.forEach((div, i) => {
         const notesInDiv = notes.filter(n => n.Beat === div.Beat
             && n.Staff === staff);
+        let nArray = [...notesInDiv];
+        const stemDir = DetermineStemDirection([notesInDiv], [div], staff, msr);
         if (!notesInDiv[0].Tuple) {
             if (foundTuplet) {
                 foundTuplet = false;
-                RenderTupleAnnotation(renderProps, { x1: tupleX, y1: tupleY, x2: tupleXEnd, y2: tupleY }, tupleCount.toString());
+                RenderTupletAnnotation(renderProps, { x1: tupleX, y1: tupleY, x2: tupleXEnd, y2: tupleY }, tupleCount.toString());
                 tupleX = 0;
                 tupleXEnd = 0;
                 tupleY = 0;
@@ -223,7 +218,7 @@ function RenderTuples(renderProps, divisions, notes, staff, msr) {
         }
         if (!foundTuplet) {
             foundTuplet = true;
-            tupleX = div.Bounds.x + 19;
+            tupleX = div.Bounds.x + 9;
             tupleCount = notesInDiv[0].TupleDetails.Count;
             tupleY = div.Bounds.y;
             tupleXEnd = div.Bounds.x + 19;
@@ -386,7 +381,7 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir) {
         if (div.Duration === 1) {
             return;
         }
-        const xBuffer = stemDirection === StemDirection.Up ? 10 : 0;
+        const xBuffer = stemDirection === StemDirection.Up ? 11 : 0;
         const stemX = Math.floor(div.Bounds.x + xBuffer + camera.x + noteXBuffer);
         if (i === 0) {
             beamStartX = stemX;
@@ -404,14 +399,8 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir) {
         const highLine = sortedNotes[0].Line;
         const lowLine = sortedNotes[sortedNotes.length - 1].Line;
         const startPos = (stemDirection === StemDirection.Up) ?
-            div.Bounds.y + ((lowLine - yLineBuffer) * lineHeight) + camera.y :
-            div.Bounds.y + ((highLine - yLineBuffer) * lineHeight) + camera.y;
-        //      const diff = stemEndY - startPos;
-        //      const newStem = new Stem(new Bounds(stemX, startPos, 2, diff));
-        //      newStem.Render(context, camera);
-        //      context.fillStyle = "black";
-        //      context.fillRect(stemX, (startPos),
-        //               2, diff);
+            div.Bounds.y + ((lowLine - yLineBuffer) * lineHeight) + camera.y - 2 : // 2 is a buffer for stem
+            div.Bounds.y + ((highLine - yLineBuffer) * lineHeight) + camera.y + 2;
         if (divisions.length === 1 && divisions[0].Duration < 0.25) {
             const flagLoop = GetFlagCount(div.Duration);
             if (stemDirection === StemDirection.Up) {
@@ -429,15 +418,10 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir) {
         }
         else if (divisions.length > 1 && divisions[0].Duration < 0.25) {
             context.fillStyle = "black";
-            //        const nextDiv = divisions[i+1];
-            //        const beamLoop = GetFlagCount(nextDiv.Duration);
-            //        const yBuffer = (stemDirection === StemDirection.Up) ?
-            //          0 : -5;
-            //        const nextStemX = nextDiv.Bounds.x + camera.x + xBuffer + noteXBuffer; 
             // getting highest line in division 0
             let startY = 0;
             let endY = 0;
-            let xB = stemDirection === StemDirection.Up ? 19 : 9;
+            let xB = stemDirection === StemDirection.Up ? 10.5 : 0;
             stemEndY = stemDirection === StemDirection.Up ?
                 Measure.GetNotePositionOnLine(msr, highestLine) - 35 + camera.y :
                 Measure.GetNotePositionOnLine(msr, lowestLine) + 35 + camera.y;
@@ -466,24 +450,16 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir) {
                 endY = stemEndY;
             }
             if (i === 0) {
-                const newBeam = new Beam(new Bounds(divisions[0].Bounds.x + 19, stemEndY, 5, 5), { x: divisions[0].Bounds.x + xB, y: stemEndY - camera.y }, { x: divisions[divisions.length - 1].Bounds.x + xB, y: endY - camera.y });
+                const fNoteX = notes[0][0].Bounds.x;
+                const lNoteX = notes[notes.length - 1][0].Bounds.x;
+                const newBeam = new Beam(new Bounds(divisions[0].Bounds.x + 19, stemEndY, 5, 5), { x: fNoteX + xB, y: stemEndY - camera.y }, { x: lNoteX + xB, y: endY - camera.y });
                 newBeam.Render(context, camera, GetFlagCount(divisions[0].Duration), stemDirection);
             }
-            //        for (let i = 0; i < beamLoop; i++) {
-            //          const beamY = stemDirection === StemDirection.Up ?
-            //            stemEndY + yBuffer + (7 * i) : stemEndY + yBuffer - (7 * i);
-            //          context.fillRect(stemX, beamY, nextStemX - stemX, 5); 
-            //        }
         }
         const diff = stemEndY - startPos;
-        const newStem = new Stem(new Bounds(stemX, startPos, 2, diff));
+        const newStem = new Stem(new Bounds(stemX, startPos, 1.5, diff));
         newStem.Render(context, camera);
     });
-    //TODO: Actual prototype code here
-}
-// TODO: TEST FUNCTION
-function TEST_GetBeamDirection() {
-    return BeamDirection.Flat;
 }
 function GetFlagCount(value) {
     let count = 1;
@@ -527,4 +503,4 @@ function renderLedgerLines(notes, division, renderProps, staff, msr) {
         context.fill(new Path2D(path));
     }
 }
-export { RenderNote, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies, DetermineStemDirection, RenderDots, StemDirection, BeamDirection, RenderTuples };
+export { RenderNote, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies, DetermineStemDirection, RenderDots, StemDirection, BeamDirection, RenderTuplets };

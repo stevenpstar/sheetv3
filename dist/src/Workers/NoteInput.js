@@ -74,7 +74,7 @@ function UpdateNoteBounds(msr, staff) {
                     const lineSubt = n.Staff === 0 ?
                         0 + msr.SALineTop :
                         msr.SBLineTop;
-                    n.Bounds.x = div.Bounds.x + noteXBuffer + flipNoteOffset;
+                    n.Bounds.x = Math.floor(div.Bounds.x + noteXBuffer + flipNoteOffset);
                     n.Bounds.y = Measure.GetNotePositionOnLine(msr, n.Line);
                 }
             });

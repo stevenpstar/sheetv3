@@ -29,8 +29,18 @@ enum TimeSigNumbers {
   CutCommon = "\u{E08B}"
 }
 
-enum TupleNumbers {
-
+enum TupletNumbers {
+  Zero = "\u{E880}",
+  One = "\u{E881}",
+  Two = "\u{E882}",
+  Three = "\u{E883}",
+  Four = "\u{E884}",
+  Five = "\u{E885}",
+  Six = "\u{E886}",
+  Seven = "\u{E887}",
+  Eight = "\u{E888}",
+  Nine = "\u{E889}",
+  Colon = "\u{E88A}",
 }
 
 enum StdAccidentals {
@@ -67,4 +77,5 @@ export {
   NoteHeads,
   StdAccidentals,
   TimeSigNumbers,
+  TupletNumbers,
   RenderSymbol }

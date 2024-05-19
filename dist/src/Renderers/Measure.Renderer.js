@@ -7,7 +7,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { Clefs, RenderSymbol, TimeSigNumbers } from "./MusicFont.Renderer.js";
-import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderStemRevise, RenderTies, RenderTuples, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
+import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderStemRevise, RenderTies, RenderTuplets, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
 const line_space = 10;
 const line_width = 1;
 const endsWidth = 2;
@@ -140,9 +140,6 @@ function RenderMeasureClef(renderProps, msr) {
             if (clef.Type === "treble") {
                 // TESTING SOMETHING
                 const topLine = msr.GetMeasureHeight() + (msrMidLine * 5);
-                //context.fillStyle = "black";
-                //context.font = "1.2em Bravura";
-                //context.fillText("\u{E050}", clef.Bounds.x + camera.x, msr.Bounds.y + ((msrMidLine + 2) * 5) + camera.y);
                 RenderSymbol(renderProps, Clefs.G, clef.Bounds.x + 3, msr.Bounds.y + ((msrMidLine + 2) * 5));
                 //
                 //clef.render(context, camera);
@@ -154,8 +151,10 @@ function RenderMeasureClef(renderProps, msr) {
         else {
             const div = msr.Divisions.find(d => d.Beat === clef.Beat);
             if (clef.Type === "treble") {
-                const clefPath = RenderTrebleClef(div.Bounds.x + camera.x, msr.Bounds.y + camera.y + (5 * msrMidLine + (line_space * 2)));
-                context.fill(new Path2D(clefPath));
+                // const clefPath = RenderTrebleClef(
+                //     div.Bounds.x + camera.x,
+                //     msr.Bounds.y + camera.y + (5 * msrMidLine + (line_space * 2)));
+                //   context.fill(new Path2D(clefPath));
             }
             else if (clef.Type === "bass") {
                 const clefPath = `m ${div.Bounds.x + camera.x} 
@@ -169,9 +168,10 @@ function RenderMeasureClef(renderProps, msr) {
             if (clef.Type === "treble") {
             }
             else if (clef.Type === "bass") {
-                const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
-            ${msr.Bounds.y + msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 2}` + bassClef;
-                context.fill(new Path2D(clefPath));
+                RenderSymbol(renderProps, Clefs.F, clef.Bounds.x + 3, msr.Bounds.y + msr.GetMeasureHeight() + ((gMsrMidLine - 2) * 5));
+                //          const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
+                //            ${msr.Bounds.y + msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 2}` + bassClef;
+                //          context.fill(new Path2D(clefPath));
             }
         }
         else {
@@ -291,10 +291,10 @@ function RenderNotes(msr, renderProps, staff) {
         }
     });
     RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Single, msr);
-    RenderTuples(renderProps, msr.Divisions, msr.Notes, StaffType.Single, msr);
+    RenderTuplets(renderProps, msr.Divisions, msr.Notes, StaffType.Single, msr);
     if (msr.Instrument.Staff === StaffType.Grand) {
         RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Grand, msr);
-        RenderTuples(renderProps, msr.Divisions, msr.Notes, StaffType.Grand, msr);
+        RenderTuplets(renderProps, msr.Divisions, msr.Notes, StaffType.Grand, msr);
     }
 }
 function IsFlippedNote(notes, index, dir) {

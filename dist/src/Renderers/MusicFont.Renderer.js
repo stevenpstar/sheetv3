@@ -28,9 +28,20 @@ var TimeSigNumbers;
     TimeSigNumbers["Common"] = "\uE08A";
     TimeSigNumbers["CutCommon"] = "\uE08B";
 })(TimeSigNumbers || (TimeSigNumbers = {}));
-var TupleNumbers;
-(function (TupleNumbers) {
-})(TupleNumbers || (TupleNumbers = {}));
+var TupletNumbers;
+(function (TupletNumbers) {
+    TupletNumbers["Zero"] = "\uE880";
+    TupletNumbers["One"] = "\uE881";
+    TupletNumbers["Two"] = "\uE882";
+    TupletNumbers["Three"] = "\uE883";
+    TupletNumbers["Four"] = "\uE884";
+    TupletNumbers["Five"] = "\uE885";
+    TupletNumbers["Six"] = "\uE886";
+    TupletNumbers["Seven"] = "\uE887";
+    TupletNumbers["Eight"] = "\uE888";
+    TupletNumbers["Nine"] = "\uE889";
+    TupletNumbers["Colon"] = "\uE88A";
+})(TupletNumbers || (TupletNumbers = {}));
 var StdAccidentals;
 (function (StdAccidentals) {
     StdAccidentals["Natural"] = "\uE261";
@@ -54,4 +65,4 @@ function RenderSymbol(renderProps, symbol, x, y, colour = "black") {
     context.font = `${stdFontSize}px Bravura`;
     context.fillText(symbol, x + camera.x, y + camera.y);
 }
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, RenderSymbol };
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol };

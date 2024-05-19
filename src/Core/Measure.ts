@@ -369,6 +369,8 @@ class Measure implements ISelectable {
         let beat = this.Notes[n].Beat;
         let duration = this.Notes[n].Duration;
         let staff = this.Notes[n].Staff;
+        let tuple = this.Notes[n].Tuple;
+        let tupleDetails = this.Notes[n].TupleDetails;
         this.Notes.splice(n, 1);
         const notesOnBeat = this.Notes.filter(n => n.Beat === beat);
         if (notesOnBeat.length === 0) {
@@ -380,7 +382,8 @@ class Measure implements ISelectable {
             Rest: true,
             Tied: false,
             Staff: staff,
-            Tuple: false,
+            Tuple: tuple,
+            TupleDetails: tupleDetails,
           }
 
           this.AddNote(new Note(restProps));
