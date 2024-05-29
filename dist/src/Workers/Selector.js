@@ -77,6 +77,7 @@ class Selector {
             msr.Selected = true;
         }
     }
+    // This should all be fairly generic eventually?
     SelectClef(clef) {
         if (this.Clefs.find(c => c.ID === clef.ID)) {
             const index = this.Clefs.indexOf(clef);
@@ -84,6 +85,8 @@ class Selector {
             this.Clefs.splice(index, 1);
         }
         else {
+            this.Clefs.map(c => c.Selected = false);
+            this.Clefs = [];
             this.Clefs.push(clef);
             clef.Selected = true;
         }

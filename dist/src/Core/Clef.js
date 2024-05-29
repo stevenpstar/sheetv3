@@ -1,3 +1,4 @@
+import { Clefs, RenderSymbol } from "../Renderers/MusicFont.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { SelectableTypes } from "../Types/ISelectable.js";
 import { StaffType } from "./Instrument.js";
@@ -16,26 +17,50 @@ class Clef {
         this.Type = type;
         this.SelType = SelectableTypes.Clef;
         this.Beat = beat;
+        this.Selected = false;
     }
-    render(context, camera) {
-        let path = '';
+    render(renderProps) {
+        let clefSymbol;
         switch (this.Type) {
             case "treble":
-                path = `m ${this.Position.x + camera.x} ${this.Position.y + camera.y} ${trebleClef}`;
+                clefSymbol = Clefs.G;
                 break;
             case "bass":
-                path = `m ${this.Position.x + camera.x} ${this.Position.y + camera.y} ${bassClef}`;
+                clefSymbol = Clefs.F;
                 break;
             default:
-                path = `m ${this.Position.x + camera.x} ${this.Position.y + camera.y} ${trebleClef}`;
+                clefSymbol = Clefs.G;
         }
-        context.fillStyle = this.Selected ? "blue" : "black";
-        context.fill(new Path2D(path));
-        context.fillStyle = "green";
-        context.strokeRect(this.Bounds.x + camera.x, this.Bounds.y + camera.y, this.Bounds.width, this.Bounds.height);
-        context.fillStyle = "black";
+        const colour = this.Selected ? "blue" : "black";
+        RenderSymbol(renderProps, clefSymbol, this.Position.x, this.Position.y, colour);
+        renderProps.context.strokeStyle = "green";
+        renderProps.context.strokeRect(this.Bounds.x + renderProps.camera.x, this.Bounds.y + renderProps.camera.y, this.Bounds.width, this.Bounds.height);
     }
     SetBounds(msr, staff) {
+        // There is a difference between position and bounds
+        // Position is for visually positioning the clef glyph, bounds is for selection
+        const div = msr.Divisions.find(d => d.Beat === this.Beat && d.Staff === staff);
+        const xPosition = this.Beat === 1 ?
+            msr.Bounds.x : div.Bounds.x;
+        const xBuffer = 3;
+        // Treble as default, 2
+        let lineBuffer = 2;
+        //    let yBuffer = staff === 0 ? 0 : msr.GetMeasureHeight();
+        let yBuffer = 0;
+        const msrMidLine = staff === StaffType.Single ?
+            Measure.GetMeasureMidLine(msr) : msr.GetGrandMeasureMidLine();
+        this.Position.x = xPosition + xBuffer;
+        this.Bounds.x = xPosition + xBuffer;
+        switch (this.Type) {
+            case "bass":
+                lineBuffer = -2;
+        }
+        this.Position.y = div.Bounds.y + yBuffer + ((msrMidLine + lineBuffer) * 5);
+        this.Bounds.y = div.Bounds.y;
+        this.Bounds.width = 30;
+        this.Bounds.height = 85;
+    }
+    SetBounds2(msr, staff) {
         const msrMidLine = staff === StaffType.Single ?
             Measure.GetMeasureMidLine(msr) : msr.GetGrandMeasureMidLine();
         if (this.Type === "treble" && this.Beat === 1) {

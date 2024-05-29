@@ -6,7 +6,7 @@ import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
-import { Clefs, RenderSymbol, TimeSigNumbers } from "./MusicFont.Renderer.js";
+import { RenderSymbol, TimeSigNumbers } from "./MusicFont.Renderer.js";
 import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderStemRevise, RenderTies, RenderTuplets, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
 const line_space = 10;
 const line_width = 1;
@@ -137,16 +137,7 @@ function RenderMeasureClef(renderProps, msr) {
     const gMsrMidLine = msr.GetGrandMeasureMidLine();
     msr.Clefs.forEach((clef) => {
         if (clef.Beat === 1) {
-            if (clef.Type === "treble") {
-                // TESTING SOMETHING
-                const topLine = msr.GetMeasureHeight() + (msrMidLine * 5);
-                RenderSymbol(renderProps, Clefs.G, clef.Bounds.x + 3, msr.Bounds.y + ((msrMidLine + 2) * 5));
-                //
-                //clef.render(context, camera);
-            }
-            else if (clef.Type === "bass") {
-                clef.render(context, camera);
-            }
+            clef.render(renderProps);
         }
         else {
             const div = msr.Divisions.find(d => d.Beat === clef.Beat);
@@ -165,14 +156,7 @@ function RenderMeasureClef(renderProps, msr) {
     });
     msr.GrandClefs.forEach((clef) => {
         if (clef.Beat === 1) {
-            if (clef.Type === "treble") {
-            }
-            else if (clef.Type === "bass") {
-                RenderSymbol(renderProps, Clefs.F, clef.Bounds.x + 3, msr.Bounds.y + msr.GetMeasureHeight() + ((gMsrMidLine - 2) * 5));
-                //          const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
-                //            ${msr.Bounds.y + msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 2}` + bassClef;
-                //          context.fill(new Path2D(clefPath));
-            }
+            clef.render(renderProps);
         }
         else {
             const div = msr.Divisions.find(d => d.Beat === clef.Beat);

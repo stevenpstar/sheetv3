@@ -6,6 +6,8 @@
     "tsc": "tsc",
     "start": "live-server",
     "debug": "rm -rf ../debugSheetV3/debugsheetv3/sheetsrc && cp -r src ../debugSheetV3/debugsheetv3/sheetsrc"
+  },
+  "dependencies": {
+    "eslint": "^9.3.0"
   }
-
 }

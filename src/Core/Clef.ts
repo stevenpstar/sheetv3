@@ -1,5 +1,7 @@
+import { Clefs, RenderSymbol } from "../Renderers/MusicFont.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { RenderProperties } from "../Types/RenderProperties.js";
 import { Camera } from "./Camera.js";
 import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
@@ -28,33 +30,63 @@ class Clef implements ISelectable {
     this.Type = type;
     this.SelType = SelectableTypes.Clef;
     this.Beat = beat;
+    this.Selected = false;
   }
 
-  render(context: CanvasRenderingContext2D, camera: Camera): void {
-    let path = '';
+  render(renderProps: RenderProperties): void {
+    let clefSymbol: Clefs;
     switch (this.Type) {
       case "treble":
-        path =  `m ${this.Position.x + camera.x} ${this.Position.y + camera.y} ${trebleClef}`;
+        clefSymbol = Clefs.G;
         break;
       case "bass":
-        path = `m ${this.Position.x + camera.x} ${this.Position.y + camera.y} ${bassClef}`;
+        clefSymbol = Clefs.F;
         break;
       default:
-        path =  `m ${this.Position.x + camera.x} ${this.Position.y + camera.y} ${trebleClef}`;
+        clefSymbol = Clefs.G;
     }
-    context.fillStyle = this.Selected ? "blue" : "black";
-    context.fill(new Path2D(path));
 
-    context.fillStyle = "green";
-    context.strokeRect(this.Bounds.x + camera.x,
-                 this.Bounds.y + camera.y,
-                 this.Bounds.width,
-                 this.Bounds.height);
+    const colour = this.Selected ? "blue" : "black";
 
-    context.fillStyle = "black";
+    RenderSymbol(renderProps,
+                 clefSymbol,
+                 this.Position.x,
+                 this.Position.y,
+                  colour);
+    renderProps.context.strokeStyle = "green";
+    renderProps.context.strokeRect(
+      this.Bounds.x + renderProps.camera.x,
+      this.Bounds.y + renderProps.camera.y,
+      this.Bounds.width,
+      this.Bounds.height);
   }
 
   SetBounds(msr: Measure, staff: number): void {
+    // There is a difference between position and bounds
+    // Position is for visually positioning the clef glyph, bounds is for selection
+    const div = msr.Divisions.find(d => d.Beat === this.Beat && d.Staff === staff);
+    const xPosition: number = this.Beat === 1 ? 
+      msr.Bounds.x : div.Bounds.x;
+    const xBuffer = 3;
+    // Treble as default, 2
+    let lineBuffer = 2;
+//    let yBuffer = staff === 0 ? 0 : msr.GetMeasureHeight();
+    let yBuffer = 0;
+    const msrMidLine = staff === StaffType.Single ?
+      Measure.GetMeasureMidLine(msr) : msr.GetGrandMeasureMidLine();
+    this.Position.x = xPosition + xBuffer;
+    this.Bounds.x = xPosition + xBuffer;
+    switch (this.Type) {
+      case "bass":
+        lineBuffer = -2;
+    }
+    this.Position.y = div.Bounds.y + yBuffer + ((msrMidLine + lineBuffer) * 5);
+    this.Bounds.y = div.Bounds.y;
+    this.Bounds.width = 30;
+    this.Bounds.height = 85;
+  }
+
+  SetBounds2(msr: Measure, staff: number): void {
     const msrMidLine = staff === StaffType.Single ? 
         Measure.GetMeasureMidLine(msr) : msr.GetGrandMeasureMidLine();
     if (this.Type === "treble" && this.Beat === 1) {

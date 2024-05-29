@@ -123,6 +123,9 @@ class Measure implements ISelectable {
     this.SBLineBotDef = this.SBLineBot;
 
     this.SBOffset = 1000;
+    
+    this.CreateDivisions(this.Camera);
+
     // create default clef
     const trebleClef = new Clef(0, {x: 
       this.Bounds.x + 16, 
@@ -138,9 +141,7 @@ class Measure implements ISelectable {
       bassClef.SetBounds(this, 1);
       this.GrandClefs.push(bassClef);
     }
-    
-    // probably always last
-    this.CreateDivisions(this.Camera);
+
   }
 
   static GetLineHovered(y: number, msr: Measure): { num: number, bounds: Bounds } {

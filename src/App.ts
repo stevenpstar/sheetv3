@@ -17,6 +17,7 @@ import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves, canonSave, saveFile } from "./testsaves.js";
 import { ClearMessage, Message } from "./Types/Message.js";
+import { GeneratePitchMap } from "./Workers/Pitcher.js";
 
 class App { 
   Message: Message;
@@ -37,6 +38,7 @@ class App {
   Selector: Selector;
   NotifyCallback: (msg: Message) => void;
   RunningID: { count: number };
+  PitchMap: Map<string, number>;
 
   // TODO: Off load some of this work to other classes/functions 
   // For now we prototype here
@@ -58,6 +60,8 @@ class App {
              context: CanvasRenderingContext2D,
              notifyCallback: (msg: Message) => void,
               load = false) {
+    this.PitchMap = GeneratePitchMap();
+    console.log(this.PitchMap);
     this.Message = ClearMessage();
     this.NotifyCallback = notifyCallback;
     this.Debug = true;
@@ -106,8 +110,6 @@ class App {
     x = x / this.Camera.Zoom;
     y = y / this.Camera.Zoom;
 
-    this.Context.fillStyle = "black";
-    this.Context.font = "12px serif";
     if (this.CamDragging) {
       this.Camera.x = Math.floor(this.Camera.oldX + x - this.DraggingPositions.x1);
       this.Camera.y = Math.floor(this.Camera.oldY + y - this.DraggingPositions.y1);
@@ -185,6 +187,14 @@ class App {
           selectedMeasureElement = true;
         }
       });
+
+      msrOver.GrandClefs.forEach((c: Clef) => {
+        if (c.Bounds.IsHovered(x, y, this.Camera)) {
+          this.Selector.SelectClef(c);
+          selectedMeasureElement = true;
+        }
+      });
+
       const selectedNote = this.Selector.SelectNote(msrOver, x, y, this.Camera, shiftKey);
       if (!selectedNote && !selectedMeasureElement) {
         this.Selector.SelectMeasure(msrOver);
@@ -466,7 +476,7 @@ class App {
 
   // TODO: Prototype code
   CreateTriplet(): void {
-    this.NoteValue = CreateTuplet(this.Selector.Notes, 3);
+    this.NoteValue = CreateTuplet(this.Selector.Notes, 4);
     this.ResizeMeasures(this.Sheet.Measures);
     this.Update(0, 0);
   }

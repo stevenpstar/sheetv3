@@ -12,8 +12,11 @@ import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves, canonSave } from "./testsaves.js";
 import { ClearMessage } from "./Types/Message.js";
+import { GeneratePitchMap } from "./Workers/Pitcher.js";
 class App {
     constructor(canvas, container, context, notifyCallback, load = false) {
+        this.PitchMap = GeneratePitchMap();
+        console.log(this.PitchMap);
         this.Message = ClearMessage();
         this.NotifyCallback = notifyCallback;
         this.Debug = true;
@@ -55,8 +58,6 @@ class App {
     Hover(x, y) {
         x = x / this.Camera.Zoom;
         y = y / this.Camera.Zoom;
-        this.Context.fillStyle = "black";
-        this.Context.font = "12px serif";
         if (this.CamDragging) {
             this.Camera.x = Math.floor(this.Camera.oldX + x - this.DraggingPositions.x1);
             this.Camera.y = Math.floor(this.Camera.oldY + y - this.DraggingPositions.y1);
@@ -125,6 +126,12 @@ class App {
             // Measure Element selection, should be moved elsewhere eventually
             // (probably Measure? Maybe somewhere else)
             msrOver.Clefs.forEach((c) => {
+                if (c.Bounds.IsHovered(x, y, this.Camera)) {
+                    this.Selector.SelectClef(c);
+                    selectedMeasureElement = true;
+                }
+            });
+            msrOver.GrandClefs.forEach((c) => {
                 if (c.Bounds.IsHovered(x, y, this.Camera)) {
                     this.Selector.SelectClef(c);
                     selectedMeasureElement = true;
@@ -371,7 +378,7 @@ class App {
     }
     // TODO: Prototype code
     CreateTriplet() {
-        this.NoteValue = CreateTuplet(this.Selector.Notes, 3);
+        this.NoteValue = CreateTuplet(this.Selector.Notes, 4);
         this.ResizeMeasures(this.Sheet.Measures);
         this.Update(0, 0);
     }

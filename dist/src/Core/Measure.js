@@ -46,6 +46,7 @@ class Measure {
         this.SBLineTopDef = this.SBLineTop;
         this.SBLineBotDef = this.SBLineBot;
         this.SBOffset = 1000;
+        this.CreateDivisions(this.Camera);
         // create default clef
         const trebleClef = new Clef(0, { x: this.Bounds.x + 16,
             y: this.Bounds.y + (5 * Measure.GetMeasureMidLine(this) + (10 * 2)) }, "treble", 1);
@@ -59,8 +60,6 @@ class Measure {
             bassClef.SetBounds(this, 1);
             this.GrandClefs.push(bassClef);
         }
-        // probably always last
-        this.CreateDivisions(this.Camera);
     }
     static GetLineHovered(y, msr) {
         const cam = msr.Camera;

@@ -33,7 +33,6 @@ class Selector {
       });
       this.Elements.delete(measure);
     };
-
   }
 
   DeselectNote(note: Note): void {
@@ -95,12 +94,15 @@ class Selector {
     }
   }
 
+  // This should all be fairly generic eventually?
   SelectClef(clef: Clef): void {
     if (this.Clefs.find(c => c.ID === clef.ID)) {
       const index = this.Clefs.indexOf(clef);
       clef.Selected = false;
       this.Clefs.splice(index, 1);
     } else {
+      this.Clefs.map(c => c.Selected = false);
+      this.Clefs = [];
       this.Clefs.push(clef);
       clef.Selected = true;
     }
