@@ -6,7 +6,7 @@ import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
-import { RenderSymbol, TimeSigNumbers } from "./MusicFont.Renderer.js";
+import { Clefs, RenderSymbol } from "./MusicFont.Renderer.js";
 import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderStemRevise, RenderTies, RenderTuplets, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
 const line_space = 10;
 const line_width = 1;
@@ -156,7 +156,14 @@ function RenderMeasureClef(renderProps, msr) {
     });
     msr.GrandClefs.forEach((clef) => {
         if (clef.Beat === 1) {
-            clef.render(renderProps);
+            if (clef.Type === "treble") {
+            }
+            else if (clef.Type === "bass") {
+                RenderSymbol(renderProps, Clefs.F, clef.Bounds.x + 3, msr.Bounds.y + msr.GetMeasureHeight() + ((gMsrMidLine - 2) * 5));
+                //          const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
+                //            ${msr.Bounds.y + msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 2}` + bassClef;
+                //          context.fill(new Path2D(clefPath));
+            }
         }
         else {
             const div = msr.Divisions.find(d => d.Beat === clef.Beat);
@@ -172,53 +179,10 @@ function RenderMeasureClef(renderProps, msr) {
         }
     });
 }
-function GetTimeSignatureGlyph(n) {
-    let glyph;
-    switch (n) {
-        case 0:
-            glyph = TimeSigNumbers.Zero;
-            break;
-        case 1:
-            glyph = TimeSigNumbers.One;
-            break;
-        case 2:
-            glyph = TimeSigNumbers.Two;
-            break;
-        case 3:
-            glyph = TimeSigNumbers.Three;
-            break;
-        case 4:
-            glyph = TimeSigNumbers.Four;
-            break;
-        case 5:
-            glyph = TimeSigNumbers.Five;
-            break;
-        case 6:
-            glyph = TimeSigNumbers.Six;
-            break;
-        case 7:
-            glyph = TimeSigNumbers.Seven;
-            break;
-        case 8:
-            glyph = TimeSigNumbers.Eight;
-            break;
-        case 9:
-            glyph = TimeSigNumbers.Nine;
-            break;
-    }
-    return glyph;
-}
 function RenderTimeSig(renderProps, msr, top, bottom, xOffset) {
     const msrMidLine = Measure.GetMeasureMidLine(msr);
     const grandMsrMidLine = msr.GetGrandMeasureMidLine();
-    let TopGlyph = GetTimeSignatureGlyph(msr.TimeSignature.top);
-    let BotGlyph = GetTimeSignatureGlyph(msr.TimeSignature.bottom);
-    RenderSymbol(renderProps, TopGlyph, msr.Bounds.x + xOffset, msr.Bounds.y + ((msrMidLine - 2) * 5));
-    RenderSymbol(renderProps, BotGlyph, msr.Bounds.x + xOffset, msr.Bounds.y + ((msrMidLine + 2) * 5));
-    if (msr.Instrument.Staff === StaffType.Grand) {
-        RenderSymbol(renderProps, TopGlyph, msr.Bounds.x + xOffset, msr.Bounds.y + msr.GetMeasureHeight() + ((grandMsrMidLine - 2) * 5));
-        RenderSymbol(renderProps, BotGlyph, msr.Bounds.x + xOffset, msr.Bounds.y + msr.GetMeasureHeight() + ((grandMsrMidLine + 2) * 5));
-    }
+    msr.TimeSignature.render(renderProps, msr);
 }
 function RenderNotes(msr, renderProps, staff) {
     const { canvas, context, camera } = renderProps;

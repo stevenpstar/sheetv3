@@ -1,5 +1,6 @@
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { Camera } from "./Camera.js";
 
 interface TupleDetails {
   StartBeat: number;
@@ -73,6 +74,10 @@ class Note implements ISelectable {
   SetTiedStartEnd(s: number, e: number): void {
     this.TiedStart = s;
     this.TiedEnd = e;
+  }
+
+  IsHovered(x: number, y: number, cam: Camera): boolean {
+    return this.Bounds.IsHovered(x, y, cam);
   }
 }
 

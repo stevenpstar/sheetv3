@@ -7,6 +7,7 @@ import { CreateDivisions, type Division, ResizeDivisions, DivisionMinWidth } fro
 import { Instrument, StaffType } from './Instrument.js';
 import { Note, NoteProps } from './Note.js';
 import { Page } from './Page.js';
+import { CreateTimeSignature, TimeSignature } from './TimeSignatures.js';
 
 interface MeasureProps {
   Instrument: Instrument,
@@ -30,7 +31,7 @@ class Measure implements ISelectable {
   Bounds: Bounds;
   Clefs: Clef[] = [];
   GrandClefs: Clef[] = [];
-  TimeSignature: {top: number, bottom: number}
+  TimeSignature: TimeSignature;
   KeySignature: string;
   Notes: Note[];
   BNotes: Note[];
@@ -85,7 +86,7 @@ class Measure implements ISelectable {
     this.Instrument = properties.Instrument;
     this.Line = 0;
     this.Bounds = properties.Bounds;
-    this.TimeSignature = properties.TimeSignature;
+    this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
     this.KeySignature = properties.KeySignature;
     this.Notes = properties.Notes;
     this.BNotes = [];
@@ -141,6 +142,9 @@ class Measure implements ISelectable {
       bassClef.SetBounds(this, 1);
       this.GrandClefs.push(bassClef);
     }
+
+    this.TimeSignature.SetBounds(this, 0);
+    this.TimeSignature.SetBounds(this, 1);
 
   }
 
@@ -413,6 +417,10 @@ class Measure implements ISelectable {
     sel.push(...this.Notes);
     sel.push(...this.Clefs);
     return sel;
+  }
+
+  IsHovered(x: number, y: number, cam: Camera): boolean {
+    return this.GetBoundsWithOffset().IsHovered(x, y, cam);
   }
 }
 

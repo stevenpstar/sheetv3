@@ -5,6 +5,7 @@ import { Clef } from './Clef.js';
 import { CreateDivisions, ResizeDivisions, DivisionMinWidth } from './Division.js';
 import { StaffType } from './Instrument.js';
 import { Note } from './Note.js';
+import { CreateTimeSignature } from './TimeSignatures.js';
 class Measure {
     constructor(properties, runningId) {
         this.Clefs = [];
@@ -16,7 +17,7 @@ class Measure {
         this.Instrument = properties.Instrument;
         this.Line = 0;
         this.Bounds = properties.Bounds;
-        this.TimeSignature = properties.TimeSignature;
+        this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
         this.KeySignature = properties.KeySignature;
         this.Notes = properties.Notes;
         this.BNotes = [];
@@ -60,6 +61,8 @@ class Measure {
             bassClef.SetBounds(this, 1);
             this.GrandClefs.push(bassClef);
         }
+        this.TimeSignature.SetBounds(this, 0);
+        this.TimeSignature.SetBounds(this, 1);
     }
     static GetLineHovered(y, msr) {
         const cam = msr.Camera;
@@ -319,6 +322,9 @@ class Measure {
         sel.push(...this.Notes);
         sel.push(...this.Clefs);
         return sel;
+    }
+    IsHovered(x, y, cam) {
+        return this.GetBoundsWithOffset().IsHovered(x, y, cam);
     }
 }
 export { Measure, Clef };

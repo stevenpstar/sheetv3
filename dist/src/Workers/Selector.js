@@ -1,9 +1,50 @@
+import { SelectableTypes } from "../Types/ISelectable.js";
 class Selector {
     constructor() {
         this.Measures = [];
         this.Clefs = [];
         this.Notes = new Map();
         this.Elements = new Map();
+    }
+    TrySelectElement(msr, x, y, cam, shiftKey) {
+        let elem; // element we have selected
+        let elements = [];
+        let selectedElements = this.Elements.get(msr) ? this.Elements.get(msr) : [];
+        if (!shiftKey) {
+            this.DeselectAllElements();
+        }
+        elements.push(...msr.Notes);
+        elements.push(...msr.Clefs);
+        elements.push(...msr.GrandClefs);
+        elements.push(msr.TimeSignature);
+        elements.forEach((e) => {
+            if (e.IsHovered(x, y, cam)) {
+                e.Selected = true;
+                selectedElements.push(e);
+                if (e.SelType === SelectableTypes.Note) {
+                    const n = e;
+                    if (n.Tied) {
+                        const tiedNotes = SelectTiedNotes(n, msr);
+                        selectedElements.push(...tiedNotes);
+                    }
+                }
+                elem = e;
+                this.Elements.set(msr, selectedElements);
+            }
+        });
+        return elem;
+    }
+    DeselectAllElements() {
+        for (let [measure, elem] of this.Elements) {
+            elem.forEach((e) => {
+                e.Selected = false;
+            });
+            this.Elements.delete(measure);
+        }
+    }
+    SelectElement() {
+        let elem; // element we have selected
+        return elem;
     }
     DeselectAll() {
         // TODO: Measure selection

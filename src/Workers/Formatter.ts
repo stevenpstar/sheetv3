@@ -1,4 +1,5 @@
 import { Camera } from "../Core/Camera.js";
+import { StaffType } from "../Core/Instrument.js";
 import { Measure } from "../Core/Measure.js";
 import { MarginAdjuster, Page } from "../Core/Page.js";
 
@@ -68,6 +69,10 @@ function ResizeMeasuresOnPage(measures: Measure[], page: Page, cam: Camera): voi
       m.GrandClefs.forEach(c => {
         c.SetBounds(m, 1);
       });
+      m.TimeSignature.SetBounds(m, 0);
+      if (m.Instrument.Staff === StaffType.Grand) {
+        m.TimeSignature.SetBounds(m, 1);
+      }
 
     });
   })

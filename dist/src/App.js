@@ -7,6 +7,7 @@ import { Camera } from "./Core/Camera.js";
 import { CreateTuplet, InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
 import { KeyPress } from "./Workers/Mappings.js";
+import { SelectableTypes } from "./Types/ISelectable.js";
 import { Page } from "./Core/Page.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
@@ -125,22 +126,9 @@ class App {
             let selectedMeasureElement = false;
             // Measure Element selection, should be moved elsewhere eventually
             // (probably Measure? Maybe somewhere else)
-            msrOver.Clefs.forEach((c) => {
-                if (c.Bounds.IsHovered(x, y, this.Camera)) {
-                    this.Selector.SelectClef(c);
-                    selectedMeasureElement = true;
-                }
-            });
-            msrOver.GrandClefs.forEach((c) => {
-                if (c.Bounds.IsHovered(x, y, this.Camera)) {
-                    this.Selector.SelectClef(c);
-                    selectedMeasureElement = true;
-                }
-            });
-            const selectedNote = this.Selector.SelectNote(msrOver, x, y, this.Camera, shiftKey);
-            if (!selectedNote && !selectedMeasureElement) {
+            const elem = this.Selector.TrySelectElement(msrOver, x, y, this.Camera, shiftKey);
+            if (elem === undefined)
                 this.Selector.SelectMeasure(msrOver);
-            }
             if (!this.DraggingNote) {
                 this.DraggingNote = true;
             }
@@ -155,9 +143,6 @@ class App {
         this.Update(x, y);
     }
     Update(x, y) {
-        //    this.Canvas.width = this.Container.clientWidth;
-        //    this.Canvas.height = 4000;
-        //    this.Container.style.height = this.Canvas.height + 'px';
         // this should be the only place that calls render
         this.NotifyCallback(this.Message);
         this.Render({ x: x, y: y });
@@ -240,11 +225,16 @@ class App {
             return;
         }
         this.EndLine = Measure.GetLineHovered(y, msrOver).num;
+        console.log("??: ", this.EndLine);
         const lineDiff = this.EndLine - this.StartLine;
-        for (let [msr, notes] of this.Selector.Notes) {
-            notes.forEach(n => {
-                n.Line += lineDiff;
-                UpdateNoteBounds(msr, n.Staff);
+        for (let [msr, elem] of this.Selector.Elements) {
+            elem.filter((e) => e.SelType === SelectableTypes.Note).forEach((n) => {
+                // Should never be selected, currently band-aid fix for bug. Address
+                // when re-implementing dragging notes/selectables
+                if (n.Selected) {
+                    n.Line += lineDiff;
+                    UpdateNoteBounds(msr, n.Staff);
+                }
             });
         }
         this.StartLine = this.EndLine;

@@ -31,5 +31,8 @@ class Note {
         this.TiedStart = s;
         this.TiedEnd = e;
     }
+    IsHovered(x, y, cam) {
+        return this.Bounds.IsHovered(x, y, cam);
+    }
 }
 export { Note };

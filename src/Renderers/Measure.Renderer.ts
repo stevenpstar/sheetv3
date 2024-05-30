@@ -224,7 +224,16 @@ function RenderMeasureClef(
 
     msr.GrandClefs.forEach((clef: Clef) => {
       if (clef.Beat === 1) {
-        clef.render(renderProps);
+        if (clef.Type === "treble") {
+        } else if (clef.Type === "bass") {
+          RenderSymbol(renderProps,
+                       Clefs.F,
+                       clef.Bounds.x + 3,
+                       msr.Bounds.y + msr.GetMeasureHeight() + ((gMsrMidLine - 2) * 5));
+//          const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
+//            ${msr.Bounds.y + msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 2}` + bassClef;
+//          context.fill(new Path2D(clefPath));
+        }
       } else {
         const div = msr.Divisions.find(d => d.Beat === clef.Beat);
         if (clef.Type === "treble") {
@@ -241,42 +250,6 @@ function RenderMeasureClef(
     });
 }
 
-function GetTimeSignatureGlyph(n: number): TimeSigNumbers {
-  let glyph: TimeSigNumbers;
-  switch (n) {
-    case 0:
-      glyph = TimeSigNumbers.Zero;
-      break;
-    case 1:
-      glyph = TimeSigNumbers.One;
-      break;
-   case 2:
-      glyph = TimeSigNumbers.Two;
-      break;
-   case 3:
-      glyph = TimeSigNumbers.Three;
-      break;
-   case 4:
-      glyph = TimeSigNumbers.Four;
-      break;
-   case 5:
-      glyph = TimeSigNumbers.Five;
-      break;
-  case 6:
-      glyph = TimeSigNumbers.Six;
-      break;
-  case 7:
-      glyph = TimeSigNumbers.Seven;
-      break;
-  case 8:
-      glyph = TimeSigNumbers.Eight;
-      break;
-  case 9:
-      glyph = TimeSigNumbers.Nine;
-      break;
-  }
-  return glyph;
-}
 
 function RenderTimeSig(
   renderProps: RenderProperties,
@@ -287,34 +260,7 @@ function RenderTimeSig(
 
     const msrMidLine = Measure.GetMeasureMidLine(msr);
     const grandMsrMidLine = msr.GetGrandMeasureMidLine();
-    let TopGlyph: TimeSigNumbers = GetTimeSignatureGlyph(msr.TimeSignature.top);
-    let BotGlyph: TimeSigNumbers = GetTimeSignatureGlyph(msr.TimeSignature.bottom);
-    
-    RenderSymbol(
-      renderProps,
-      TopGlyph,
-      msr.Bounds.x + xOffset,
-      msr.Bounds.y + ((msrMidLine - 2) * 5));
-
-    RenderSymbol(
-      renderProps,
-      BotGlyph,
-      msr.Bounds.x + xOffset,
-      msr.Bounds.y + ((msrMidLine + 2) * 5));
-
-    if (msr.Instrument.Staff === StaffType.Grand) {
-      RenderSymbol(
-        renderProps,
-        TopGlyph,
-        msr.Bounds.x + xOffset,
-        msr.Bounds.y + msr.GetMeasureHeight() + ((grandMsrMidLine - 2) * 5));
-
-      RenderSymbol(
-        renderProps,
-        BotGlyph,
-        msr.Bounds.x + xOffset,
-        msr.Bounds.y + msr.GetMeasureHeight() + ((grandMsrMidLine + 2) * 5));
-    }
+    msr.TimeSignature.render(renderProps, msr);
 }
 
 function RenderNotes(

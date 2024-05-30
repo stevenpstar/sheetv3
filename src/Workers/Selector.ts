@@ -9,12 +9,58 @@ class Selector {
  // Notes: { msr: Measure, note: Note }[];
   Notes: Map<Measure, Note[]>;
   // Selectable { msr: Measure, sel: Selectable[]>
+  // Currently having these mapped to a measure is okay but may need a refactor
+  // later down the line
   Elements: Map<Measure, ISelectable[]>;
   constructor() {
     this.Measures = [];
     this.Clefs = [];
     this.Notes = new Map<Measure, Note[]>();
     this.Elements = new Map<Measure, ISelectable[]>();
+  }
+
+  TrySelectElement(msr: Measure, x: number, y: number, cam: Camera, shiftKey: boolean): ISelectable {
+    let elem: ISelectable; // element we have selected
+    let elements: ISelectable[] = [];
+    let selectedElements: ISelectable[] = this.Elements.get(msr) ? this.Elements.get(msr) : [];
+    if (!shiftKey) {
+      this.DeselectAllElements();
+    }
+    elements.push(...msr.Notes);
+    elements.push(...msr.Clefs);
+    elements.push(...msr.GrandClefs);
+    elements.push(msr.TimeSignature);
+    elements.forEach((e: ISelectable) => {
+      if (e.IsHovered(x, y, cam)) {
+        e.Selected = true;
+        selectedElements.push(e);
+        if (e.SelType === SelectableTypes.Note) {
+          const n = e as Note;
+          if (n.Tied) {
+            const tiedNotes = SelectTiedNotes(n, msr) as ISelectable[];
+            selectedElements.push(...tiedNotes);
+          }
+        }
+        elem = e;
+        this.Elements.set(msr, selectedElements);
+      }
+    });
+    return elem;
+  }
+
+  DeselectAllElements(): void {
+    for (let [measure, elem] of this.Elements) {
+      elem.forEach((e: ISelectable) => {
+        e.Selected = false;
+      });
+      this.Elements.delete(measure);
+    }
+  }
+
+  SelectElement(): ISelectable {
+    let elem: ISelectable; // element we have selected
+
+    return elem;
   }
 
   DeselectAll(): void {

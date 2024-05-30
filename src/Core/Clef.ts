@@ -86,27 +86,8 @@ class Clef implements ISelectable {
     this.Bounds.height = 85;
   }
 
-  SetBounds2(msr: Measure, staff: number): void {
-    const msrMidLine = staff === StaffType.Single ? 
-        Measure.GetMeasureMidLine(msr) : msr.GetGrandMeasureMidLine();
-    if (this.Type === "treble" && this.Beat === 1) {
-      this.Position.x = msr.Bounds.x + 16;
-      this.Position.y = msr.Bounds.y + (5 * msrMidLine + (lineSpace * 2));
-      // Update bounds
-      this.Bounds.x = msr.Bounds.x;
-      this.Bounds.y = msr.Bounds.y;
-      this.Bounds.width = 30; // TODO: Figure this out properly
-      this.Bounds.height = msr.GetMeasureHeight(); // TODO: Figure this out properly
-    } else if (this.Type === "bass" && this.Beat === 1) {
-
-      this.Position.x = msr.Bounds.x + 30;
-      this.Position.y = msr.Bounds.y + (msrMidLine * 5) - 2;
-      // Update bounds
-      this.Bounds.x = msr.Bounds.x;
-      this.Bounds.y = msr.Bounds.y;
-      this.Bounds.width = 30;
-      this.Bounds.height = msr.GetGrandMeasureHeight();
-    }
+  IsHovered(x: number, y: number, cam: Camera): boolean {
+    return this.Bounds.IsHovered(x, y, cam);
   }
 }
 

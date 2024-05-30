@@ -1,3 +1,4 @@
+import { StaffType } from "../Core/Instrument.js";
 // TODO: Add pages when necessary but for now we do just lines
 function SetPagesAndLines(measures, pages) {
     let page = pages;
@@ -64,6 +65,10 @@ function ResizeMeasuresOnPage(measures, page, cam) {
             m.GrandClefs.forEach(c => {
                 c.SetBounds(m, 1);
             });
+            m.TimeSignature.SetBounds(m, 0);
+            if (m.Instrument.Staff === StaffType.Grand) {
+                m.TimeSignature.SetBounds(m, 1);
+            }
         });
     });
 }

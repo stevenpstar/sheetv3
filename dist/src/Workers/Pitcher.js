@@ -16,9 +16,37 @@ const NoteNames = [
     "A#",
     "B"
 ];
+// Clef type to line number of A4 (440hz)
+const ClefPitchRef = new Map([
+    ["treble", 16],
+    ["bass", 16], // this is wrong and all of this only works on staff 0 for now
+]);
 // midiNumber = the integer assigned to the note value, A4 = 69 = 440hz
 function calcPitch(midiNumber) {
     return Math.floor(A4Hz * Math.pow(2, ((midiNumber - A4Midi) / 12)) * 1000) / 1000;
+}
+function ReturnFrequency(clef, line) {
+    const a4line = ClefPitchRef.get(clef);
+    let diff = 0;
+    let midiNumber = 69;
+    if (line === a4line) {
+        return A4Hz;
+    }
+    if (line > a4line) {
+        diff = line - a4line;
+        midiNumber += diff;
+    }
+    else {
+        if (line >= 0) {
+            diff = a4line - line;
+            midiNumber -= diff;
+        }
+        else {
+            diff = a4line + -line;
+            midiNumber -= diff;
+        }
+    }
+    return calcPitch(midiNumber);
 }
 function GeneratePitchMap() {
     let map = new Map();
