@@ -1,0 +1,1 @@
+{"version":3,"file":"Instrument.d.ts","sourceRoot":"","sources":["../../src/Core/Instrument.ts"],"names":[],"mappings":"AAiBA,aAAK,SAAS;IACZ,MAAM,IAAI;IACV,KAAK,IAAA;CACN;AACD,UAAU,UAAU;IAClB,QAAQ,EAAE;QAAE,CAAC,EAAE,MAAM,CAAC;QAAC,CAAC,EAAE,MAAM,CAAA;KAAE,CAAC;IACnC,KAAK,EAAE,SAAS,CAAC;CAElB;AAED,OAAO,EAAE,UAAU,EAAE,SAAS,EAAE,CAAC"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"RenderProperties.d.ts","sourceRoot":"","sources":["../../../src/Types/RenderProperties.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,mBAAmB,CAAC;AAC3C,UAAU,gBAAgB;IACxB,MAAM,EAAE,iBAAiB,CAAC;IAC1B,OAAO,EAAE,wBAAwB,CAAC;IAClC,MAAM,EAAE,MAAM,CAAA;CACf;AAED,OAAO,EAAE,gBAAgB,EAAE,CAAC"}

@@ -53,12 +53,12 @@ class Clef implements ISelectable {
                  this.Position.x,
                  this.Position.y,
                   colour);
-    renderProps.context.strokeStyle = "green";
-    renderProps.context.strokeRect(
-      this.Bounds.x + renderProps.camera.x,
-      this.Bounds.y + renderProps.camera.y,
-      this.Bounds.width,
-      this.Bounds.height);
+  //  renderProps.context.strokeStyle = "green";
+  //  renderProps.context.strokeRect(
+  //    this.Bounds.x + renderProps.camera.x,
+  //    this.Bounds.y + renderProps.camera.y,
+  //    this.Bounds.width,
+  //    this.Bounds.height);
   }
 
   SetBounds(msr: Measure, staff: number): void {

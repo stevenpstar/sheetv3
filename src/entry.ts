@@ -1,4 +1,5 @@
 import { App } from "./App.js";
+import { Measure } from "./Core/Measure.js";
 import { ISelectable } from "./Types/ISelectable.js";
 import { Message } from "./Types/Message.js";
 import { KeyMapping } from "./Workers/Mappings.js";
@@ -90,6 +91,7 @@ export module sheet {
     return app;
   }
 
+  // API
   export function ChangeInputMode(): void {
     gSheet.ChangeInputMode();
   } 
@@ -125,4 +127,15 @@ export module sheet {
   export function DeleteSelected(): void {
     gSheet.Delete();
   }
+
+  export function ChangeTimeSignature(
+    top: number,
+    bottom: number,
+    transpose: boolean = false): void {
+      console.log("Changing time sisiigiangiangiang");
+      gSheet.ChangeTimeSignature(top, bottom, transpose);
+  }
 }
+//public exports
+export * from './Workers/Mappings.js';
+export * from './App.js';

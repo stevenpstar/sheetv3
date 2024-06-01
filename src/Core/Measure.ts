@@ -371,6 +371,7 @@ class Measure implements ISelectable {
   DeleteSelected(): void {
     for (let n = this.Notes.length - 1; n >= 0; n--) {
       if (this.Notes[n].Selected) {
+        console.log("n : ", n);
         let beat = this.Notes[n].Beat;
         let duration = this.Notes[n].Duration;
         let staff = this.Notes[n].Staff;
@@ -421,6 +422,11 @@ class Measure implements ISelectable {
 
   IsHovered(x: number, y: number, cam: Camera): boolean {
     return this.GetBoundsWithOffset().IsHovered(x, y, cam);
+  }
+
+  ChangeTimeSignature(top: number, bottom: number, transpose: boolean): void {
+    this.TimeSignature.top = top;
+    this.TimeSignature.bottom = bottom;
   }
 }
 

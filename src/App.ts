@@ -148,7 +148,7 @@ class App {
   }
 
   Delete(): void {
-    for (let [ msr, notes ] of this.Selector.Notes ) {
+    for (let [ msr, elem ] of this.Selector.Elements ) {
       msr.DeleteSelected();
       msr.CreateDivisions(this.Camera);
     }
@@ -467,6 +467,14 @@ class App {
     this.NoteValue = CreateTuplet(this.Selector.Notes, 4);
     this.ResizeMeasures(this.Sheet.Measures);
     this.Update(0, 0);
+  }
+
+  ChangeTimeSignature(top: number, bottom: number, transpose: boolean = false): void {
+    console.log("CHNGIENGIEN");
+    for (let [ msr, elem ] of this.Selector.Elements) {
+      console.log("Changing time sig");
+      msr.ChangeTimeSignature(top, bottom, transpose);
+    }
   }
 }
 

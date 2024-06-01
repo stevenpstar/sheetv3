@@ -1,3 +1,7 @@
+import { Bounds } from "../Types/Bounds.js";
+import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { Camera } from "./Camera.js";
+
 const KeySignatures: Map<string, string[]> = new Map<string, string[]>([
   ["CMaj/Amin", []],
 
@@ -23,4 +27,20 @@ interface KeySignature {
   Accidentals: string[]
 }
 
-export { KeySignature, KeySignatures }
+class KeySig implements ISelectable {
+  ID: number;
+  Selected: boolean;
+  SelType: SelectableTypes = SelectableTypes.KeySig;
+  Bounds: Bounds;
+  constructor() {
+    this.Bounds = new Bounds(0, 0, 0, 0);
+    this.Selected = false;
+  }
+
+  IsHovered(x: number, y: number, cam: Camera): boolean {
+    return this.Bounds.IsHovered(x, y, cam);
+  }
+
+}
+
+export { KeySignature, KeySignatures, KeySig }

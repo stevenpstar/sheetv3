@@ -226,10 +226,11 @@ function RenderMeasureClef(
       if (clef.Beat === 1) {
         if (clef.Type === "treble") {
         } else if (clef.Type === "bass") {
-          RenderSymbol(renderProps,
-                       Clefs.F,
-                       clef.Bounds.x + 3,
-                       msr.Bounds.y + msr.GetMeasureHeight() + ((gMsrMidLine - 2) * 5));
+          clef.render(renderProps);
+//          RenderSymbol(renderProps,
+//                       Clefs.F,
+//                       clef.Bounds.x + 3,
+//                       msr.Bounds.y + msr.GetMeasureHeight() + ((gMsrMidLine - 2) * 5));
 //          const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
 //            ${msr.Bounds.y + msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 2}` + bassClef;
 //          context.fill(new Path2D(clefPath));
@@ -257,9 +258,6 @@ function RenderTimeSig(
   top: string,
   bottom: string,
   xOffset: number): void {
-
-    const msrMidLine = Measure.GetMeasureMidLine(msr);
-    const grandMsrMidLine = msr.GetGrandMeasureMidLine();
     msr.TimeSignature.render(renderProps, msr);
 }
 
