@@ -1,7 +1,7 @@
 import { Bounds } from '../Types/Bounds.js';
 import { SelectableTypes } from '../Types/ISelectable.js';
 import { UpdateNoteBounds } from '../Workers/NoteInput.js';
-import { Clef } from './Clef.js';
+import { Clef, GetNoteClefType } from './Clef.js';
 import { CreateDivisions, ResizeDivisions, DivisionMinWidth } from './Division.js';
 import { StaffType } from './Instrument.js';
 import { Note } from './Note.js';
@@ -289,6 +289,7 @@ class Measure {
                 this.Notes.splice(n, 1);
                 const notesOnBeat = this.Notes.filter(n => n.Beat === beat);
                 if (notesOnBeat.length === 0) {
+                    const clefType = GetNoteClefType(this, beat, staff);
                     // beat is empty and requires a rest note
                     const restProps = {
                         Beat: beat,
@@ -299,6 +300,7 @@ class Measure {
                         Staff: staff,
                         Tuple: tuple,
                         TupleDetails: tupleDetails,
+                        Clef: clefType,
                     };
                     this.AddNote(new Note(restProps));
                 }

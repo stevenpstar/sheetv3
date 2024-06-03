@@ -78,7 +78,8 @@ function RenderHovered(
               Staff: s.Staff,
               Tuple: false,
               TupleIndex: 0,
-              TupleCount: 1
+              TupleCount: 1,
+              Clef: "treble"
             } 
             const tempNote = new Note(tempNoteProps);
             RenderNote(tempNote,

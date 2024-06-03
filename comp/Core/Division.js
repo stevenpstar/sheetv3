@@ -1,4 +1,5 @@
 import { Bounds } from "../Types/Bounds.js";
+import { GetNoteClefType } from "./Clef.js";
 import { StaffType } from "./Instrument.js";
 import { Note } from "./Note.js";
 import { GetLargestValues } from "./Values.js";
@@ -21,6 +22,7 @@ function CreateDivisions(msr, notes, staff, cam) {
             Tied: false,
             Staff: staff,
             Tuple: false,
+            Clef: staff === 0 ? "treble" : "bass",
         };
         msr.AddNote(new Note(restProps));
     }
@@ -120,9 +122,6 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
         }
         else if (div.Beat >= startingBeat) {
             let val = (div.Beat - startingBeat) / msr.TimeSignature.bottom;
-            console.log("divBeat: ", div.Beat);
-            console.log("startingBeat: ", startingBeat);
-            console.log("val: ", val);
             let newDivs = GetLargestValues(val);
             let sBeat = startingBeat;
             newDivs.sort();
@@ -146,6 +145,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
         if (notesOnBeat !== undefined) {
             console.error("Note found in division gap");
         }
+        const clefType = GetNoteClefType(msr, div.Beat, staff);
         const restProps = {
             Beat: div.Beat,
             Duration: div.Duration,
@@ -154,6 +154,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
             Tied: false,
             Staff: div.Staff,
             Tuple: false,
+            Clef: clefType,
         };
         msr.AddNote(new Note(restProps));
     });
@@ -189,6 +190,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
         if (notesOnBeat !== undefined) {
             console.error("Note found in division gap");
         }
+        const clefType = GetNoteClefType(msr, div.Beat, staff);
         const restProps = {
             Beat: div.Beat,
             Duration: div.Duration,
@@ -197,6 +199,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
             Tied: false,
             Staff: div.Staff,
             Tuple: false,
+            Clef: clefType,
         };
         msr.AddNote(new Note(restProps));
     });

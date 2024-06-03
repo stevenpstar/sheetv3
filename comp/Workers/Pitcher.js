@@ -25,6 +25,53 @@ const ClefPitchRef = new Map([
 function calcPitch(midiNumber) {
     return Math.floor(A4Hz * Math.pow(2, ((midiNumber - A4Midi) / 12)) * 1000) / 1000;
 }
+function ReturnMidiNumber(clef, line) {
+    let onNote = 9; // A entry in NoteNames array
+    const a4line = ClefPitchRef.get(clef);
+    let diff = 0;
+    let midiNumber = 69;
+    let midiNote = midiNumber;
+    if (line === a4line) {
+        return midiNumber;
+    }
+    else if (line > a4line) {
+        for (let i = a4line; i <= line; i++) {
+            console.log("i: ", i);
+            if (NoteNames[onNote] === "C" || NoteNames[onNote] === "F") {
+                midiNote += 1;
+                if (onNote === 0) {
+                    onNote = NoteNames.length - 1;
+                }
+                else {
+                    onNote -= 1;
+                }
+            }
+            else {
+                midiNote += 2;
+                onNote -= 2;
+            }
+            console.log("midiNote: ", midiNote);
+        }
+    }
+    else {
+        for (let i = a4line; i >= line; i--) {
+            if (NoteNames[onNote] === "B" || NoteNames[onNote] === "E") {
+                midiNote -= 1;
+                if (onNote === NoteNames.length - 1) {
+                    onNote = 0;
+                }
+                else {
+                    onNote += 1;
+                }
+            }
+            else {
+                midiNote -= 2;
+                onNote += 2;
+            }
+        }
+    }
+    return midiNote;
+}
 function ReturnFrequency(clef, line) {
     const a4line = ClefPitchRef.get(clef);
     let diff = 0;
@@ -37,7 +84,7 @@ function ReturnFrequency(clef, line) {
         midiNumber += diff;
     }
     else {
-        if (line >= 0) {
+        if (line <= 0) {
             diff = a4line - line;
             midiNumber -= diff;
         }
@@ -62,4 +109,4 @@ function GeneratePitchMap() {
     }
     return map;
 }
-export { GeneratePitchMap };
+export { GeneratePitchMap, ReturnMidiNumber };

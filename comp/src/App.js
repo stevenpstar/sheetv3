@@ -17,7 +17,6 @@ import { GeneratePitchMap } from "./Workers/Pitcher.js";
 class App {
     constructor(canvas, container, context, notifyCallback, load = false) {
         this.PitchMap = GeneratePitchMap();
-        console.log(this.PitchMap);
         this.Message = ClearMessage();
         this.NotifyCallback = notifyCallback;
         this.Debug = true;
@@ -225,7 +224,6 @@ class App {
             return;
         }
         this.EndLine = Measure.GetLineHovered(y, msrOver).num;
-        console.log("??: ", this.EndLine);
         const lineDiff = this.EndLine - this.StartLine;
         for (let [msr, elem] of this.Selector.Elements) {
             elem.filter((e) => e.SelType === SelectableTypes.Note).forEach((n) => {
@@ -373,9 +371,7 @@ class App {
         this.Update(0, 0);
     }
     ChangeTimeSignature(top, bottom, transpose = false) {
-        console.log("CHNGIENGIEN");
         for (let [msr, elem] of this.Selector.Elements) {
-            console.log("Changing time sig");
             msr.ChangeTimeSignature(top, bottom, transpose);
         }
     }

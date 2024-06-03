@@ -15,6 +15,7 @@ interface lNote {
   Rest: boolean;
   Tied: boolean;
   Staff: number;
+  Clef: string;
 }
 interface lMeasure {
   Clef: string;
@@ -44,6 +45,7 @@ const LoadSheet = (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, sav
         Tied: n.Tied,
         Staff: n.Staff,
         Tuple: false,
+        Clef: n.Clef,
       }
       const newNote = new Note(noteProps);
       notes.push(newNote);
@@ -79,7 +81,8 @@ const SaveSheet = (sheet: Sheet): string => {
         Line: n.Line,
         Rest: n.Rest,
         Tied: n.Tied,
-        Staff: n.Staff
+        Staff: n.Staff,
+        Clef: n.Clef,
       });
     });
     saved.Measures.push({

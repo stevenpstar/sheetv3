@@ -11,6 +11,7 @@ interface lNote {
     Rest: boolean;
     Tied: boolean;
     Staff: number;
+    Clef: string;
 }
 interface lMeasure {
     Clef: string;

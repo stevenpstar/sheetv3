@@ -75,6 +75,7 @@ export var sheet;
         return app;
     }
     sheet.CreateApp = CreateApp;
+    // API
     function ChangeInputMode() {
         gSheet.ChangeInputMode();
     }
@@ -117,3 +118,6 @@ export var sheet;
     }
     sheet.ChangeTimeSignature = ChangeTimeSignature;
 })(sheet || (sheet = {}));
+//public exports
+export * from './Workers/Mappings.js';
+export * from './App.js';

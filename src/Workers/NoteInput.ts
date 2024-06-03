@@ -1,4 +1,5 @@
 import { Camera } from "../Core/Camera.js";
+import { GetNoteClefType } from "../Core/Clef.js";
 import { DivGroup, GetDivisionGroups } from "../Core/Division.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Division, Measure } from "../Core/Measure.js";
@@ -24,6 +25,7 @@ function InputOnMeasure(msr: Measure,
   if (beatOver === undefined) { inputtingNote = false; }
   if (inputtingNote) {
     InputNote(msr, noteValue, beatOver, line, rest);
+    console.log("line: ", line);
   }
 }
 
@@ -44,7 +46,7 @@ function InputNote(
         noteValue = noteValue / notesInDiv[0].TupleDetails.Count;
       }
     }
-
+    const clefType: string = GetNoteClefType(msr, division.Beat, division.Staff);
     const noteProps: NoteProps = {
       Beat: division.Beat,
       Duration: noteValue,
@@ -53,7 +55,8 @@ function InputNote(
       Tied: false,
       Staff: division.Staff,
       Tuple: addingToTuple,
-      TupleDetails: notesInDiv[0].TupleDetails
+      TupleDetails: notesInDiv[0].TupleDetails,
+      Clef: clefType,
     };
     const newNote: Note = new Note(noteProps);
 
@@ -142,6 +145,7 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
         Tied: tying,
         Staff: div.Staff,
         Tuple: false,
+        Clef: GetNoteClefType(msr, div.Beat, div.Staff),
       };
 
       const newNote = new Note(newNoteProps);
@@ -176,6 +180,7 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
             Tied: tying,
             Staff: div.Staff,
             Tuple: false,
+            Clef:  GetNoteClefType(msr, div.Beat, div.Staff),
           }
           const newNote = new Note(newNoteProps);
 
@@ -201,7 +206,8 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
           Tied: false,
           Staff: div.Staff,
           Tuple: noteProps.Tuple,
-          TupleDetails: noteProps.TupleDetails
+          TupleDetails: noteProps.TupleDetails,
+          Clef: GetNoteClefType(msr, div.Beat, div.Staff),
         };
 
         const remValue = div.Duration - remainingValue;
@@ -226,7 +232,8 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
               Tied: true,
               Staff: n.Staff,
               Tuple: n.Tuple,
-              TupleDetails: n.TupleDetails
+              TupleDetails: n.TupleDetails,
+              Clef: GetNoteClefType(msr, div.Beat, div.Staff),
             }
             const noteObj = new Note(tiedNote);
             noteObj.SetTiedStartEnd(tiedStart, tiedEnd);
@@ -266,7 +273,8 @@ function CreateTuplet(selNotes: Map<Measure, Note[]>, count: number): number {
           Tied: false,
           Staff: n.Staff,
           Tuple: true,
-          TupleDetails: details
+          TupleDetails: details,
+          Clef: GetNoteClefType(measure, lastBeat + newDuration * measure.TimeSignature.bottom, n.Staff),
         });
         lastBeat = newNote.Beat;
         measure.AddNote(newNote);

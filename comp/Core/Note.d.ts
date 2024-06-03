@@ -16,6 +16,7 @@ interface NoteProps {
     Staff: number;
     Tuple: boolean;
     TupleDetails?: TupleDetails;
+    Clef: string;
 }
 declare class Note implements ISelectable {
     Beat: number;
@@ -26,6 +27,7 @@ declare class Note implements ISelectable {
     Accidental: number;
     ID: number;
     SelType: SelectableTypes;
+    Clef: string;
     TiedStart: number;
     TiedEnd: number;
     Bounds: Bounds;
@@ -38,6 +40,7 @@ declare class Note implements ISelectable {
     SetID(id: number): void;
     SetTiedStartEnd(s: number, e: number): void;
     IsHovered(x: number, y: number, cam: Camera): boolean;
+    GetMidiNumber(): number;
 }
 export { Note, NoteProps, TupleDetails };
 //# sourceMappingURL=Note.d.ts.map

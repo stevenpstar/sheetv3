@@ -14,4 +14,6 @@ export declare namespace sheet {
     function DeleteSelected(): void;
     function ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
 }
+export * from './Workers/Mappings.js';
+export * from './App.js';
 //# sourceMappingURL=entry.d.ts.map

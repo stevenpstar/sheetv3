@@ -16,6 +16,7 @@ const LoadSheet = (sheet, page, cam, instr, savedJson) => {
                 Tied: n.Tied,
                 Staff: n.Staff,
                 Tuple: false,
+                Clef: n.Clef,
             };
             const newNote = new Note(noteProps);
             notes.push(newNote);
@@ -43,7 +44,8 @@ const SaveSheet = (sheet) => {
                 Line: n.Line,
                 Rest: n.Rest,
                 Tied: n.Tied,
-                Staff: n.Staff
+                Staff: n.Staff,
+                Clef: n.Clef,
             });
         });
         saved.Measures.push({

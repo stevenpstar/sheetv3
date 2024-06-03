@@ -49,7 +49,8 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
                     Staff: s.Staff,
                     Tuple: false,
                     TupleIndex: 0,
-                    TupleCount: 1
+                    TupleCount: 1,
+                    Clef: "treble"
                 };
                 const tempNote = new Note(tempNoteProps);
                 RenderNote(tempNote, renderProps, new Bounds(s.Bounds.x + noteXBuffer, line.bounds.y, 0, 0), true, false, StemDirection.Up);

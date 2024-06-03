@@ -23,13 +23,63 @@ const NoteNames = [
 const ClefPitchRef: Map<string, number> = new Map<string, number>(
   [
     ["treble", 16],
-    ["bass", 16], // this is wrong and all of this only works on staff 0 for now
+    ["bass", 3], 
   ]
 )
 
 // midiNumber = the integer assigned to the note value, A4 = 69 = 440hz
 function calcPitch(midiNumber: number): number {
   return Math.floor(A4Hz * Math.pow(2, ((midiNumber-A4Midi)/12)) * 1000) / 1000; 
+}
+
+function ReturnMidiNumber(clef: string, line: number, staff: number = 0): number {
+
+  let onNote = 9; // A entry in NoteNames array
+  let a4line = ClefPitchRef.get(clef);
+  if (staff === 1) {
+    a4line = 34;
+  } else {
+    a4line = 16;
+  }
+  let midiNumber = 69;
+  let midiNote = midiNumber;
+  if (line === a4line) { 
+    console.log("A NOTE! ", staff);
+    return midiNumber; }
+
+  else if (line > a4line) {
+    for (let i=a4line;i<line;i++) {
+      console.log("i: ", i);
+      if (NoteNames[onNote] === "C" || NoteNames[onNote] === "F") {
+        midiNote -= 1;
+        if (onNote === 0) {
+          onNote = NoteNames.length-1;
+        } else {
+          onNote -= 1;
+        }
+      } else {
+        midiNote -= 2;
+        onNote -= 2;
+      }
+      console.log("midiNote: ", midiNote);
+    }
+  } else {
+    for (let i=a4line;i>line;i--) {
+      if (NoteNames[onNote] === "B" || NoteNames[onNote] === "E") {
+        midiNote += 1;
+        if (onNote === NoteNames.length-1) {
+          onNote = 0;
+        } else {
+          onNote += 1;
+        }
+      } else {
+        midiNote += 2;
+        onNote += 2;
+      }
+    }
+  }
+
+  return midiNote;
 }
 
 function ReturnFrequency(clef: string, line: number): number {
@@ -42,7 +92,7 @@ function ReturnFrequency(clef: string, line: number): number {
     diff = line - a4line;
     midiNumber += diff;
   } else {
-    if (line >= 0) {
+    if (line <= 0) {
       diff = a4line - line;
       midiNumber -= diff;
     } else {
@@ -70,5 +120,5 @@ function GeneratePitchMap(): Map<string, number> {
   return map;
 }
 
-export { GeneratePitchMap };
+export { GeneratePitchMap, ReturnMidiNumber };
 

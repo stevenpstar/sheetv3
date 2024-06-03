@@ -1,5 +1,6 @@
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { ReturnMidiNumber } from "../Workers/Pitcher.js";
 import { Camera } from "./Camera.js";
 
 interface TupleDetails {
@@ -17,6 +18,7 @@ interface NoteProps {
   Staff: number;
   Tuple: boolean;
   TupleDetails?: TupleDetails;
+  Clef: string;
 }
 
 class Note implements ISelectable {
@@ -28,6 +30,7 @@ class Note implements ISelectable {
   Accidental: number
   ID: number;
   SelType: SelectableTypes;
+  Clef: string;
 
   TiedStart: number; // beat
   TiedEnd: number; // beat
@@ -48,6 +51,7 @@ class Note implements ISelectable {
     this.Tied = props.Tied;
     this.Accidental = 0;
     this.Staff = props.Staff;
+    this.Clef = props.Clef;
 
     this.Selected = false;
     this.SelType = SelectableTypes.Note;
@@ -78,6 +82,12 @@ class Note implements ISelectable {
 
   IsHovered(x: number, y: number, cam: Camera): boolean {
     return this.Bounds.IsHovered(x, y, cam);
+  }
+
+  GetMidiNumber(): number {
+    const line = this.Staff === 0 ? this.Line : 
+      this.Line - 1000;
+    return ReturnMidiNumber(this.Clef, line, this.Staff);
   }
 }
 

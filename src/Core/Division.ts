@@ -1,7 +1,8 @@
 import { Bounds } from "../Types/Bounds.js";
 import { Camera } from "./Camera.js";
+import { GetNoteClefType } from "./Clef.js";
 import { StaffType } from "./Instrument.js";
-import { Measure } from "./Measure.js";
+import { Clef, Measure } from "./Measure.js";
 import { Note, NoteProps } from "./Note.js";
 import { GetLargestValues } from "./Values.js";
 
@@ -24,6 +25,7 @@ interface DivGroups {
 const DivisionMinWidth = 30;
 const DivisionMaxWidth = 40;
 
+
 function CreateDivisions(msr: Measure, notes: Note[], staff: number, cam: Camera): Division[] {
   const divisions: Division[] = [];
   let nextBeat = 0;
@@ -42,6 +44,7 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number, cam: Camera
       Tied: false,
       Staff: staff,
       Tuple: false,
+      Clef: staff === 0 ? "treble" : "bass",
     };
     msr.AddNote(new Note(restProps));
   }
@@ -145,9 +148,6 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
       }
     } else if (div.Beat >= startingBeat) {
       let val = (div.Beat - startingBeat) / msr.TimeSignature.bottom;
-      console.log("divBeat: ", div.Beat);
-      console.log("startingBeat: ", startingBeat);
-      console.log("val: ", val);
       let newDivs = GetLargestValues(val);
       let sBeat = startingBeat;
       newDivs.sort();
@@ -173,6 +173,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
     if (notesOnBeat !== undefined) {
       console.error("Note found in division gap");
     }
+    const clefType = GetNoteClefType(msr, div.Beat, staff);
     const restProps: NoteProps = {
       Beat: div.Beat,
       Duration: div.Duration,
@@ -181,6 +182,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
       Tied: false,
       Staff: div.Staff,
       Tuple: false,
+      Clef: clefType,
     };
     msr.AddNote(new Note(restProps));
   });
@@ -219,6 +221,8 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
     if (notesOnBeat !== undefined) {
       console.error("Note found in division gap");
     }
+
+    const clefType = GetNoteClefType(msr, div.Beat, staff);
     const restProps: NoteProps = {
       Beat: div.Beat,
       Duration: div.Duration,
@@ -227,6 +231,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
       Tied: false,
       Staff: div.Staff,
       Tuple: false,
+      Clef: clefType,
     };
     msr.AddNote(new Note(restProps));
   });

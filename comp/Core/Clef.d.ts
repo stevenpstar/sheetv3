@@ -2,6 +2,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Camera } from "./Camera.js";
+import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
 declare class Clef implements ISelectable {
     ID: number;
@@ -22,5 +23,6 @@ declare class Clef implements ISelectable {
     SetBounds(msr: Measure, staff: number): void;
     IsHovered(x: number, y: number, cam: Camera): boolean;
 }
-export { Clef };
+declare function GetNoteClefType(msr: Measure, noteBeat: number, staff: StaffType): string;
+export { Clef, GetNoteClefType };
 //# sourceMappingURL=Clef.d.ts.map

@@ -61,7 +61,6 @@ class App {
              notifyCallback: (msg: Message) => void,
               load = false) {
     this.PitchMap = GeneratePitchMap();
-    console.log(this.PitchMap);
     this.Message = ClearMessage();
     this.NotifyCallback = notifyCallback;
     this.Debug = true;
@@ -310,7 +309,6 @@ class App {
     }
 
     this.EndLine = Measure.GetLineHovered(y, msrOver).num;
-    console.log("??: ", this.EndLine);
     const lineDiff = this.EndLine - this.StartLine;
     for (let [msr, elem] of this.Selector.Elements) {
       elem.filter((e: ISelectable) => e.SelType === SelectableTypes.Note).forEach((n: Note) => {
@@ -470,9 +468,7 @@ class App {
   }
 
   ChangeTimeSignature(top: number, bottom: number, transpose: boolean = false): void {
-    console.log("CHNGIENGIEN");
     for (let [ msr, elem ] of this.Selector.Elements) {
-      console.log("Changing time sig");
       msr.ChangeTimeSignature(top, bottom, transpose);
     }
   }

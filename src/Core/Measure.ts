@@ -2,7 +2,7 @@ import { Bounds } from '../Types/Bounds.js';
 import { ISelectable, SelectableTypes } from '../Types/ISelectable.js';
 import { UpdateNoteBounds } from '../Workers/NoteInput.js';
 import { Camera } from './Camera.js';
-import { Clef } from './Clef.js';
+import { Clef, GetNoteClefType } from './Clef.js';
 import { CreateDivisions, type Division, ResizeDivisions, DivisionMinWidth } from './Division.js';
 import { Instrument, StaffType } from './Instrument.js';
 import { Note, NoteProps } from './Note.js';
@@ -380,6 +380,7 @@ class Measure implements ISelectable {
         this.Notes.splice(n, 1);
         const notesOnBeat = this.Notes.filter(n => n.Beat === beat);
         if (notesOnBeat.length === 0) {
+          const clefType = GetNoteClefType(this, beat, staff);
           // beat is empty and requires a rest note
           const restProps: NoteProps = {
             Beat: beat,
@@ -390,6 +391,7 @@ class Measure implements ISelectable {
             Staff: staff,
             Tuple: tuple,
             TupleDetails: tupleDetails,
+            Clef: clefType,
           }
 
           this.AddNote(new Note(restProps));

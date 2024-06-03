@@ -25,7 +25,7 @@ const CreateDefaultMeasure = (id, instr, page, cam) => {
     const props = {
         Instrument: instr,
         Bounds: new Bounds(instr.Position.x, page.PageLines[0].LineBounds.y, 150, msrHeight),
-        TimeSignature: { top: 3, bottom: 4 },
+        TimeSignature: { top: 4, bottom: 4 },
         KeySignature: "CMaj/Amin",
         Notes: [],
         Clef: "treble",
