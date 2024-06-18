@@ -42,6 +42,7 @@ interface ISelectable {
     Selected: boolean;
     SelType: SelectableTypes;
     Bounds: Bounds;
+    Editable: boolean;
     IsHovered: (x: number, y: number, cam: Camera) => boolean;
 }
 
@@ -62,6 +63,7 @@ declare class Clef implements ISelectable {
     SelType: SelectableTypes;
     Type: string;
     Beat: number;
+    Editable: boolean;
     constructor(id: number, pos: {
         x: number;
         y: number;
@@ -87,6 +89,7 @@ interface NoteProps {
     Tuple: boolean;
     TupleDetails?: TupleDetails;
     Clef: string;
+    Editable?: boolean;
 }
 declare class Note implements ISelectable {
     Beat: number;
@@ -98,6 +101,7 @@ declare class Note implements ISelectable {
     ID: number;
     SelType: SelectableTypes;
     Clef: string;
+    Editable: boolean;
     TiedStart: number;
     TiedEnd: number;
     Bounds: Bounds;
@@ -151,6 +155,7 @@ declare class TimeSignature implements ISelectable {
     Selected: boolean;
     SelType: SelectableTypes;
     Bounds: Bounds;
+    Editable: boolean;
     GBounds: Bounds;
     top: number;
     bottom: number;
@@ -198,6 +203,7 @@ declare class Measure implements ISelectable {
     SelType: SelectableTypes;
     Instrument: Instrument;
     Bounds: Bounds;
+    Editable: boolean;
     Clefs: Clef[];
     GrandClefs: Clef[];
     TimeSignature: TimeSignature;
@@ -348,7 +354,49 @@ interface Message {
     messageData: MessageData;
 }
 
+declare function ReturnLineFromMidi(clef: string, midi: number, staff?: number): number;
+declare function ReturnMidiNumber(clef: string, line: number, staff?: number): number;
+type MappedMidi = {
+    NoteString: string;
+    Frequency: number;
+    Line: number;
+    Accidental: number;
+};
+declare function GeneratePitchMap(): Map<number, MappedMidi>;
+
+type CameraSettings = {
+    DragEnabled?: boolean;
+    ZoomEnabled?: boolean;
+    StartingPosition?: {
+        x: number;
+        y: number;
+    };
+    Zoom?: number;
+    CenterMeasures?: boolean;
+};
+type PageSettings = {
+    RenderPage: boolean;
+    RenderBackground: boolean;
+    ContainerWidth?: boolean;
+};
+type MeasureFormatSettings = {
+    MaxWidth?: number;
+};
+type FormatSettings = {
+    MeasureFormatSettings?: MeasureFormatSettings;
+};
+type ConfigSettings = {
+    CameraSettings?: CameraSettings;
+    PageSettings?: PageSettings;
+    FormatSettings?: FormatSettings;
+    NoteSettings?: NoteSettings;
+};
+type NoteSettings = {
+    InputValue?: number;
+};
+
 declare class App {
+    Config: ConfigSettings;
     Message: Message;
     Canvas: HTMLCanvasElement;
     Container: HTMLElement;
@@ -376,7 +424,7 @@ declare class App {
     RunningID: {
         count: number;
     };
-    PitchMap: Map<string, number>;
+    PitchMap: Map<number, MappedMidi>;
     DraggingNote: boolean;
     StartLine: number;
     EndLine: number;
@@ -386,7 +434,7 @@ declare class App {
     LinerBounds: Bounds;
     LineNumber: Number;
     Debug: boolean;
-    constructor(canvas: HTMLCanvasElement, container: HTMLElement, context: CanvasRenderingContext2D, notifyCallback: (msg: Message) => void, load?: boolean);
+    constructor(canvas: HTMLCanvasElement, container: HTMLElement, context: CanvasRenderingContext2D, notifyCallback: (msg: Message) => void, config: ConfigSettings, load?: boolean);
     Hover(x: number, y: number): void;
     Delete(): void;
     Input(x: number, y: number, shiftKey: boolean): void;
@@ -413,11 +461,40 @@ declare class App {
     SelectById(id: number): ISelectable;
     ToggleFormatting(): void;
     Save(): void;
-    LoadSheet(): void;
+    LoadSheet(sheet: string): void;
     GetSaveFiles(): saveFile[];
     CreateTriplet(): void;
     ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
+    CenterMeasures(): void;
 }
+
+interface lNote {
+    ID: number;
+    Beat: number;
+    Duration: number;
+    Line: number;
+    Rest: boolean;
+    Tied: boolean;
+    Staff: number;
+    Clef: string;
+    Editable?: boolean;
+}
+interface lMeasure {
+    Clef: string;
+    TimeSignature: {
+        top: number;
+        bottom: number;
+    };
+    Notes: lNote[];
+    Bounds: Bounds;
+    ShowClef: boolean;
+    ShowTime: boolean;
+}
+interface LoadStructure {
+    Measures: lMeasure[];
+}
+declare const LoadSheet: (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, savedJson: string) => void;
+declare const SaveSheet: (sheet: Sheet) => string;
 
 declare namespace sheet {
     function CreateApp(canvas: HTMLCanvasElement, container: HTMLElement, doc: Document, keyMap: any, notifyCallBack: (msg: Message) => void): App;
@@ -433,4 +510,4 @@ declare namespace sheet {
     function ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
 }
 
-export { App, type KeyMapping, KeyPress, sheet };
+export { App, GeneratePitchMap, type KeyMapping, KeyPress, LoadSheet, type LoadStructure, type MappedMidi, Note, type NoteProps, ReturnLineFromMidi, ReturnMidiNumber, SaveSheet, type TupleDetails, type lMeasure, type lNote, sheet };

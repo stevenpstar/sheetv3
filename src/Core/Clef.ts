@@ -17,6 +17,7 @@ class Clef implements ISelectable {
   SelType: SelectableTypes;
   Type: string;
   Beat: number;
+  Editable: boolean;
   constructor(id: number, pos: { x: number, y: number }, type: string, beat: number) {
     this.ID = id;
     this.Position = pos;
@@ -25,6 +26,8 @@ class Clef implements ISelectable {
     this.SelType = SelectableTypes.Clef;
     this.Beat = beat;
     this.Selected = false;
+    // TODO: shouldn't only be true
+    this.Editable = true;
   }
 
   render(renderProps: RenderProperties): void {

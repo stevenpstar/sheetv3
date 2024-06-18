@@ -2,6 +2,7 @@ import { Camera } from "../Core/Camera.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Measure } from "../Core/Measure.js";
 import { MarginAdjuster, Page } from "../Core/Page.js";
+import { ConfigSettings } from "../Types/Config.js";
 
 // TODO: Add pages when necessary but for now we do just lines
 function SetPagesAndLines(measures: Measure[], pages: Page): void {
@@ -32,8 +33,20 @@ function SetPagesAndLines(measures: Measure[], pages: Page): void {
   });
 }
 
-function ResizeMeasuresOnPage(measures: Measure[], page: Page, cam: Camera): void {
+function GetMaxWidth(page: Page, config: ConfigSettings, cam: Camera): number {
+  let maxWidth = 0;
+  if (config.FormatSettings?.MeasureFormatSettings?.MaxWidth) {
+    maxWidth = config.FormatSettings.MeasureFormatSettings.MaxWidth;
+  } else {
+    maxWidth = (page.Bounds.width * cam.Zoom) - 50;
+  }
+
+  return maxWidth;
+}
+
+function ResizeMeasuresOnPage(measures: Measure[], page: Page, cam: Camera, config: ConfigSettings): void {
   const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
+  console.log("pageSize: ", pageSize);
   page.PageLines.forEach(line => {
     const msrs = measures.filter(m => m.PageLine === line.Number);
     let msrsLineWidth = 0;
@@ -51,15 +64,28 @@ function ResizeMeasuresOnPage(measures: Measure[], page: Page, cam: Camera): voi
         // TODO: When we work on keys
         m.RenderKey = false;
         m.SetXOffset();
+        // the calculated new width of the measure, may need to be overwritten
+        // by config settings if they are set (maxWidth in
+        // measureformatsettings)
+        const maxWidth = GetMaxWidth(page, config, cam);
+        const calculatedWidth = m.GetMinimumWidth() + (fillWidth / msrs.length);
+        const msrWidth = maxWidth ? 
+          calculatedWidth > maxWidth ? maxWidth : calculatedWidth :
+          calculatedWidth;
+        m.Bounds.width = msrWidth;
         m.CreateDivisions(cam);
-        m.Bounds.width = m.GetMinimumWidth() + (fillWidth / msrs.length);
       } else {
         m.RenderClef = false;
         m.RenderTimeSig = false;
         // TODO: When we work on keys
         m.RenderKey = false;
         m.SetXOffset();
-        m.Bounds.width = m.GetMinimumWidth() + (fillWidth / msrs.length);
+        const maxWidth = GetMaxWidth(page, config, cam);
+        const calculatedWidth = m.GetMinimumWidth() + (fillWidth / msrs.length);
+        const msrWidth = maxWidth ? 
+          calculatedWidth > maxWidth ? maxWidth : calculatedWidth :
+          calculatedWidth;
+        m.Bounds.width = msrWidth;
         msrs[i].Reposition(msrs[i-1]);
         m.CreateDivisions(cam);
       }

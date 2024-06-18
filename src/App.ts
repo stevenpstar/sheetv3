@@ -15,11 +15,13 @@ import { ISelectable, SelectableTypes } from "./Types/ISelectable.js";
 import { Page } from "./Core/Page.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
-import { allSaves, canonSave, saveFile } from "./testsaves.js";
+import { allSaves, canonSave, intervalTest, saveFile } from "./testsaves.js";
 import { ClearMessage, Message } from "./Types/Message.js";
-import { GeneratePitchMap } from "./Workers/Pitcher.js";
+import { GeneratePitchMap, MappedMidi } from "./Workers/Pitcher.js";
+import { ConfigSettings } from "./Types/Config.js";
 
 class App { 
+  Config: ConfigSettings;
   Message: Message;
   Canvas: HTMLCanvasElement;
   Container: HTMLElement;
@@ -38,7 +40,7 @@ class App {
   Selector: Selector;
   NotifyCallback: (msg: Message) => void;
   RunningID: { count: number };
-  PitchMap: Map<string, number>;
+  PitchMap: Map<number, MappedMidi>;
 
   // TODO: Off load some of this work to other classes/functions 
   // For now we prototype here
@@ -59,7 +61,9 @@ class App {
                container: HTMLElement,
              context: CanvasRenderingContext2D,
              notifyCallback: (msg: Message) => void,
+              config: ConfigSettings,
               load = false) {
+    this.Config = config;
     this.PitchMap = GeneratePitchMap();
     this.Message = ClearMessage();
     this.NotifyCallback = notifyCallback;
@@ -74,9 +78,10 @@ class App {
     this.RunningID = { count: 0 };
     this.CamDragging = false;
     this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
-    this.Camera = new Camera(0, 0);
-    this.Camera.Zoom = 1;
-    this.NoteValue = 0.25;
+    this.Camera = new Camera(0, 20);
+    this.Camera.Zoom = 1;//this.Config.CameraSettings.Zoom ? this.Config.CameraSettings.Zoom : 1;
+    this.NoteValue = this.Config.NoteSettings?.InputValue ? 
+      this.Config.NoteSettings.InputValue : 0.25;
 
     // TODO: Remove to formatter
     this.StartDragY = 0;
@@ -99,9 +104,10 @@ class App {
 
       this.Sheet = new Sheet(sProps);
     }
-    this.NoteInput = false;
+    this.NoteInput = true;
     this.RestInput = false;
-    this.Formatting = true;
+    this.Formatting = false;
+
     this.Update(0, 0);
   }
 
@@ -211,7 +217,9 @@ class App {
              this.Camera,
              this.NoteInput,
              this.RestInput,
-             this.Formatting);
+             this.Formatting,
+             this.Config,
+             this.NoteValue);
     if (this.Debug) {
       RenderDebug(this.Canvas,
                   this.Context,
@@ -333,6 +341,10 @@ class App {
   }
 
   SetCameraDragging(dragging: boolean, x: number, y: number): void {
+    if (this.Config.CameraSettings.DragEnabled === false) {
+      this.CamDragging = false;
+      return;
+    }
     this.CamDragging = dragging;
     if (this.CamDragging) {
       // set initial drag position
@@ -371,7 +383,8 @@ class App {
     const maxMeasuresPerLine = 4;
     const minMeasuresPerLine = 3;
     SetPagesAndLines(measures, this.Sheet.Pages[0]);
-    ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera);
+    ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera, this.Config);
+    this.CenterMeasures();
     this.Update(0, 0);
   }
 
@@ -380,19 +393,25 @@ class App {
   }
 
   Sharpen(): void {
-    for (let [ msr, notes ] of this.Selector.Notes ) {
-      notes.forEach(n => {
-        n.Accidental += 1;
-        if (n.Accidental > 2) { n.Accidental = 2; }
+    for (let [ msr, elem ] of this.Selector.Elements ) {
+      elem.forEach(n => {
+        if (n.SelType === SelectableTypes.Note) {
+          const note = n as Note;
+          note.Accidental += 1;
+          if (note.Accidental > 2) { note.Accidental = 2; }
+        }
       });
     }
     this.Update(0, 0);
   }
   Flatten(): void {
-    for (let [ msr, notes ] of this.Selector.Notes ) {
-      notes.forEach(n => {
-        n.Accidental -= 1;
-        if (n.Accidental < -2) { n.Accidental = -2; }
+    for (let [ msr, elem ] of this.Selector.Elements ) {
+      elem.forEach(e => {
+        if (e.SelType === SelectableTypes.Note) {
+          const n = e as Note;
+          n.Accidental -= 1;
+          if (n.Accidental < -2) { n.Accidental = -2; }
+        }
       })
     }
     this.Update(0, 0);
@@ -445,13 +464,13 @@ class App {
     SaveSheet(this.Sheet);
   }
 
-  LoadSheet(): void {
+  LoadSheet(sheet: string): void {
     //Clear measures
     this.Sheet.Measures = [];
     LoadSheet(this.Sheet,
               this.Sheet.Pages[0],
               this.Camera,
-              this.Sheet.Instruments[0], canonSave);
+              this.Sheet.Instruments[0], sheet);
     this.ResizeMeasures(this.Sheet.Measures);
     this.Update(0, 0);
   }
@@ -471,6 +490,17 @@ class App {
     for (let [ msr, elem ] of this.Selector.Elements) {
       msr.ChangeTimeSignature(top, bottom, transpose);
     }
+  }
+
+  CenterMeasures(): void {
+    // This measure is currently only being used for mtrainer
+    let msrWidth = 100;
+    if (this.Config.FormatSettings?.MeasureFormatSettings?.MaxWidth) {
+      console.log("exists!");
+      msrWidth = this.Config.FormatSettings.MeasureFormatSettings.MaxWidth
+    }
+    const padding = (this.Canvas.clientWidth - ((msrWidth + (msrWidth / 2)) * this.Camera.Zoom)) / 4;
+    this.Camera.x = padding;
   }
 }
 

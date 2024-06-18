@@ -15,6 +15,7 @@ declare class Clef implements ISelectable {
     SelType: SelectableTypes;
     Type: string;
     Beat: number;
+    Editable: boolean;
     constructor(id: number, pos: {
         x: number;
         y: number;

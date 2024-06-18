@@ -6,7 +6,7 @@ declare class Stem {
     StartPoint: number;
     EndPoint: number;
     constructor(bounds: Bounds);
-    Render(context: CanvasRenderingContext2D, cam: Camera): void;
+    Render(context: CanvasRenderingContext2D, cam: Camera, colour?: string): void;
 }
 export { Stem };
 //# sourceMappingURL=Stem.d.ts.map

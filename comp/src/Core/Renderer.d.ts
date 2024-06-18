@@ -1,3 +1,4 @@
+import { ConfigSettings } from "../Types/Config.js";
 import { Selector } from "../Workers/Selector.js";
 import { Camera } from "./Camera.js";
 import { Measure } from "./Measure.js";
@@ -8,7 +9,7 @@ declare const Renderer: (c: HTMLCanvasElement, ctx: CanvasRenderingContext2D, me
 }, mousePos: {
     x: number;
     y: number;
-}, cam: Camera, noteInput: boolean, restInput: boolean, formatting: boolean) => void;
+}, cam: Camera, noteInput: boolean, restInput: boolean, formatting: boolean, config: ConfigSettings, noteValue: number) => void;
 declare const RenderDebug: (c: HTMLCanvasElement, ctx: CanvasRenderingContext2D, sheet: Sheet, mousePos: {
     x: number;
     y: number;

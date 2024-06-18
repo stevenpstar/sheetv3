@@ -1,3 +1,5 @@
+import { ConfigSettings } from "../Types/Config";
+
 class Camera {
   x: number;
   y: number;

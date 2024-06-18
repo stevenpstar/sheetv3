@@ -13,8 +13,8 @@ const mh = (sBotLine - sTopLine) * lineHeight;
 
 const CreateDefaultPiano = (): Instrument => {
   const defaultPiano: Instrument = {
-    Position: {x: 100, y: 100},
-    Staff: StaffType.Grand
+    Position: {x: 0, y: 5},
+    Staff: StaffType.Single
   }
 
   return defaultPiano;
@@ -23,7 +23,7 @@ const CreateDefaultPiano = (): Instrument => {
 function CreateInstrument(y: number): Instrument {
   const instr: Instrument = {
     Position: { x: 0, y: y },
-    Staff: StaffType.Grand
+    Staff: StaffType.Single
   }
 
   return instr;
@@ -31,7 +31,7 @@ function CreateInstrument(y: number): Instrument {
 
 const CreateDefaultMeasure = (id: { count: number }, instr: Instrument, page: Page, cam: Camera): Measure => {
 
-  const msrHeight = instr.Staff === StaffType.Grand ? mh * 2 : mh;
+  const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
 
   const props: MeasureProps = {
     Instrument: instr,

@@ -8,10 +8,10 @@ interface Margins {
 }
 
 const defaultMargins: Margins = {
-  left: 100,
-  right: 100,
-  top: 100,
-  bottom: 100
+  left: 0,
+  right: 0,
+  top: 10,
+  bottom: 10
 }
 
 interface PageLine {

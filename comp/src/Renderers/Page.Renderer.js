@@ -1,9 +1,12 @@
-function RenderPage(page, canvas, context, cam, formatting) {
+function RenderPage(page, canvas, context, cam, formatting, config) {
     const scale = 6;
-    const a4w = 210 * scale;
-    const a4h = 297 * scale;
+    // TODO: Change these variable names
+    const a4w = page.Bounds.width; //210 * scale;
+    const a4h = page.Bounds.height; //297 * scale;
     const x = page.Bounds.x;
     const y = page.Bounds.y;
+    context.save();
+    context.setTransform(1, 0, 0, 1, 0, 0);
     context.filter = "blur(4px)";
     context.fillStyle = "rgb(71, 71, 71)";
     context.fillRect(x + cam.x - 8, y + cam.y + 8, a4w, a4h);
@@ -61,6 +64,7 @@ function RenderPage(page, canvas, context, cam, formatting) {
         context.strokeRect(page.MarginAdj[0].Bounds.x + cam.x, page.MarginAdj[0].Bounds.y + cam.y, page.MarginAdj[0].Bounds.width, page.MarginAdj[0].Bounds.height);
         context.stroke();
     }
+    context.restore();
 }
 function RenderAdjuster(x, y, dir, colour, context) {
     const size = 9;

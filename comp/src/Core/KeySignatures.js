@@ -22,6 +22,7 @@ class KeySig {
         this.SelType = SelectableTypes.KeySig;
         this.Bounds = new Bounds(0, 0, 0, 0);
         this.Selected = false;
+        this.Editable = true;
     }
     IsHovered(x, y, cam) {
         return this.Bounds.IsHovered(x, y, cam);

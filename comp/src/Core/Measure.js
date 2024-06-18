@@ -13,6 +13,7 @@ class Measure {
         this.RunningID = runningId;
         this.ID = 0;
         this.Selected = false;
+        this.Editable = true;
         this.SelType = SelectableTypes.Measure;
         this.Instrument = properties.Instrument;
         this.Line = 0;
@@ -34,7 +35,7 @@ class Measure {
         this.SetXOffset();
         this.SALineTop = 5;
         this.SALineMid = 15;
-        this.SALineBot = 24;
+        this.SALineBot = 30;
         this.SALineTopSave = this.SALineTop;
         this.SALineBotSave = this.SALineBot;
         this.SALineTopDef = this.SALineTop;

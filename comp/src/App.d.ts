@@ -7,7 +7,10 @@ import { KeyMapping } from "./Workers/Mappings.js";
 import { ISelectable } from "./Types/ISelectable.js";
 import { saveFile } from "./testsaves.js";
 import { Message } from "./Types/Message.js";
+import { MappedMidi } from "./Workers/Pitcher.js";
+import { ConfigSettings } from "./Types/Config.js";
 declare class App {
+    Config: ConfigSettings;
     Message: Message;
     Canvas: HTMLCanvasElement;
     Container: HTMLElement;
@@ -35,7 +38,7 @@ declare class App {
     RunningID: {
         count: number;
     };
-    PitchMap: Map<string, number>;
+    PitchMap: Map<number, MappedMidi>;
     DraggingNote: boolean;
     StartLine: number;
     EndLine: number;
@@ -45,7 +48,7 @@ declare class App {
     LinerBounds: Bounds;
     LineNumber: Number;
     Debug: boolean;
-    constructor(canvas: HTMLCanvasElement, container: HTMLElement, context: CanvasRenderingContext2D, notifyCallback: (msg: Message) => void, load?: boolean);
+    constructor(canvas: HTMLCanvasElement, container: HTMLElement, context: CanvasRenderingContext2D, notifyCallback: (msg: Message) => void, config: ConfigSettings, load?: boolean);
     Hover(x: number, y: number): void;
     Delete(): void;
     Input(x: number, y: number, shiftKey: boolean): void;
@@ -72,10 +75,11 @@ declare class App {
     SelectById(id: number): ISelectable;
     ToggleFormatting(): void;
     Save(): void;
-    LoadSheet(): void;
+    LoadSheet(sheet: string): void;
     GetSaveFiles(): saveFile[];
     CreateTriplet(): void;
     ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
+    CenterMeasures(): void;
 }
 export { App };
 //# sourceMappingURL=App.d.ts.map

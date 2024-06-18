@@ -12,6 +12,7 @@ interface lNote {
     Tied: boolean;
     Staff: number;
     Clef: string;
+    Editable?: boolean;
 }
 interface lMeasure {
     Clef: string;
@@ -29,5 +30,5 @@ interface LoadStructure {
 }
 declare const LoadSheet: (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, savedJson: string) => void;
 declare const SaveSheet: (sheet: Sheet) => string;
-export { LoadSheet, SaveSheet, LoadStructure };
+export { LoadSheet, SaveSheet, LoadStructure, lNote, lMeasure };
 //# sourceMappingURL=Loader.d.ts.map

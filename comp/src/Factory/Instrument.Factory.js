@@ -8,20 +8,20 @@ const lineHeight = 5;
 const mh = (sBotLine - sTopLine) * lineHeight;
 const CreateDefaultPiano = () => {
     const defaultPiano = {
-        Position: { x: 100, y: 100 },
-        Staff: StaffType.Grand
+        Position: { x: 0, y: 5 },
+        Staff: StaffType.Single
     };
     return defaultPiano;
 };
 function CreateInstrument(y) {
     const instr = {
         Position: { x: 0, y: y },
-        Staff: StaffType.Grand
+        Staff: StaffType.Single
     };
     return instr;
 }
 const CreateDefaultMeasure = (id, instr, page, cam) => {
-    const msrHeight = instr.Staff === StaffType.Grand ? mh * 2 : mh;
+    const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
     const props = {
         Instrument: instr,
         Bounds: new Bounds(instr.Position.x, page.PageLines[0].LineBounds.y, 150, msrHeight),

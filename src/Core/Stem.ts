@@ -13,8 +13,12 @@ class Stem {
   // TODO: Note: Camera is currently baked into actual position
   // This will change when we separate the creation logic from
   // the Note renderer
-  Render(context: CanvasRenderingContext2D, cam: Camera): void {
-    context.fillStyle = "black";
+  Render(context: CanvasRenderingContext2D, cam: Camera, colour?: string): void {
+    if (colour) {
+      context.fillStyle = colour;
+    } else {
+      context.fillStyle = "black"; //"black";
+    }
     context.fillRect(this.Bounds.x,
                      this.Bounds.y,
                      this.Bounds.width,

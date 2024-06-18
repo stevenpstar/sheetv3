@@ -16,6 +16,7 @@ class Note {
         this.Bounds = new Bounds(0, 0, 0, 0);
         this.Bounds.width = 12;
         this.Bounds.height = 10;
+        this.Editable = props.Editable !== undefined ? props.Editable : true;
         this.ID = -1;
         this.Tuple = props.Tuple;
         if (props.TupleDetails) {

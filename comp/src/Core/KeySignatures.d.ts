@@ -11,6 +11,7 @@ declare class KeySig implements ISelectable {
     Selected: boolean;
     SelType: SelectableTypes;
     Bounds: Bounds;
+    Editable: boolean;
     constructor();
     IsHovered(x: number, y: number, cam: Camera): boolean;
 }

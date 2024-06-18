@@ -32,9 +32,11 @@ class KeySig implements ISelectable {
   Selected: boolean;
   SelType: SelectableTypes = SelectableTypes.KeySig;
   Bounds: Bounds;
+  Editable: boolean;
   constructor() {
     this.Bounds = new Bounds(0, 0, 0, 0);
     this.Selected = false;
+    this.Editable = true;
   }
 
   IsHovered(x: number, y: number, cam: Camera): boolean {

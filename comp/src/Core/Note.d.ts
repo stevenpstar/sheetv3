@@ -17,6 +17,7 @@ interface NoteProps {
     Tuple: boolean;
     TupleDetails?: TupleDetails;
     Clef: string;
+    Editable?: boolean;
 }
 declare class Note implements ISelectable {
     Beat: number;
@@ -28,6 +29,7 @@ declare class Note implements ISelectable {
     ID: number;
     SelType: SelectableTypes;
     Clef: string;
+    Editable: boolean;
     TiedStart: number;
     TiedEnd: number;
     Bounds: Bounds;

@@ -1,9 +1,9 @@
 import { Bounds } from "../Types/Bounds.js";
 const defaultMargins = {
-    left: 100,
-    right: 100,
-    top: 100,
-    bottom: 100
+    left: 0,
+    right: 0,
+    top: 10,
+    bottom: 10
 };
 const scale = 6;
 const a4w = 210 * scale;

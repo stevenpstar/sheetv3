@@ -29,6 +29,7 @@ declare class Measure implements ISelectable {
     SelType: SelectableTypes;
     Instrument: Instrument;
     Bounds: Bounds;
+    Editable: boolean;
     Clefs: Clef[];
     GrandClefs: Clef[];
     TimeSignature: TimeSignature;

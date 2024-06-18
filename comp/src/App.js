@@ -11,11 +11,13 @@ import { SelectableTypes } from "./Types/ISelectable.js";
 import { Page } from "./Core/Page.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
-import { allSaves, canonSave } from "./testsaves.js";
+import { allSaves } from "./testsaves.js";
 import { ClearMessage } from "./Types/Message.js";
 import { GeneratePitchMap } from "./Workers/Pitcher.js";
 class App {
-    constructor(canvas, container, context, notifyCallback, load = false) {
+    constructor(canvas, container, context, notifyCallback, config, load = false) {
+        var _a;
+        this.Config = config;
         this.PitchMap = GeneratePitchMap();
         this.Message = ClearMessage();
         this.NotifyCallback = notifyCallback;
@@ -30,9 +32,10 @@ class App {
         this.RunningID = { count: 0 };
         this.CamDragging = false;
         this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
-        this.Camera = new Camera(0, 0);
-        this.Camera.Zoom = 1;
-        this.NoteValue = 0.25;
+        this.Camera = new Camera(0, 20);
+        this.Camera.Zoom = 1; //this.Config.CameraSettings.Zoom ? this.Config.CameraSettings.Zoom : 1;
+        this.NoteValue = ((_a = this.Config.NoteSettings) === null || _a === void 0 ? void 0 : _a.InputValue) ?
+            this.Config.NoteSettings.InputValue : 0.25;
         // TODO: Remove to formatter
         this.StartDragY = 0;
         this.EndDragY = 0;
@@ -50,9 +53,9 @@ class App {
             sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], page, this.Camera));
             this.Sheet = new Sheet(sProps);
         }
-        this.NoteInput = false;
+        this.NoteInput = true;
         this.RestInput = false;
-        this.Formatting = true;
+        this.Formatting = false;
         this.Update(0, 0);
     }
     Hover(x, y) {
@@ -147,7 +150,7 @@ class App {
         this.Render({ x: x, y: y });
     }
     Render(mousePos) {
-        Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.Sheet.Pages, this.HoveredElements, mousePos, this.Camera, this.NoteInput, this.RestInput, this.Formatting);
+        Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.Sheet.Pages, this.HoveredElements, mousePos, this.Camera, this.NoteInput, this.RestInput, this.Formatting, this.Config, this.NoteValue);
         if (this.Debug) {
             RenderDebug(this.Canvas, this.Context, this.Sheet, mousePos, this.Camera, this.Selector);
         }
@@ -248,6 +251,10 @@ class App {
         }
     }
     SetCameraDragging(dragging, x, y) {
+        if (this.Config.CameraSettings.DragEnabled === false) {
+            this.CamDragging = false;
+            return;
+        }
         this.CamDragging = dragging;
         if (this.CamDragging) {
             // set initial drag position
@@ -284,29 +291,36 @@ class App {
         const maxMeasuresPerLine = 4;
         const minMeasuresPerLine = 3;
         SetPagesAndLines(measures, this.Sheet.Pages[0]);
-        ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera);
+        ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera, this.Config);
+        this.CenterMeasures();
         this.Update(0, 0);
     }
     SetNoteValue(val) {
         this.NoteValue = val;
     }
     Sharpen() {
-        for (let [msr, notes] of this.Selector.Notes) {
-            notes.forEach(n => {
-                n.Accidental += 1;
-                if (n.Accidental > 2) {
-                    n.Accidental = 2;
+        for (let [msr, elem] of this.Selector.Elements) {
+            elem.forEach(n => {
+                if (n.SelType === SelectableTypes.Note) {
+                    const note = n;
+                    note.Accidental += 1;
+                    if (note.Accidental > 2) {
+                        note.Accidental = 2;
+                    }
                 }
             });
         }
         this.Update(0, 0);
     }
     Flatten() {
-        for (let [msr, notes] of this.Selector.Notes) {
-            notes.forEach(n => {
-                n.Accidental -= 1;
-                if (n.Accidental < -2) {
-                    n.Accidental = -2;
+        for (let [msr, elem] of this.Selector.Elements) {
+            elem.forEach(e => {
+                if (e.SelType === SelectableTypes.Note) {
+                    const n = e;
+                    n.Accidental -= 1;
+                    if (n.Accidental < -2) {
+                        n.Accidental = -2;
+                    }
                 }
             });
         }
@@ -354,10 +368,10 @@ class App {
     Save() {
         SaveSheet(this.Sheet);
     }
-    LoadSheet() {
+    LoadSheet(sheet) {
         //Clear measures
         this.Sheet.Measures = [];
-        LoadSheet(this.Sheet, this.Sheet.Pages[0], this.Camera, this.Sheet.Instruments[0], canonSave);
+        LoadSheet(this.Sheet, this.Sheet.Pages[0], this.Camera, this.Sheet.Instruments[0], sheet);
         this.ResizeMeasures(this.Sheet.Measures);
         this.Update(0, 0);
     }
@@ -374,6 +388,17 @@ class App {
         for (let [msr, elem] of this.Selector.Elements) {
             msr.ChangeTimeSignature(top, bottom, transpose);
         }
+    }
+    CenterMeasures() {
+        var _a, _b;
+        // This measure is currently only being used for mtrainer
+        let msrWidth = 100;
+        if ((_b = (_a = this.Config.FormatSettings) === null || _a === void 0 ? void 0 : _a.MeasureFormatSettings) === null || _b === void 0 ? void 0 : _b.MaxWidth) {
+            console.log("exists!");
+            msrWidth = this.Config.FormatSettings.MeasureFormatSettings.MaxWidth;
+        }
+        const padding = (this.Canvas.clientWidth - ((msrWidth + (msrWidth / 2)) * this.Camera.Zoom)) / 4;
+        this.Camera.x = padding;
     }
 }
 export { App };

@@ -45,7 +45,7 @@ function KeyPress(app, key, keyMaps) {
             app.Save();
             break;
         case keyMaps.load:
-            app.LoadSheet();
+            app.LoadSheet("");
         case keyMaps.test_triplet:
             app.CreateTriplet();
         default:

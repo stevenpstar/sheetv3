@@ -14,7 +14,8 @@
     "tsc": "tsc",
     "start": "live-server",
     "debug": "rm -rf ../debugSheetV3/debugsheetv3/sheetsrc && cp -r src ../debugSheetV3/debugsheetv3/sheetsrc",
-    "bundle": "tsup --format esm --minify --dts && rm -rf ../debugSheetV3/debugsheetv3/sheetsrc && cp -r dist ../debugSheetV3/debugsheetv3/sheetsrc"
+    "bundle": "tsup --format esm --minify --dts && rm -rf ../debugSheetV3/debugsheetv3/sheetsrc && cp -r dist ../debugSheetV3/debugsheetv3/sheetsrc",
+    "mtrain": "tsup --format esm --minify --dts && rm -rf ../MusicTrainer/musictrainer/src/lib/sheet && cp -r dist ../MusicTrainer/musictrainer/src/lib/sheet"
   },
   "dependencies": {
     "eslint": "^9.3.0"

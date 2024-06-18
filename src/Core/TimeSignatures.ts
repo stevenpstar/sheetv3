@@ -28,6 +28,7 @@ class TimeSignature implements ISelectable {
   Selected: boolean;
   SelType: SelectableTypes;
   Bounds: Bounds;
+  Editable: boolean;
   GBounds: Bounds;
   top: number;
   bottom: number;
@@ -46,6 +47,7 @@ class TimeSignature implements ISelectable {
     this.SelType = SelectableTypes.TimeSig;
     this.top = top;
     this.bottom = bottom;
+    this.Editable = true;
     this.TopPosition = { x: 0, y: 0 };
     this.BotPosition = { x: 0, y: 0 };
     this.GTopPosition = { x: 0, y: 0 };

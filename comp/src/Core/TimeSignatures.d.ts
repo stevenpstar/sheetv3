@@ -8,6 +8,7 @@ declare class TimeSignature implements ISelectable {
     Selected: boolean;
     SelType: SelectableTypes;
     Bounds: Bounds;
+    Editable: boolean;
     GBounds: Bounds;
     top: number;
     bottom: number;

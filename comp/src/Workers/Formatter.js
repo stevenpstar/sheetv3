@@ -27,8 +27,20 @@ function SetPagesAndLines(measures, pages) {
         msr.PageLine = currentLine;
     });
 }
-function ResizeMeasuresOnPage(measures, page, cam) {
+function GetMaxWidth(page, config, cam) {
+    var _a, _b;
+    let maxWidth = 0;
+    if ((_b = (_a = config.FormatSettings) === null || _a === void 0 ? void 0 : _a.MeasureFormatSettings) === null || _b === void 0 ? void 0 : _b.MaxWidth) {
+        maxWidth = config.FormatSettings.MeasureFormatSettings.MaxWidth;
+    }
+    else {
+        maxWidth = (page.Bounds.width * cam.Zoom) - 50;
+    }
+    return maxWidth;
+}
+function ResizeMeasuresOnPage(measures, page, cam, config) {
     const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
+    console.log("pageSize: ", pageSize);
     page.PageLines.forEach(line => {
         const msrs = measures.filter(m => m.PageLine === line.Number);
         let msrsLineWidth = 0;
@@ -46,8 +58,16 @@ function ResizeMeasuresOnPage(measures, page, cam) {
                 // TODO: When we work on keys
                 m.RenderKey = false;
                 m.SetXOffset();
+                // the calculated new width of the measure, may need to be overwritten
+                // by config settings if they are set (maxWidth in
+                // measureformatsettings)
+                const maxWidth = GetMaxWidth(page, config, cam);
+                const calculatedWidth = m.GetMinimumWidth() + (fillWidth / msrs.length);
+                const msrWidth = maxWidth ?
+                    calculatedWidth > maxWidth ? maxWidth : calculatedWidth :
+                    calculatedWidth;
+                m.Bounds.width = msrWidth;
                 m.CreateDivisions(cam);
-                m.Bounds.width = m.GetMinimumWidth() + (fillWidth / msrs.length);
             }
             else {
                 m.RenderClef = false;
@@ -55,7 +75,12 @@ function ResizeMeasuresOnPage(measures, page, cam) {
                 // TODO: When we work on keys
                 m.RenderKey = false;
                 m.SetXOffset();
-                m.Bounds.width = m.GetMinimumWidth() + (fillWidth / msrs.length);
+                const maxWidth = GetMaxWidth(page, config, cam);
+                const calculatedWidth = m.GetMinimumWidth() + (fillWidth / msrs.length);
+                const msrWidth = maxWidth ?
+                    calculatedWidth > maxWidth ? maxWidth : calculatedWidth :
+                    calculatedWidth;
+                m.Bounds.width = msrWidth;
                 msrs[i].Reposition(msrs[i - 1]);
                 m.CreateDivisions(cam);
             }

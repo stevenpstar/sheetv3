@@ -32,6 +32,9 @@ class Selector {
     elements.push(msr.TimeSignature);
     elements.forEach((e: ISelectable) => {
       if (e.IsHovered(x, y, cam)) {
+        if (e.Editable !== undefined && e.Editable === false) {
+          return;
+        }
         e.Selected = true;
         selectedElements.push(e);
         if (e.SelType === SelectableTypes.Note) {

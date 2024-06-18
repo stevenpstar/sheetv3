@@ -14,6 +14,8 @@ class Clef {
         this.SelType = SelectableTypes.Clef;
         this.Beat = beat;
         this.Selected = false;
+        // TODO: shouldn't only be true
+        this.Editable = true;
     }
     render(renderProps) {
         let clefSymbol;

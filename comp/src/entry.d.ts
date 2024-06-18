@@ -16,4 +16,7 @@ export declare namespace sheet {
 }
 export * from './Workers/Mappings.js';
 export * from './App.js';
+export * from './Workers/Loader.js';
+export * from './Core/Note.js';
+export * from './Workers/Pitcher.js';
 //# sourceMappingURL=entry.d.ts.map

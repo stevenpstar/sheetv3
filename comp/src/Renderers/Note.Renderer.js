@@ -46,7 +46,8 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
     // TODO: Move this offset somewhere else to be constant
     y = y + 3;
     //
-    colour = selected ? "blue" : "black";
+    colour = selected ? "#1065b0" : "black";
+    colour = note.Editable ? colour : "black";
     let noteString = '';
     switch (note.Duration) {
         case 0.125:
@@ -58,14 +59,14 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
             RenderSymbol(renderProps, NoteHeads.minim, x, y, colour);
             break;
         case 1:
-            RenderSymbol(renderProps, NoteHeads.whole, x, y, colour);
+            RenderSymbol(renderProps, NoteHeads.whole, x - 2.5, y, colour);
             break;
         default:
             RenderSymbol(renderProps, NoteHeads.crotchet, x, y, colour);
     }
     context.fillStyle = "black";
     if (selected) {
-        context.fillStyle = "blue";
+        context.fillStyle = "black";
     }
     // context.fill(new Path2D(noteString));
     let debug = false;
@@ -119,6 +120,7 @@ function RenderDots(renderProps, note, dotXStart) {
     }
 }
 function RenderRest(ctx, div, cam, note, msr) {
+    ctx.fillStyle = "black";
     let x = div.Bounds.x + cam.x + noteXBuffer;
     //    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
     let y = Measure.GetNotePositionOnLine(msr, note.Line - 3) + cam.y;
@@ -156,7 +158,7 @@ function RenderRest(ctx, div, cam, note, msr) {
 function RenderTupletAnnotation(renderProps, coords, count) {
     const { canvas, context, camera } = renderProps;
     const width = coords.x2 - coords.x1;
-    context.fillStyle = "black";
+    context.fillStyle = "#75757";
     context.fillRect(coords.x1 + camera.x, coords.y1 - 12 + camera.y, 1, 6);
     context.fillRect(coords.x1 + camera.x, coords.y1 - 12 + camera.y, (width / 2) - 14, 1);
     context.fillRect(coords.x1 + width + camera.x, coords.y1 - 12 + camera.y, 1, 6);
@@ -266,8 +268,8 @@ function RenderTies(renderProps, divisions, notes, staff, msr) {
             const curveOffset = (note.Line < 15) ? -15 : 15;
             const curveStartOffset = (note.Line < 15) ? -8 : 8;
             //TODO: This is a temporary representation of a tie or slur
-            context.fillStyle = "black";
-            context.strokeStyle = "black";
+            context.fillStyle = "#757575";
+            context.strokeStyle = "#757575";
             context.setLineDash([]);
             context.beginPath();
             context.moveTo(x1 + (noteXBuffer / 2), y1 + curveStartOffset);
@@ -320,7 +322,7 @@ function DetermineStemDirection(notes, divisions, staff, measure) {
     }
     return dir;
 }
-function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir) {
+function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir, colour) {
     // Check that divisions and note arrays match
     let match = true;
     divisions.forEach((div, i) => {
@@ -381,7 +383,7 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir) {
         if (div.Duration === 1) {
             return;
         }
-        const xBuffer = stemDirection === StemDirection.Up ? 11 : 0;
+        const xBuffer = stemDirection === StemDirection.Up ? 11.5 : 0.25;
         const stemX = Math.floor(div.Bounds.x + xBuffer + camera.x + noteXBuffer);
         if (i === 0) {
             beamStartX = stemX;
@@ -458,7 +460,7 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir) {
         }
         const diff = stemEndY - startPos;
         const newStem = new Stem(new Bounds(stemX, startPos, 1.5, diff));
-        newStem.Render(context, camera);
+        newStem.Render(context, camera, colour);
     });
 }
 function GetFlagCount(value) {
@@ -474,11 +476,11 @@ function GetFlagCount(value) {
     }
     return count;
 }
-function renderLedgerLines(notes, division, renderProps, staff, msr) {
+function renderLedgerLines(notes, division, renderProps, staff, msr, colour) {
     const { canvas, context, camera } = renderProps;
     const ledgerX = (division.Bounds.x + noteXBuffer) - 6 + camera.x;
     //const ledgerString = `m ${x - 6} ${y - 5} h 22 v 2 h-20 v-2 Z`;
-    const ledgerString = `h 22 v 2 h-20 v-2 Z`;
+    const ledgerString = `h 22 v 1.5 h-20 v-1.5 Z`;
     const bdNotes = notes.filter((note) => note.Beat === division.Beat &&
         note.Staff === division.Staff);
     const yLineBuffer = staff === 0 ? Measure.GetMeasureMidLine(msr) : msr.GetGrandMeasureMidLine();
@@ -491,7 +493,7 @@ function renderLedgerLines(notes, division, renderProps, staff, msr) {
     });
     const highestLine = bdNotes[0];
     const lowestLine = bdNotes[bdNotes.length - 1];
-    context.fillStyle = "black";
+    context.fillStyle = colour ? colour : "black";
     for (let l = midLine - 6; l >= highestLine.Line; l -= 2) {
         const ledgerY = Measure.GetNotePositionOnLine(msr, l) + camera.y + 2.5;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;

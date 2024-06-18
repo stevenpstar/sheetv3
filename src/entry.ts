@@ -1,5 +1,6 @@
 import { App } from "./App.js";
 import { Measure } from "./Core/Measure.js";
+import { ConfigSettings } from "./Types/Config.js";
 import { ISelectable } from "./Types/ISelectable.js";
 import { Message } from "./Types/Message.js";
 import { KeyMapping } from "./Workers/Mappings.js";
@@ -23,6 +24,27 @@ const keymaps: KeyMapping = {
   "save": "s",
   "load": "l",
   "test_triplet": "t"
+}
+
+const test_CONFIG: ConfigSettings = {
+  CameraSettings: {
+    DragEnabled: false,
+    ZoomEnabled: false,
+    Zoom: 1,
+    StartingPosition: { x: 0, y: 0 },
+    CenterMeasures: true,
+  },
+  FormatSettings: {
+    MeasureFormatSettings: { MaxWidth: 100, },
+  },
+  NoteSettings: {
+    InputValue: 0.5,
+  },
+  PageSettings: {
+    RenderPage: false,
+    RenderBackground: false,
+    ContainerWidth: false,
+  },
 }
 
 function mouseMove(app: App, canvas: HTMLCanvasElement, e: MouseEvent): void {
@@ -65,8 +87,15 @@ function zoom(app: App, e: WheelEvent): void {
   }
 }
 
-function resize(app: App, canvas: HTMLCanvasElement, container: HTMLElement): void {
-  canvas.width = container.clientWidth;
+function resize(app: App, context: CanvasRenderingContext2D, canvas: HTMLCanvasElement, container: HTMLElement): void {
+  canvas.width = container.clientWidth - 50;
+  if (app.Config.CameraSettings?.CenterMeasures === true) {
+    app.CenterMeasures();
+    console.log("Resizing?");
+  }
+
+    console.log("Resizing?");
+  app.AlterZoom(0);
   app.Update(0, 0);
 }
 
@@ -78,16 +107,19 @@ export module sheet {
     keyMap: any,
     notifyCallBack: (msg: Message) => void): App {
     const ctx = canvas.getContext("2d");
-    const app = new App(canvas, container, ctx, notifyCallBack);
+    const app = new App(canvas, container, ctx, notifyCallBack, test_CONFIG);
     canvas.addEventListener("mousemove", (e) => mouseMove(app, canvas, e));
     canvas.addEventListener("mousedown", (e) => mouseDown(app, canvas, e));
     canvas.addEventListener("mouseup", (e) => mouseUp(app, canvas, e));
     doc.addEventListener("keydown", (e) => keyDown(app, keyMap, e));
-    window.addEventListener("resize", () => resize(app, canvas, container));
+    window.addEventListener("resize", () => resize(app, app.Context, canvas, container));
     canvas.addEventListener("wheel", (e) => zoom(app, e));
     gSheet = app;
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
+    app.Update(0, 0);
+    app.AlterZoom(test_CONFIG.CameraSettings.Zoom);
+    app.CenterMeasures();
     return app;
   }
 
@@ -139,3 +171,6 @@ export module sheet {
 //public exports
 export * from './Workers/Mappings.js';
 export * from './App.js';
+export * from './Workers/Loader.js';
+export * from './Core/Note.js';
+export * from './Workers/Pitcher.js';

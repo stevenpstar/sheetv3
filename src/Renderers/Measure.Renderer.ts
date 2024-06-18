@@ -8,7 +8,7 @@ import { RenderProperties } from "../Types/RenderProperties.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { Clefs, RenderSymbol, TimeSigNumbers } from "./MusicFont.Renderer.js";
-import { DetermineStemDirection,
+import { BeamDirection, DetermineStemDirection,
   RenderDots,
   RenderNote,
   RenderRest,
@@ -27,10 +27,10 @@ const noteXBuffer = 9;
 function RenderMeasure(
   measure: Measure, renderProps: RenderProperties, hovId: number,
   mousePos: { x: number, y: number }, lastMeasure: boolean,
-  noteInput: boolean, index: number, restInput: boolean) {
+  noteInput: boolean, index: number, restInput: boolean, noteValue: number) {
 
 //    if (hovId === measure.ID)
-    RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput);
+    RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput, noteValue);
 //    if (debug)
      // RenderDebug(measure, renderProps, index, mousePos);
     RenderMeasureBase(measure, renderProps, mousePos, lastMeasure);
@@ -46,7 +46,8 @@ function RenderHovered(
   hovId: number,
   mousePos: { x: number, y: number },
   noteInput: boolean,
-  restInput: boolean) {
+  restInput: boolean,
+  noteValue: number) {
     
     const { canvas, context, camera } = renderProps;
 
@@ -60,18 +61,18 @@ function RenderHovered(
       const divisions = measure.Divisions.concat(measure.BDivisions);
       divisions.forEach(s => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
-          context.fillStyle="rgb(0, 0, 255, 0.1)";
-          context.fillRect(s.Bounds.x + camera.x,
-                           s.Bounds.y + camera.y,
-                           s.Bounds.width,
-                           s.Bounds.height);
+         // context.fillStyle="rgb(0, 0, 255, 0.1)";
+         // context.fillRect(s.Bounds.x + camera.x,
+         //                  s.Bounds.y + camera.y,
+         //                  s.Bounds.width,
+         //                  s.Bounds.height);
 
           if (noteInput && !restInput) {
              const noteY = measure.Bounds.y + (line.num * (line_space / 2));// + (line_space / 2));
             // temp note
             const tempNoteProps = {
               Beat: s.Beat,
-              Duration: 0.25,
+              Duration: noteValue,
               Line: line.num,
               Rest: false,
               Tied: false,
@@ -86,6 +87,22 @@ function RenderHovered(
                        renderProps,
                        new Bounds(s.Bounds.x + noteXBuffer,
                        line.bounds.y, 0, 0), true, false, StemDirection.Up);
+            RenderStemRevise(
+              renderProps,
+              [[tempNote]],
+              [s],
+              s.Staff,
+              measure,
+              BeamDirection.Flat,
+              "#1065b0");
+
+            renderLedgerLines(
+              [tempNote],
+              s,
+              renderProps,
+              s.Staff,
+              measure,
+              "#1065b0");
           }
         }
       });
@@ -125,7 +142,9 @@ function RenderMeasureBase(
 
     // TODO: Please clean this method up omg
     const lineTopStaff = msr.Bounds.y + (5 * msrMidLine - (line_space * 2));
-    const lineBotStaff = msr.Bounds.y + msr.GetMeasureHeight() + (5 * grndMsrMidLine + (line_space * 2));
+    const lineBotStaff = msr.Instrument.Staff === StaffType.Grand ? 
+      msr.Bounds.y + msr.GetMeasureHeight() + (5 * grndMsrMidLine + (line_space * 2)) :
+      msr.Bounds.y + (5 * msrMidLine + (line_space * 2));
     const grandLineHeight = lineBotStaff - lineTopStaff;
 
     const measureBegin = 
@@ -136,12 +155,12 @@ function RenderMeasureBase(
     const measureEnd = 
       `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} 
         ${ msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
-        ${lastEndThickness} v ${grandLineHeight} h -${lastEndThickness} Z`;
+        ${lastEndThickness} v ${grandLineHeight + 1} h -${lastEndThickness} Z`;
 
     const measureDoubleEnd = 
       `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} 
           ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
-          ${endsWidth} v ${grandLineHeight} h -${endsWidth} Z`;
+          ${endsWidth} v ${grandLineHeight + 1} h -${endsWidth} Z`;
 
     for (let l=0;l<5;l++) {
           const lineString = `M${msr.Bounds.x + camera.x} 
@@ -351,7 +370,7 @@ function IsFlippedNote(notes: Note[], index: number, dir: StemDirection): boolea
   
   for (let b = index + 1; b <= notes.length - 1; b++) {
     const line = notes[b].Line;
-    if (line - nLine === b - index) {
+    if (line - nLine === b - index || line - nLine === index - index) {
       countBelow++;
     } else {
       break;
@@ -360,7 +379,7 @@ function IsFlippedNote(notes: Note[], index: number, dir: StemDirection): boolea
 
   for (let a = index - 1; a >= 0; a--) {
     const line = notes[a].Line;
-    if (nLine - line === index - a) {
+    if (nLine - line === index - a || nLine - line === index - index) {
       countAbove++;
     } else {
       break;

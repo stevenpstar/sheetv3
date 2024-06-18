@@ -6,15 +6,15 @@ import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
-import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderStemRevise, RenderTies, RenderTuplets, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
+import { BeamDirection, DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderStemRevise, RenderTies, RenderTuplets, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
 const line_space = 10;
 const line_width = 1;
 const endsWidth = 2;
 const debug = true;
 const noteXBuffer = 9;
-function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteInput, index, restInput) {
+function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteInput, index, restInput, noteValue) {
     //    if (hovId === measure.ID)
-    RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput);
+    RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput, noteValue);
     //    if (debug)
     // RenderDebug(measure, renderProps, index, mousePos);
     RenderMeasureBase(measure, renderProps, mousePos, lastMeasure);
@@ -23,7 +23,7 @@ function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteI
         RenderNotes(measure, renderProps, 1);
     }
 }
-function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput) {
+function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput, noteValue) {
     const { canvas, context, camera } = renderProps;
     const line = Measure.GetLineHovered(mousePos.y, measure);
     if (noteInput) {
@@ -35,14 +35,17 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
     const divisions = measure.Divisions.concat(measure.BDivisions);
     divisions.forEach(s => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
-            context.fillStyle = "rgb(0, 0, 255, 0.1)";
-            context.fillRect(s.Bounds.x + camera.x, s.Bounds.y + camera.y, s.Bounds.width, s.Bounds.height);
+            // context.fillStyle="rgb(0, 0, 255, 0.1)";
+            // context.fillRect(s.Bounds.x + camera.x,
+            //                  s.Bounds.y + camera.y,
+            //                  s.Bounds.width,
+            //                  s.Bounds.height);
             if (noteInput && !restInput) {
                 const noteY = measure.Bounds.y + (line.num * (line_space / 2)); // + (line_space / 2));
                 // temp note
                 const tempNoteProps = {
                     Beat: s.Beat,
-                    Duration: 0.25,
+                    Duration: noteValue,
                     Line: line.num,
                     Rest: false,
                     Tied: false,
@@ -54,6 +57,8 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
                 };
                 const tempNote = new Note(tempNoteProps);
                 RenderNote(tempNote, renderProps, new Bounds(s.Bounds.x + noteXBuffer, line.bounds.y, 0, 0), true, false, StemDirection.Up);
+                RenderStemRevise(renderProps, [[tempNote]], [s], s.Staff, measure, BeamDirection.Flat, "#1065b0");
+                renderLedgerLines([tempNote], s, renderProps, s.Staff, measure, "#1065b0");
             }
         }
     });
@@ -77,17 +82,19 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure) {
         grandMsrHeight : msr.GetMeasureHeight();
     // TODO: Please clean this method up omg
     const lineTopStaff = msr.Bounds.y + (5 * msrMidLine - (line_space * 2));
-    const lineBotStaff = msr.Bounds.y + msr.GetMeasureHeight() + (5 * grndMsrMidLine + (line_space * 2));
+    const lineBotStaff = msr.Instrument.Staff === StaffType.Grand ?
+        msr.Bounds.y + msr.GetMeasureHeight() + (5 * grndMsrMidLine + (line_space * 2)) :
+        msr.Bounds.y + (5 * msrMidLine + (line_space * 2));
     const grandLineHeight = lineBotStaff - lineTopStaff;
     const measureBegin = `M${msr.Bounds.x + camera.x} 
           ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
           ${endsWidth} v ${grandLineHeight} h -${endsWidth} Z`;
     const measureEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} 
         ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
-        ${lastEndThickness} v ${grandLineHeight} h -${lastEndThickness} Z`;
+        ${lastEndThickness} v ${grandLineHeight + 1} h -${lastEndThickness} Z`;
     const measureDoubleEnd = `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} 
           ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
-          ${endsWidth} v ${grandLineHeight} h -${endsWidth} Z`;
+          ${endsWidth} v ${grandLineHeight + 1} h -${endsWidth} Z`;
     for (let l = 0; l < 5; l++) {
         const lineString = `M${msr.Bounds.x + camera.x} 
           ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + line_space * l + camera.y} h 
@@ -257,7 +264,7 @@ function IsFlippedNote(notes, index, dir) {
     }
     for (let b = index + 1; b <= notes.length - 1; b++) {
         const line = notes[b].Line;
-        if (line - nLine === b - index) {
+        if (line - nLine === b - index || line - nLine === index - index) {
             countBelow++;
         }
         else {
@@ -266,7 +273,7 @@ function IsFlippedNote(notes, index, dir) {
     }
     for (let a = index - 1; a >= 0; a--) {
         const line = notes[a].Line;
-        if (nLine - line === index - a) {
+        if (nLine - line === index - a || nLine - line === index - index) {
             countAbove++;
         }
         else {

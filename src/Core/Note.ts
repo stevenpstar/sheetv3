@@ -19,6 +19,7 @@ interface NoteProps {
   Tuple: boolean;
   TupleDetails?: TupleDetails;
   Clef: string;
+  Editable?: boolean;
 }
 
 class Note implements ISelectable {
@@ -31,6 +32,7 @@ class Note implements ISelectable {
   ID: number;
   SelType: SelectableTypes;
   Clef: string;
+  Editable: boolean;
 
   TiedStart: number; // beat
   TiedEnd: number; // beat
@@ -58,6 +60,7 @@ class Note implements ISelectable {
     this.Bounds = new Bounds(0, 0, 0, 0);
     this.Bounds.width = 12;
     this.Bounds.height = 10;
+    this.Editable = props.Editable !== undefined ? props.Editable : true;
     this.ID = -1;
 
     this.Tuple = props.Tuple;

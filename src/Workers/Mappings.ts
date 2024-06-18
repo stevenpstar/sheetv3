@@ -66,7 +66,7 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       app.Save();
       break;
     case keyMaps.load:
-      app.LoadSheet();
+      app.LoadSheet("");
     case keyMaps.test_triplet:
       app.CreateTriplet();
     default:
