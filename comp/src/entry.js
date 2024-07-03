@@ -27,7 +27,7 @@ const test_CONFIG = {
         CenterMeasures: true,
     },
     FormatSettings: {
-        MeasureFormatSettings: { MaxWidth: 100, },
+        MeasureFormatSettings: { MaxWidth: 100, Selectable: false },
     },
     NoteSettings: {
         InputValue: 0.5,
@@ -76,7 +76,7 @@ function zoom(app, e) {
 }
 function resize(app, context, canvas, container) {
     var _a;
-    canvas.width = container.clientWidth;
+    canvas.width = container.clientWidth - 50;
     if (((_a = app.Config.CameraSettings) === null || _a === void 0 ? void 0 : _a.CenterMeasures) === true) {
         app.CenterMeasures();
     }
@@ -85,9 +85,9 @@ function resize(app, context, canvas, container) {
 }
 export var sheet;
 (function (sheet) {
-    function CreateApp(canvas, container, doc, keyMap, notifyCallBack) {
+    function CreateApp(canvas, container, doc, keyMap, notifyCallBack, config) {
         const ctx = canvas.getContext("2d");
-        const app = new App(canvas, container, ctx, notifyCallBack, test_CONFIG);
+        const app = new App(canvas, container, ctx, notifyCallBack, config);
         canvas.addEventListener("mousemove", (e) => mouseMove(app, canvas, e));
         canvas.addEventListener("mousedown", (e) => mouseDown(app, canvas, e));
         canvas.addEventListener("mouseup", (e) => mouseUp(app, canvas, e));
@@ -152,3 +152,5 @@ export * from './App.js';
 export * from './Workers/Loader.js';
 export * from './Core/Note.js';
 export * from './Workers/Pitcher.js';
+export * from './Types/Message.js';
+export * from './Types/Config.js';

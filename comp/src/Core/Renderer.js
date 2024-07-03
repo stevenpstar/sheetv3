@@ -3,16 +3,17 @@ import { RenderPage } from "../Renderers/Page.Renderer.js";
 const renderDebug = false;
 const scaleV = 1;
 const Renderer = (c, ctx, measures, pages, hovElements, mousePos, cam, noteInput, restInput, formatting, config, noteValue) => {
+    var _a, _b;
     // reset
     ctx.fillStyle = "grey";
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, c.width, c.height);
-    if (config.PageSettings.RenderBackground) {
+    if ((_a = config.PageSettings) === null || _a === void 0 ? void 0 : _a.RenderBackground) {
         ctx.fillRect(0, 0, c.width, c.height);
     }
     ctx.restore();
-    if (config.PageSettings.RenderPage) {
+    if ((_b = config.PageSettings) === null || _b === void 0 ? void 0 : _b.RenderPage) {
         pages.forEach(page => {
             RenderPage(page, c, ctx, cam, formatting, config);
         });

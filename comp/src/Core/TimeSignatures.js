@@ -37,7 +37,7 @@ class TimeSignature {
     render(renderProps, msr) {
         let tGlyph = GetTimeSignatureGlyph(this.top);
         let bGlyph = GetTimeSignatureGlyph(this.bottom);
-        const colour = this.Selected ? "blue" : "black";
+        const colour = this.Selected ? "#1065b0" : "black";
         RenderSymbol(renderProps, tGlyph, this.TopPosition.x, this.TopPosition.y, colour);
         RenderSymbol(renderProps, bGlyph, this.BotPosition.x, this.BotPosition.y, colour);
         if (msr.Instrument.Staff === StaffType.Grand) {

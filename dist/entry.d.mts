@@ -46,6 +46,26 @@ interface ISelectable {
     IsHovered: (x: number, y: number, cam: Camera) => boolean;
 }
 
+declare enum MessageType {
+    None = 0,
+    Selection = 1,
+    Deletion = 2,
+    InputChange = 3,
+    AddNote = 4
+}
+type MessageData = {
+    MessageType: MessageType;
+    Message: {
+        msg: string;
+        obj: any;
+    };
+};
+interface Message {
+    messageString: string;
+    messageData: MessageData;
+}
+declare function ClearMessage(): Message;
+
 interface RenderProperties {
     canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;
@@ -196,6 +216,7 @@ interface MeasureProps {
     RenderKey: boolean;
     Camera: Camera;
     Page: Page;
+    Message: (msg: Message) => void;
 }
 declare class Measure implements ISelectable {
     ID: number;
@@ -218,6 +239,7 @@ declare class Measure implements ISelectable {
     Camera: Camera;
     Page: Page;
     PageLine: Number;
+    Message: (msg: Message) => void;
     XOffset: number;
     SALineTop: number;
     SALineMid: number;
@@ -263,9 +285,10 @@ declare class Measure implements ISelectable {
     ReHeightenTopGrand(expand: boolean, lineOver: number): void;
     ReHeightenBotGrand(expand: boolean, lineOver: number): void;
     ResetTopHeight(): void;
-    AddNote(note: Note): void;
+    AddNote(note: Note, fromInput?: boolean): void;
     ClearNonRestNotes(beat: number, staff: number): void;
     ClearRestNotes(beat: number, staff: number): void;
+    ClearMeasure(ignoreNotes?: Note[]): void;
     DeleteSelected(): void;
     GetMinimumWidth(): number;
     ReturnSelectableElements(): ISelectable[];
@@ -299,8 +322,8 @@ declare class Selector {
     Notes: Map<Measure, Note[]>;
     Elements: Map<Measure, ISelectable[]>;
     constructor();
-    TrySelectElement(msr: Measure, x: number, y: number, cam: Camera, shiftKey: boolean): ISelectable;
-    DeselectAllElements(): void;
+    TrySelectElement(msr: Measure, x: number, y: number, cam: Camera, shiftKey: boolean, msg: (msg: Message) => void, elems: Map<Measure, ISelectable[]>): ISelectable;
+    DeselectAllElements(elems: Map<Measure, ISelectable[]>): Map<Measure, ISelectable[]>;
     SelectElement(): ISelectable;
     DeselectAll(): void;
     DeselectNote(note: Note): void;
@@ -336,26 +359,8 @@ interface saveFile {
     file: string;
 }
 
-declare enum MessageType {
-    None = 0,
-    Selection = 1,
-    Deletion = 2,
-    InputChange = 3
-}
-type MessageData = {
-    MessageType: MessageType;
-    Message: {
-        msg: string;
-        obj: any;
-    };
-};
-interface Message {
-    messageString: string;
-    messageData: MessageData;
-}
-
 declare function ReturnLineFromMidi(clef: string, midi: number, staff?: number): number;
-declare function ReturnMidiNumber(clef: string, line: number, staff?: number): number;
+declare function ReturnMidiNumber(clef: string, line: number, acc?: number, staff?: number): number;
 type MappedMidi = {
     NoteString: string;
     Frequency: number;
@@ -381,6 +386,7 @@ type PageSettings = {
 };
 type MeasureFormatSettings = {
     MaxWidth?: number;
+    Selectable?: boolean;
 };
 type FormatSettings = {
     MeasureFormatSettings?: MeasureFormatSettings;
@@ -466,6 +472,7 @@ declare class App {
     CreateTriplet(): void;
     ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
     CenterMeasures(): void;
+    AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
 }
 
 interface lNote {
@@ -493,16 +500,17 @@ interface lMeasure {
 interface LoadStructure {
     Measures: lMeasure[];
 }
-declare const LoadSheet: (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, savedJson: string) => void;
+declare const LoadSheet: (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, savedJson: string, callback: (msg: Message) => void) => void;
 declare const SaveSheet: (sheet: Sheet) => string;
 
 declare namespace sheet {
-    function CreateApp(canvas: HTMLCanvasElement, container: HTMLElement, doc: Document, keyMap: any, notifyCallBack: (msg: Message) => void): App;
+    function CreateApp(canvas: HTMLCanvasElement, container: HTMLElement, doc: Document, keyMap: any, notifyCallBack: (msg: Message) => void, config: ConfigSettings): App;
     function ChangeInputMode(): void;
     function Sharpen(): void;
     function Flatten(): void;
     function SetNoteValue(value: number): void;
     function AddMeasure(): void;
+    function AddNoteOnMeasure(msr: Measure, noteVal: number, line: number, div: Division, rest: boolean): void;
     function Delete(): void;
     function SelectById(id: number): ISelectable;
     function ToggleFormatting(): void;
@@ -510,4 +518,4 @@ declare namespace sheet {
     function ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
 }
 
-export { App, GeneratePitchMap, type KeyMapping, KeyPress, LoadSheet, type LoadStructure, type MappedMidi, Note, type NoteProps, ReturnLineFromMidi, ReturnMidiNumber, SaveSheet, type TupleDetails, type lMeasure, type lNote, sheet };
+export { App, ClearMessage, type ConfigSettings, GeneratePitchMap, type KeyMapping, KeyPress, LoadSheet, type LoadStructure, type MappedMidi, type Message, MessageType, Note, type NoteProps, ReturnLineFromMidi, ReturnMidiNumber, SaveSheet, type TupleDetails, type lMeasure, type lNote, sheet };

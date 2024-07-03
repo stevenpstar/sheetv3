@@ -20,7 +20,7 @@ function CreateInstrument(y) {
     };
     return instr;
 }
-const CreateDefaultMeasure = (id, instr, page, cam) => {
+const CreateDefaultMeasure = (id, instr, page, cam, callback) => {
     const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
     const props = {
         Instrument: instr,
@@ -34,10 +34,11 @@ const CreateDefaultMeasure = (id, instr, page, cam) => {
         RenderKey: false,
         Camera: cam,
         Page: page,
+        Message: callback,
     };
     return new Measure(props, id);
 };
-const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, runningId, page, renderClef = false) => {
+const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, runningId, page, renderClef = false, callback) => {
     const props = {
         Instrument: instr,
         Bounds: bounds,
@@ -49,7 +50,8 @@ const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, ru
         RenderTimeSig: false,
         RenderKey: false,
         Camera: cam,
-        Page: page
+        Page: page,
+        Message: callback,
     };
     return new Measure(props, runningId);
 };

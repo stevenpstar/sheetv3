@@ -100,7 +100,7 @@ function ReturnLineFromMidi(clef: string, midi: number, staff: number = 0): numb
   return line;
 }
 
-function ReturnMidiNumber(clef: string, line: number, staff: number = 0): number {
+function ReturnMidiNumber(clef: string, line: number, acc: number = 0, staff: number = 0): number {
 
   let onNote = 0; // A entry in NoteNames array
   let a4line = ClefPitchRef.get(clef);
@@ -116,7 +116,6 @@ function ReturnMidiNumber(clef: string, line: number, staff: number = 0): number
 
   else if (line > a4line) {
     for (let i=a4line;i<line;i++) {
-      console.log("i: ", i);
       if (NoteNames[onNote] === "C" || NoteNames[onNote] === "F") {
         midiNote -= 1;
         if (onNote === 0) {
@@ -144,6 +143,8 @@ function ReturnMidiNumber(clef: string, line: number, staff: number = 0): number
       }
     }
   }
+
+  midiNote += acc;
 
   return midiNote;
 }
@@ -215,8 +216,6 @@ function GeneratePitchMap(): Map<number, MappedMidi> {
       lineCounter++;
     }
   }
-
-  console.log(midiMap);
 
   return midiMap;
 }

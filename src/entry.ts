@@ -1,5 +1,5 @@
 import { App } from "./App.js";
-import { Measure } from "./Core/Measure.js";
+import { Division, Measure } from "./Core/Measure.js";
 import { ConfigSettings } from "./Types/Config.js";
 import { ISelectable } from "./Types/ISelectable.js";
 import { Message } from "./Types/Message.js";
@@ -35,7 +35,7 @@ const test_CONFIG: ConfigSettings = {
     CenterMeasures: true,
   },
   FormatSettings: {
-    MeasureFormatSettings: { MaxWidth: 100, },
+    MeasureFormatSettings: { MaxWidth: 100, Selectable: false },
   },
   NoteSettings: {
     InputValue: 0.5,
@@ -91,10 +91,7 @@ function resize(app: App, context: CanvasRenderingContext2D, canvas: HTMLCanvasE
   canvas.width = container.clientWidth - 50;
   if (app.Config.CameraSettings?.CenterMeasures === true) {
     app.CenterMeasures();
-    console.log("Resizing?");
   }
-
-    console.log("Resizing?");
   app.AlterZoom(0);
   app.Update(0, 0);
 }
@@ -105,9 +102,10 @@ export module sheet {
     container: HTMLElement,
     doc: Document,
     keyMap: any,
-    notifyCallBack: (msg: Message) => void): App {
+    notifyCallBack: (msg: Message) => void,
+    config: ConfigSettings): App {
     const ctx = canvas.getContext("2d");
-    const app = new App(canvas, container, ctx, notifyCallBack, test_CONFIG);
+    const app = new App(canvas, container, ctx, notifyCallBack, config);
     canvas.addEventListener("mousemove", (e) => mouseMove(app, canvas, e));
     canvas.addEventListener("mousedown", (e) => mouseDown(app, canvas, e));
     canvas.addEventListener("mouseup", (e) => mouseUp(app, canvas, e));
@@ -144,6 +142,20 @@ export module sheet {
     gSheet.AddMeasure();
   }
 
+  export function AddNoteOnMeasure(
+    msr: Measure,
+    noteVal: number,
+    line: number,
+    div: Division,
+    rest: boolean): void {
+    gSheet.AddNoteOnMeasure(
+      msr,
+      noteVal,
+      line,
+      div,
+      rest);
+  }
+
   export function Delete(): void {
     gSheet.Delete();
   }
@@ -174,3 +186,5 @@ export * from './App.js';
 export * from './Workers/Loader.js';
 export * from './Core/Note.js';
 export * from './Workers/Pitcher.js';
+export * from './Types/Message.js';
+export * from './Types/Config.js';

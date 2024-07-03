@@ -3,6 +3,7 @@ import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Measure, MeasureProps } from "../Core/Measure.js";
 import { Page } from "../Core/Page.js";
 import { Bounds } from "../Types/Bounds.js";
+import { Message } from "../Types/Message.js";
 
 // Defaults, these will be moved somewhere else but fine here for now
 const sTopLine = 5;
@@ -29,7 +30,7 @@ function CreateInstrument(y: number): Instrument {
   return instr;
 }
 
-const CreateDefaultMeasure = (id: { count: number }, instr: Instrument, page: Page, cam: Camera): Measure => {
+const CreateDefaultMeasure = (id: { count: number }, instr: Instrument, page: Page, cam: Camera, callback: (msg: Message) => void): Measure => {
 
   const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
 
@@ -45,6 +46,7 @@ const CreateDefaultMeasure = (id: { count: number }, instr: Instrument, page: Pa
     RenderKey: false,
     Camera: cam,
     Page: page,
+    Message: callback,
   }
   return new Measure(props, id);
 }
@@ -57,7 +59,8 @@ const CreateMeasure = (instr: Instrument,
                     cam: Camera,
                     runningId: { count: number },
                     page: Page,
-                    renderClef: boolean = false): Measure =>
+                    renderClef: boolean = false,
+                    callback: (msg: Message) => void): Measure =>
   {
     const props: MeasureProps = {
       Instrument: instr,
@@ -70,7 +73,8 @@ const CreateMeasure = (instr: Instrument,
       RenderTimeSig: false,
       RenderKey: false,
       Camera: cam,
-      Page: page
+      Page: page,
+      Message: callback,
     }
     return new Measure(props, runningId);
   }

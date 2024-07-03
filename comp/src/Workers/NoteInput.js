@@ -5,7 +5,13 @@ import { Note } from "../Core/Note.js";
 import { GetLargestValues } from "../Core/Values.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
 import { DetermineStemDirection, StemDirection } from "../Renderers/Note.Renderer.js";
+import { Bounds } from "../Types/Bounds.js";
 const noteXBuffer = 9;
+// added for automatic/generated notes from external UIs.
+// eg. Generating a random rhythm in the music trainer app
+function AddNoteOnMeasure(msr, noteValue, line, beat, rest) {
+    InputNote(msr, noteValue, beat, { num: line, bounds: new Bounds(0, 0, 0, 0) }, rest);
+}
 function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     let inputtingNote = true;
     const line = Measure.GetLineHovered(y, msr);
@@ -15,7 +21,6 @@ function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     }
     if (inputtingNote) {
         InputNote(msr, noteValue, beatOver, line, rest);
-        console.log("line: ", line);
     }
 }
 function InputNote(msr, noteValue, division, line, rest, tupleCount = 1) {
@@ -46,7 +51,7 @@ function InputNote(msr, noteValue, division, line, rest, tupleCount = 1) {
     const newNote = new Note(noteProps);
     if (division.Duration === noteValue) {
         msr.ClearRestNotes(division.Beat, division.Staff);
-        msr.AddNote(newNote);
+        msr.AddNote(newNote, true);
     }
     else {
         if (MeasureHasRoom(noteProps.Beat, noteProps.Duration, msr)) {
@@ -139,7 +144,7 @@ function AddToDivision(msr, noteProps, staff) {
             }
             remainingValue -= div.Duration;
             beat += (div.Duration * msr.TimeSignature.bottom);
-            msr.AddNote(newNote);
+            msr.AddNote(newNote, true);
         }
         else if (remainingValue < div.Duration && beat === div.Beat
             && remainingValue > 0) {
@@ -170,7 +175,7 @@ function AddToDivision(msr, noteProps, staff) {
                     }
                 }
                 remainingValue = 0;
-                msr.AddNote(newNote);
+                msr.AddNote(newNote, true);
                 return;
             }
             // This note is not tying, but existing notes will 
@@ -212,11 +217,11 @@ function AddToDivision(msr, noteProps, staff) {
                     };
                     const noteObj = new Note(tiedNote);
                     noteObj.SetTiedStartEnd(tiedStart, tiedEnd);
-                    msr.AddNote(noteObj);
+                    msr.AddNote(noteObj, true);
                     nextBeat = nextBeat + dur * msr.TimeSignature.bottom;
                 });
             });
-            msr.AddNote(new Note(newNoteProps));
+            msr.AddNote(new Note(newNoteProps), true);
         }
     });
 }
@@ -251,7 +256,7 @@ function CreateTuplet(selNotes, count) {
                     Clef: GetNoteClefType(measure, lastBeat + newDuration * measure.TimeSignature.bottom, n.Staff),
                 });
                 lastBeat = newNote.Beat;
-                measure.AddNote(newNote);
+                measure.AddNote(newNote, true);
             }
         });
     }
@@ -278,4 +283,4 @@ function AllNotesByBeat(msr) {
     });
     return notes;
 }
-export { InputOnMeasure, UpdateNoteBounds, CreateTuplet };
+export { InputOnMeasure, UpdateNoteBounds, CreateTuplet, AddNoteOnMeasure };

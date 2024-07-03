@@ -3,6 +3,7 @@ import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { Message, MessageType } from "../Types/Message.js";
 class Selector {
   Measures: Measure[];
   Clefs: Clef[];
@@ -19,26 +20,37 @@ class Selector {
     this.Elements = new Map<Measure, ISelectable[]>();
   }
 
-  TrySelectElement(msr: Measure, x: number, y: number, cam: Camera, shiftKey: boolean): ISelectable {
+  TrySelectElement(msr: Measure, x: number, y: number, cam: Camera, shiftKey: boolean, msg: (msg: Message) => void, elems: Map<Measure, ISelectable[]>): ISelectable {
     let elem: ISelectable; // element we have selected
     let elements: ISelectable[] = [];
     let selectedElements: ISelectable[] = this.Elements.get(msr) ? this.Elements.get(msr) : [];
-    if (!shiftKey) {
-      this.DeselectAllElements();
-    }
+   // if (!shiftKey) {
+   //   this.DeselectAllElements();
+   // }
     elements.push(...msr.Notes);
     elements.push(...msr.Clefs);
     elements.push(...msr.GrandClefs);
     elements.push(msr.TimeSignature);
     elements.forEach((e: ISelectable) => {
-      if (e.IsHovered(x, y, cam)) {
-        if (e.Editable !== undefined && e.Editable === false) {
-          return;
-        }
+      if (e.IsHovered(x, y, cam) && e.Selected === false) {
+//        if (e.Editable !== undefined && e.Editable === false) {
+//          return;
+//        }
         e.Selected = true;
         selectedElements.push(e);
         if (e.SelType === SelectableTypes.Note) {
           const n = e as Note;
+          const m: Message = {
+          messageData: {
+            MessageType: MessageType.Selection,
+            Message: {
+              msg: 'selected',
+              obj: n,
+              },
+            },
+            messageString: 'Selected Note'
+          }
+          msg(m);
           if (n.Tied) {
             const tiedNotes = SelectTiedNotes(n, msr) as ISelectable[];
             selectedElements.push(...tiedNotes);
@@ -51,13 +63,15 @@ class Selector {
     return elem;
   }
 
-  DeselectAllElements(): void {
-    for (let [measure, elem] of this.Elements) {
+  DeselectAllElements(elems: Map<Measure, ISelectable[]>): Map<Measure, ISelectable[]> {
+    for (let [measure, elem] of elems) {
       elem.forEach((e: ISelectable) => {
         e.Selected = false;
       });
-      this.Elements.delete(measure);
+      elems.delete(measure);
     }
+
+    return new Map<Measure, ISelectable[]>;
   }
 
   SelectElement(): ISelectable {
@@ -125,7 +139,7 @@ class Selector {
             if (n.Tied) {
               nArray.push(...SelectTiedNotes(n, m));
             }
-            this.Notes.set(m, nArray);
+            this.Elements.set(m, nArray);
           }
         })
       });

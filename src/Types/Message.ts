@@ -2,7 +2,8 @@ enum MessageType {
   None,
   Selection,
   Deletion,
-  InputChange
+  InputChange,
+  AddNote,
 }
 type MessageData = {
   MessageType: MessageType;
@@ -23,4 +24,4 @@ function ClearMessage(): Message {
   }
 }
 
-export { Message, ClearMessage }
+export { Message, ClearMessage, MessageType }

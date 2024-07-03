@@ -15,6 +15,7 @@ type PageSettings = {
 };
 type MeasureFormatSettings = {
     MaxWidth?: number;
+    Selectable?: boolean;
 };
 type FormatSettings = {
     MeasureFormatSettings?: MeasureFormatSettings;

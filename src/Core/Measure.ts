@@ -1,5 +1,6 @@
 import { Bounds } from '../Types/Bounds.js';
 import { ISelectable, SelectableTypes } from '../Types/ISelectable.js';
+import { Message, MessageType } from '../Types/Message.js';
 import { UpdateNoteBounds } from '../Workers/NoteInput.js';
 import { Camera } from './Camera.js';
 import { Clef, GetNoteClefType } from './Clef.js';
@@ -21,6 +22,7 @@ interface MeasureProps {
   RenderKey: boolean;
   Camera: Camera;
   Page: Page;
+  Message: (msg: Message) => void;
 }
 
 class Measure implements ISelectable {
@@ -44,6 +46,7 @@ class Measure implements ISelectable {
   Camera: Camera;
   Page: Page;
   PageLine: Number;
+  Message: (msg: Message) => void;
 
   XOffset: number; // not sure if this is what we want to go with
 
@@ -80,6 +83,7 @@ class Measure implements ISelectable {
   RunningID: { count: number };
 
   constructor(properties: MeasureProps, runningId: { count: number }) {
+    this.Message = properties.Message;
     this.RunningID = runningId;
     this.ID = 0;
     this.Selected = false;
@@ -339,7 +343,7 @@ class Measure implements ISelectable {
     this.CreateDivisions(this.Camera);
   }
 
-  AddNote(note: Note): void {
+  AddNote(note: Note, fromInput: boolean = false): void {
     if (note.Rest) {
       this.ClearNonRestNotes(note.Beat, note.Staff);
     } else {
@@ -348,6 +352,20 @@ class Measure implements ISelectable {
     note.SetID(this.RunningID.count);
     this.RunningID.count++;
     this.Notes.push(note);
+
+    if (fromInput) {
+      const msg: Message = {
+        messageString: 'AddNote',
+        messageData: {
+          Message: {
+            msg: "AddingNote",
+            obj: note,
+          },
+          MessageType: MessageType.AddNote,
+        }
+        }
+        this.Message(msg);
+      }
   }
 
   ClearNonRestNotes(beat: number, staff: number): void {
@@ -370,10 +388,17 @@ class Measure implements ISelectable {
     }
   }
 
+  ClearMeasure(ignoreNotes?: Note[]): void {
+    for (let n = this.Notes.length-1;n >= 0;n--) {
+      if (this.Notes[n].Editable && !ignoreNotes.includes(this.Notes[n])) {
+        this.Notes.splice(n, 1);
+      }
+    }
+  }
+
   DeleteSelected(): void {
     for (let n = this.Notes.length - 1; n >= 0; n--) {
       if (this.Notes[n].Selected) {
-        console.log("n : ", n);
         let beat = this.Notes[n].Beat;
         let duration = this.Notes[n].Duration;
         let staff = this.Notes[n].Staff;

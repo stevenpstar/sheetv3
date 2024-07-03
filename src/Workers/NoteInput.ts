@@ -11,6 +11,18 @@ import { Bounds } from "../Types/Bounds.js";
 
 const noteXBuffer = 9;
 
+// added for automatic/generated notes from external UIs.
+// eg. Generating a random rhythm in the music trainer app
+function AddNoteOnMeasure(msr: Measure,
+                          noteValue: number,
+                          line: number,
+                          beat: Division,
+                          rest: boolean): void {
+
+  InputNote(msr, noteValue, beat, {num: line, bounds: new Bounds(0,0,0,0)}, rest);
+
+}
+
 function InputOnMeasure(msr: Measure,
                         noteValue: number,
                         x: number,
@@ -25,7 +37,6 @@ function InputOnMeasure(msr: Measure,
   if (beatOver === undefined) { inputtingNote = false; }
   if (inputtingNote) {
     InputNote(msr, noteValue, beatOver, line, rest);
-    console.log("line: ", line);
   }
 }
 
@@ -62,7 +73,7 @@ function InputNote(
 
     if (division.Duration === noteValue) {
       msr.ClearRestNotes(division.Beat, division.Staff);
-      msr.AddNote(newNote);
+      msr.AddNote(newNote, true);
     } else {
       if (MeasureHasRoom(noteProps.Beat, noteProps.Duration, msr)) {
         AddToDivision(msr, noteProps, division.Staff);
@@ -159,7 +170,7 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
 
       remainingValue -= div.Duration;
       beat += (div.Duration * msr.TimeSignature.bottom);
-      msr.AddNote(newNote);
+      msr.AddNote(newNote, true);
     } 
     else if (remainingValue < div.Duration && beat === div.Beat
             && remainingValue > 0) {
@@ -192,7 +203,7 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
           }
 
           remainingValue = 0;
-          msr.AddNote(newNote);
+          msr.AddNote(newNote, true);
           return;
         } 
 
@@ -237,11 +248,11 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
             }
             const noteObj = new Note(tiedNote);
             noteObj.SetTiedStartEnd(tiedStart, tiedEnd);
-            msr.AddNote(noteObj);
+            msr.AddNote(noteObj, true);
             nextBeat = nextBeat + dur * msr.TimeSignature.bottom;
           });
         });
-        msr.AddNote(new Note(newNoteProps));
+        msr.AddNote(new Note(newNoteProps), true);
       }
   });
 }
@@ -277,7 +288,7 @@ function CreateTuplet(selNotes: Map<Measure, Note[]>, count: number): number {
           Clef: GetNoteClefType(measure, lastBeat + newDuration * measure.TimeSignature.bottom, n.Staff),
         });
         lastBeat = newNote.Beat;
-        measure.AddNote(newNote);
+        measure.AddNote(newNote, true);
       }
     });
   }
@@ -305,4 +316,4 @@ function AllNotesByBeat(msr: Measure): Array<Note[]> {
   return notes;
 }
 
-export { InputOnMeasure, UpdateNoteBounds, CreateTuplet }
+export { InputOnMeasure, UpdateNoteBounds, CreateTuplet, AddNoteOnMeasure }

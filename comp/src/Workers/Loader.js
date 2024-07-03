@@ -1,6 +1,6 @@
 import { Note } from "../Core/Note.js";
 import { CreateMeasure } from "../Factory/Instrument.Factory.js";
-const LoadSheet = (sheet, page, cam, instr, savedJson) => {
+const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
     let runningId = { count: 0 };
     const loaded = JSON.parse(savedJson);
     // loading onto a single instrument to begin with
@@ -22,7 +22,7 @@ const LoadSheet = (sheet, page, cam, instr, savedJson) => {
             const newNote = new Note(noteProps);
             notes.push(newNote);
         });
-        const msr = CreateMeasure(instr, m.Bounds, m.TimeSignature, "CMaj/Amin", "treble", cam, runningId, page, m.ShowClef);
+        const msr = CreateMeasure(instr, m.Bounds, m.TimeSignature, "CMaj/Amin", "treble", cam, runningId, page, m.ShowClef, callback);
         msr.Notes = notes;
         sheet.Measures.push(msr);
         msr.CreateDivisions(cam);

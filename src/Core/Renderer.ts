@@ -29,11 +29,11 @@ const Renderer = (c: HTMLCanvasElement,
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, c.width, c.height);
-  if (config.PageSettings.RenderBackground) {
+  if (config.PageSettings?.RenderBackground) {
     ctx.fillRect(0, 0, c.width, c.height);
   }
   ctx.restore();
-  if (config.PageSettings.RenderPage) {
+  if (config.PageSettings?.RenderPage) {
     pages.forEach(page => {
       RenderPage(page, c, ctx, cam, formatting, config);
     });

@@ -91,7 +91,7 @@ function ReturnLineFromMidi(clef, midi, staff = 0) {
     console.log("accidental");
     return line;
 }
-function ReturnMidiNumber(clef, line, staff = 0) {
+function ReturnMidiNumber(clef, line, acc = 0, staff = 0) {
     let onNote = 0; // A entry in NoteNames array
     let a4line = ClefPitchRef.get(clef);
     if (staff === 1) {
@@ -107,7 +107,6 @@ function ReturnMidiNumber(clef, line, staff = 0) {
     }
     else if (line > a4line) {
         for (let i = a4line; i < line; i++) {
-            console.log("i: ", i);
             if (NoteNames[onNote] === "C" || NoteNames[onNote] === "F") {
                 midiNote -= 1;
                 if (onNote === 0) {
@@ -140,6 +139,7 @@ function ReturnMidiNumber(clef, line, staff = 0) {
             }
         }
     }
+    midiNote += acc;
     return midiNote;
 }
 function ReturnFrequency(clef, line) {
@@ -191,6 +191,7 @@ function GeneratePitchMap() {
             NoteString: (NoteNames[noteNameCount] + noteNumberCount).toString(),
             Frequency: calcPitch(n),
             Line: lineNum,
+            Accidental: NoteNames[noteNameCount].includes("#") ? 1 : 0,
         });
         noteNameCount++;
         if (lineCounter >= lineMax) {
@@ -200,7 +201,6 @@ function GeneratePitchMap() {
             lineCounter++;
         }
     }
-    console.log(midiMap);
     return midiMap;
 }
 export { GeneratePitchMap, ReturnMidiNumber, ReturnLineFromMidi };

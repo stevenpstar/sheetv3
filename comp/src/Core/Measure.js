@@ -1,5 +1,6 @@
 import { Bounds } from '../Types/Bounds.js';
 import { SelectableTypes } from '../Types/ISelectable.js';
+import { MessageType } from '../Types/Message.js';
 import { UpdateNoteBounds } from '../Workers/NoteInput.js';
 import { Clef, GetNoteClefType } from './Clef.js';
 import { CreateDivisions, ResizeDivisions, DivisionMinWidth } from './Division.js';
@@ -10,6 +11,7 @@ class Measure {
     constructor(properties, runningId) {
         this.Clefs = [];
         this.GrandClefs = [];
+        this.Message = properties.Message;
         this.RunningID = runningId;
         this.ID = 0;
         this.Selected = false;
@@ -249,7 +251,7 @@ class Measure {
         this.Bounds.height = this.PrevBoundsH;
         this.CreateDivisions(this.Camera);
     }
-    AddNote(note) {
+    AddNote(note, fromInput = false) {
         if (note.Rest) {
             this.ClearNonRestNotes(note.Beat, note.Staff);
         }
@@ -259,6 +261,19 @@ class Measure {
         note.SetID(this.RunningID.count);
         this.RunningID.count++;
         this.Notes.push(note);
+        if (fromInput) {
+            const msg = {
+                messageString: 'AddNote',
+                messageData: {
+                    Message: {
+                        msg: "AddingNote",
+                        obj: note,
+                    },
+                    MessageType: MessageType.AddNote,
+                }
+            };
+            this.Message(msg);
+        }
     }
     ClearNonRestNotes(beat, staff) {
         for (let n = this.Notes.length - 1; n >= 0; n--) {
@@ -278,10 +293,16 @@ class Measure {
             }
         }
     }
+    ClearMeasure(ignoreNotes) {
+        for (let n = this.Notes.length - 1; n >= 0; n--) {
+            if (this.Notes[n].Editable && !ignoreNotes.includes(this.Notes[n])) {
+                this.Notes.splice(n, 1);
+            }
+        }
+    }
     DeleteSelected() {
         for (let n = this.Notes.length - 1; n >= 0; n--) {
             if (this.Notes[n].Selected) {
-                console.log("n : ", n);
                 let beat = this.Notes[n].Beat;
                 let duration = this.Notes[n].Duration;
                 let staff = this.Notes[n].Staff;

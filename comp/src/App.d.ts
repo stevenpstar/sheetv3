@@ -1,5 +1,5 @@
 import { Sheet } from "./Core/Sheet.js";
-import { Measure } from "./Core/Measure.js";
+import { Division, Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
 import { Selector } from "./Workers/Selector.js";
@@ -80,6 +80,7 @@ declare class App {
     CreateTriplet(): void;
     ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
     CenterMeasures(): void;
+    AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
 }
 export { App };
 //# sourceMappingURL=App.d.ts.map

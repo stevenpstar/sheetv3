@@ -5,7 +5,7 @@ import { Clef, Division, Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
 import { Camera } from "./Core/Camera.js";
-import { CreateTuplet, InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
+import { AddNoteOnMeasure, CreateTuplet, InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
 import { GetDivisionTotalWidth } from "./Core/Division.js";
 import { Instrument } from "./Core/Instrument.js";
@@ -80,8 +80,8 @@ class App {
     this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.Camera = new Camera(0, 20);
     this.Camera.Zoom = 1;//this.Config.CameraSettings.Zoom ? this.Config.CameraSettings.Zoom : 1;
-    this.NoteValue = this.Config.NoteSettings?.InputValue ? 
-      this.Config.NoteSettings.InputValue : 0.25;
+    this.NoteValue = 0.5;//this.Config?.NoteSettings?.InputValue ? 
+//      this.Config.NoteSettings.InputValue : 0.25;
 
     // TODO: Remove to formatter
     this.StartDragY = 0;
@@ -100,11 +100,11 @@ class App {
       const page = sProps.Pages[0];
 
       sProps.Instruments.push(CreateDefaultPiano());
-      sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], page,this.Camera));
+      sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], page,this.Camera, this.NotifyCallback));
 
       this.Sheet = new Sheet(sProps);
     }
-    this.NoteInput = true;
+    this.NoteInput = false;
     this.RestInput = false;
     this.Formatting = false;
 
@@ -186,25 +186,28 @@ class App {
       let selectedMeasureElement: boolean = false;
       // Measure Element selection, should be moved elsewhere eventually
       // (probably Measure? Maybe somewhere else)
-      const elem = this.Selector.TrySelectElement(msrOver, x, y, this.Camera, shiftKey);
-      if (elem === undefined) 
+      console.log(this.Selector.Elements);
+      if (!shiftKey) {
+        this.Selector.Elements = this.Selector.DeselectAllElements(this.Selector.Elements);
+      }
+      const elem = this.Selector.TrySelectElement(msrOver, x, y, this.Camera, shiftKey, this.NotifyCallback, this.Selector.Elements);
+      if (elem === undefined && this.Config.FormatSettings.MeasureFormatSettings.Selectable === true || 
+          this.Config.FormatSettings.MeasureFormatSettings.Selectable === undefined) 
         this.Selector.SelectMeasure(msrOver);
 
       if (!this.DraggingNote) { this.DraggingNote = true; }
       this.StartLine = Measure.GetLineHovered(y, msrOver).num;
-      this.Update(x, y);
-      return;
     } 
-    if (this.NoteInput) {
+    else if (this.NoteInput) {
       InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput);
       this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === msrOver.Instrument));
     }
-
+  //  this.NotifyCallback(this.Message);
     this.Update(x, y);
   }
   Update(x: number, y : number): void {
     // this should be the only place that calls render
-    this.NotifyCallback(this.Message);
+   // this.NotifyCallback(this.Message);
     this.Render({ x: x, y: y });
   }
   Render(mousePos: {x: number, y: number}): void {
@@ -251,7 +254,8 @@ class App {
        this.Camera,
        this.RunningID,
        this.Sheet.Pages[0], // Page will need to be determined
-       false);
+       false,
+       this.NotifyCallback);
  //      newMsr.PageLine = latestLine.Number;
       this.Sheet.Measures.push(newMsr);
       this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
@@ -319,10 +323,10 @@ class App {
     this.EndLine = Measure.GetLineHovered(y, msrOver).num;
     const lineDiff = this.EndLine - this.StartLine;
     for (let [msr, elem] of this.Selector.Elements) {
-      elem.filter((e: ISelectable) => e.SelType === SelectableTypes.Note).forEach((n: Note) => {
+        elem.filter((e: ISelectable) => e.SelType === SelectableTypes.Note).forEach((n: Note) => {
         // Should never be selected, currently band-aid fix for bug. Address
         // when re-implementing dragging notes/selectables
-        if (n.Selected) {
+        if (n.Selected && n.Editable) {
           n.Line += lineDiff;
           UpdateNoteBounds(msr, n.Staff);
         }
@@ -341,7 +345,7 @@ class App {
   }
 
   SetCameraDragging(dragging: boolean, x: number, y: number): void {
-    if (this.Config.CameraSettings.DragEnabled === false) {
+    if (this.Config.CameraSettings?.DragEnabled === false) {
       this.CamDragging = false;
       return;
     }
@@ -470,7 +474,8 @@ class App {
     LoadSheet(this.Sheet,
               this.Sheet.Pages[0],
               this.Camera,
-              this.Sheet.Instruments[0], sheet);
+              this.Sheet.Instruments[0], sheet,
+              this.NotifyCallback);
     this.ResizeMeasures(this.Sheet.Measures);
     this.Update(0, 0);
   }
@@ -496,12 +501,19 @@ class App {
     // This measure is currently only being used for mtrainer
     let msrWidth = 100;
     if (this.Config.FormatSettings?.MeasureFormatSettings?.MaxWidth) {
-      console.log("exists!");
       msrWidth = this.Config.FormatSettings.MeasureFormatSettings.MaxWidth
     }
     const padding = (this.Canvas.clientWidth - ((msrWidth + (msrWidth / 2)) * this.Camera.Zoom)) / 4;
     this.Camera.x = padding;
   }
+
+  // Maybe instead of duplicate function we can expose note input function,
+  // doesn't matter atm
+  AddNoteOnMeasure(msr: Measure,
+                   noteValue: number,
+                   line: number,
+                   beat: Division,
+                   rest: boolean): void { AddNoteOnMeasure(msr, noteValue, line, beat, rest); }
 }
 
 export { App };

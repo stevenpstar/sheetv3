@@ -2,7 +2,8 @@ declare enum MessageType {
     None = 0,
     Selection = 1,
     Deletion = 2,
-    InputChange = 3
+    InputChange = 3,
+    AddNote = 4
 }
 type MessageData = {
     MessageType: MessageType;
@@ -16,5 +17,5 @@ interface Message {
     messageData: MessageData;
 }
 declare function ClearMessage(): Message;
-export { Message, ClearMessage };
+export { Message, ClearMessage, MessageType };
 //# sourceMappingURL=Message.d.ts.map

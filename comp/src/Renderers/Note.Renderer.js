@@ -46,8 +46,8 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
     // TODO: Move this offset somewhere else to be constant
     y = y + 3;
     //
-    colour = selected ? "#1065b0" : "black";
     colour = note.Editable ? colour : "black";
+    colour = selected ? "#1065b0" : colour;
     let noteString = '';
     switch (note.Duration) {
         case 0.125:
@@ -125,7 +125,7 @@ function RenderRest(ctx, div, cam, note, msr) {
     //    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
     let y = Measure.GetNotePositionOnLine(msr, note.Line - 3) + cam.y;
     let path = `m${x} ${y}`;
-    ctx.fillStyle = note.Selected ? "blue" : "black";
+    ctx.fillStyle = note.Selected ? "#1065b0" : "black";
     if (div.Duration === 0.3125) {
         y += 7;
         path = `m ${x} ${y}` + demiSemiQuaverRest;

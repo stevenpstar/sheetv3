@@ -1,4 +1,5 @@
 import { SelectableTypes } from "../Types/ISelectable.js";
+import { MessageType } from "../Types/Message.js";
 class Selector {
     constructor() {
         this.Measures = [];
@@ -6,26 +7,37 @@ class Selector {
         this.Notes = new Map();
         this.Elements = new Map();
     }
-    TrySelectElement(msr, x, y, cam, shiftKey) {
+    TrySelectElement(msr, x, y, cam, shiftKey, msg, elems) {
         let elem; // element we have selected
         let elements = [];
         let selectedElements = this.Elements.get(msr) ? this.Elements.get(msr) : [];
-        if (!shiftKey) {
-            this.DeselectAllElements();
-        }
+        // if (!shiftKey) {
+        //   this.DeselectAllElements();
+        // }
         elements.push(...msr.Notes);
         elements.push(...msr.Clefs);
         elements.push(...msr.GrandClefs);
         elements.push(msr.TimeSignature);
         elements.forEach((e) => {
-            if (e.IsHovered(x, y, cam)) {
-                if (e.Editable !== undefined && e.Editable === false) {
-                    return;
-                }
+            if (e.IsHovered(x, y, cam) && e.Selected === false) {
+                //        if (e.Editable !== undefined && e.Editable === false) {
+                //          return;
+                //        }
                 e.Selected = true;
                 selectedElements.push(e);
                 if (e.SelType === SelectableTypes.Note) {
                     const n = e;
+                    const m = {
+                        messageData: {
+                            MessageType: MessageType.Selection,
+                            Message: {
+                                msg: 'selected',
+                                obj: n,
+                            },
+                        },
+                        messageString: 'Selected Note'
+                    };
+                    msg(m);
                     if (n.Tied) {
                         const tiedNotes = SelectTiedNotes(n, msr);
                         selectedElements.push(...tiedNotes);
@@ -37,13 +49,14 @@ class Selector {
         });
         return elem;
     }
-    DeselectAllElements() {
-        for (let [measure, elem] of this.Elements) {
+    DeselectAllElements(elems) {
+        for (let [measure, elem] of elems) {
             elem.forEach((e) => {
                 e.Selected = false;
             });
-            this.Elements.delete(measure);
+            elems.delete(measure);
         }
+        return new Map;
     }
     SelectElement() {
         let elem; // element we have selected
@@ -104,7 +117,7 @@ class Selector {
                     if (n.Tied) {
                         nArray.push(...SelectTiedNotes(n, m));
                     }
-                    this.Notes.set(m, nArray);
+                    this.Elements.set(m, nArray);
                 }
             });
         });

@@ -43,7 +43,7 @@ class Clef implements ISelectable {
         clefSymbol = Clefs.G;
     }
 
-    const colour = this.Selected ? "blue" : "black";
+    const colour = this.Selected ? "#1065b0" : "black";
 
     RenderSymbol(renderProps,
                  clefSymbol,

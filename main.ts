@@ -60,7 +60,7 @@ let Application: App;
 
 function main(): void {
  // Application = new App(canvas, context);
-  Application = sheet.CreateApp(canvas, document.getElementById("canvas-container"), document, keymaps, notify);
+  Application = sheet.CreateApp(canvas, document.getElementById("canvas-container"), document, keymaps, notify, {});
 }
 
 main();

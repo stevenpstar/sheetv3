@@ -45,6 +45,6 @@ const { canvas, context } = returnCanvas("canvas");
 let Application;
 function main() {
     // Application = new App(canvas, context);
-    Application = sheet.CreateApp(canvas, document.getElementById("canvas-container"), document, keymaps, notify);
+    Application = sheet.CreateApp(canvas, document.getElementById("canvas-container"), document, keymaps, notify, {});
 }
 main();

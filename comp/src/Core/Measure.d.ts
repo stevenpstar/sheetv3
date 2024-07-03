@@ -1,5 +1,6 @@
 import { Bounds } from '../Types/Bounds.js';
 import { ISelectable, SelectableTypes } from '../Types/ISelectable.js';
+import { Message } from '../Types/Message.js';
 import { Camera } from './Camera.js';
 import { Clef } from './Clef.js';
 import { type Division } from './Division.js';
@@ -22,6 +23,7 @@ interface MeasureProps {
     RenderKey: boolean;
     Camera: Camera;
     Page: Page;
+    Message: (msg: Message) => void;
 }
 declare class Measure implements ISelectable {
     ID: number;
@@ -44,6 +46,7 @@ declare class Measure implements ISelectable {
     Camera: Camera;
     Page: Page;
     PageLine: Number;
+    Message: (msg: Message) => void;
     XOffset: number;
     SALineTop: number;
     SALineMid: number;
@@ -89,9 +92,10 @@ declare class Measure implements ISelectable {
     ReHeightenTopGrand(expand: boolean, lineOver: number): void;
     ReHeightenBotGrand(expand: boolean, lineOver: number): void;
     ResetTopHeight(): void;
-    AddNote(note: Note): void;
+    AddNote(note: Note, fromInput?: boolean): void;
     ClearNonRestNotes(beat: number, staff: number): void;
     ClearRestNotes(beat: number, staff: number): void;
+    ClearMeasure(ignoreNotes?: Note[]): void;
     DeleteSelected(): void;
     GetMinimumWidth(): number;
     ReturnSelectableElements(): ISelectable[];

@@ -29,7 +29,7 @@ class Clef {
             default:
                 clefSymbol = Clefs.G;
         }
-        const colour = this.Selected ? "blue" : "black";
+        const colour = this.Selected ? "#1065b0" : "black";
         RenderSymbol(renderProps, clefSymbol, this.Position.x, this.Position.y, colour);
         //  renderProps.context.strokeStyle = "green";
         //  renderProps.context.strokeRect(

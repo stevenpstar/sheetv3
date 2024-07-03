@@ -61,7 +61,7 @@ class TimeSignature implements ISelectable {
     let tGlyph: TimeSigNumbers = GetTimeSignatureGlyph(this.top);
     let bGlyph: TimeSigNumbers = GetTimeSignatureGlyph(this.bottom);
 
-    const colour = this.Selected ? "blue" : "black";
+    const colour = this.Selected ? "#1065b0" : "black";
     
     RenderSymbol( renderProps, tGlyph, this.TopPosition.x, this.TopPosition.y, colour);
     RenderSymbol( renderProps, bGlyph, this.BotPosition.x, this.BotPosition.y, colour);

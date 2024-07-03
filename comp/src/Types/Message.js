@@ -4,6 +4,7 @@ var MessageType;
     MessageType[MessageType["Selection"] = 1] = "Selection";
     MessageType[MessageType["Deletion"] = 2] = "Deletion";
     MessageType[MessageType["InputChange"] = 3] = "InputChange";
+    MessageType[MessageType["AddNote"] = 4] = "AddNote";
 })(MessageType || (MessageType = {}));
 function ClearMessage() {
     return {
@@ -14,4 +15,4 @@ function ClearMessage() {
         }
     };
 }
-export { ClearMessage };
+export { ClearMessage, MessageType };

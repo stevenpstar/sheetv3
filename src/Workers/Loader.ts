@@ -6,6 +6,7 @@ import { Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { CreateDefaultMeasure, CreateMeasure } from "../Factory/Instrument.Factory.js";
 import { Bounds } from "../Types/Bounds.js";
+import { Message } from "../Types/Message.js";
 
 interface lNote {
   ID: number;
@@ -30,7 +31,8 @@ interface LoadStructure {
   Measures: lMeasure[];
 }
 
-const LoadSheet = (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, savedJson: string) => {
+const LoadSheet = (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, savedJson: string, 
+                  callback: (msg: Message) => void) => {
   let runningId = { count: 0 };
   const loaded: LoadStructure = JSON.parse(savedJson);
   // loading onto a single instrument to begin with
@@ -60,7 +62,8 @@ const LoadSheet = (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, sav
                              cam,
                              runningId,
                              page,
-                             m.ShowClef
+                             m.ShowClef,
+                             callback
                              );
     msr.Notes = notes;
     sheet.Measures.push(msr);
