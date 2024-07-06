@@ -2,6 +2,7 @@ import { Clefs, RenderSymbol } from "../Renderers/MusicFont.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
@@ -30,7 +31,7 @@ class Clef implements ISelectable {
     this.Editable = true;
   }
 
-  render(renderProps: RenderProperties): void {
+  render(renderProps: RenderProperties, theme: Theme): void {
     let clefSymbol: Clefs;
     switch (this.Type) {
       case "treble":
@@ -43,13 +44,12 @@ class Clef implements ISelectable {
         clefSymbol = Clefs.G;
     }
 
-    const colour = this.Selected ? "#1065b0" : "black";
-
     RenderSymbol(renderProps,
                  clefSymbol,
                  this.Position.x,
                  this.Position.y,
-                  colour);
+                  theme,
+                  this.Selected);
   //  renderProps.context.strokeStyle = "green";
   //  renderProps.context.strokeRect(
   //    this.Bounds.x + renderProps.camera.x,

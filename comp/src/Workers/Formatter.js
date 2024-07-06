@@ -1,6 +1,6 @@
 import { StaffType } from "../Core/Instrument.js";
 // TODO: Add pages when necessary but for now we do just lines
-function SetPagesAndLines(measures, pages) {
+function SetPagesAndLines(measures, pages, usePage, defaultLineHeight = 300) {
     let page = pages;
     if (!page) {
         console.error("No page found!");
@@ -11,6 +11,13 @@ function SetPagesAndLines(measures, pages) {
     let currentLine = 1;
     let msrsOnLine = 0;
     let pageWidth = page.Bounds.width - (page.Margins.left + page.Margins.right);
+    if (usePage === false && usePage !== null) {
+        // set each measure to line 1
+        measures.forEach(m => {
+            m.PageLine = currentLine;
+        });
+        return;
+    }
     measures.forEach((msr, i) => {
         msrsOnLine++;
         const msrWidth = msr.GetMinimumWidth() + msr.XOffset;
@@ -18,7 +25,7 @@ function SetPagesAndLines(measures, pages) {
             currentLine++;
             msrsOnLine = 1;
             if (pages.PageLines.length < currentLine) {
-                pages.AddLine();
+                pages.AddLine(defaultLineHeight);
             }
             runningWidth = 0;
         }
@@ -34,13 +41,12 @@ function GetMaxWidth(page, config, cam) {
         maxWidth = config.FormatSettings.MeasureFormatSettings.MaxWidth;
     }
     else {
-        maxWidth = (page.Bounds.width * cam.Zoom) - 50;
+        maxWidth = 350; //= (page.Bounds.width * cam.Zoom) - 50;
     }
     return maxWidth;
 }
 function ResizeMeasuresOnPage(measures, page, cam, config) {
     const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
-    console.log("pageSize: ", pageSize);
     page.PageLines.forEach(line => {
         const msrs = measures.filter(m => m.PageLine === line.Number);
         let msrsLineWidth = 0;
@@ -53,7 +59,7 @@ function ResizeMeasuresOnPage(measures, page, cam, config) {
             m.PrefBoundsY = m.Bounds.y;
             if (i === 0) {
                 m.Bounds.x = page.Bounds.x + page.Margins.left;
-                m.RenderClef = true;
+                m.RenderClef = m.Instrument.Staff === StaffType.Rhythm ? false : true;
                 m.RenderTimeSig = true;
                 // TODO: When we work on keys
                 m.RenderKey = false;

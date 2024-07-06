@@ -2,6 +2,7 @@ import { RenderSymbol, TimeSigNumbers } from "../Renderers/MusicFont.Renderer.js
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
@@ -57,18 +58,16 @@ class TimeSignature implements ISelectable {
     // use symbol? (bad name) for things like common and cut common
   }
 
-  render(renderProps: RenderProperties, msr: Measure): void {
+  render(renderProps: RenderProperties, msr: Measure, theme: Theme): void {
     let tGlyph: TimeSigNumbers = GetTimeSignatureGlyph(this.top);
     let bGlyph: TimeSigNumbers = GetTimeSignatureGlyph(this.bottom);
 
-    const colour = this.Selected ? "#1065b0" : "black";
-    
-    RenderSymbol( renderProps, tGlyph, this.TopPosition.x, this.TopPosition.y, colour);
-    RenderSymbol( renderProps, bGlyph, this.BotPosition.x, this.BotPosition.y, colour);
+    RenderSymbol( renderProps, tGlyph, this.TopPosition.x, this.TopPosition.y, theme, this.Selected);
+    RenderSymbol( renderProps, bGlyph, this.BotPosition.x, this.BotPosition.y, theme, this.Selected);
 
     if (msr.Instrument.Staff === StaffType.Grand) {
-      RenderSymbol( renderProps, tGlyph, this.GTopPosition.x, this.GTopPosition.y, colour);
-      RenderSymbol( renderProps, bGlyph, this.GBotPosition.x, this.GBotPosition.y, colour);
+      RenderSymbol( renderProps, tGlyph, this.GTopPosition.x, this.GTopPosition.y, theme, this.Selected);
+      RenderSymbol( renderProps, bGlyph, this.GBotPosition.x, this.GBotPosition.y, theme, this.Selected);
     }
   }
 

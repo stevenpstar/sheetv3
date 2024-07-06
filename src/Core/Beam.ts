@@ -1,5 +1,6 @@
 import { BeamDirection, StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
+import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { DivGroup, Division } from "./Division.js";
 import { Measure } from "./Measure.js";
@@ -16,7 +17,8 @@ class Beam {
     this.EndPoint = end;
   }
 
-  Render(context: CanvasRenderingContext2D, cam: Camera, count: number, stemDir: StemDirection): void {
+  Render(context: CanvasRenderingContext2D, cam: Camera, count: number, stemDir: StemDirection, theme: Theme): void {
+      context.fillStyle = theme.NoteElements;
       const baseThickness = 6;
       const svgLine = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + cam.y}
         L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + cam.y}

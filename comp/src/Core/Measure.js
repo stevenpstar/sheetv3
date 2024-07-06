@@ -27,6 +27,11 @@ class Measure {
         this.Divisions = [];
         this.BDivisions = [];
         this.RenderClef = properties.RenderClef;
+        if (this.Instrument.Staff === StaffType.Rhythm) {
+            this.RenderClef = false;
+        }
+        console.log("RenderingClef: ", this.RenderClef);
+        console.log(this.Instrument.Staff);
         this.RenderKey = properties.RenderKey;
         this.Camera = properties.Camera;
         this.RenderTimeSig = properties.RenderTimeSig;
@@ -338,8 +343,8 @@ class Measure {
         const lowestValue = this.Divisions.sort((a, b) => {
             return a.Duration - b.Duration;
         })[0].Duration;
-        const count = 1 / lowestValue;
-        //const count = staffZeroDivs.length > staffOneDivs.length ? staffZeroDivs.length : staffOneDivs.length;
+        //const count = 1 / lowestValue;
+        const count = staffZeroDivs.length > staffOneDivs.length ? staffZeroDivs.length : staffOneDivs.length;
         return count * DivisionMinWidth;
     }
     ReturnSelectableElements() {

@@ -1,4 +1,5 @@
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { Theme } from "../entry.js";
 
 const stdFontSize = 42; enum Clefs {
   G = "\u{1D11E}",
@@ -64,10 +65,11 @@ function RenderSymbol(
   renderProps: RenderProperties,
   symbol: string,
   x: number, y: number,
-  colour: string = "black"): void {
+  theme: Theme,
+  selected: boolean): void {
 
     const { canvas, context, camera } = renderProps;
-    context.fillStyle = colour;
+    context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
     context.font = `${stdFontSize}px Bravura`;
     context.fillText(symbol, x + camera.x, y + camera.y);
 }

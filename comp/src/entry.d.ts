@@ -1,4 +1,5 @@
 import { App } from "./App.js";
+import { Division, Measure } from "./Core/Measure.js";
 import { ConfigSettings } from "./Types/Config.js";
 import { ISelectable } from "./Types/ISelectable.js";
 import { Message } from "./Types/Message.js";
@@ -9,6 +10,7 @@ export declare namespace sheet {
     function Flatten(): void;
     function SetNoteValue(value: number): void;
     function AddMeasure(): void;
+    function AddNoteOnMeasure(msr: Measure, noteVal: number, line: number, div: Division, rest: boolean): void;
     function Delete(): void;
     function SelectById(id: number): ISelectable;
     function ToggleFormatting(): void;

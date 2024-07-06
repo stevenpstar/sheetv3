@@ -1,4 +1,5 @@
 import { App } from "../App.js";
+import { allSaves } from "../testsaves.js";
 
 interface KeyMapping {
   addmeasure: string,
@@ -66,7 +67,7 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       app.Save();
       break;
     case keyMaps.load:
-      app.LoadSheet("");
+      app.LoadSheet(allSaves[0].file);
     case keyMaps.test_triplet:
       app.CreateTriplet();
     default:

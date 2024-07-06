@@ -17,7 +17,8 @@ interface HeightProps {
 }
 enum StaffType {
   Single = 0,
-  Grand
+  Grand,
+  Rhythm
 }
 interface Instrument {
   Position: { x: number, y: number };

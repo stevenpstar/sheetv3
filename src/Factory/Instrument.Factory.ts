@@ -4,6 +4,7 @@ import { Measure, MeasureProps } from "../Core/Measure.js";
 import { Page } from "../Core/Page.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
+import { ConfigSettings } from "../entry.js";
 
 // Defaults, these will be moved somewhere else but fine here for now
 const sTopLine = 5;
@@ -15,16 +16,34 @@ const mh = (sBotLine - sTopLine) * lineHeight;
 const CreateDefaultPiano = (): Instrument => {
   const defaultPiano: Instrument = {
     Position: {x: 0, y: 5},
-    Staff: StaffType.Single
+    Staff: StaffType.Grand
   }
 
   return defaultPiano;
 }
 
-function CreateInstrument(y: number): Instrument {
+function CreateInstrument(y: number, config: ConfigSettings): Instrument {
+  let staff: StaffType = StaffType.Single;
+  console.log("config: ", config);
+  if (config.DefaultStaffType) {
+    console.log("This exists");
+    switch (config.DefaultStaffType) {
+      case "rhythm":
+        staff = StaffType.Rhythm;
+        console.log("ye?");
+        break;
+      case "grand":
+        staff = StaffType.Grand;
+        break;
+      case "single": 
+      default:
+        staff = StaffType.Single;
+    }
+  }
+  console.log("staff: ", staff);
   const instr: Instrument = {
     Position: { x: 0, y: y },
-    Staff: StaffType.Single
+    Staff: staff
   }
 
   return instr;

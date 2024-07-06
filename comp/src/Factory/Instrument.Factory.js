@@ -9,14 +9,32 @@ const mh = (sBotLine - sTopLine) * lineHeight;
 const CreateDefaultPiano = () => {
     const defaultPiano = {
         Position: { x: 0, y: 5 },
-        Staff: StaffType.Single
+        Staff: StaffType.Grand
     };
     return defaultPiano;
 };
-function CreateInstrument(y) {
+function CreateInstrument(y, config) {
+    let staff = StaffType.Single;
+    console.log("config: ", config);
+    if (config.DefaultStaffType) {
+        console.log("This exists");
+        switch (config.DefaultStaffType) {
+            case "rhythm":
+                staff = StaffType.Rhythm;
+                console.log("ye?");
+                break;
+            case "grand":
+                staff = StaffType.Grand;
+                break;
+            case "single":
+            default:
+                staff = StaffType.Single;
+        }
+    }
+    console.log("staff: ", staff);
     const instr = {
         Position: { x: 0, y: y },
-        Staff: StaffType.Single
+        Staff: staff
     };
     return instr;
 }

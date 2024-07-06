@@ -18,10 +18,19 @@ const keymaps = {
     "load": "l",
     "test_triplet": "t"
 };
+const defaultTheme = {
+    NoteElements: "black",
+    SelectColour: "blue",
+    UneditableColour: "gray",
+    LineColour: "black",
+    BackgroundColour: "gray",
+    PageColour: "white",
+    PageShadowColour: "darkgray",
+};
 const test_CONFIG = {
     CameraSettings: {
-        DragEnabled: false,
-        ZoomEnabled: false,
+        DragEnabled: true,
+        ZoomEnabled: true,
         Zoom: 1,
         StartingPosition: { x: 0, y: 0 },
         CenterMeasures: true,
@@ -33,10 +42,12 @@ const test_CONFIG = {
         InputValue: 0.5,
     },
     PageSettings: {
+        UsePages: false,
         RenderPage: false,
         RenderBackground: false,
         ContainerWidth: false,
     },
+    Theme: defaultTheme,
 };
 function mouseMove(app, canvas, e) {
     let rect = canvas.getBoundingClientRect();
@@ -75,10 +86,13 @@ function zoom(app, e) {
     }
 }
 function resize(app, context, canvas, container) {
-    var _a;
+    var _a, _b;
     canvas.width = container.clientWidth - 50;
     if (((_a = app.Config.CameraSettings) === null || _a === void 0 ? void 0 : _a.CenterMeasures) === true) {
         app.CenterMeasures();
+    }
+    else if ((_b = app.Config.CameraSettings) === null || _b === void 0 ? void 0 : _b.CenterPage) {
+        app.CenterPage();
     }
     app.AlterZoom(0);
     app.Update(0, 0);
@@ -124,6 +138,10 @@ export var sheet;
         gSheet.AddMeasure();
     }
     sheet.AddMeasure = AddMeasure;
+    function AddNoteOnMeasure(msr, noteVal, line, div, rest) {
+        gSheet.AddNoteOnMeasure(msr, noteVal, line, div, rest);
+    }
+    sheet.AddNoteOnMeasure = AddNoteOnMeasure;
     function Delete() {
         gSheet.Delete();
     }

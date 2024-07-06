@@ -1,17 +1,26 @@
-function RenderPage(page, canvas, context, cam, formatting, config) {
+function RenderPage(page, canvas, context, cam, formatting, config, measures) {
+    var _a;
     const scale = 6;
     // TODO: Change these variable names
-    const a4w = page.Bounds.width; //210 * scale;
-    const a4h = page.Bounds.height; //297 * scale;
+    let a4w = page.Bounds.width; //210 * scale;
+    let a4h = page.Bounds.height; //297 * scale;
     const x = page.Bounds.x;
     const y = page.Bounds.y;
-    context.save();
-    context.setTransform(1, 0, 0, 1, 0, 0);
+    if ((_a = config.PageSettings) === null || _a === void 0 ? void 0 : _a.AutoSize) {
+        a4h = measures[measures.length - 1].Bounds.y + measures[measures.length - 1].GetMeasureHeight() + 40;
+        if (measures.length < 4) {
+            a4w = measures[measures.length - 1].Bounds.x + measures[measures.length - 1].GetBoundsWithOffset().width + 40;
+        }
+    }
+    //    context.save();
+    //   context.setTransform(1, 0, 0, 1, 0, 0);
     context.filter = "blur(4px)";
-    context.fillStyle = "rgb(71, 71, 71)";
+    //    context.fillStyle = "rgb(71, 71, 71)";
+    context.fillStyle = config.Theme.PageShadowColour; // "#0e1114";
     context.fillRect(x + cam.x - 8, y + cam.y + 8, a4w, a4h);
     context.filter = "none";
-    context.fillStyle = "white";
+    context.fillStyle = config.Theme.PageColour;
+    ;
     context.fillRect(x + cam.x, y + cam.y, a4w, a4h);
     if (formatting) {
         context.strokeStyle = "rgba(51, 2, 16, 0.2)";
@@ -64,7 +73,7 @@ function RenderPage(page, canvas, context, cam, formatting, config) {
         context.strokeRect(page.MarginAdj[0].Bounds.x + cam.x, page.MarginAdj[0].Bounds.y + cam.y, page.MarginAdj[0].Bounds.width, page.MarginAdj[0].Bounds.height);
         context.stroke();
     }
-    context.restore();
+    //    context.restore();
 }
 function RenderAdjuster(x, y, dir, colour, context) {
     const size = 9;

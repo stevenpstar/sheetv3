@@ -1,5 +1,6 @@
 import { Note } from "../Core/Note.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { Theme } from "../entry.js";
 import { RenderSymbol, StdAccidentals } from "./MusicFont.Renderer.js";
 
 const sharpPath = 'm0 0 0-5.6448 2.4-.6624 0 5.616-2.4.6912zm4.7256-1.3656-1.65.4728 0-5.616 1.65-.4608 0-2.3328-1.65.4608 0-5.7382-.6756 0 0 5.9122-2.4.69 0-5.5798-.6372 0 0 5.7922-1.65.462 0 2.3376 1.65-.4608 0 5.6052-1.65.4596 0 2.328 1.65-.4608 0 5.7058.6372 0 0-5.9098 2.4-.66 0 5.551.6756 0 0-5.7598 1.65-.462 0-2.3364z';
@@ -10,7 +11,8 @@ const naturalPath = 'm0 0-.7875.2813 0-6.4406-4.5281 1.9688 0-16.7063.7594-.3375
 function RenderAccidental(
     renderProps: RenderProperties,
     note: Note,
-    type: number): void {
+    type: number,
+    theme: Theme): void {
   const { canvas, context, camera } = renderProps;
   let posString = '';
   let dflatString = ''; // posString for second flat
@@ -26,7 +28,9 @@ function RenderAccidental(
         renderProps,
         StdAccidentals.Sharp,
         note.Bounds.x - 12,
-        note.Bounds.y + 3);
+        note.Bounds.y + 3,
+        theme,
+        note.Selected);
       break;
     case 2:
       posString = `m ${note.Bounds.x + camera.x - 2} ${note.Bounds.y + camera.y + 10}`;

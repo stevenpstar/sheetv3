@@ -59,9 +59,9 @@ var StdAccidentals;
     StdAccidentals["ParenthSharp"] = "\uE26A\uE262\uE26B";
     StdAccidentals["ParenthFlat"] = "\uE26A\uE260\uE26B";
 })(StdAccidentals || (StdAccidentals = {}));
-function RenderSymbol(renderProps, symbol, x, y, colour = "black") {
+function RenderSymbol(renderProps, symbol, x, y, theme, selected) {
     const { canvas, context, camera } = renderProps;
-    context.fillStyle = colour;
+    context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
     context.font = `${stdFontSize}px Bravura`;
     context.fillText(symbol, x + camera.x, y + camera.y);
 }

@@ -1,5 +1,6 @@
 import { GetNoteClefType } from "../Core/Clef.js";
 import { GetDivisionGroups } from "../Core/Division.js";
+import { StaffType } from "../Core/Instrument.js";
 import { Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { GetLargestValues } from "../Core/Values.js";
@@ -14,7 +15,10 @@ function AddNoteOnMeasure(msr, noteValue, line, beat, rest) {
 }
 function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     let inputtingNote = true;
-    const line = Measure.GetLineHovered(y, msr);
+    let line = Measure.GetLineHovered(y, msr);
+    if (msr.Instrument.Staff === StaffType.Rhythm) {
+        line.num = 15;
+    }
     let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
     if (beatOver === undefined) {
         inputtingNote = false;

@@ -34,15 +34,14 @@ class TimeSignature {
         this.GBounds = new Bounds(0, 0, 0, 0);
         // use symbol? (bad name) for things like common and cut common
     }
-    render(renderProps, msr) {
+    render(renderProps, msr, theme) {
         let tGlyph = GetTimeSignatureGlyph(this.top);
         let bGlyph = GetTimeSignatureGlyph(this.bottom);
-        const colour = this.Selected ? "#1065b0" : "black";
-        RenderSymbol(renderProps, tGlyph, this.TopPosition.x, this.TopPosition.y, colour);
-        RenderSymbol(renderProps, bGlyph, this.BotPosition.x, this.BotPosition.y, colour);
+        RenderSymbol(renderProps, tGlyph, this.TopPosition.x, this.TopPosition.y, theme, this.Selected);
+        RenderSymbol(renderProps, bGlyph, this.BotPosition.x, this.BotPosition.y, theme, this.Selected);
         if (msr.Instrument.Staff === StaffType.Grand) {
-            RenderSymbol(renderProps, tGlyph, this.GTopPosition.x, this.GTopPosition.y, colour);
-            RenderSymbol(renderProps, bGlyph, this.GBotPosition.x, this.GBotPosition.y, colour);
+            RenderSymbol(renderProps, tGlyph, this.GTopPosition.x, this.GTopPosition.y, theme, this.Selected);
+            RenderSymbol(renderProps, bGlyph, this.GBotPosition.x, this.GBotPosition.y, theme, this.Selected);
         }
     }
     SetBounds(msr, staff) {

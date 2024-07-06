@@ -7,7 +7,8 @@ class Beam {
         this.StartPoint = start;
         this.EndPoint = end;
     }
-    Render(context, cam, count, stemDir) {
+    Render(context, cam, count, stemDir, theme) {
+        context.fillStyle = theme.NoteElements;
         const baseThickness = 6;
         const svgLine = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + cam.y}
         L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + cam.y}

@@ -7,11 +7,15 @@ type CameraSettings = {
     };
     Zoom?: number;
     CenterMeasures?: boolean;
+    CenterPage?: boolean;
 };
 type PageSettings = {
+    UsePages: boolean;
     RenderPage: boolean;
     RenderBackground: boolean;
     ContainerWidth?: boolean;
+    PageWidth?: number;
+    AutoSize?: boolean;
 };
 type MeasureFormatSettings = {
     MaxWidth?: number;
@@ -25,9 +29,20 @@ type ConfigSettings = {
     PageSettings?: PageSettings;
     FormatSettings?: FormatSettings;
     NoteSettings?: NoteSettings;
+    DefaultStaffType?: string;
+    Theme: Theme;
 };
 type NoteSettings = {
     InputValue?: number;
 };
-export { ConfigSettings };
+type Theme = {
+    NoteElements: string;
+    SelectColour: string;
+    UneditableColour: string;
+    LineColour: string;
+    BackgroundColour: string;
+    PageColour: string;
+    PageShadowColour: string;
+};
+export { ConfigSettings, Theme };
 //# sourceMappingURL=Config.d.ts.map

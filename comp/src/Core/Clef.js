@@ -17,7 +17,7 @@ class Clef {
         // TODO: shouldn't only be true
         this.Editable = true;
     }
-    render(renderProps) {
+    render(renderProps, theme) {
         let clefSymbol;
         switch (this.Type) {
             case "treble":
@@ -29,8 +29,7 @@ class Clef {
             default:
                 clefSymbol = Clefs.G;
         }
-        const colour = this.Selected ? "#1065b0" : "black";
-        RenderSymbol(renderProps, clefSymbol, this.Position.x, this.Position.y, colour);
+        RenderSymbol(renderProps, clefSymbol, this.Position.x, this.Position.y, theme, this.Selected);
         //  renderProps.context.strokeStyle = "green";
         //  renderProps.context.strokeRect(
         //    this.Bounds.x + renderProps.camera.x,

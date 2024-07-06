@@ -1,3 +1,4 @@
+import { allSaves } from "../testsaves.js";
 function KeyPress(app, key, keyMaps) {
     switch (key) {
         case keyMaps.addmeasure:
@@ -45,7 +46,7 @@ function KeyPress(app, key, keyMaps) {
             app.Save();
             break;
         case keyMaps.load:
-            app.LoadSheet("");
+            app.LoadSheet(allSaves[0].file);
         case keyMaps.test_triplet:
             app.CreateTriplet();
         default:

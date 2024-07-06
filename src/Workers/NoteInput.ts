@@ -30,7 +30,10 @@ function InputOnMeasure(msr: Measure,
                         cam: Camera,
                         rest: boolean): void {
   let inputtingNote = true;
-  const line = Measure.GetLineHovered(y, msr);
+  let line = Measure.GetLineHovered(y, msr);
+  if (msr.Instrument.Staff === StaffType.Rhythm) {
+    line.num = 15;
+  }
 
   let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
 

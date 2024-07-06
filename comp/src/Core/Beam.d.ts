@@ -1,5 +1,6 @@
 import { BeamDirection, StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
+import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { DivGroup } from "./Division.js";
 import { Measure } from "./Measure.js";
@@ -21,7 +22,7 @@ declare class Beam {
         x: number;
         y: number;
     });
-    Render(context: CanvasRenderingContext2D, cam: Camera, count: number, stemDir: StemDirection): void;
+    Render(context: CanvasRenderingContext2D, cam: Camera, count: number, stemDir: StemDirection, theme: Theme): void;
 }
 declare function DetermineBeamDirection(measure: Measure, divGroup: DivGroup, stemDir: StemDirection): BeamDirection;
 declare function GenerateBeams(measure: Measure, divGroup: DivGroup, stemDir: StemDirection): Beam;

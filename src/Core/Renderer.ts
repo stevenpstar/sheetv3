@@ -24,7 +24,7 @@ const Renderer = (c: HTMLCanvasElement,
                   config: ConfigSettings,
                  noteValue: number) => {
   // reset
-  ctx.fillStyle = "grey";
+  ctx.fillStyle = config.Theme.BackgroundColour;//"grey";252c38 16191f
 
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -35,10 +35,10 @@ const Renderer = (c: HTMLCanvasElement,
   ctx.restore();
   if (config.PageSettings?.RenderPage) {
     pages.forEach(page => {
-      RenderPage(page, c, ctx, cam, formatting, config);
+      RenderPage(page, c, ctx, cam, formatting, config, measures);
     });
   }
-  ctx.fillStyle = "black";
+  ctx.fillStyle = config.Theme.NoteElements;
 
   measures.forEach((m: Measure, i: number) => {
     const renderProps = {
@@ -55,7 +55,8 @@ const Renderer = (c: HTMLCanvasElement,
                   noteInput,
                   i,
                   restInput,
-                 noteValue);
+                 noteValue,
+                 config);
   })
 }
 

@@ -5,6 +5,7 @@ import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { ConfigSettings, Theme } from "../entry.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { Clefs, RenderSymbol, TimeSigNumbers } from "./MusicFont.Renderer.js";
@@ -27,17 +28,26 @@ const noteXBuffer = 9;
 function RenderMeasure(
   measure: Measure, renderProps: RenderProperties, hovId: number,
   mousePos: { x: number, y: number }, lastMeasure: boolean,
-  noteInput: boolean, index: number, restInput: boolean, noteValue: number) {
+  noteInput: boolean, index: number, restInput: boolean, noteValue: number, config: ConfigSettings) {
 
 //    if (hovId === measure.ID)
-    RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput, noteValue);
+    RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput, noteValue, config.Theme);
 //    if (debug)
      // RenderDebug(measure, renderProps, index, mousePos);
-    RenderMeasureBase(measure, renderProps, mousePos, lastMeasure);
-    RenderNotes(measure, renderProps, 0);
+    RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
+    RenderNotes(measure, renderProps, 0, config.Theme);
     if (measure.Instrument.Staff === StaffType.Grand) {
-      RenderNotes(measure, renderProps, 1);
+      RenderNotes(measure, renderProps, 1, config.Theme);
     }
+}
+
+// TODO: move this function elsewhere
+function MiddleLineBounds(measure: Measure): Bounds {
+  let b = new Bounds(measure.Bounds.x, 0, measure.GetBoundsWithOffset().width, 5);
+  let actualLine = 15; // middle line number
+  const diff = actualLine - measure.SALineBot;
+  b.y = measure.Bounds.y + measure.GetMeasureHeight() + ((diff * 5) - 2.5);
+  return b;
 }
 
 function RenderHovered(
@@ -47,11 +57,16 @@ function RenderHovered(
   mousePos: { x: number, y: number },
   noteInput: boolean,
   restInput: boolean,
-  noteValue: number) {
+  noteValue: number,
+  theme: Theme) {
     
     const { canvas, context, camera } = renderProps;
 
-    const line = Measure.GetLineHovered(mousePos.y, measure);
+    let line = Measure.GetLineHovered(mousePos.y, measure);
+    if (measure.Instrument.Staff === StaffType.Rhythm) {
+      line.num = 15;
+      line.bounds = MiddleLineBounds(measure);
+    }
       if (noteInput) {
        // context.fillStyle = "rgb(0, 0, 255, 0.1)"; 
        // const lineY = measure.Bounds.y + (line.num * (line_space / 2) - (line_space / 4));
@@ -86,7 +101,7 @@ function RenderHovered(
             RenderNote(tempNote,
                        renderProps,
                        new Bounds(s.Bounds.x + noteXBuffer,
-                       line.bounds.y, 0, 0), true, false, StemDirection.Up);
+                       line.bounds.y, 0, 0), true, false, StemDirection.Up, theme);
             RenderStemRevise(
               renderProps,
               [[tempNote]],
@@ -94,7 +109,7 @@ function RenderHovered(
               s.Staff,
               measure,
               BeamDirection.Flat,
-              "#1065b0");
+              theme);
 
             renderLedgerLines(
               [tempNote],
@@ -102,7 +117,7 @@ function RenderHovered(
               renderProps,
               s.Staff,
               measure,
-              "#1065b0");
+              theme);
           }
         }
       });
@@ -114,13 +129,14 @@ function RenderMeasureBase(
   msr: Measure,
   renderProps: RenderProperties,
   mousePos: {x: number, y: number},
-  lastMeasure: boolean): void {
+  lastMeasure: boolean,
+  theme: Theme): void {
 
     const { canvas, context, camera } = renderProps;
 
     // prob move elsewhere I don't know
     if (msr.Selected) {
-    context.fillStyle = "rgba(0, 0, 100, 0.1)";
+    context.fillStyle = theme.SelectColour;
     context.fillRect(msr.Bounds.x + camera.x,
                      msr.Bounds.y + camera.y,
                      msr.Bounds.width + msr.XOffset,
@@ -130,7 +146,7 @@ function RenderMeasureBase(
     const msrMidLine = 15 - msr.SALineTop;
     const grndMsrMidLine = msr.GetGrandMeasureMidLine();
 
-    context.fillStyle = "black";
+    context.fillStyle = theme.NoteElements;
 
     const lastEndThickness = lastMeasure ?
       endsWidth * 2 : endsWidth;
@@ -162,13 +178,15 @@ function RenderMeasureBase(
           ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
           ${endsWidth} v ${grandLineHeight + 1} h -${endsWidth} Z`;
 
-    for (let l=0;l<5;l++) {
-          const lineString = `M${msr.Bounds.x + camera.x} 
-          ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + line_space * l + camera.y} h 
-          ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
+    if (msr.Instrument.Staff === StaffType.Single || msr.Instrument.Staff === StaffType.Grand) {
+      for (let l=0;l<5;l++) {
+            const lineString = `M${msr.Bounds.x + camera.x} 
+            ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + line_space * l + camera.y} h 
+            ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
 
-          const linePath = new Path2D(lineString);
-          context.fill(linePath);
+            const linePath = new Path2D(lineString);
+            context.fill(linePath);
+      }
     }
 
     if (msr.Instrument.Staff === StaffType.Grand) {
@@ -182,6 +200,14 @@ function RenderMeasureBase(
             context.fill(linePath);
       }
     }
+
+    if (msr.Instrument.Staff === StaffType.Rhythm) {
+            const lineString = `M${msr.Bounds.x + camera.x} 
+            ${msr.Bounds.y + ((5) * msrMidLine) + line_space * 0 + camera.y} h 
+            ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
+        const linePath = new Path2D(lineString);
+        context.fill(linePath);
+    }
       context.fill(new Path2D(measureBegin));
       context.fill(new Path2D(measureEnd));
       if (lastMeasure) {
@@ -189,7 +215,7 @@ function RenderMeasureBase(
       }
 
       if (msr.RenderClef) { 
-        RenderMeasureClef(renderProps, msr); 
+        RenderMeasureClef(renderProps, msr, theme); 
       }
       if (msr.RenderKey) {
         const key = "CMaj/Amin";
@@ -207,7 +233,7 @@ function RenderMeasureBase(
       }
       if (msr.RenderTimeSig) { 
         const xOff = msr.RenderClef ? msr.RenderKey ? 48 : 36 : 4;
-        RenderTimeSig(renderProps, msr, "4", "4", xOff);
+        RenderTimeSig(renderProps, msr, "4", "4", xOff, theme);
       }
 }
 
@@ -217,7 +243,7 @@ const bassClefSmall = 'm0 0c0-1.0208.8096-1.8304 1.8304-1.8304s1.8304.8096 1.830
 
 function RenderMeasureClef(
   renderProps: RenderProperties,
-  msr: Measure): void {
+  msr: Measure, theme: Theme): void {
 
     const { canvas, context, camera } = renderProps;
 
@@ -226,7 +252,7 @@ function RenderMeasureClef(
 
     msr.Clefs.forEach((clef: Clef) => {
       if (clef.Beat === 1) {
-        clef.render(renderProps);
+        clef.render(renderProps, theme);
       } else {
         const div = msr.Divisions.find(d => d.Beat === clef.Beat);
         if (clef.Type === "treble") {
@@ -246,7 +272,7 @@ function RenderMeasureClef(
       if (clef.Beat === 1) {
         if (clef.Type === "treble") {
         } else if (clef.Type === "bass") {
-          clef.render(renderProps);
+          clef.render(renderProps, theme);
 //          RenderSymbol(renderProps,
 //                       Clefs.F,
 //                       clef.Bounds.x + 3,
@@ -277,14 +303,15 @@ function RenderTimeSig(
   msr: Measure,
   top: string,
   bottom: string,
-  xOffset: number): void {
-    msr.TimeSignature.render(renderProps, msr);
+  xOffset: number, theme: Theme): void {
+    msr.TimeSignature.render(renderProps, msr, theme);
 }
 
 function RenderNotes(
   msr: Measure,
   renderProps: RenderProperties,
-  staff: number) {
+  staff: number,
+  theme: Theme) {
   
   const { canvas, context, camera } = renderProps;
   const mDivs = msr.Divisions.filter(d => d.Staff === staff);
@@ -296,10 +323,10 @@ function RenderNotes(
     });
     
     if (IsRestOnBeat(div.Beat, divNotes, div.Staff)) {
-      RenderRest(context, div, camera, divNotes[0], msr);
+      RenderRest(context, div, camera, divNotes[0], msr, theme);
       return;
     }
-    renderLedgerLines(msr.Notes, div, renderProps, staff, msr);
+    renderLedgerLines(msr.Notes, div, renderProps, staff, msr, theme);
   });
   const dGroups = GetDivisionGroups(msr, staff);
   dGroups.DivGroups.forEach((group: DivGroup, i: number) => {
@@ -309,7 +336,7 @@ function RenderNotes(
 
 //      const beam = GenerateBeams(msr, group, stemDir);
 //      beam.Render(context, camera);
-      RenderStemRevise(renderProps, group.Notes, group.Divisions, staff, msr, beamAngle);
+      RenderStemRevise(renderProps, group.Notes, group.Divisions, staff, msr, beamAngle, theme);
 
       group.Divisions.forEach(div => {
         let hasFlipped = false;
@@ -328,10 +355,10 @@ function RenderNotes(
             stemDir === StemDirection.Up ? 11 : -11 : 0;
 
           if (n.Rest) {
-            RenderRest(context, div, camera, n, msr);
+            RenderRest(context, div, camera, n, msr, theme);
           } else {
             RenderNote(n,
-                     renderProps, n.Bounds, n.Selected, isFlipped, stemDir);
+                     renderProps, n.Bounds, n.Selected, isFlipped, stemDir, theme);
           }
         });
         // render dots
@@ -349,7 +376,7 @@ function RenderNotes(
                msr.Divisions,
                msr.Notes,
                StaffType.Single,
-               msr);
+               msr, theme);
 
   if (msr.Instrument.Staff === StaffType.Grand) {
     RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Grand, msr);
@@ -357,7 +384,7 @@ function RenderNotes(
                  msr.Divisions,
                  msr.Notes,
                  StaffType.Grand,
-                 msr);
+                 msr, theme);
   }
 }
 

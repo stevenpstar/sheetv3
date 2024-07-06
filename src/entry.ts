@@ -1,6 +1,6 @@
 import { App } from "./App.js";
 import { Division, Measure } from "./Core/Measure.js";
-import { ConfigSettings } from "./Types/Config.js";
+import { ConfigSettings, Theme } from "./Types/Config.js";
 import { ISelectable } from "./Types/ISelectable.js";
 import { Message } from "./Types/Message.js";
 import { KeyMapping } from "./Workers/Mappings.js";
@@ -26,10 +26,21 @@ const keymaps: KeyMapping = {
   "test_triplet": "t"
 }
 
+const defaultTheme: Theme = {
+  NoteElements: "black",
+  SelectColour: "blue",
+  UneditableColour: "gray",
+  LineColour: "black",
+  BackgroundColour: "gray",
+  PageColour: "white",
+  PageShadowColour: "darkgray",
+}
+
+
 const test_CONFIG: ConfigSettings = {
   CameraSettings: {
-    DragEnabled: false,
-    ZoomEnabled: false,
+    DragEnabled: true,
+    ZoomEnabled: true,
     Zoom: 1,
     StartingPosition: { x: 0, y: 0 },
     CenterMeasures: true,
@@ -41,10 +52,12 @@ const test_CONFIG: ConfigSettings = {
     InputValue: 0.5,
   },
   PageSettings: {
+    UsePages: false,
     RenderPage: false,
     RenderBackground: false,
     ContainerWidth: false,
   },
+  Theme: defaultTheme,
 }
 
 function mouseMove(app: App, canvas: HTMLCanvasElement, e: MouseEvent): void {
@@ -91,6 +104,8 @@ function resize(app: App, context: CanvasRenderingContext2D, canvas: HTMLCanvasE
   canvas.width = container.clientWidth - 50;
   if (app.Config.CameraSettings?.CenterMeasures === true) {
     app.CenterMeasures();
+  } else if (app.Config.CameraSettings?.CenterPage) {
+    app.CenterPage();
   }
   app.AlterZoom(0);
   app.Update(0, 0);

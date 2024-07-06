@@ -3,7 +3,7 @@
 import { App } from './src/App.js';
 import { NoteValues } from './src/Core/Values.js';
 import { Message } from './src/Types/Message.js';
-import { sheet } from './src/entry.js';
+import { ConfigSettings, Theme, sheet } from './src/entry.js';
 //import { sheet } from './src/entry.js';
 
 const keymaps = {
@@ -30,6 +30,53 @@ interface CanText {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
 }
+
+const defaultTheme: Theme = {
+  NoteElements: "black",
+  SelectColour: "blue",
+  UneditableColour: "gray",
+  LineColour: "black",
+  BackgroundColour: "gray",
+  PageColour: "white",
+  PageShadowColour: "darkgray",
+}
+
+const darkTheme: Theme = {
+  NoteElements: "black",
+  SelectColour: "#f08080",
+  UneditableColour: "#303745",
+  LineColour: "#465063",
+  BackgroundColour: "black",
+  PageColour: "#262b36",
+  PageShadowColour: "#15191f",
+}
+
+const test_CONFIG: ConfigSettings = {
+  CameraSettings: {
+    DragEnabled: true,
+    ZoomEnabled: true,
+    Zoom: 1,
+    StartingPosition: { x: 0, y: 0 },
+    CenterMeasures: false,
+    CenterPage: true,
+  },
+  FormatSettings: {
+    MeasureFormatSettings: { Selectable: false },
+  },
+  NoteSettings: {
+    InputValue: 0.5,
+  },
+  PageSettings: {
+    UsePages: true,
+    RenderPage: true,
+    RenderBackground: true,
+    ContainerWidth: false,
+    AutoSize: true,
+  },
+  DefaultStaffType: "rhythm",
+  Theme: darkTheme
+}
+
 
 function returnCanvas(id: string): CanText {
   const canvas = document.getElementById(id) as HTMLCanvasElement;
@@ -60,7 +107,7 @@ let Application: App;
 
 function main(): void {
  // Application = new App(canvas, context);
-  Application = sheet.CreateApp(canvas, document.getElementById("canvas-container"), document, keymaps, notify, {});
+  Application = sheet.CreateApp(canvas, document.getElementById("canvas-container"), document, keymaps, notify, test_CONFIG);
 }
 
 main();

@@ -1,4 +1,5 @@
 import { Camera } from '../Core/Camera.js';
+import { Measure } from '../Core/Measure.js';
 import { Page } from '../Core/Page.js';
 import { ConfigSettings } from '../Types/Config.js';
 function RenderPage(
@@ -7,23 +8,32 @@ function RenderPage(
   context: CanvasRenderingContext2D,
   cam: Camera,
   formatting: boolean,
-  config: ConfigSettings): void {
+  config: ConfigSettings,
+  measures: Measure[]): void {
     const scale = 6;
     // TODO: Change these variable names
-    const a4w = page.Bounds.width;//210 * scale;
-    const a4h = page.Bounds.height;//297 * scale;
+    let a4w = page.Bounds.width;//210 * scale;
+    let a4h = page.Bounds.height;//297 * scale;
     const x = page.Bounds.x;
     const y = page.Bounds.y;
 
-    context.save();
+    if (config.PageSettings?.AutoSize) {
+      a4h = measures[measures.length-1].Bounds.y + measures[measures.length-1].GetMeasureHeight() + 40;
+      if (measures.length < 4) {
+        a4w = measures[measures.length-1].Bounds.x + measures[measures.length-1].GetBoundsWithOffset().width + 40;
+      }
+    }
 
-    context.setTransform(1, 0, 0, 1, 0, 0);
+//    context.save();
+
+ //   context.setTransform(1, 0, 0, 1, 0, 0);
     context.filter = "blur(4px)";
-    context.fillStyle = "rgb(71, 71, 71)";
+//    context.fillStyle = "rgb(71, 71, 71)";
+    context.fillStyle = config.Theme.PageShadowColour;// "#0e1114";
     context.fillRect(x + cam.x - 8, y + cam.y + 8, a4w, a4h);
     context.filter = "none";
 
-    context.fillStyle = "white";
+    context.fillStyle = config.Theme.PageColour;;
     context.fillRect(x + cam.x, y + cam.y, a4w, a4h);
 
     if (formatting) {
@@ -89,7 +99,7 @@ function RenderPage(
     context.stroke();
     
     }
-    context.restore();
+//    context.restore();
   }
 
 function RenderAdjuster(x: number,

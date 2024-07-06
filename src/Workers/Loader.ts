@@ -1,5 +1,5 @@
 import { Camera } from "../Core/Camera.js";
-import { Instrument } from "../Core/Instrument.js";
+import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Measure } from "../Core/Measure.js";
 import { Note, NoteProps } from "../Core/Note.js";
 import { Page } from "../Core/Page.js";
@@ -38,6 +38,8 @@ const LoadSheet = (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, sav
   // loading onto a single instrument to begin with
   loaded.Measures.forEach((m: lMeasure, i: number) => {
  //   const msr = CreateDefaultMeasure(runningId, instr, page, cam);
+    // TODO: Temporary
+    if (instr.Staff === StaffType.Rhythm) { m.ShowClef = false; }
     const notes: Note[] = [];
     m.Notes.forEach((n: lNote, i: number) => {
       const noteProps: NoteProps = {

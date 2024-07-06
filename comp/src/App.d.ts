@@ -65,6 +65,7 @@ declare class App {
     StopNoteDrag(x: number, y: number): void;
     SetCameraDragging(dragging: boolean, x: number, y: number): void;
     AlterZoom(num: number): void;
+    SetCameraZoom(num: number): void;
     ResizeFirstMeasure(): void;
     ResizeMeasures(measures: Measure[]): void;
     SetNoteValue(val: number): void;
@@ -80,6 +81,7 @@ declare class App {
     CreateTriplet(): void;
     ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
     CenterMeasures(): void;
+    CenterPage(): void;
     AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
 }
 export { App };

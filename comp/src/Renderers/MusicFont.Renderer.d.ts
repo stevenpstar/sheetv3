@@ -1,4 +1,5 @@
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { Theme } from "../entry.js";
 declare enum Clefs {
     G = "\uD834\uDD1E",
     GOttavaBassa = "\uD834\uDD20",
@@ -54,6 +55,6 @@ declare enum StdAccidentals {
     ParenthSharp = "\uE26A\uE262\uE26B",
     ParenthFlat = "\uE26A\uE260\uE26B"
 }
-declare function RenderSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, colour?: string): void;
+declare function RenderSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, selected: boolean): void;
 export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol };
 //# sourceMappingURL=MusicFont.Renderer.d.ts.map

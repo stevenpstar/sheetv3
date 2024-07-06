@@ -1,3 +1,4 @@
+import { StaffType } from "../Core/Instrument.js";
 import { Note } from "../Core/Note.js";
 import { CreateMeasure } from "../Factory/Instrument.Factory.js";
 const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
@@ -6,6 +7,10 @@ const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
     // loading onto a single instrument to begin with
     loaded.Measures.forEach((m, i) => {
         //   const msr = CreateDefaultMeasure(runningId, instr, page, cam);
+        // TODO: Temporary
+        if (instr.Staff === StaffType.Rhythm) {
+            m.ShowClef = false;
+        }
         const notes = [];
         m.Notes.forEach((n, i) => {
             const noteProps = {

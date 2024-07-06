@@ -1,11 +1,12 @@
 import { Sheet } from "./Core/Sheet.js";
 import { RenderDebug, Renderer } from "./Core/Renderer.js";
-import { CreateDefaultMeasure, CreateDefaultPiano, CreateMeasure } from "./Factory/Instrument.Factory.js";
+import { CreateDefaultMeasure, CreateInstrument, CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
 import { AddNoteOnMeasure, CreateTuplet, InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
+import { StaffType } from "./Core/Instrument.js";
 import { KeyPress } from "./Workers/Mappings.js";
 import { SelectableTypes } from "./Types/ISelectable.js";
 import { Page } from "./Core/Page.js";
@@ -16,6 +17,7 @@ import { ClearMessage } from "./Types/Message.js";
 import { GeneratePitchMap } from "./Workers/Pitcher.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
+        var _a, _b;
         this.Config = config;
         this.PitchMap = GeneratePitchMap();
         this.Message = ClearMessage();
@@ -31,7 +33,13 @@ class App {
         this.RunningID = { count: 0 };
         this.CamDragging = false;
         this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
-        this.Camera = new Camera(0, 20);
+        let camStartX = 0;
+        let camStartY = 20;
+        if ((_a = this.Config.CameraSettings) === null || _a === void 0 ? void 0 : _a.StartingPosition) {
+            camStartX = this.Config.CameraSettings.StartingPosition.x;
+            camStartY = this.Config.CameraSettings.StartingPosition.y;
+        }
+        this.Camera = new Camera(camStartX, camStartY);
         this.Camera.Zoom = 1; //this.Config.CameraSettings.Zoom ? this.Config.CameraSettings.Zoom : 1;
         this.NoteValue = 0.5; //this.Config?.NoteSettings?.InputValue ? 
         //      this.Config.NoteSettings.InputValue : 0.25;
@@ -41,14 +49,18 @@ class App {
         this.DragLining = false;
         if (!this.Load) {
             // Create New Sheet Properties
+            let newPage = new Page(0, 0, 1);
+            if ((_b = this.Config.PageSettings) === null || _b === void 0 ? void 0 : _b.PageWidth) {
+                newPage.Bounds.width = this.Config.PageSettings.PageWidth;
+            }
             const sProps = {
                 Instruments: [],
                 KeySignature: [{ key: "CMaj", measureNo: 0 }],
                 Measures: [],
-                Pages: [new Page(0, 0, 1)]
+                Pages: [newPage],
             };
             const page = sProps.Pages[0];
-            sProps.Instruments.push(CreateDefaultPiano());
+            sProps.Instruments.push(CreateInstrument(20, this.Config));
             sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], page, this.Camera, this.NotifyCallback));
             this.Sheet = new Sheet(sProps);
         }
@@ -281,6 +293,12 @@ class App {
         this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
         this.Update(0, 0);
     }
+    SetCameraZoom(num) {
+        this.Zoom = num;
+        this.Camera.Zoom = this.Zoom;
+        this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
+        this.Update(0, 0);
+    }
     // TEST FUNCTION
     ResizeFirstMeasure() {
         //    this.Sheet.Measures[0].Bounds.width += 50;
@@ -291,12 +309,19 @@ class App {
         this.Update(0, 0);
     }
     ResizeMeasures(measures) {
+        var _a, _b, _c;
         // TODO: Prototyping stuff so refactor later
         const maxMeasuresPerLine = 4;
         const minMeasuresPerLine = 3;
-        SetPagesAndLines(measures, this.Sheet.Pages[0]);
+        const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 200 : 300;
+        SetPagesAndLines(measures, this.Sheet.Pages[0], (_a = this.Config.PageSettings) === null || _a === void 0 ? void 0 : _a.UsePages, lineHeight);
         ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera, this.Config);
-        this.CenterMeasures();
+        if ((_b = this.Config.CameraSettings) === null || _b === void 0 ? void 0 : _b.CenterMeasures) {
+            this.CenterMeasures();
+        }
+        else if ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.CenterPage) {
+            this.CenterPage();
+        }
         this.Update(0, 0);
     }
     SetNoteValue(val) {
@@ -402,6 +427,22 @@ class App {
         }
         const padding = (this.Canvas.clientWidth - ((msrWidth + (msrWidth / 2)) * this.Camera.Zoom)) / 4;
         this.Camera.x = padding;
+    }
+    CenterPage() {
+        console.log("Centering page?");
+        const page = this.Sheet.Pages[0];
+        const pageW = page.Bounds.width;
+        const sidePadding = 20;
+        const totalWidth = pageW + sidePadding;
+        if (this.Canvas.clientWidth < totalWidth) {
+            //set zoom of camera
+            this.SetCameraZoom(this.Canvas.clientWidth / totalWidth);
+        }
+        else {
+            this.SetCameraZoom(1);
+        }
+        const emptySpace = this.Canvas.clientWidth - (totalWidth * this.Camera.Zoom);
+        this.Camera.x = emptySpace / 2;
     }
     // Maybe instead of duplicate function we can expose note input function,
     // doesn't matter atm

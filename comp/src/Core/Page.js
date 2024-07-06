@@ -1,9 +1,9 @@
 import { Bounds } from "../Types/Bounds.js";
 const defaultMargins = {
-    left: 0,
-    right: 0,
-    top: 10,
-    bottom: 10
+    left: 40,
+    right: 40,
+    top: 40,
+    bottom: 40
 };
 const scale = 6;
 const a4w = 210 * scale;
@@ -30,12 +30,14 @@ class Page {
         //        LineBounds: new Bounds(this.Bounds.x - 50, (y + this.Margins.top + 300) - 12.5, 25, 25)});
     }
     // TODO Later will need to add ability to add lines in between others
-    AddLine() {
+    // TODO Later will need to make line height adjustable/have formattable
+    // settings
+    AddLine(lineHeight) {
         const latestLine = this.PageLines[this.PageLines.length - 1];
         const newLine = {
             Number: latestLine.Number + 1,
             YPos: this.Bounds.y + this.Margins.top,
-            LineBounds: new Bounds(this.Bounds.x - 50, latestLine.LineBounds.y + 300 - 12.5, 25, 25)
+            LineBounds: new Bounds(this.Bounds.x - 50, latestLine.LineBounds.y + lineHeight - 12.5, 25, 25)
         };
         this.PageLines.push(newLine);
         return newLine;

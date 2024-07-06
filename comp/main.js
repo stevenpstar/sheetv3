@@ -19,6 +19,49 @@ const keymaps = {
     "load": "l",
     "test_triplet": "t",
 };
+const defaultTheme = {
+    NoteElements: "black",
+    SelectColour: "blue",
+    UneditableColour: "gray",
+    LineColour: "black",
+    BackgroundColour: "gray",
+    PageColour: "white",
+    PageShadowColour: "darkgray",
+};
+const darkTheme = {
+    NoteElements: "black",
+    SelectColour: "#f08080",
+    UneditableColour: "#303745",
+    LineColour: "#465063",
+    BackgroundColour: "black",
+    PageColour: "#262b36",
+    PageShadowColour: "#15191f",
+};
+const test_CONFIG = {
+    CameraSettings: {
+        DragEnabled: true,
+        ZoomEnabled: true,
+        Zoom: 1,
+        StartingPosition: { x: 0, y: 0 },
+        CenterMeasures: false,
+        CenterPage: true,
+    },
+    FormatSettings: {
+        MeasureFormatSettings: { Selectable: false },
+    },
+    NoteSettings: {
+        InputValue: 0.5,
+    },
+    PageSettings: {
+        UsePages: true,
+        RenderPage: true,
+        RenderBackground: true,
+        ContainerWidth: false,
+        AutoSize: true,
+    },
+    DefaultStaffType: "rhythm",
+    Theme: darkTheme
+};
 function returnCanvas(id) {
     const canvas = document.getElementById(id);
     const context = canvas.getContext("2d");
@@ -45,6 +88,6 @@ const { canvas, context } = returnCanvas("canvas");
 let Application;
 function main() {
     // Application = new App(canvas, context);
-    Application = sheet.CreateApp(canvas, document.getElementById("canvas-container"), document, keymaps, notify, {});
+    Application = sheet.CreateApp(canvas, document.getElementById("canvas-container"), document, keymaps, notify, test_CONFIG);
 }
 main();

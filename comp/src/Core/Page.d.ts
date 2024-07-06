@@ -22,7 +22,7 @@ declare class Page {
     PageLines: PageLine[];
     MarginAdj: MarginAdjuster[];
     constructor(x: number, y: number, pageNum: number);
-    AddLine(): PageLine;
+    AddLine(lineHeight: number): PageLine;
 }
 export { Page, MarginAdjuster };
 //# sourceMappingURL=Page.d.ts.map

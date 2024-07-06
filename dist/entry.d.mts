@@ -1,6 +1,7 @@
 declare enum StaffType {
     Single = 0,
-    Grand = 1
+    Grand = 1,
+    Rhythm = 2
 }
 interface Instrument {
     Position: {
@@ -88,7 +89,7 @@ declare class Clef implements ISelectable {
         x: number;
         y: number;
     }, type: string, beat: number);
-    render(renderProps: RenderProperties): void;
+    render(renderProps: RenderProperties, theme: Theme): void;
     SetBounds(msr: Measure, staff: number): void;
     IsHovered(x: number, y: number, cam: Camera): boolean;
 }
@@ -167,7 +168,7 @@ declare class Page {
     PageLines: PageLine[];
     MarginAdj: MarginAdjuster[];
     constructor(x: number, y: number, pageNum: number);
-    AddLine(): PageLine;
+    AddLine(lineHeight: number): PageLine;
 }
 
 declare class TimeSignature implements ISelectable {
@@ -196,7 +197,7 @@ declare class TimeSignature implements ISelectable {
         y: number;
     };
     constructor(top: number, bottom: number, useSymbol?: boolean);
-    render(renderProps: RenderProperties, msr: Measure): void;
+    render(renderProps: RenderProperties, msr: Measure, theme: Theme): void;
     SetBounds(msr: Measure, staff: number): void;
     IsHovered(x: number, y: number, cam: Camera): boolean;
 }
@@ -378,11 +379,15 @@ type CameraSettings = {
     };
     Zoom?: number;
     CenterMeasures?: boolean;
+    CenterPage?: boolean;
 };
 type PageSettings = {
+    UsePages: boolean;
     RenderPage: boolean;
     RenderBackground: boolean;
     ContainerWidth?: boolean;
+    PageWidth?: number;
+    AutoSize?: boolean;
 };
 type MeasureFormatSettings = {
     MaxWidth?: number;
@@ -396,9 +401,20 @@ type ConfigSettings = {
     PageSettings?: PageSettings;
     FormatSettings?: FormatSettings;
     NoteSettings?: NoteSettings;
+    DefaultStaffType?: string;
+    Theme: Theme;
 };
 type NoteSettings = {
     InputValue?: number;
+};
+type Theme = {
+    NoteElements: string;
+    SelectColour: string;
+    UneditableColour: string;
+    LineColour: string;
+    BackgroundColour: string;
+    PageColour: string;
+    PageShadowColour: string;
 };
 
 declare class App {
@@ -457,6 +473,7 @@ declare class App {
     StopNoteDrag(x: number, y: number): void;
     SetCameraDragging(dragging: boolean, x: number, y: number): void;
     AlterZoom(num: number): void;
+    SetCameraZoom(num: number): void;
     ResizeFirstMeasure(): void;
     ResizeMeasures(measures: Measure[]): void;
     SetNoteValue(val: number): void;
@@ -472,6 +489,7 @@ declare class App {
     CreateTriplet(): void;
     ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
     CenterMeasures(): void;
+    CenterPage(): void;
     AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
 }
 
@@ -518,4 +536,4 @@ declare namespace sheet {
     function ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
 }
 
-export { App, ClearMessage, type ConfigSettings, GeneratePitchMap, type KeyMapping, KeyPress, LoadSheet, type LoadStructure, type MappedMidi, type Message, MessageType, Note, type NoteProps, ReturnLineFromMidi, ReturnMidiNumber, SaveSheet, type TupleDetails, type lMeasure, type lNote, sheet };
+export { App, ClearMessage, type ConfigSettings, GeneratePitchMap, type KeyMapping, KeyPress, LoadSheet, type LoadStructure, type MappedMidi, type Message, MessageType, Note, type NoteProps, ReturnLineFromMidi, ReturnMidiNumber, SaveSheet, type Theme, type TupleDetails, type lMeasure, type lNote, sheet };

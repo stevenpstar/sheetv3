@@ -1,6 +1,7 @@
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { Measure } from "./Measure.js";
 declare class TimeSignature implements ISelectable {
@@ -29,7 +30,7 @@ declare class TimeSignature implements ISelectable {
         y: number;
     };
     constructor(top: number, bottom: number, useSymbol?: boolean);
-    render(renderProps: RenderProperties, msr: Measure): void;
+    render(renderProps: RenderProperties, msr: Measure, theme: Theme): void;
     SetBounds(msr: Measure, staff: number): void;
     IsHovered(x: number, y: number, cam: Camera): boolean;
 }

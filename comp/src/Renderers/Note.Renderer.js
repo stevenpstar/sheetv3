@@ -33,10 +33,10 @@ const noteXBuffer = 9;
 // create custom SVGs so our note heads are consistent (but we can do that much later in dev)
 const mHeadXOffset = 3.4871;
 const mHeadYOffset = -7.6;
-function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colour = "black") {
+function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, theme, colour = "black") {
     // TODO: This will be determined by key signature
     if (note.Accidental !== 0) {
-        RenderAccidental(renderProps, note, note.Accidental);
+        RenderAccidental(renderProps, note, note.Accidental, theme);
     }
     let { x, y, width, height } = Bounds;
     const { canvas, context, camera } = renderProps;
@@ -46,34 +46,34 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, colo
     // TODO: Move this offset somewhere else to be constant
     y = y + 3;
     //
-    colour = note.Editable ? colour : "black";
-    colour = selected ? "#1065b0" : colour;
+    colour = note.Editable ? theme.NoteElements : theme.UneditableColour;
+    colour = selected ? theme.SelectColour : colour;
     let noteString = '';
     switch (note.Duration) {
         case 0.125:
         case 0.25:
             //   noteString = posString + noteHead;
-            RenderSymbol(renderProps, NoteHeads.crotchet, x, y, colour);
+            RenderSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected);
             break;
         case 0.5:
-            RenderSymbol(renderProps, NoteHeads.minim, x, y, colour);
+            RenderSymbol(renderProps, NoteHeads.minim, x, y, theme, selected);
             break;
         case 1:
-            RenderSymbol(renderProps, NoteHeads.whole, x - 2.5, y, colour);
+            RenderSymbol(renderProps, NoteHeads.whole, x - 2.5, y, theme, selected);
             break;
         default:
-            RenderSymbol(renderProps, NoteHeads.crotchet, x, y, colour);
+            RenderSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected);
     }
-    context.fillStyle = "black";
+    context.fillStyle = theme.NoteElements;
     if (selected) {
-        context.fillStyle = "black";
+        context.fillStyle = theme.SelectColour;
     }
     // context.fill(new Path2D(noteString));
     let debug = false;
     if (debug) {
         context.fillStyle = "rgba(200, 0, 0, 0.5)";
         context.fillRect(x + camera.x, y + camera.y - 5, width, height);
-        context.fillStyle = "black";
+        context.fillStyle = theme.NoteElements;
     }
 }
 function RenderDots(renderProps, note, dotXStart) {
@@ -119,13 +119,13 @@ function RenderDots(renderProps, note, dotXStart) {
         context.fill(new Path2D(cpath));
     }
 }
-function RenderRest(ctx, div, cam, note, msr) {
-    ctx.fillStyle = "black";
+function RenderRest(ctx, div, cam, note, msr, theme) {
+    ctx.fillStyle = theme.NoteElements;
     let x = div.Bounds.x + cam.x + noteXBuffer;
     //    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
     let y = Measure.GetNotePositionOnLine(msr, note.Line - 3) + cam.y;
     let path = `m${x} ${y}`;
-    ctx.fillStyle = note.Selected ? "#1065b0" : "black";
+    ctx.fillStyle = note.Selected ? theme.SelectColour : theme.NoteElements;
     if (div.Duration === 0.3125) {
         y += 7;
         path = `m ${x} ${y}` + demiSemiQuaverRest;
@@ -155,15 +155,16 @@ function RenderRest(ctx, div, cam, note, msr) {
         ctx.fillRect(x, y, 14, 6);
     }
 }
-function RenderTupletAnnotation(renderProps, coords, count) {
+function RenderTupletAnnotation(renderProps, coords, count, theme) {
     const { canvas, context, camera } = renderProps;
     const width = coords.x2 - coords.x1;
+    // TODO: Add this to theme maybe
     context.fillStyle = "#75757";
     context.fillRect(coords.x1 + camera.x, coords.y1 - 12 + camera.y, 1, 6);
     context.fillRect(coords.x1 + camera.x, coords.y1 - 12 + camera.y, (width / 2) - 14, 1);
     context.fillRect(coords.x1 + width + camera.x, coords.y1 - 12 + camera.y, 1, 6);
     context.fillRect(coords.x1 + (width / 2) + 14 + camera.x, coords.y1 - 12 + camera.y, (width / 2) - 14, 1);
-    RenderSymbol(renderProps, GetTupletGlyph(count), coords.x1 + width / 2 - 7, coords.y1 - 5);
+    RenderSymbol(renderProps, GetTupletGlyph(count), coords.x1 + width / 2 - 7, coords.y1 - 5, theme, false);
 }
 function GetTupletGlyph(count) {
     switch (count) {
@@ -191,7 +192,7 @@ function GetTupletGlyph(count) {
             return TupletNumbers.Three;
     }
 }
-function RenderTuplets(renderProps, divisions, notes, staff, msr) {
+function RenderTuplets(renderProps, divisions, notes, staff, msr, theme) {
     const { canvas, context, camera } = renderProps;
     const divs = divisions.filter(d => d.Staff === staff);
     divs.sort((a, b) => {
@@ -210,7 +211,7 @@ function RenderTuplets(renderProps, divisions, notes, staff, msr) {
         if (!notesInDiv[0].Tuple) {
             if (foundTuplet) {
                 foundTuplet = false;
-                RenderTupletAnnotation(renderProps, { x1: tupleX, y1: tupleY, x2: tupleXEnd, y2: tupleY }, tupleCount.toString());
+                RenderTupletAnnotation(renderProps, { x1: tupleX, y1: tupleY, x2: tupleXEnd, y2: tupleY }, tupleCount.toString(), theme);
                 tupleX = 0;
                 tupleXEnd = 0;
                 tupleY = 0;
@@ -322,7 +323,7 @@ function DetermineStemDirection(notes, divisions, staff, measure) {
     }
     return dir;
 }
-function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir, colour) {
+function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir, theme, colour) {
     // Check that divisions and note arrays match
     let match = true;
     divisions.forEach((div, i) => {
@@ -419,7 +420,7 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir, co
             }
         }
         else if (divisions.length > 1 && divisions[0].Duration < 0.25) {
-            context.fillStyle = "black";
+            context.fillStyle = theme.NoteElements;
             // getting highest line in division 0
             let startY = 0;
             let endY = 0;
@@ -455,12 +456,12 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir, co
                 const fNoteX = notes[0][0].Bounds.x;
                 const lNoteX = notes[notes.length - 1][0].Bounds.x;
                 const newBeam = new Beam(new Bounds(divisions[0].Bounds.x + 19, stemEndY, 5, 5), { x: fNoteX + xB, y: stemEndY - camera.y }, { x: lNoteX + xB, y: endY - camera.y });
-                newBeam.Render(context, camera, GetFlagCount(divisions[0].Duration), stemDirection);
+                newBeam.Render(context, camera, GetFlagCount(divisions[0].Duration), stemDirection, theme);
             }
         }
         const diff = stemEndY - startPos;
         const newStem = new Stem(new Bounds(stemX, startPos, 1.5, diff));
-        newStem.Render(context, camera, colour);
+        newStem.Render(context, camera, theme);
     });
 }
 function GetFlagCount(value) {
@@ -476,7 +477,7 @@ function GetFlagCount(value) {
     }
     return count;
 }
-function renderLedgerLines(notes, division, renderProps, staff, msr, colour) {
+function renderLedgerLines(notes, division, renderProps, staff, msr, theme, colour) {
     const { canvas, context, camera } = renderProps;
     const ledgerX = (division.Bounds.x + noteXBuffer) - 6 + camera.x;
     //const ledgerString = `m ${x - 6} ${y - 5} h 22 v 2 h-20 v-2 Z`;
@@ -493,7 +494,7 @@ function renderLedgerLines(notes, division, renderProps, staff, msr, colour) {
     });
     const highestLine = bdNotes[0];
     const lowestLine = bdNotes[bdNotes.length - 1];
-    context.fillStyle = colour ? colour : "black";
+    context.fillStyle = theme.NoteElements;
     for (let l = midLine - 6; l >= highestLine.Line; l -= 2) {
         const ledgerY = Measure.GetNotePositionOnLine(msr, l) + camera.y + 2.5;
         const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
