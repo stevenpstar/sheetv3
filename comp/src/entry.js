@@ -31,9 +31,9 @@ const test_CONFIG = {
     CameraSettings: {
         DragEnabled: true,
         ZoomEnabled: true,
-        Zoom: 1,
+        Zoom: 4,
         StartingPosition: { x: 0, y: 0 },
-        CenterMeasures: true,
+        CenterMeasures: false,
     },
     FormatSettings: {
         MeasureFormatSettings: { MaxWidth: 100, Selectable: false },
@@ -100,6 +100,7 @@ function resize(app, context, canvas, container) {
 export var sheet;
 (function (sheet) {
     function CreateApp(canvas, container, doc, keyMap, notifyCallBack, config) {
+        var _a, _b;
         const ctx = canvas.getContext("2d");
         const app = new App(canvas, container, ctx, notifyCallBack, config);
         canvas.addEventListener("mousemove", (e) => mouseMove(app, canvas, e));
@@ -112,8 +113,12 @@ export var sheet;
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
         app.Update(0, 0);
-        app.AlterZoom(test_CONFIG.CameraSettings.Zoom);
-        app.CenterMeasures();
+        if ((_a = config.CameraSettings) === null || _a === void 0 ? void 0 : _a.Zoom) {
+            app.SetCameraZoom(config.CameraSettings.Zoom);
+        }
+        if ((_b = config.CameraSettings) === null || _b === void 0 ? void 0 : _b.CenterMeasures) {
+            app.CenterMeasures();
+        }
         return app;
     }
     sheet.CreateApp = CreateApp;
@@ -122,6 +127,10 @@ export var sheet;
         gSheet.ChangeInputMode();
     }
     sheet.ChangeInputMode = ChangeInputMode;
+    function SetAccidental(acc) {
+        gSheet.SetAccidental(acc);
+    }
+    sheet.SetAccidental = SetAccidental;
     function Sharpen() {
         gSheet.Sharpen();
     }

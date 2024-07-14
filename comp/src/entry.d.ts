@@ -6,6 +6,7 @@ import { Message } from "./Types/Message.js";
 export declare namespace sheet {
     function CreateApp(canvas: HTMLCanvasElement, container: HTMLElement, doc: Document, keyMap: any, notifyCallBack: (msg: Message) => void, config: ConfigSettings): App;
     function ChangeInputMode(): void;
+    function SetAccidental(acc: number): void;
     function Sharpen(): void;
     function Flatten(): void;
     function SetNoteValue(value: number): void;

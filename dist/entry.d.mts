@@ -477,6 +477,7 @@ declare class App {
     ResizeFirstMeasure(): void;
     ResizeMeasures(measures: Measure[]): void;
     SetNoteValue(val: number): void;
+    SetAccidental(acc: number): void;
     Sharpen(): void;
     Flatten(): void;
     ScaleToggle(): number;
@@ -524,6 +525,7 @@ declare const SaveSheet: (sheet: Sheet) => string;
 declare namespace sheet {
     function CreateApp(canvas: HTMLCanvasElement, container: HTMLElement, doc: Document, keyMap: any, notifyCallBack: (msg: Message) => void, config: ConfigSettings): App;
     function ChangeInputMode(): void;
+    function SetAccidental(acc: number): void;
     function Sharpen(): void;
     function Flatten(): void;
     function SetNoteValue(value: number): void;

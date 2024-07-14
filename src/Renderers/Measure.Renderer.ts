@@ -82,14 +82,14 @@ function RenderHovered(
          //                  s.Bounds.width,
          //                  s.Bounds.height);
 
-          if (noteInput && !restInput) {
+          if (noteInput) {
              const noteY = measure.Bounds.y + (line.num * (line_space / 2));// + (line_space / 2));
             // temp note
             const tempNoteProps = {
               Beat: s.Beat,
               Duration: noteValue,
               Line: line.num,
-              Rest: false,
+              Rest: restInput,
               Tied: false,
               Staff: s.Staff,
               Tuple: false,
@@ -98,26 +98,36 @@ function RenderHovered(
               Clef: "treble"
             } 
             const tempNote = new Note(tempNoteProps);
-            RenderNote(tempNote,
-                       renderProps,
-                       new Bounds(s.Bounds.x + noteXBuffer,
-                       line.bounds.y, 0, 0), true, false, StemDirection.Up, theme);
-            RenderStemRevise(
-              renderProps,
-              [[tempNote]],
-              [s],
-              s.Staff,
-              measure,
-              BeamDirection.Flat,
-              theme);
+            if (!restInput) {
+              RenderNote(tempNote,
+                         renderProps,
+                         new Bounds(s.Bounds.x + noteXBuffer,
+                         line.bounds.y, 0, 0), true, false, StemDirection.Up, theme);
+              RenderStemRevise(
+                renderProps,
+                [[tempNote]],
+                [s],
+                s.Staff,
+                measure,
+                BeamDirection.Flat,
+                theme);
 
-            renderLedgerLines(
-              [tempNote],
-              s,
-              renderProps,
-              s.Staff,
-              measure,
-              theme);
+              renderLedgerLines(
+                [tempNote],
+                s,
+                renderProps,
+                s.Staff,
+                measure,
+                theme);
+            } else {
+              RenderRest(
+                renderProps.context,
+                s,
+                renderProps.camera,
+                tempNote,
+                measure,
+                theme);
+            }
           }
         }
       });

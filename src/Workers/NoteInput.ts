@@ -83,7 +83,7 @@ function InputNote(
       }
     } 
     msr.CreateDivisions(msr.Camera, true);
-    UpdateNoteBounds(msr, division.Staff);
+    //UpdateNoteBounds(msr, division.Staff);
 }
 
 function UpdateNoteBounds(msr: Measure, staff: number): void {

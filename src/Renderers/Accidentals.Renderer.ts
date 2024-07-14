@@ -42,6 +42,13 @@ function RenderAccidental(
     case -1:
       posString = `m ${note.Bounds.x + camera.x - 5} ${note.Bounds.y + camera.y + 4}`;
       posString += flatPath;
+      RenderSymbol(
+        renderProps,
+        StdAccidentals.Flat,
+        note.Bounds.x - 12,
+        note.Bounds.y + 3,
+        theme,
+        note.Selected);
       break;
     default:
       break;

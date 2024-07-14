@@ -1,5 +1,6 @@
 import { SelectableTypes } from "../Types/ISelectable.js";
 import { MessageType } from "../Types/Message.js";
+import { UpdateNoteBounds } from "./NoteInput.js";
 class Selector {
     constructor() {
         this.Measures = [];
@@ -14,6 +15,7 @@ class Selector {
         // if (!shiftKey) {
         //   this.DeselectAllElements();
         // }
+        UpdateNoteBounds(msr, 0);
         elements.push(...msr.Notes);
         elements.push(...msr.Clefs);
         elements.push(...msr.GrandClefs);

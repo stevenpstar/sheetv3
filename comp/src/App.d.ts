@@ -69,6 +69,7 @@ declare class App {
     ResizeFirstMeasure(): void;
     ResizeMeasures(measures: Measure[]): void;
     SetNoteValue(val: number): void;
+    SetAccidental(acc: number): void;
     Sharpen(): void;
     Flatten(): void;
     ScaleToggle(): number;

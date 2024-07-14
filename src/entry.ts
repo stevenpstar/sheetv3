@@ -41,9 +41,9 @@ const test_CONFIG: ConfigSettings = {
   CameraSettings: {
     DragEnabled: true,
     ZoomEnabled: true,
-    Zoom: 1,
+    Zoom: 4,
     StartingPosition: { x: 0, y: 0 },
-    CenterMeasures: true,
+    CenterMeasures: false,
   },
   FormatSettings: {
     MeasureFormatSettings: { MaxWidth: 100, Selectable: false },
@@ -127,12 +127,17 @@ export module sheet {
     doc.addEventListener("keydown", (e) => keyDown(app, keyMap, e));
     window.addEventListener("resize", () => resize(app, app.Context, canvas, container));
     canvas.addEventListener("wheel", (e) => zoom(app, e));
+    screen.orientation.addEventListener("change", (e) => resize(app, app.Context, canvas, container));
     gSheet = app;
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
     app.Update(0, 0);
-    app.AlterZoom(test_CONFIG.CameraSettings.Zoom);
-    app.CenterMeasures();
+    if (config.CameraSettings?.Zoom) {
+      app.SetCameraZoom(config.CameraSettings.Zoom);
+    }
+    if (config.CameraSettings?.CenterMeasures) {
+      app.CenterMeasures();
+    }
     return app;
   }
 
@@ -140,6 +145,10 @@ export module sheet {
   export function ChangeInputMode(): void {
     gSheet.ChangeInputMode();
   } 
+
+  export function SetAccidental(acc: number): void {
+    gSheet.SetAccidental(acc);
+  }
 
   export function Sharpen(): void {
     gSheet.Sharpen();

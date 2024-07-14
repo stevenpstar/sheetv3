@@ -55,10 +55,10 @@ const test_CONFIG: ConfigSettings = {
   CameraSettings: {
     DragEnabled: true,
     ZoomEnabled: true,
-    Zoom: 1,
+    Zoom: 0.5,
     StartingPosition: { x: 0, y: 0 },
     CenterMeasures: false,
-    CenterPage: true,
+    CenterPage: false,
   },
   FormatSettings: {
     MeasureFormatSettings: { Selectable: false },
@@ -71,10 +71,10 @@ const test_CONFIG: ConfigSettings = {
     RenderPage: true,
     RenderBackground: true,
     ContainerWidth: false,
-    AutoSize: true,
+    AutoSize: false,
   },
-  DefaultStaffType: "rhythm",
-  Theme: darkTheme
+  DefaultStaffType: "single",
+  Theme: defaultTheme
 }
 
 

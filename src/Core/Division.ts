@@ -1,4 +1,5 @@
 import { Bounds } from "../Types/Bounds.js";
+import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { Camera } from "./Camera.js";
 import { GetNoteClefType } from "./Clef.js";
 import { StaffType } from "./Instrument.js";
@@ -69,6 +70,7 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number, cam: Camera
     GenerateMissingBeatDivisions(msr, divisions, staff);
   }
   GenerateMissingBeatDivisions(msr, divisions, staff);
+  UpdateNoteBounds(msr, staff);
   return divisions;
 }
 

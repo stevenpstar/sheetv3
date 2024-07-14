@@ -13,11 +13,11 @@ import { Page } from "./Core/Page.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves } from "./testsaves.js";
-import { ClearMessage } from "./Types/Message.js";
+import { ClearMessage, MessageType } from "./Types/Message.js";
 import { GeneratePitchMap } from "./Workers/Pitcher.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
-        var _a, _b;
+        var _a, _b, _c;
         this.Config = config;
         this.PitchMap = GeneratePitchMap();
         this.Message = ClearMessage();
@@ -67,6 +67,13 @@ class App {
         this.NoteInput = false;
         this.RestInput = false;
         this.Formatting = false;
+        if ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.Zoom) {
+            this.Camera.Zoom = this.Config.CameraSettings.Zoom;
+            this.SetCameraZoom(this.Camera.Zoom);
+            console.log("Setting camera zoom");
+            console.log(this.Camera.Zoom);
+            this.ResizeMeasures(this.Sheet.Measures);
+        }
         this.Update(0, 0);
     }
     Hover(x, y) {
@@ -131,6 +138,9 @@ class App {
         if (msrOver === undefined) {
             if (!shiftKey) {
                 this.Selector.DeselectAll();
+                this.Message = ClearMessage();
+                this.Message.messageString = "msr undefined";
+                this.NotifyCallback(this.Message);
                 this.Update(x, y);
             }
             return;
@@ -139,14 +149,14 @@ class App {
             let selectedMeasureElement = false;
             // Measure Element selection, should be moved elsewhere eventually
             // (probably Measure? Maybe somewhere else)
-            console.log(this.Selector.Elements);
             if (!shiftKey) {
                 this.Selector.Elements = this.Selector.DeselectAllElements(this.Selector.Elements);
             }
             const elem = this.Selector.TrySelectElement(msrOver, x, y, this.Camera, shiftKey, this.NotifyCallback, this.Selector.Elements);
             if (elem === undefined && this.Config.FormatSettings.MeasureFormatSettings.Selectable === true ||
-                this.Config.FormatSettings.MeasureFormatSettings.Selectable === undefined)
+                this.Config.FormatSettings.MeasureFormatSettings.Selectable === undefined) {
                 this.Selector.SelectMeasure(msrOver);
+            }
             if (!this.DraggingNote) {
                 this.DraggingNote = true;
             }
@@ -250,6 +260,21 @@ class App {
                 if (n.Selected && n.Editable) {
                     n.Line += lineDiff;
                     UpdateNoteBounds(msr, n.Staff);
+                    // send message about note update
+                    if (lineDiff !== 0) {
+                        const m = {
+                            messageData: {
+                                MessageType: MessageType.Selection,
+                                Message: {
+                                    msg: 'selected',
+                                    obj: n,
+                                },
+                            },
+                            messageString: 'Selected Note'
+                        };
+                        this.Message = m;
+                        this.NotifyCallback(this.Message);
+                    }
                 }
             });
         }
@@ -296,6 +321,7 @@ class App {
     SetCameraZoom(num) {
         this.Zoom = num;
         this.Camera.Zoom = this.Zoom;
+        console.log("CAmZOOM: ", this.Camera.Zoom);
         this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
         this.Update(0, 0);
     }
@@ -326,6 +352,30 @@ class App {
     }
     SetNoteValue(val) {
         this.NoteValue = val;
+    }
+    SetAccidental(acc) {
+        for (let [msr, elem] of this.Selector.Elements) {
+            elem.forEach(n => {
+                if (n.SelType === SelectableTypes.Note) {
+                    const note = n;
+                    note.Accidental = acc;
+                    this.Message = ClearMessage();
+                    const m = {
+                        messageData: {
+                            MessageType: MessageType.Selection,
+                            Message: {
+                                msg: 'selected',
+                                obj: note,
+                            },
+                        },
+                        messageString: 'Selected Note'
+                    };
+                    this.Message = m;
+                    this.NotifyCallback(m);
+                }
+            });
+        }
+        this.Update(0, 0);
     }
     Sharpen() {
         for (let [msr, elem] of this.Selector.Elements) {
@@ -380,7 +430,7 @@ class App {
     // }
     KeyInput(key, keymaps) {
         KeyPress(this, key, keymaps);
-        this.NotifyCallback(this.Message);
+        //    this.NotifyCallback(this.Message);
     }
     SelectById(id) {
         const sel = this.Selector.SelectById(this.Sheet.Measures, id);
@@ -427,6 +477,12 @@ class App {
         }
         const padding = (this.Canvas.clientWidth - ((msrWidth + (msrWidth / 2)) * this.Camera.Zoom)) / 4;
         this.Camera.x = padding;
+        if (this.Canvas.clientWidth < msrWidth) {
+            this.SetCameraZoom(this.Canvas.clientWidth / msrWidth);
+        }
+        else {
+            this.SetCameraZoom(1);
+        }
     }
     CenterPage() {
         console.log("Centering page?");

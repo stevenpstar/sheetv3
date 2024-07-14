@@ -63,7 +63,7 @@ function InputNote(msr, noteValue, division, line, rest, tupleCount = 1) {
         }
     }
     msr.CreateDivisions(msr.Camera, true);
-    UpdateNoteBounds(msr, division.Staff);
+    //UpdateNoteBounds(msr, division.Staff);
 }
 function UpdateNoteBounds(msr, staff) {
     // Maybe should go somewhere else

@@ -103,27 +103,28 @@ function ReturnMidiNumber(clef, line, acc = 0, staff = 0) {
     let midiNumber = 69;
     let midiNote = midiNumber;
     if (line === a4line) {
-        return midiNumber;
+        return midiNumber + acc;
     }
     else if (line > a4line) {
         for (let i = a4line; i < line; i++) {
             if (NoteNames[onNote] === "C" || NoteNames[onNote] === "F") {
                 midiNote -= 1;
-                if (onNote === 0) {
-                    onNote = NoteNames.length - 1;
-                }
-                else {
-                    onNote -= 1;
-                }
+                onNote -= 1;
             }
             else {
+                if (onNote === 0) {
+                    onNote = NoteNames.length - 2;
+                }
+                else {
+                    onNote -= 2;
+                }
                 midiNote -= 2;
-                onNote -= 2;
             }
         }
     }
     else {
         for (let i = a4line; i > line; i--) {
+            console.log("midiNote+1");
             if (NoteNames[onNote] === "B" || NoteNames[onNote] === "E") {
                 midiNote += 1;
                 if (onNote === NoteNames.length - 1) {
