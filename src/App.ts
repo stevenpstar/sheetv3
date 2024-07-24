@@ -122,8 +122,6 @@ class App {
     if (this.Config.CameraSettings?.Zoom) {
       this.Camera.Zoom = this.Config.CameraSettings.Zoom;
       this.SetCameraZoom(this.Camera.Zoom);
-      console.log("Setting camera zoom");
-      console.log(this.Camera.Zoom);
       this.ResizeMeasures(this.Sheet.Measures);
     }
 
@@ -264,7 +262,6 @@ class App {
   //    if (msrCountOnLine.length > 3) {
   //      latestLine = this.Sheet.Pages[0].AddLine();
   //    }
-  //    console.log(this.Sheet.Pages[0]);
       const newMeasureBounds = new Bounds(x, latestLine.LineBounds.y, 150, prevMsr.Bounds.height);
       const newMsr = CreateMeasure(
         i,
@@ -411,7 +408,6 @@ class App {
   SetCameraZoom(num: number): void {
     this.Zoom = num;
     this.Camera.Zoom = this.Zoom;
-    console.log("CAmZOOM: ", this.Camera.Zoom);
     this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
     this.Update(0, 0);
   }
@@ -573,7 +569,6 @@ class App {
   }
 
   CenterMeasures(): void {
-    console.log("Center Measure called");
     // This measure is currently only being used for mtrainer
     let msrWidth = 100;
     if (this.Config.FormatSettings?.MeasureFormatSettings?.MaxWidth) {
@@ -586,7 +581,6 @@ class App {
     } else {
       const z = this.Config.CameraSettings?.Zoom ? this.Config.CameraSettings.Zoom : 1;
       this.SetCameraZoom(z);
-      console.log("setting to: ", z);
     }
   }
 

@@ -100,8 +100,6 @@ class Measure implements ISelectable {
     this.BDivisions = [];
     this.RenderClef = properties.RenderClef;
     if (this.Instrument.Staff === StaffType.Rhythm) { this.RenderClef = false; }
-    console.log("RenderingClef: ", this.RenderClef);
-    console.log(this.Instrument.Staff);
     this.RenderKey = properties.RenderKey;
     this.Camera = properties.Camera;
     this.RenderTimeSig = properties.RenderTimeSig;

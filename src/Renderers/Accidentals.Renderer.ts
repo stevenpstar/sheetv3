@@ -12,6 +12,7 @@ function RenderAccidental(
     renderProps: RenderProperties,
     note: Note,
     type: number,
+    offset: number,
     theme: Theme): void {
   const { canvas, context, camera } = renderProps;
   let posString = '';
@@ -27,7 +28,7 @@ function RenderAccidental(
       RenderSymbol(
         renderProps,
         StdAccidentals.Sharp,
-        note.Bounds.x - 12,
+        note.Bounds.x - offset,
         note.Bounds.y + 3,
         theme,
         note.Selected);
@@ -45,7 +46,7 @@ function RenderAccidental(
       RenderSymbol(
         renderProps,
         StdAccidentals.Flat,
-        note.Bounds.x - 12,
+        note.Bounds.x - offset,
         note.Bounds.y + 3,
         theme,
         note.Selected);

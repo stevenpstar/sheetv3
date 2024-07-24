@@ -24,13 +24,10 @@ const CreateDefaultPiano = (): Instrument => {
 
 function CreateInstrument(y: number, config: ConfigSettings): Instrument {
   let staff: StaffType = StaffType.Single;
-  console.log("config: ", config);
   if (config.DefaultStaffType) {
-    console.log("This exists");
     switch (config.DefaultStaffType) {
       case "rhythm":
         staff = StaffType.Rhythm;
-        console.log("ye?");
         break;
       case "grand":
         staff = StaffType.Grand;
@@ -40,7 +37,6 @@ function CreateInstrument(y: number, config: ConfigSettings): Instrument {
         staff = StaffType.Single;
     }
   }
-  console.log("staff: ", staff);
   const instr: Instrument = {
     Position: { x: 0, y: y },
     Staff: staff

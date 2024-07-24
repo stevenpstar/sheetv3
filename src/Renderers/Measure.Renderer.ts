@@ -5,7 +5,9 @@ import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
+import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
 import { ConfigSettings, Theme } from "../entry.js";
+import { RenderAccidental } from "./Accidentals.Renderer.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { Clefs, RenderSymbol, TimeSigNumbers } from "./MusicFont.Renderer.js";
@@ -369,6 +371,19 @@ function RenderNotes(
           } else {
             RenderNote(n,
                      renderProps, n.Bounds, n.Selected, isFlipped, stemDir, theme);
+
+            const accNotes = dN.filter(n => n.Accidental !== 0);
+            accNotes.sort((a: Note, b: Note) => {
+              return a.Line - b.Line;
+            });
+            const offsets = ReturnAccidentalOffset(accNotes);
+            accNotes.forEach((n: Note, i: number) => {
+              RenderAccidental(renderProps, 
+                               n,
+                               n.Accidental,
+                               offsets[i],
+                               theme);
+            });
           }
         });
         // render dots

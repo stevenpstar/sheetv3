@@ -30,7 +30,7 @@ function RenderPage(
     context.filter = "blur(4px)";
 //    context.fillStyle = "rgb(71, 71, 71)";
     context.fillStyle = config.Theme.PageShadowColour;// "#0e1114";
-    context.fillRect(x + cam.x - 8, y + cam.y + 8, a4w, a4h);
+    context.fillRect(x + cam.x - 4, y + cam.y + 4, a4w, a4h);
     context.filter = "none";
 
     context.fillStyle = config.Theme.PageColour;;

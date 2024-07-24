@@ -50,9 +50,9 @@ function RenderNote(note: Note,
                     colour: string = "black"): void {
   
   // TODO: This will be determined by key signature
-  if (note.Accidental !== 0) { 
-    RenderAccidental(renderProps, note, note.Accidental, theme); 
-  }
+ // if (note.Accidental !== 0) { 
+ //   RenderAccidental(renderProps, note, note.Accidental, theme); 
+ // }
   let { x, y, width, height } = Bounds;
   const { canvas, context, camera } = renderProps;
   let flipNoteOffset = flipNote ? 
@@ -492,7 +492,13 @@ function RenderStemRevise(
     divisions.forEach((div: Division, i: number) => {
       if (div.Duration === 1) { return; }
       const xBuffer = stemDirection === StemDirection.Up ? 11.5 : 0.25;
-      const stemX = Math.floor(div.Bounds.x + xBuffer + camera.x + noteXBuffer);
+      let dynNoteXBuffer = noteXBuffer;
+      const divNotes = msr.Notes.filter(n => n.Beat === div.Beat && n.Staff === div.Staff);
+      const numOfAcc = divNotes.filter(n => n.Accidental !== 0).length;
+      if (numOfAcc > 0) {
+        dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
+      }
+      const stemX = Math.floor(div.Bounds.x + xBuffer + camera.x + dynNoteXBuffer);
 
       if (i === 0) {
         beamStartX = stemX;
@@ -598,8 +604,16 @@ function renderLedgerLines(
   colour?: string): void {
 
     const { canvas, context, camera } = renderProps;
+    // TODO: This code is repeated (search for dynNoteXBuffer)
+    // Could be a good idea to make it a function
+    let dynNoteXBuffer = noteXBuffer;
+    const divNotes = msr.Notes.filter(n => n.Beat === division.Beat && n.Staff === division.Staff);
+    const numOfAcc = divNotes.filter(n => n.Accidental !== 0).length;
+    if (numOfAcc > 0) {
+      dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
+    }
 
-    const ledgerX = (division.Bounds.x + noteXBuffer) - 6 + camera.x;
+    const ledgerX = (division.Bounds.x + dynNoteXBuffer) - 6 + camera.x;
 
     //const ledgerString = `m ${x - 6} ${y - 5} h 22 v 2 h-20 v-2 Z`;
     const ledgerString = `h 22 v 1.5 h-20 v-1.5 Z`;

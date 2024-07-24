@@ -104,11 +104,19 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
           const isFlipped = IsFlippedNote(divNotes, i, stemDir);
           let flipNoteOffset = isFlipped ? 
             stemDir === StemDirection.Up ? 11 : -11 : 0;
+          // Note X Buffer needs to change if there are more than 1 accidental
+          // in div, TODO: Note this implementation does not account for natural
+          // accidentals at this point
+          let dynNoteXBuffer = noteXBuffer;
+          const numOfAcc = divNotes.filter(n => n.Accidental !== 0).length;
+          if (numOfAcc > 0) {
+            dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
+          }
           if (!n.Rest) {
             const lineSubt = n.Staff === 0 ?
               0 + msr.SALineTop :
               msr.SBLineTop;
-            n.Bounds.x = Math.floor(div.Bounds.x + noteXBuffer + flipNoteOffset);
+            n.Bounds.x = Math.floor(div.Bounds.x + dynNoteXBuffer + flipNoteOffset);
             n.Bounds.y = Measure.GetNotePositionOnLine(msr, n.Line);
           }
         });

@@ -200,7 +200,6 @@ export module sheet {
     top: number,
     bottom: number,
     transpose: boolean = false): void {
-      console.log("Changing time sisiigiangiangiang");
       gSheet.ChangeTimeSignature(top, bottom, transpose);
   }
 }
