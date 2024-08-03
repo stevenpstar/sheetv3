@@ -30,8 +30,6 @@ class Measure {
         if (this.Instrument.Staff === StaffType.Rhythm) {
             this.RenderClef = false;
         }
-        console.log("RenderingClef: ", this.RenderClef);
-        console.log(this.Instrument.Staff);
         this.RenderKey = properties.RenderKey;
         this.Camera = properties.Camera;
         this.RenderTimeSig = properties.RenderTimeSig;
@@ -50,6 +48,12 @@ class Measure {
         this.SBLineTop = 1035;
         this.SBLineMid = 1045;
         this.SBLineBot = 1054;
+        if (properties.Settings) {
+            if (properties.Settings.TopLine)
+                this.SALineTop = properties.Settings.TopLine;
+            if (properties.Settings.BottomLine)
+                this.SALineBot = properties.Settings.BottomLine;
+        }
         this.SBLineTopSave = this.SBLineTop;
         this.SBLineBotSave = this.SBLineBot;
         this.SBLineTopDef = this.SBLineTop;

@@ -1,5 +1,4 @@
 import { sheet } from './src/entry.js';
-//import { sheet } from './src/entry.js';
 const keymaps = {
     "rerender": "'",
     "addmeasure": "a",
@@ -24,11 +23,11 @@ const defaultTheme = {
     SelectColour: "blue",
     UneditableColour: "gray",
     LineColour: "black",
-    BackgroundColour: "gray",
+    BackgroundColour: "darkgray",
     PageColour: "white",
-    PageShadowColour: "darkgray",
+    PageShadowColour: "gray",
 };
-const darkTheme = {
+const _darkTheme = {
     NoteElements: "black",
     SelectColour: "#f08080",
     UneditableColour: "#303745",
@@ -41,8 +40,8 @@ const test_CONFIG = {
     CameraSettings: {
         DragEnabled: true,
         ZoomEnabled: true,
-        Zoom: 0.5,
-        StartingPosition: { x: 0, y: 0 },
+        Zoom: 1,
+        StartingPosition: { x: 20, y: 20 },
         CenterMeasures: false,
         CenterPage: false,
     },
@@ -69,19 +68,11 @@ function returnCanvas(id) {
         console.error("Canvas not found");
     }
     else {
-        // set defaults for canvas
-        //    canvas.width = 1920;
-        //    canvas.height = 1080;
-        //    canvas.style.width = '1920px';
-        //    canvas.style.height = '1080px';
-        //    canvas.width = canvas.clientWidth;
-        //    canvas.height = canvas.clientHeight;
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
     return { canvas: canvas, context: context };
 }
 function notify(msg) {
-    //  console.log(msg);
 }
 /* Globals */
 const { canvas, context } = returnCanvas("canvas");

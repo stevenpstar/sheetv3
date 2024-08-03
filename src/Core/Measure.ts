@@ -2,6 +2,7 @@ import { Bounds } from '../Types/Bounds.js';
 import { ISelectable, SelectableTypes } from '../Types/ISelectable.js';
 import { Message, MessageType } from '../Types/Message.js';
 import { UpdateNoteBounds } from '../Workers/NoteInput.js';
+import { MeasureSettings } from '../entry.js';
 import { Camera } from './Camera.js';
 import { Clef, GetNoteClefType } from './Clef.js';
 import { CreateDivisions, type Division, ResizeDivisions, DivisionMinWidth } from './Division.js';
@@ -23,6 +24,7 @@ interface MeasureProps {
   Camera: Camera;
   Page: Page;
   Message: (msg: Message) => void;
+  Settings?: MeasureSettings;
 }
 
 class Measure implements ISelectable {
@@ -123,6 +125,15 @@ class Measure implements ISelectable {
     this.SBLineTop = 1035;
     this.SBLineMid = 1045;
     this.SBLineBot = 1054;
+
+
+    if (properties.Settings) {
+      if (properties.Settings.TopLine)
+        this.SALineTop = properties.Settings.TopLine;
+
+      if (properties.Settings.BottomLine)
+        this.SALineBot = properties.Settings.BottomLine;
+    }
 
     this.SBLineTopSave = this.SBLineTop;
     this.SBLineBotSave = this.SBLineBot;

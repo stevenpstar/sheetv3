@@ -15,13 +15,10 @@ const CreateDefaultPiano = () => {
 };
 function CreateInstrument(y, config) {
     let staff = StaffType.Single;
-    console.log("config: ", config);
     if (config.DefaultStaffType) {
-        console.log("This exists");
         switch (config.DefaultStaffType) {
             case "rhythm":
                 staff = StaffType.Rhythm;
-                console.log("ye?");
                 break;
             case "grand":
                 staff = StaffType.Grand;
@@ -31,14 +28,13 @@ function CreateInstrument(y, config) {
                 staff = StaffType.Single;
         }
     }
-    console.log("staff: ", staff);
     const instr = {
         Position: { x: 0, y: y },
         Staff: staff
     };
     return instr;
 }
-const CreateDefaultMeasure = (id, instr, page, cam, callback) => {
+const CreateDefaultMeasure = (id, instr, page, cam, callback, settings) => {
     const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
     const props = {
         Instrument: instr,
@@ -53,10 +49,11 @@ const CreateDefaultMeasure = (id, instr, page, cam, callback) => {
         Camera: cam,
         Page: page,
         Message: callback,
+        Settings: settings,
     };
     return new Measure(props, id);
 };
-const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, runningId, page, renderClef = false, callback) => {
+const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, runningId, page, renderClef = false, callback, settings) => {
     const props = {
         Instrument: instr,
         Bounds: bounds,
@@ -70,6 +67,7 @@ const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, ru
         Camera: cam,
         Page: page,
         Message: callback,
+        Settings: settings,
     };
     return new Measure(props, runningId);
 };

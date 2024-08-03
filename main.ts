@@ -1,10 +1,7 @@
 /* Development Mode (getting canvas from document etc.) */
-//import * as keymaps from './keymaps.json';
 import { App } from './src/App.js';
-import { NoteValues } from './src/Core/Values.js';
 import { Message } from './src/Types/Message.js';
 import { ConfigSettings, Theme, sheet } from './src/entry.js';
-//import { sheet } from './src/entry.js';
 
 const keymaps = {
   "rerender": "'",
@@ -36,12 +33,12 @@ const defaultTheme: Theme = {
   SelectColour: "blue",
   UneditableColour: "gray",
   LineColour: "black",
-  BackgroundColour: "gray",
+  BackgroundColour: "darkgray",
   PageColour: "white",
-  PageShadowColour: "darkgray",
+  PageShadowColour: "gray",
 }
 
-const darkTheme: Theme = {
+const _darkTheme: Theme = {
   NoteElements: "black",
   SelectColour: "#f08080",
   UneditableColour: "#303745",
@@ -55,8 +52,8 @@ const test_CONFIG: ConfigSettings = {
   CameraSettings: {
     DragEnabled: true,
     ZoomEnabled: true,
-    Zoom: 0.5,
-    StartingPosition: { x: 0, y: 0 },
+    Zoom: 1,
+    StartingPosition: { x: 20, y: 20 },
     CenterMeasures: false,
     CenterPage: false,
   },
@@ -84,13 +81,6 @@ function returnCanvas(id: string): CanText {
   if (canvas === null || canvas === undefined || context === null || context === undefined) {
     console.error("Canvas not found");
   } else {
-    // set defaults for canvas
-//    canvas.width = 1920;
-//    canvas.height = 1080;
-//    canvas.style.width = '1920px';
-//    canvas.style.height = '1080px';
-//    canvas.width = canvas.clientWidth;
-//    canvas.height = canvas.clientHeight;
     context.setTransform(1 ,0, 0, 1, 0, 0);
   }
 

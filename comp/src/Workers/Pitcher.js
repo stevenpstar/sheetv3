@@ -50,8 +50,6 @@ function ReturnLineFromMidi(clef, midi, staff = 0) {
     }
     if (midi > a4Midi) {
         for (let i = a4Midi; i < midi; i++) {
-            console.log("starting");
-            console.log(NoteNames[onNote]);
             if (NoteNames[onNote] === "C" || NoteNames[onNote] === "F") {
                 line -= 0;
                 if (onNote === 0) {
@@ -69,8 +67,6 @@ function ReturnLineFromMidi(clef, midi, staff = 0) {
     }
     else if (a4Midi > midi) {
         for (let i = a4Midi; i > midi; i--) {
-            console.log("starting");
-            console.log(NoteNames[onNote]);
             if (NoteNames[onNote] === "B" || NoteNames[onNote] === "E") {
                 line += 0;
                 if (onNote === NoteNames.length - 1) {
@@ -86,9 +82,6 @@ function ReturnLineFromMidi(clef, midi, staff = 0) {
             }
         }
     }
-    console.log("midiNote: ", midi);
-    console.log("line: ", line);
-    console.log("accidental");
     return line;
 }
 function ReturnMidiNumber(clef, line, acc = 0, staff = 0) {
@@ -124,7 +117,6 @@ function ReturnMidiNumber(clef, line, acc = 0, staff = 0) {
     }
     else {
         for (let i = a4line; i > line; i--) {
-            console.log("midiNote+1");
             if (NoteNames[onNote] === "B" || NoteNames[onNote] === "E") {
                 midiNote += 1;
                 if (onNote === NoteNames.length - 1) {

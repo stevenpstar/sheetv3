@@ -21,6 +21,12 @@ type MeasureFormatSettings = {
   Selectable?: boolean;
 }
 
+type MeasureSettings = {
+  // Only works for single staff at the moment
+  TopLine?: number;
+  BottomLine?: number;
+}
+
 type FormatSettings = {
   MeasureFormatSettings?: MeasureFormatSettings;
 }
@@ -29,6 +35,7 @@ type ConfigSettings = {
   CameraSettings?: CameraSettings;
   PageSettings?: PageSettings;
   FormatSettings?: FormatSettings;
+  MeasureSettings?: MeasureSettings;
   NoteSettings?: NoteSettings;
   DefaultStaffType?: string;
   Theme: Theme;
@@ -48,4 +55,4 @@ type Theme = {
   PageShadowColour: string;
 }
 
-export { ConfigSettings, Theme }
+export { ConfigSettings, Theme, MeasureSettings }

@@ -6,7 +6,7 @@ import { ConfigSettings } from "../Types/Config.js";
 
 // TODO: Add pages when necessary but for now we do just lines
 function SetPagesAndLines(measures: Measure[], pages: Page, usePage: boolean | null, 
-                         defaultLineHeight: number = 300): void {
+                         defaultLineHeight: number = 150): void {
   let page: Page = pages;
   if (!page) {
     console.error("No page found!");

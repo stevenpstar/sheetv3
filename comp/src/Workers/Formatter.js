@@ -1,6 +1,6 @@
 import { StaffType } from "../Core/Instrument.js";
 // TODO: Add pages when necessary but for now we do just lines
-function SetPagesAndLines(measures, pages, usePage, defaultLineHeight = 300) {
+function SetPagesAndLines(measures, pages, usePage, defaultLineHeight = 150) {
     let page = pages;
     if (!page) {
         console.error("No page found!");

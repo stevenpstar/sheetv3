@@ -109,6 +109,7 @@ export var sheet;
         doc.addEventListener("keydown", (e) => keyDown(app, keyMap, e));
         window.addEventListener("resize", () => resize(app, app.Context, canvas, container));
         canvas.addEventListener("wheel", (e) => zoom(app, e));
+        screen.orientation.addEventListener("change", (e) => resize(app, app.Context, canvas, container));
         gSheet = app;
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
@@ -168,7 +169,6 @@ export var sheet;
     }
     sheet.DeleteSelected = DeleteSelected;
     function ChangeTimeSignature(top, bottom, transpose = false) {
-        console.log("Changing time sisiigiangiangiang");
         gSheet.ChangeTimeSignature(top, bottom, transpose);
     }
     sheet.ChangeTimeSignature = ChangeTimeSignature;

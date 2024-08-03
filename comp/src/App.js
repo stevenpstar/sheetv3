@@ -61,7 +61,7 @@ class App {
             };
             const page = sProps.Pages[0];
             sProps.Instruments.push(CreateInstrument(20, this.Config));
-            sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], page, this.Camera, this.NotifyCallback));
+            sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], page, this.Camera, this.NotifyCallback, this.Config.MeasureSettings));
             this.Sheet = new Sheet(sProps);
         }
         this.NoteInput = false;
@@ -70,8 +70,6 @@ class App {
         if ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.Zoom) {
             this.Camera.Zoom = this.Config.CameraSettings.Zoom;
             this.SetCameraZoom(this.Camera.Zoom);
-            console.log("Setting camera zoom");
-            console.log(this.Camera.Zoom);
             this.ResizeMeasures(this.Sheet.Measures);
         }
         this.Update(0, 0);
@@ -190,10 +188,9 @@ class App {
             //    if (msrCountOnLine.length > 3) {
             //      latestLine = this.Sheet.Pages[0].AddLine();
             //    }
-            //    console.log(this.Sheet.Pages[0]);
             const newMeasureBounds = new Bounds(x, latestLine.LineBounds.y, 150, prevMsr.Bounds.height);
             const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, "treble", this.Camera, this.RunningID, this.Sheet.Pages[0], // Page will need to be determined
-            false, this.NotifyCallback);
+            false, this.NotifyCallback, this.Config.MeasureSettings);
             //      newMsr.PageLine = latestLine.Number;
             this.Sheet.Measures.push(newMsr);
             this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
@@ -321,7 +318,6 @@ class App {
     SetCameraZoom(num) {
         this.Zoom = num;
         this.Camera.Zoom = this.Zoom;
-        console.log("CAmZOOM: ", this.Camera.Zoom);
         this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
         this.Update(0, 0);
     }
@@ -339,7 +335,7 @@ class App {
         // TODO: Prototyping stuff so refactor later
         const maxMeasuresPerLine = 4;
         const minMeasuresPerLine = 3;
-        const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 200 : 300;
+        const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 200 : 200;
         SetPagesAndLines(measures, this.Sheet.Pages[0], (_a = this.Config.PageSettings) === null || _a === void 0 ? void 0 : _a.UsePages, lineHeight);
         ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera, this.Config);
         if ((_b = this.Config.CameraSettings) === null || _b === void 0 ? void 0 : _b.CenterMeasures) {
@@ -459,7 +455,7 @@ class App {
     }
     // TODO: Prototype code
     CreateTriplet() {
-        this.NoteValue = CreateTuplet(this.Selector.Notes, 4);
+        this.NoteValue = CreateTuplet(this.Selector.Notes, 3);
         this.ResizeMeasures(this.Sheet.Measures);
         this.Update(0, 0);
     }
@@ -469,7 +465,7 @@ class App {
         }
     }
     CenterMeasures() {
-        var _a, _b;
+        var _a, _b, _c;
         // This measure is currently only being used for mtrainer
         let msrWidth = 100;
         if ((_b = (_a = this.Config.FormatSettings) === null || _a === void 0 ? void 0 : _a.MeasureFormatSettings) === null || _b === void 0 ? void 0 : _b.MaxWidth) {
@@ -477,15 +473,16 @@ class App {
         }
         const padding = (this.Canvas.clientWidth - ((msrWidth + (msrWidth / 2)) * this.Camera.Zoom)) / 4;
         this.Camera.x = padding;
-        if (this.Canvas.clientWidth < msrWidth) {
+        if (this.Canvas.clientWidth < (msrWidth * this.Camera.Zoom)) {
             this.SetCameraZoom(this.Canvas.clientWidth / msrWidth);
         }
         else {
-            this.SetCameraZoom(1);
+            const z = ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.Zoom) ? this.Config.CameraSettings.Zoom : 1;
+            this.SetCameraZoom(z);
         }
     }
     CenterPage() {
-        console.log("Centering page?");
+        var _a;
         const page = this.Sheet.Pages[0];
         const pageW = page.Bounds.width;
         const sidePadding = 20;
@@ -495,7 +492,8 @@ class App {
             this.SetCameraZoom(this.Canvas.clientWidth / totalWidth);
         }
         else {
-            this.SetCameraZoom(1);
+            const z = ((_a = this.Config.CameraSettings) === null || _a === void 0 ? void 0 : _a.Zoom) ? this.Config.CameraSettings.Zoom : 1;
+            this.SetCameraZoom(z);
         }
         const emptySpace = this.Canvas.clientWidth - (totalWidth * this.Camera.Zoom);
         this.Camera.x = emptySpace / 2;

@@ -4,6 +4,8 @@ import { StaffType } from "../Core/Instrument.js";
 import { Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { Bounds } from "../Types/Bounds.js";
+import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
+import { RenderAccidental } from "./Accidentals.Renderer.js";
 import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { BeamDirection, DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderStemRevise, RenderTies, RenderTuplets, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
@@ -262,6 +264,14 @@ function RenderNotes(msr, renderProps, staff, theme) {
                     }
                     else {
                         RenderNote(n, renderProps, n.Bounds, n.Selected, isFlipped, stemDir, theme);
+                        const accNotes = dN.filter(n => n.Accidental !== 0);
+                        accNotes.sort((a, b) => {
+                            return a.Line - b.Line;
+                        });
+                        const offsets = ReturnAccidentalOffset(accNotes);
+                        accNotes.forEach((n, i) => {
+                            RenderAccidental(renderProps, n, n.Accidental, offsets[i], theme);
+                        });
                     }
                 });
                 // render dots

@@ -218,6 +218,7 @@ interface MeasureProps {
     Camera: Camera;
     Page: Page;
     Message: (msg: Message) => void;
+    Settings?: MeasureSettings;
 }
 declare class Measure implements ISelectable {
     ID: number;
@@ -393,6 +394,10 @@ type MeasureFormatSettings = {
     MaxWidth?: number;
     Selectable?: boolean;
 };
+type MeasureSettings = {
+    TopLine?: number;
+    BottomLine?: number;
+};
 type FormatSettings = {
     MeasureFormatSettings?: MeasureFormatSettings;
 };
@@ -400,6 +405,7 @@ type ConfigSettings = {
     CameraSettings?: CameraSettings;
     PageSettings?: PageSettings;
     FormatSettings?: FormatSettings;
+    MeasureSettings?: MeasureSettings;
     NoteSettings?: NoteSettings;
     DefaultStaffType?: string;
     Theme: Theme;
@@ -538,4 +544,4 @@ declare namespace sheet {
     function ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
 }
 
-export { App, ClearMessage, type ConfigSettings, GeneratePitchMap, type KeyMapping, KeyPress, LoadSheet, type LoadStructure, type MappedMidi, type Message, MessageType, Note, type NoteProps, ReturnLineFromMidi, ReturnMidiNumber, SaveSheet, type Theme, type TupleDetails, type lMeasure, type lNote, sheet };
+export { App, ClearMessage, type ConfigSettings, GeneratePitchMap, type KeyMapping, KeyPress, LoadSheet, type LoadStructure, type MappedMidi, type MeasureSettings, type Message, MessageType, Note, type NoteProps, ReturnLineFromMidi, ReturnMidiNumber, SaveSheet, type Theme, type TupleDetails, type lMeasure, type lNote, sheet };

@@ -1,6 +1,7 @@
 import { Bounds } from '../Types/Bounds.js';
 import { ISelectable, SelectableTypes } from '../Types/ISelectable.js';
 import { Message } from '../Types/Message.js';
+import { MeasureSettings } from '../entry.js';
 import { Camera } from './Camera.js';
 import { Clef } from './Clef.js';
 import { type Division } from './Division.js';
@@ -24,6 +25,7 @@ interface MeasureProps {
     Camera: Camera;
     Page: Page;
     Message: (msg: Message) => void;
+    Settings?: MeasureSettings;
 }
 declare class Measure implements ISelectable {
     ID: number;

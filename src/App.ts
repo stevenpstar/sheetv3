@@ -111,7 +111,11 @@ class App {
       const page = sProps.Pages[0];
 
       sProps.Instruments.push(CreateInstrument(20, this.Config));
-      sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], page,this.Camera, this.NotifyCallback));
+      sProps.Measures.push(CreateDefaultMeasure(this.RunningID,
+                                                sProps.Instruments[0],
+                                                page,this.Camera,
+                                                this.NotifyCallback,
+                                                this.Config.MeasureSettings));
 
       this.Sheet = new Sheet(sProps);
     }
@@ -273,7 +277,8 @@ class App {
        this.RunningID,
        this.Sheet.Pages[0], // Page will need to be determined
        false,
-       this.NotifyCallback);
+       this.NotifyCallback,
+       this.Config.MeasureSettings);
  //      newMsr.PageLine = latestLine.Number;
       this.Sheet.Measures.push(newMsr);
       this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
@@ -426,7 +431,7 @@ class App {
     // TODO: Prototyping stuff so refactor later
     const maxMeasuresPerLine = 4;
     const minMeasuresPerLine = 3;
-    const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 200 : 300;
+    const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 200 : 200;
     SetPagesAndLines(measures, this.Sheet.Pages[0], this.Config.PageSettings?.UsePages, lineHeight);
     ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera, this.Config);
     if (this.Config.CameraSettings?.CenterMeasures) {
@@ -557,7 +562,7 @@ class App {
 
   // TODO: Prototype code
   CreateTriplet(): void {
-    this.NoteValue = CreateTuplet(this.Selector.Notes, 4);
+    this.NoteValue = CreateTuplet(this.Selector.Notes, 3);
     this.ResizeMeasures(this.Sheet.Measures);
     this.Update(0, 0);
   }

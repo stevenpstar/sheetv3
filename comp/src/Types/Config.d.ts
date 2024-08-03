@@ -21,6 +21,10 @@ type MeasureFormatSettings = {
     MaxWidth?: number;
     Selectable?: boolean;
 };
+type MeasureSettings = {
+    TopLine?: number;
+    BottomLine?: number;
+};
 type FormatSettings = {
     MeasureFormatSettings?: MeasureFormatSettings;
 };
@@ -28,6 +32,7 @@ type ConfigSettings = {
     CameraSettings?: CameraSettings;
     PageSettings?: PageSettings;
     FormatSettings?: FormatSettings;
+    MeasureSettings?: MeasureSettings;
     NoteSettings?: NoteSettings;
     DefaultStaffType?: string;
     Theme: Theme;
@@ -44,5 +49,5 @@ type Theme = {
     PageColour: string;
     PageShadowColour: string;
 };
-export { ConfigSettings, Theme };
+export { ConfigSettings, Theme, MeasureSettings };
 //# sourceMappingURL=Config.d.ts.map
