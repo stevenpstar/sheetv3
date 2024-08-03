@@ -3,6 +3,7 @@ import { DivGroup, DivGroups, GetDivisionGroups, IsRestOnBeat } from "../Core/Di
 import { StaffType } from "../Core/Instrument.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
+import { RenderStaff, Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
@@ -45,9 +46,12 @@ function RenderMeasure(
 
 // TODO: move this function elsewhere
 function MiddleLineBounds(measure: Measure): Bounds {
+  // Temporary
+  // This is really bad TODO: Remove this method
+  if (measure.Staves.length === 0) { return new Bounds(0, 0, 0, 0) }
   let b = new Bounds(measure.Bounds.x, 0, measure.GetBoundsWithOffset().width, 5);
   let actualLine = 15; // middle line number
-  const diff = actualLine - measure.SALineBot;
+  const diff = actualLine - measure.Staves[0].BotLine;
   b.y = measure.Bounds.y + measure.GetMeasureHeight() + ((diff * 5) - 2.5);
   return b;
 }
@@ -64,7 +68,7 @@ function RenderHovered(
     
     const { canvas, context, camera } = renderProps;
 
-    let line = Measure.GetLineHovered(mousePos.y, measure);
+    let line = measure.GetLineHovered(mousePos.y, 0);
     if (measure.Instrument.Staff === StaffType.Rhythm) {
       line.num = 15;
       line.bounds = MiddleLineBounds(measure);
@@ -75,14 +79,14 @@ function RenderHovered(
        // context.fillRect(line.bounds.x + camera.x, lineY + camera.y, line.bounds.width, line.bounds.height);
       }
       // now we are going to test "Sections" as they were in v2
-      const divisions = measure.Divisions.concat(measure.BDivisions);
+      const divisions = measure.Divisions;
       divisions.forEach(s => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
-         // context.fillStyle="rgb(0, 0, 255, 0.1)";
-         // context.fillRect(s.Bounds.x + camera.x,
-         //                  s.Bounds.y + camera.y,
-         //                  s.Bounds.width,
-         //                  s.Bounds.height);
+          context.fillStyle="rgb(0, 0, 255, 0.1)";
+          context.fillRect(s.Bounds.x + camera.x,
+                           s.Bounds.y + camera.y,
+                           s.Bounds.width,
+                           s.Bounds.height);
 
           if (noteInput) {
              const noteY = measure.Bounds.y + (line.num * (line_space / 2));// + (line_space / 2));
@@ -154,99 +158,34 @@ function RenderMeasureBase(
                      msr.Bounds.width + msr.XOffset,
                      msr.Bounds.height);
     }
-
-    const msrMidLine = 15 - msr.SALineTop;
-    const grndMsrMidLine = msr.GetGrandMeasureMidLine();
-
     context.fillStyle = theme.NoteElements;
+    msr.Staves.forEach((s: Staff) => {
+      RenderStaff(renderProps,
+                  msr,
+                  s);
+    });
 
-    const lastEndThickness = lastMeasure ?
-      endsWidth * 2 : endsWidth;
-
-    const grandMsrHeight = msr.GetGrandMeasureHeight();
-
-    const msrLineHeight = msr.Instrument.Staff === StaffType.Grand ?
-      grandMsrHeight : msr.GetMeasureHeight();
-
-    // TODO: Please clean this method up omg
-    const lineTopStaff = msr.Bounds.y + (5 * msrMidLine - (line_space * 2));
-    const lineBotStaff = msr.Instrument.Staff === StaffType.Grand ? 
-      msr.Bounds.y + msr.GetMeasureHeight() + (5 * grndMsrMidLine + (line_space * 2)) :
-      msr.Bounds.y + (5 * msrMidLine + (line_space * 2));
-    const grandLineHeight = lineBotStaff - lineTopStaff;
-
-    const measureBegin = 
-      `M${msr.Bounds.x + camera.x} 
-          ${ msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
-          ${endsWidth} v ${grandLineHeight} h -${endsWidth} Z`;
-
-    const measureEnd = 
-      `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} 
-        ${ msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
-        ${lastEndThickness} v ${grandLineHeight + 1} h -${lastEndThickness} Z`;
-
-    const measureDoubleEnd = 
-      `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x - 4} 
-          ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + camera.y} h 
-          ${endsWidth} v ${grandLineHeight + 1} h -${endsWidth} Z`;
-
-    if (msr.Instrument.Staff === StaffType.Single || msr.Instrument.Staff === StaffType.Grand) {
-      for (let l=0;l<5;l++) {
-            const lineString = `M${msr.Bounds.x + camera.x} 
-            ${msr.Bounds.y + ((5) * msrMidLine) - (line_space * 2) + line_space * l + camera.y} h 
-            ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
-
-            const linePath = new Path2D(lineString);
-            context.fill(linePath);
+    if (msr.RenderClef) { 
+      RenderMeasureClef(renderProps, msr, theme); 
+    }
+    if (msr.RenderKey) {
+      const key = "CMaj/Amin";
+      if (key !== "CMaj/Amin") {
+      const xOff = msr.RenderClef ? 24 : 4;
+        RenderKeySignature(renderProps,
+                           msr,
+                           "CMaj/Amin",
+                           "treble",
+                            xOff);
+      } else {
+        msr.RenderKey = false;
+        // This is a temporary fix for dev
       }
     }
-
-    if (msr.Instrument.Staff === StaffType.Grand) {
-      for (let l=0;l<5;l++) {
-            const lineString = 
-            `M${msr.Bounds.x + camera.x} 
-            ${msr.Bounds.y + msr.GetMeasureHeight() + ((5) * msr.GetGrandMeasureMidLine()) - (line_space * 2) + line_space * l + camera.y} 
-            h ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
-
-            const linePath = new Path2D(lineString);
-            context.fill(linePath);
-      }
+    if (msr.RenderTimeSig) { 
+      const xOff = msr.RenderClef ? msr.RenderKey ? 48 : 36 : 4;
+      RenderTimeSig(renderProps, msr, "4", "4", xOff, theme);
     }
-
-    if (msr.Instrument.Staff === StaffType.Rhythm) {
-            const lineString = `M${msr.Bounds.x + camera.x} 
-            ${msr.Bounds.y + ((5) * msrMidLine) + line_space * 0 + camera.y} h 
-            ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
-        const linePath = new Path2D(lineString);
-        context.fill(linePath);
-    }
-      context.fill(new Path2D(measureBegin));
-      context.fill(new Path2D(measureEnd));
-      if (lastMeasure) {
-        context.fill(new Path2D(measureDoubleEnd));
-      }
-
-      if (msr.RenderClef) { 
-        RenderMeasureClef(renderProps, msr, theme); 
-      }
-      if (msr.RenderKey) {
-        const key = "CMaj/Amin";
-        if (key !== "CMaj/Amin") {
-        const xOff = msr.RenderClef ? 24 : 4;
-          RenderKeySignature(renderProps,
-                             msr,
-                             "CMaj/Amin",
-                             "treble",
-                              xOff);
-        } else {
-          msr.RenderKey = false;
-          // This is a temporary fix for dev
-        }
-      }
-      if (msr.RenderTimeSig) { 
-        const xOff = msr.RenderClef ? msr.RenderKey ? 48 : 36 : 4;
-        RenderTimeSig(renderProps, msr, "4", "4", xOff, theme);
-      }
 }
 
 // TODO: Move this
@@ -257,10 +196,9 @@ function RenderMeasureClef(
   renderProps: RenderProperties,
   msr: Measure, theme: Theme): void {
 
-    const { canvas, context, camera } = renderProps;
+    // TODO: Rewrite clef rendering code
 
-    const msrMidLine = Measure.GetMeasureMidLine(msr);
-    const gMsrMidLine = msr.GetGrandMeasureMidLine();
+    const { canvas, context, camera } = renderProps;
 
     msr.Clefs.forEach((clef: Clef) => {
       if (clef.Beat === 1) {
@@ -273,38 +211,7 @@ function RenderMeasureClef(
          //     msr.Bounds.y + camera.y + (5 * msrMidLine + (line_space * 2)));
          //   context.fill(new Path2D(clefPath));
         } else if (clef.Type === "bass") {
-          const clefPath = `m ${div.Bounds.x + camera.x} 
-            ${msr.Bounds.y + camera.y + (msrMidLine * 5) - 5}` + bassClefSmall;
-          context.fill(new Path2D(clefPath));
-        }
-      }
-    });
-
-    msr.GrandClefs.forEach((clef: Clef) => {
-      if (clef.Beat === 1) {
-        if (clef.Type === "treble") {
-        } else if (clef.Type === "bass") {
-          clef.render(renderProps, theme);
-//          RenderSymbol(renderProps,
-//                       Clefs.F,
-//                       clef.Bounds.x + 3,
-//                       msr.Bounds.y + msr.GetMeasureHeight() + ((gMsrMidLine - 2) * 5));
-//          const clefPath = `m ${msr.Bounds.x + 30 + camera.x} 
-//            ${msr.Bounds.y + msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 2}` + bassClef;
-//          context.fill(new Path2D(clefPath));
-        }
-      } else {
-        const div = msr.Divisions.find(d => d.Beat === clef.Beat);
-        if (clef.Type === "treble") {
-          const clefPath = RenderTrebleClef(
-              div.Bounds.x + camera.x,
-              msr.Bounds.y + camera.y + (5 * 45 + (line_space * 2)));
-            context.fill(new Path2D(clefPath));
-        } else if (clef.Type === "bass") {
-          const clefPath = `m ${div.Bounds.x + camera.x} 
-            ${msr.GetMeasureHeight() + camera.y + (msr.GetGrandMeasureMidLine() * 5) - 5}` + bassClefSmall;
-          context.fill(new Path2D(clefPath));
-        }
+       }
       }
     });
 }
@@ -360,7 +267,6 @@ function RenderNotes(
         });
 
         dN.forEach((n: Note, i: number) => {
-          const yPos = msr.Bounds.y + (n.Line - msr.SALineTop) * 5;
           const isFlipped = IsFlippedNote(dN, i, stemDir);
           if (isFlipped) { hasFlipped = true; }
           let flipNoteOffset = isFlipped ? 

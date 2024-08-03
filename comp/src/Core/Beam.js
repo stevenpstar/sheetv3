@@ -1,6 +1,5 @@
 import { BeamDirection, StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
-import { Measure } from "./Measure.js";
 class Beam {
     constructor(bounds, start, end) {
         this.Bounds = bounds;
@@ -75,6 +74,7 @@ function GenerateBeams(measure, divGroup, stemDir) {
     const divisions = divGroup.Divisions.sort((a, b) => {
         return a.Beat - b.Beat;
     });
+    const staff = divisions[0].Staff;
     // assuming that divGroup.notes array is sorted by beat
     startTopLine = divGroup.Notes[0].sort((a, b) => {
         return a.Line - b.Line;
@@ -92,9 +92,9 @@ function GenerateBeams(measure, divGroup, stemDir) {
     //  if (stemDir === StemDirection.Up) {}
     //  19 = various buffers (x / note)
     const beamStartX = divisions[0].Bounds.x + 19;
-    const beamStartY = Measure.GetNotePositionOnLine(measure, startTopLine) - 35;
+    const beamStartY = measure.GetNotePositionOnLine(startTopLine, staff) - 35;
     const beamEndX = divisions[divisions.length - 1].Bounds.x + 19;
-    const beamEndY = Measure.GetNotePositionOnLine(measure, endTopLine) - 35;
+    const beamEndY = measure.GetNotePositionOnLine(endTopLine, staff) - 35;
     const beam = new Beam(new Bounds(beamStartX, beamStartY, (beamEndX - beamStartX), 5), { x: beamStartX, y: beamStartY }, { x: beamEndX, y: beamEndY });
     return beam;
 }

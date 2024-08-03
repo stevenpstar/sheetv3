@@ -1,8 +1,8 @@
 import { GetNoteClefType } from "../Core/Clef.js";
 import { GetDivisionGroups } from "../Core/Division.js";
 import { StaffType } from "../Core/Instrument.js";
-import { Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
+import { GetStaffMiddleLine } from "../Core/Staff.js";
 import { GetLargestValues } from "../Core/Values.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
 import { DetermineStemDirection, StemDirection } from "../Renderers/Note.Renderer.js";
@@ -15,14 +15,17 @@ function AddNoteOnMeasure(msr, noteValue, line, beat, rest) {
 }
 function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     let inputtingNote = true;
-    let line = Measure.GetLineHovered(y, msr);
+    const beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
+    if (!beatOver) {
+        console.error('Beat Over Not Found');
+        return;
+    }
+    let line = msr.GetLineHovered(y, beatOver.Staff);
     if (msr.Instrument.Staff === StaffType.Rhythm) {
         line.num = 15;
     }
-    let beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
-    if (beatOver === undefined) {
-        inputtingNote = false;
-    }
+    console.log('divisions: ', msr.Divisions);
+    console.log('beatOver: ', beatOver);
     if (inputtingNote) {
         InputNote(msr, noteValue, beatOver, line, rest);
     }
@@ -53,6 +56,7 @@ function InputNote(msr, noteValue, division, line, rest, tupleCount = 1) {
         Clef: clefType,
     };
     const newNote = new Note(noteProps);
+    console.log('new Note?: ', newNote);
     if (division.Duration === noteValue) {
         msr.ClearRestNotes(division.Beat, division.Staff);
         msr.AddNote(newNote, true);
@@ -92,11 +96,8 @@ function UpdateNoteBounds(msr, staff) {
                     dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
                 }
                 if (!n.Rest) {
-                    const lineSubt = n.Staff === 0 ?
-                        0 + msr.SALineTop :
-                        msr.SBLineTop;
                     n.Bounds.x = Math.floor(div.Bounds.x + dynNoteXBuffer + flipNoteOffset);
-                    n.Bounds.y = Measure.GetNotePositionOnLine(msr, n.Line);
+                    n.Bounds.y = msr.GetNotePositionOnLine(n.Line, n.Staff);
                 }
             });
         });
@@ -120,7 +121,7 @@ function AddToDivision(msr, noteProps, staff) {
     let remainingValue = noteProps.Duration;
     let beat = noteProps.Beat;
     if (noteProps.Rest) {
-        noteProps.Line = staff === 0 ? msr.SALineMid : msr.SBLineMid;
+        noteProps.Line = GetStaffMiddleLine(msr.Staves, staff);
     }
     let tying = false;
     let tStart = -1;

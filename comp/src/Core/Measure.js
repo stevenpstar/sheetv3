@@ -6,11 +6,17 @@ import { Clef, GetNoteClefType } from './Clef.js';
 import { CreateDivisions, ResizeDivisions, DivisionMinWidth } from './Division.js';
 import { StaffType } from './Instrument.js';
 import { Note } from './Note.js';
+import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from './Staff.js';
 import { CreateTimeSignature } from './TimeSignatures.js';
 class Measure {
     constructor(properties, runningId) {
+        // TODO: Clefs should just be one array, each clef should have which staff they are
+        // on
         this.Clefs = [];
         this.GrandClefs = [];
+        this.Staves = [];
+        this.Staves.push(new Staff(0));
+        this.Staves.push(new Staff(1));
         this.Message = properties.Message;
         this.RunningID = runningId;
         this.ID = 0;
@@ -20,12 +26,13 @@ class Measure {
         this.Instrument = properties.Instrument;
         this.Line = 0;
         this.Bounds = properties.Bounds;
+        // TODO: This is not where measure bounds will be set
+        this.Bounds.height = GetStaffHeightUntil(this.Staves);
+        //
         this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
         this.KeySignature = properties.KeySignature;
         this.Notes = properties.Notes;
-        this.BNotes = [];
         this.Divisions = [];
-        this.BDivisions = [];
         this.RenderClef = properties.RenderClef;
         if (this.Instrument.Staff === StaffType.Rhythm) {
             this.RenderClef = false;
@@ -35,84 +42,47 @@ class Measure {
         this.RenderTimeSig = properties.RenderTimeSig;
         this.Page = properties.Page;
         this.PageLine = properties.Page.PageLines[0].Number;
-        this.PrefBoundsY = this.Bounds.y;
-        this.PrevBoundsH = this.Bounds.height;
         this.SetXOffset();
-        this.SALineTop = 5;
-        this.SALineMid = 15;
-        this.SALineBot = 30;
-        this.SALineTopSave = this.SALineTop;
-        this.SALineBotSave = this.SALineBot;
-        this.SALineTopDef = this.SALineTop;
-        this.SALineBotDef = this.SALineBot;
-        this.SBLineTop = 1035;
-        this.SBLineMid = 1045;
-        this.SBLineBot = 1054;
-        if (properties.Settings) {
-            if (properties.Settings.TopLine)
-                this.SALineTop = properties.Settings.TopLine;
-            if (properties.Settings.BottomLine)
-                this.SALineBot = properties.Settings.BottomLine;
-        }
-        this.SBLineTopSave = this.SBLineTop;
-        this.SBLineBotSave = this.SBLineBot;
-        this.SBLineTopDef = this.SBLineTop;
-        this.SBLineBotDef = this.SBLineBot;
-        this.SBOffset = 1000;
         this.CreateDivisions(this.Camera);
         // create default clef
         const trebleClef = new Clef(0, { x: this.Bounds.x + 16,
-            y: this.Bounds.y + (5 * Measure.GetMeasureMidLine(this) + (10 * 2)) }, "treble", 1);
+            y: this.Bounds.y + (5 * GetStaffMiddleLine(this.Staves, StaffType.Single) + (10 * 2)) }, "treble", 1, StaffType.Single);
         trebleClef.SetBounds(this, 0);
         this.Clefs.push(trebleClef);
         if (this.Instrument.Staff === StaffType.Grand) {
             const bassClef = new Clef(1, {
                 x: this.Bounds.x + 30,
                 y: this.Bounds.y + this.GetMeasureHeight() + (this.GetGrandMeasureMidLine() * 5) - 2
-            }, "bass", 1);
+            }, "bass", 1, StaffType.Grand);
             bassClef.SetBounds(this, 1);
-            this.GrandClefs.push(bassClef);
+            this.Clefs.push(bassClef);
         }
         this.TimeSignature.SetBounds(this, 0);
         this.TimeSignature.SetBounds(this, 1);
     }
-    static GetLineHovered(y, msr) {
-        const cam = msr.Camera;
-        const relYPos = y - msr.Bounds.y - cam.y; //TODO: Dunno about scaling by zoom here
+    GetLineHovered(y, staffNum) {
+        const cam = this.Camera;
+        const relYPos = y - this.Bounds.y - cam.y; //TODO: Dunno about scaling by zoom here
         let line = Math.floor(relYPos / (5)); // this should be a constant, line_height (defined somewhere)
-        let actualLine = line + msr.SALineTop;
-        const bounds = new Bounds(msr.Bounds.x, 0, msr.Bounds.width + msr.XOffset, (5));
-        if (actualLine > msr.SALineBot) {
-            const diff = actualLine - msr.SALineBot;
-            actualLine = msr.SBLineTop + diff;
-            bounds.y = msr.Bounds.y + msr.GetMeasureHeight() + ((diff * (5)) - 2.5);
-        }
-        else {
-            bounds.y = msr.Bounds.y + ((line * (5)) - 2.5);
-        }
-        return { num: actualLine,
+        let actualLine = line;
+        let lineFound = false;
+        const bounds = new Bounds(this.Bounds.x, 0, this.Bounds.width + this.XOffset, (5));
+        const staff = this.Staves.find((s) => s.Num === staffNum);
+        actualLine = line + staff.TopLine;
+        const relativeLine = staff.TopLine < 0 ?
+            actualLine + Math.abs(staff.TopLine) :
+            actualLine - staff.TopLine;
+        bounds.y = 5 * (actualLine - staff.Buffer);
+        console.log('Buffer: ', staff.Buffer);
+        console.log('StaffHovered: ', staff);
+        return { num: (actualLine - staff.Buffer),
             bounds: bounds };
     }
-    //STATIC? WHY? I DUNNO
     // Get note position relative to staff/measure
-    static GetNotePositionOnLine(msr, line) {
-        const cam = msr.Camera;
-        let y = 0;
-        if (line <= msr.SALineBot) {
-            y = msr.Bounds.y + (line - msr.SALineTop) * (5);
-        }
-        else {
-            y = msr.Bounds.y + msr.GetMeasureHeight() + ((line - msr.SBLineTop) * (5));
-        }
+    GetNotePositionOnLine(line, staff) {
+        const staffYPos = GetStaffHeightUntil(this.Staves, staff);
+        let y = this.Bounds.y + staffYPos + (line - this.Staves[staff].TopLine) * 5;
         return y - 2.5;
-    }
-    static GetMeasureHeight(msr, cam) {
-        return (msr.SALineTop + msr.SALineBot) * (5);
-        // expand on this to include grand staffs and have line height (5) be 
-        // a constant that is defined somewhere
-    }
-    static GetMeasureMidLine(msr) {
-        return (msr.SALineMid - msr.SALineTop);
     }
     GetBoundsWithOffset() {
         return new Bounds(this.Bounds.x, this.Bounds.y, this.Bounds.width + this.XOffset, this.Bounds.height);
@@ -130,18 +100,12 @@ class Measure {
         }
     }
     CreateDivisions(cam, afterInput = false) {
-        if (afterInput) {
-            this.ResetHeight();
-        }
         this.Divisions = [];
-        this.Divisions.push(...CreateDivisions(this, this.Notes, 0, cam));
-        if (this.Instrument.Staff === StaffType.Grand) {
-            this.Divisions.push(...CreateDivisions(this, this.Notes, 1, cam));
-            ResizeDivisions(this, this.Divisions, 1);
-        }
-        ResizeDivisions(this, this.Divisions, 0);
-        UpdateNoteBounds(this, 0);
-        UpdateNoteBounds(this, 1);
+        this.Staves.forEach((s) => {
+            this.Divisions.push(...CreateDivisions(this, this.Notes, s.Num, cam));
+            ResizeDivisions(this, this.Divisions, s.Num);
+            UpdateNoteBounds(this, s.Num);
+        });
     }
     Reposition(prevMsr) {
         this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
@@ -149,116 +113,21 @@ class Measure {
     }
     // set height of measure based off of notes in measure
     // eventually will be determined by instrument / row etc.
+    // TODO: Remove these three methods (doing now)
     GetMeasureHeight() {
-        const lineHeight = (5); // constant should be set elsewhere
-        const topNegative = this.SALineTop < 0;
-        const heightInLines = topNegative ?
-            this.SALineBot + Math.abs(this.SALineTop) :
-            this.SALineBot - this.SALineTop;
-        return heightInLines * lineHeight;
+        return 0;
     }
     GetGrandMeasureHeight() {
-        const lineHeight = (5); // constant should be set elsewhere
-        const topStaffHeight = this.GetMeasureHeight();
-        const topNegative = (this.SBLineTop - this.SBOffset) < 0;
-        const heightInLines = topNegative ?
-            (this.SBLineBot - this.SBOffset) + (Math.abs(this.SBLineTop - this.SBOffset)) :
-            (this.SBLineBot - this.SBOffset) - (this.SBLineTop - this.SBOffset);
-        return topStaffHeight + (heightInLines * lineHeight);
+        return 0;
     }
     GetGrandMeasureMidLine() {
-        return this.SBLineMid - this.SBLineTop;
+        return 0;
     }
-    ResetHeight() {
-        const height = this.Instrument.Staff === StaffType.Single ?
-            this.GetMeasureHeight() : this.GetGrandMeasureHeight();
-        this.Bounds.height = height;
-        this.PrevBoundsH = height;
-        // move this somewhere else
-        this.SALineTop = this.SALineTopSave;
-        this.SALineBot = this.SALineBotSave;
-        this.SBLineTop = this.SBLineTopSave;
-        this.SBLineBot = this.SBLineBotSave;
-        this.Bounds.y = this.PrefBoundsY;
-    }
-    // name change later I'm too tired to think of actual function name
-    ReHeightenTop(expand, lineOver) {
-        if (expand) {
-            const dist = lineOver - this.SALineTop;
-            this.SALineTop = lineOver - dist - 1;
-            this.Bounds.y -= 5;
-            this.Bounds.height += 5;
-        }
-        else {
-            if (lineOver >= this.SALineTopSave) {
-                this.SALineTop = this.SALineTopSave;
-                this.Bounds.y = this.PrefBoundsY;
-            }
-            else {
-                this.SALineTop += 1;
-                this.Bounds.y += 5;
-            }
-        }
-        this.CreateDivisions(this.Camera);
-    }
-    ReHeightenBot(expand, lineOver) {
-        if (expand) {
-            this.SALineBot = lineOver + 2;
-            this.Bounds.height += 5;
-        }
-        else {
-            if (lineOver <= this.SALineBotSave) {
-                this.SALineBot = this.SALineBotSave;
-                this.Bounds.height = this.PrevBoundsH;
-            }
-            else {
-                this.SALineBot -= 1;
-                this.Bounds.height -= 5;
-            }
-        }
-        this.CreateDivisions(this.Camera);
-    }
-    ReHeightenTopGrand(expand, lineOver) {
-        if (expand) {
-            const dist = lineOver - this.SBLineTop;
-            this.SBLineTop = lineOver - dist - 1;
-            this.Bounds.y -= 5;
-            this.Bounds.height += 5;
-        }
-        else {
-            if (lineOver >= this.SBLineTopSave) {
-                this.SBLineTop = this.SBLineTopSave;
-                this.Bounds.y = this.PrefBoundsY;
-            }
-            else {
-                this.SBLineTop += 1;
-                this.Bounds.y += 5;
-            }
-        }
-        this.CreateDivisions(this.Camera);
-    }
-    ReHeightenBotGrand(expand, lineOver) {
-        if (expand) {
-            this.SBLineBot = lineOver + 2;
-            this.Bounds.height += 5;
-        }
-        else {
-            if (lineOver <= this.SBLineBotSave) {
-                this.SBLineBot = this.SBLineBotSave;
-                this.Bounds.height = this.PrevBoundsH;
-            }
-            else {
-                this.SBLineBot -= 1;
-                this.Bounds.height -= 5;
-            }
-        }
-        this.CreateDivisions(this.Camera);
-    }
-    ResetTopHeight() {
-        this.SALineTop = this.SALineTopSave;
-        this.Bounds.y = this.PrefBoundsY;
-        this.Bounds.height = this.PrevBoundsH;
-        this.CreateDivisions(this.Camera);
+    /* End TODO
+    */
+    // Gets total height of measure (all staffs)
+    NEW_GetMeasureHeight() {
+        return GetStaffHeightUntil(this.Staves);
     }
     AddNote(note, fromInput = false) {
         if (note.Rest) {

@@ -6,6 +6,7 @@ import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
+import { GetStaffMiddleLine } from "./Staff.js";
 //const Key: Map<string, string[]> = new Map<string, string[]>([
 //  ["amin", ""],
 //  ["
@@ -73,7 +74,7 @@ class TimeSignature implements ISelectable {
 
   SetBounds(msr: Measure, staff: number): void {
     if (staff === StaffType.Single) {
-      const msrMidLine = Measure.GetMeasureMidLine(msr);
+      const msrMidLine = GetStaffMiddleLine(msr.Staves, staff);
       this.Bounds.x = msr.Bounds.x + msr.XOffset - 25;
       this.Bounds.y = msr.Bounds.y + ((msrMidLine - 4) * 5);
       this.Bounds.width = 30;

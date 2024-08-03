@@ -1,4 +1,3 @@
-import { Measure } from "../Core/Measure.js";
 function RenderPanel(props) {
     const { canvas, context, camera } = props;
     const panelWidth = 200;
@@ -77,14 +76,16 @@ function RenderDebugOld(measure, renderProps, index, mousePos) {
     // context.fillRect(line.bounds.x + camera.x, lineY + camera.y, line.bounds.width, line.bounds.height);
     // TODO: Line numbers for grand staff are wrong in debug
     // OR they are wrong in staff 0 if we don't add the top line number
-    const line = Measure.GetLineHovered(mousePos.y, measure);
+    const line = measure.GetLineHovered(mousePos.y, 0);
     //    context.fillRect(line.bounds.x + camera.x,
     //                     line.bounds.y + camera.y,
     //                     line.bounds.width,
     //                     line.bounds.height);
     context.fillStyle = "black";
     context.font = "8px serif";
-    let lineNum = line.num + measure.SALineTop;
+    // TODO: Removed SALineTop from this line (line num + salinetop), not sure
+    // of its use
+    let lineNum = line.num;
     context.fillText("Line Hovered: " + lineNum.toString(), 130, 10);
     context.fillStyle = "rgba(0, 0, 50, 0.2)";
     const div1 = measure.Divisions.filter(d => d.Staff === 0)[0];
@@ -99,10 +100,7 @@ function RenderDebugOld(measure, renderProps, index, mousePos) {
     //                     div2.Bounds.width,
     //                     div2.Bounds.height);
     context.strokeStyle = "black";
-    //    context.strokeRect(measure.Bounds.x + measure.XOffset + camera.x,
-    //                 measure.Bounds.y + camera.y,
-    //                 measure.Bounds.width,
-    //                 measure.Bounds.height);
+    context.strokeRect(measure.Bounds.x + measure.XOffset + camera.x, measure.Bounds.y + camera.y, measure.Bounds.width, measure.Bounds.height);
 }
 function debugGetDurationName(duration, alpha = 255) {
     let name = "";

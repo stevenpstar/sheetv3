@@ -9,7 +9,6 @@ import { AddNoteOnMeasure, CreateTuplet, InputOnMeasure, UpdateNoteBounds } from
 import { Selector } from "./Workers/Selector.js";
 import { GetDivisionTotalWidth } from "./Core/Division.js";
 import { Instrument, StaffType } from "./Core/Instrument.js";
-import { ManageHeight } from "./Workers/Heightener.js";
 import { KeyMapping, KeyPress } from "./Workers/Mappings.js";
 import { ISelectable, SelectableTypes } from "./Types/ISelectable.js";
 import { Page } from "./Core/Page.js";
@@ -165,7 +164,9 @@ class App {
             }
           })
         } else { 
-          m.ResetHeight(); }
+          console.log("We were resetting height here for some reason!");
+ //         m.ResetHeight();         
+        }
       });
     }
     // This shouldn't always update but will need to do serious work to figure
@@ -195,6 +196,8 @@ class App {
       .Measures
       .find( (msr: Measure) => msr.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
 
+      console.log('MsrOver: ', msrOver);
+
     if (msrOver === undefined) { 
       if (!shiftKey) {
         this.Selector.DeselectAll();
@@ -219,7 +222,10 @@ class App {
         this.Selector.SelectMeasure(msrOver);
       } 
       if (!this.DraggingNote) { this.DraggingNote = true; }
-      this.StartLine = Measure.GetLineHovered(y, msrOver).num;
+      const divOver = msrOver.Divisions.find(d => d.Bounds.IsHovered(x, y, this.Camera));
+      if (divOver) {
+        this.StartLine = msrOver.GetLineHovered(y, divOver.Staff).num;
+      }
     } 
     else if (this.NoteInput) {
       InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput);
@@ -325,7 +331,6 @@ class App {
       this.Sheet.Measures.forEach(m => {
         if (m.PageLine === this.LineNumber) {
           m.Bounds.y = this.LinerBounds.y
-          m.PrefBoundsY = m.Bounds.y;
         }
       });
       this.ResizeMeasures(this.Sheet.Measures);
@@ -343,7 +348,8 @@ class App {
       return; 
     }
 
-    this.EndLine = Measure.GetLineHovered(y, msrOver).num;
+    // TODO: We are only looking at staff 0 for now
+    this.EndLine = msrOver.GetLineHovered(y, 0).num;
     const lineDiff = this.EndLine - this.StartLine;
     for (let [msr, elem] of this.Selector.Elements) {
         elem.filter((e: ISelectable) => e.SelType === SelectableTypes.Note).forEach((n: Note) => {

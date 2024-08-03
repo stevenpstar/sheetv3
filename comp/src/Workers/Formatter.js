@@ -56,7 +56,8 @@ function ResizeMeasuresOnPage(measures, page, cam, config) {
         const fillWidth = pageSize - msrsLineWidth;
         msrs.forEach((m, i) => {
             m.Bounds.y = line.LineBounds.y;
-            m.PrefBoundsY = m.Bounds.y;
+            // TODO: We have removed prefboundsY, will likely have to reimplement
+            //     m.PrefBoundsY = m.Bounds.y;
             if (i === 0) {
                 m.Bounds.x = page.Bounds.x + page.Margins.left;
                 m.RenderClef = m.Instrument.Staff === StaffType.Rhythm ? false : true;

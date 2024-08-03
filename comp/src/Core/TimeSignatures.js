@@ -2,7 +2,7 @@ import { RenderSymbol, TimeSigNumbers } from "../Renderers/MusicFont.Renderer.js
 import { Bounds } from "../Types/Bounds.js";
 import { SelectableTypes } from "../Types/ISelectable.js";
 import { StaffType } from "./Instrument.js";
-import { Measure } from "./Measure.js";
+import { GetStaffMiddleLine } from "./Staff.js";
 //const Key: Map<string, string[]> = new Map<string, string[]>([
 //  ["amin", ""],
 //  ["
@@ -46,7 +46,7 @@ class TimeSignature {
     }
     SetBounds(msr, staff) {
         if (staff === StaffType.Single) {
-            const msrMidLine = Measure.GetMeasureMidLine(msr);
+            const msrMidLine = GetStaffMiddleLine(msr.Staves, staff);
             this.Bounds.x = msr.Bounds.x + msr.XOffset - 25;
             this.Bounds.y = msr.Bounds.y + ((msrMidLine - 4) * 5);
             this.Bounds.width = 30;

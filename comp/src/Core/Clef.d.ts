@@ -8,6 +8,7 @@ import { Measure } from "./Measure.js";
 declare class Clef implements ISelectable {
     ID: number;
     Selected: boolean;
+    Staff: number;
     Position: {
         x: number;
         y: number;
@@ -20,7 +21,7 @@ declare class Clef implements ISelectable {
     constructor(id: number, pos: {
         x: number;
         y: number;
-    }, type: string, beat: number);
+    }, type: string, beat: number, staff: number);
     render(renderProps: RenderProperties, theme: Theme): void;
     SetBounds(msr: Measure, staff: number): void;
     IsHovered(x: number, y: number, cam: Camera): boolean;

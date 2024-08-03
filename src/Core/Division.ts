@@ -5,6 +5,7 @@ import { GetNoteClefType } from "./Clef.js";
 import { StaffType } from "./Instrument.js";
 import { Clef, Measure } from "./Measure.js";
 import { Note, NoteProps } from "./Note.js";
+import { GetStaffHeight, GetStaffHeightUntil, GetStaffMiddleLine } from "./Staff.js";
 import { GetLargestValues } from "./Values.js";
 
 interface Division {
@@ -40,7 +41,7 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number, cam: Camera
       const restProps: NoteProps = {
       Beat: 1,
       Duration: 1,
-      Line: staff === 0 ? msr.SALineMid : msr.SBLineMid,
+      Line: GetStaffMiddleLine(msr.Staves, staff),
       Rest: true,
       Tied: false,
       Staff: staff,
@@ -76,14 +77,10 @@ function CreateDivisions(msr: Measure, notes: Note[], staff: number, cam: Camera
 
 function CreateBeatBounds(msr: Measure, beat: number, duration: number, staff: number, cam: Camera): Bounds {
   // single height
-  const singleHeight = msr.GetMeasureHeight();
-  const grandHeight = msr.GetGrandMeasureHeight() - singleHeight;
-    const height = staff === StaffType.Grand ? 
-    grandHeight : singleHeight; // height will always be max
-    const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
-  const y = staff === 0 ? msr.Bounds.y : 
-    msr.Bounds.y + singleHeight;
+  const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
+  const height = GetStaffHeight(msr.Staves, staff);
   const x = msr.Bounds.x + msr.XOffset + ((beat - 1) / msr.TimeSignature.bottom) * msr.Bounds.width;
+  const y = msr.Bounds.y + GetStaffHeightUntil(msr.Staves, staff);
   return new Bounds(x, y, width, height);
 }
 
@@ -179,7 +176,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
     const restProps: NoteProps = {
       Beat: div.Beat,
       Duration: div.Duration,
-      Line: div.Staff === 0 ? msr.SALineMid : msr.SBLineMid,
+      Line: GetStaffMiddleLine(msr.Staves, staff),
       Rest: true,
       Tied: false,
       Staff: div.Staff,
@@ -228,7 +225,7 @@ function GenerateMissingBeatDivisions(msr: Measure, divisions: Division[], staff
     const restProps: NoteProps = {
       Beat: div.Beat,
       Duration: div.Duration,
-      Line: div.Staff === 0 ? msr.SALineMid : msr.SBLineMid,
+      Line: GetStaffMiddleLine(msr.Staves, staff),
       Rest: true,
       Tied: false,
       Staff: div.Staff,

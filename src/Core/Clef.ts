@@ -6,6 +6,7 @@ import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
+import { GetStaffMiddleLine } from "./Staff.js";
 
 // TODO: Move this somewhere central
 const lineSpace = 10;
@@ -13,15 +14,17 @@ const lineSpace = 10;
 class Clef implements ISelectable {
   ID: number;
   Selected: boolean;
+  Staff: number;
   Position: { x: number, y: number };
   Bounds: Bounds;
   SelType: SelectableTypes;
   Type: string;
   Beat: number;
   Editable: boolean;
-  constructor(id: number, pos: { x: number, y: number }, type: string, beat: number) {
+  constructor(id: number, pos: { x: number, y: number }, type: string, beat: number, staff: number) {
     this.ID = id;
     this.Position = pos;
+    this.Staff = staff;
     this.Bounds = new Bounds(0, 0, 0, 0);
     this.Type = type;
     this.SelType = SelectableTypes.Clef;
@@ -50,12 +53,6 @@ class Clef implements ISelectable {
                  this.Position.y,
                   theme,
                   this.Selected);
-  //  renderProps.context.strokeStyle = "green";
-  //  renderProps.context.strokeRect(
-  //    this.Bounds.x + renderProps.camera.x,
-  //    this.Bounds.y + renderProps.camera.y,
-  //    this.Bounds.width,
-  //    this.Bounds.height);
   }
 
   SetBounds(msr: Measure, staff: number): void {
@@ -69,8 +66,7 @@ class Clef implements ISelectable {
     let lineBuffer = 2;
 //    let yBuffer = staff === 0 ? 0 : msr.GetMeasureHeight();
     let yBuffer = 0;
-    const msrMidLine = staff === StaffType.Single ?
-      Measure.GetMeasureMidLine(msr) : msr.GetGrandMeasureMidLine();
+    const msrMidLine = GetStaffMiddleLine(msr.Staves, staff);
     this.Position.x = xPosition + xBuffer;
     this.Bounds.x = xPosition + xBuffer;
     switch (this.Type) {
