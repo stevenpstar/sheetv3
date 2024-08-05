@@ -1,5 +1,5 @@
 import { Beam } from "../Core/Beam.js";
-import { GetStaffMiddleLine } from "../Core/Staff.js";
+import { GetStaffHeightUntil } from "../Core/Staff.js";
 import { Stem } from "../Core/Stem.js";
 import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
@@ -115,7 +115,7 @@ function RenderRest(ctx, div, cam, note, msr, theme) {
     ctx.fillStyle = theme.NoteElements;
     let x = div.Bounds.x + cam.x + noteXBuffer;
     //    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
-    let y = msr.GetNotePositionOnLine(note.Line - 3, note.Staff) + cam.y;
+    let y = msr.GetNotePositionOnLine(note.Line + 2.5, note.Staff) + cam.y;
     let path = `m${x} ${y}`;
     ctx.fillStyle = note.Selected ? theme.SelectColour : theme.NoteElements;
     if (div.Duration === 0.3125) {
@@ -138,11 +138,11 @@ function RenderRest(ctx, div, cam, note, msr, theme) {
         ctx.fill(new Path2D(path));
     }
     else if (div.Duration === 0.5) {
-        y = msr.GetNotePositionOnLine(note.Line, note.Staff) - 6 + cam.y;
+        y = msr.GetNotePositionOnLine(note.Line + 4.5, note.Staff) + cam.y;
         ctx.fillRect(x, y, 14, 6);
     }
     else if (div.Duration === 1) {
-        y = msr.GetNotePositionOnLine(note.Line - 2, note.Staff) + cam.y;
+        y = msr.GetNotePositionOnLine(note.Line + 3.6, note.Staff) + cam.y;
         x = div.Bounds.x + cam.x + (div.Bounds.width / 2) - 7;
         ctx.fillRect(x, y, 14, 6);
     }
@@ -293,7 +293,7 @@ function DetermineStemDirection(notes, divisions, staff, measure) {
         console.error("Divisions and note array do not match");
         return;
     }
-    const middleLine = GetStaffMiddleLine(measure.Staves, staff);
+    const middleLine = 15;
     let highestLine = Number.MAX_SAFE_INTEGER;
     let lowestLine = Number.MIN_SAFE_INTEGER;
     notes.forEach((na) => {
@@ -336,13 +336,15 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir, th
     let stemEndY = 0; // end y position of stem
     let beamStartX = 0;
     let beamEndX = 0;
-    const middleLine = GetStaffMiddleLine(msr.Staves, staff);
+    const middleLine = (GetStaffHeightUntil(msr.Staves, staff) / 5) +
+        15;
     const yLineBuffer = msr.Staves.find((s) => s.Num === staff).TopLine;
     const staffTopLine = yLineBuffer;
     const midStemThreshHold = 7;
     const lineHeight = 5;
     // Highest line has a lower number (lines start at 0 from the top 
     // of the measure and go down
+    let lowestNote;
     notes.forEach((na) => {
         na.forEach((n) => {
             if (n.Line < highestLine) {
@@ -350,6 +352,7 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir, th
             }
             if (n.Line > lowestLine) {
                 lowestLine = n.Line;
+                lowestNote = n;
             }
         });
     });
@@ -398,7 +401,7 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir, th
         });
         const highLine = sortedNotes[0].Line;
         const lowLine = sortedNotes[sortedNotes.length - 1].Line;
-        const startPos = (stemDirection === StemDirection.Up) ?
+        let startPos = (stemDirection === StemDirection.Up) ?
             div.Bounds.y + ((lowLine - yLineBuffer) * lineHeight) + camera.y - 2 : // 2 is a buffer for stem
             div.Bounds.y + ((highLine - yLineBuffer) * lineHeight) + camera.y + 2;
         if (divisions.length === 1 && divisions[0].Duration < 0.25) {
@@ -455,6 +458,12 @@ function RenderStemRevise(renderProps, notes, divisions, staff, msr, beamDir, th
                 newBeam.Render(context, camera, GetFlagCount(divisions[0].Duration), stemDirection, theme);
             }
         }
+        // TODO: Working things out
+        if (lowestNote !== undefined) {
+            startPos = lowestNote.Bounds.y + camera.y;
+            stemEndY = startPos - 35;
+        }
+        // END TODO
         const diff = stemEndY - startPos;
         const newStem = new Stem(new Bounds(stemX, startPos, 1.5, diff));
         newStem.Render(context, camera, theme);
@@ -488,7 +497,7 @@ function renderLedgerLines(notes, division, renderProps, staff, msr, theme, colo
     const ledgerString = `h 22 v 1.5 h-20 v-1.5 Z`;
     const bdNotes = notes.filter((note) => note.Beat === division.Beat &&
         note.Staff === division.Staff);
-    const midLine = 15; //GetStaffMiddleLine(msr.Staves, staff);
+    const midLine = 15;
     if (bdNotes.length === 0) {
         return;
     }

@@ -2,12 +2,14 @@ import { DetermineBeamDirection } from "../Core/Beam.js";
 import { GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Note } from "../Core/Note.js";
-import { RenderStaff } from "../Core/Staff.js";
+import { RenderMeasureLines, RenderStaffLines } from "../Core/Staff.js";
+import { CreateBeams } from "../Factory/Beam.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
-import { BeamDirection, DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderStemRevise, RenderTies, RenderTuplets, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
+import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderTies, RenderTuplets, StemDirection, renderLedgerLines } from "./Note.Renderer.js";
+import { CreateStems } from "./Stem.Fact.js";
 const line_space = 10;
 const line_width = 1;
 const endsWidth = 2;
@@ -19,10 +21,9 @@ function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteI
     //    if (debug)
     // RenderDebug(measure, renderProps, index, mousePos);
     RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
-    RenderNotes(measure, renderProps, 0, config.Theme);
-    if (measure.Instrument.Staff === StaffType.Grand) {
-        RenderNotes(measure, renderProps, 1, config.Theme);
-    }
+    measure.Staves.forEach((s) => {
+        RenderNotes(measure, renderProps, s.Num, config.Theme);
+    });
 }
 // TODO: move this function elsewhere
 function MiddleLineBounds(measure) {
@@ -39,11 +40,6 @@ function MiddleLineBounds(measure) {
 }
 function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput, noteValue, theme) {
     const { canvas, context, camera } = renderProps;
-    let line = measure.GetLineHovered(mousePos.y, 0);
-    if (measure.Instrument.Staff === StaffType.Rhythm) {
-        line.num = 15;
-        line.bounds = MiddleLineBounds(measure);
-    }
     if (noteInput) {
         // context.fillStyle = "rgb(0, 0, 255, 0.1)"; 
         // const lineY = measure.Bounds.y + (line.num * (line_space / 2) - (line_space / 4));
@@ -53,6 +49,11 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
     const divisions = measure.Divisions;
     divisions.forEach(s => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
+            let line = measure.GetLineHovered(mousePos.y, s.Staff);
+            if (measure.Instrument.Staff === StaffType.Rhythm) {
+                line.num = 15;
+                line.bounds = MiddleLineBounds(measure);
+            }
             context.fillStyle = "rgb(0, 0, 255, 0.1)";
             context.fillRect(s.Bounds.x + camera.x, s.Bounds.y + camera.y, s.Bounds.width, s.Bounds.height);
             if (noteInput) {
@@ -73,7 +74,14 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
                 const tempNote = new Note(tempNoteProps);
                 if (!restInput) {
                     RenderNote(tempNote, renderProps, new Bounds(s.Bounds.x + noteXBuffer, line.bounds.y, 0, 0), true, false, StemDirection.Up, theme);
-                    RenderStemRevise(renderProps, [[tempNote]], [s], s.Staff, measure, BeamDirection.Flat, theme);
+                    // RenderStemRevise(
+                    //   renderProps,
+                    //   [[tempNote]],
+                    //   [s],
+                    //   s.Staff,
+                    //   measure,
+                    //   BeamDirection.Flat,
+                    //   theme);
                     renderLedgerLines([tempNote], s, renderProps, s.Staff, measure, theme);
                 }
                 else {
@@ -93,8 +101,9 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure, theme) {
         context.fillRect(msr.Bounds.x + camera.x, msr.Bounds.y + camera.y, msr.Bounds.width + msr.XOffset, msr.Bounds.height);
     }
     context.fillStyle = theme.NoteElements;
+    RenderMeasureLines(renderProps, msr);
     msr.Staves.forEach((s) => {
-        RenderStaff(renderProps, msr, s);
+        RenderStaffLines(renderProps, msr, s);
     });
     if (msr.RenderClef) {
         RenderMeasureClef(renderProps, msr, theme);
@@ -163,7 +172,14 @@ function RenderNotes(msr, renderProps, staff, theme) {
             const beamAngle = DetermineBeamDirection(msr, group, stemDir);
             //      const beam = GenerateBeams(msr, group, stemDir);
             //      beam.Render(context, camera);
-            RenderStemRevise(renderProps, group.Notes, group.Divisions, staff, msr, beamAngle, theme);
+            //RenderStemRevise(renderProps, group.Notes, group.Divisions, staff, msr, beamAngle, theme);
+            const stems = CreateStems(group.Notes, group.Divisions, staff, msr, camera);
+            let beams = [];
+            if (group.Divisions.length > 1 && group.Divisions[0].Duration < 0.25) {
+                beams = CreateBeams(group, stems, msr);
+                beams.forEach(b => b.Render(context, camera, 1, StemDirection.Up, theme));
+            }
+            stems.forEach(s => s.Render(context, camera, theme));
             group.Divisions.forEach(div => {
                 let hasFlipped = false;
                 const dN = msr.Notes.filter((note) => note.Beat === div.Beat &&

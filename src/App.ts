@@ -196,8 +196,6 @@ class App {
       .Measures
       .find( (msr: Measure) => msr.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
 
-      console.log('MsrOver: ', msrOver);
-
     if (msrOver === undefined) { 
       if (!shiftKey) {
         this.Selector.DeselectAll();
@@ -348,8 +346,10 @@ class App {
       return; 
     }
 
-    // TODO: We are only looking at staff 0 for now
-    this.EndLine = msrOver.GetLineHovered(y, 0).num;
+    const divOver = msrOver.Divisions.find(d => d.Bounds.IsHovered(x, y, this.Camera));
+    if (divOver) {
+      this.EndLine = msrOver.GetLineHovered(y, divOver.Staff).num;
+    }
     const lineDiff = this.EndLine - this.StartLine;
     for (let [msr, elem] of this.Selector.Elements) {
         elem.filter((e: ISelectable) => e.SelType === SelectableTypes.Note).forEach((n: Note) => {

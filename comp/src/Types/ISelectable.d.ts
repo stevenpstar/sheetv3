@@ -13,7 +13,7 @@ interface ISelectable {
     ID: number;
     Selected: boolean;
     SelType: SelectableTypes;
-    Bounds: Bounds;
+    Bounds: Bounds | Bounds[];
     Editable: boolean;
     IsHovered: (x: number, y: number, cam: Camera) => boolean;
 }

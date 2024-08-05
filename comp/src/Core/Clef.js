@@ -2,7 +2,6 @@ import { Clefs, RenderSymbol } from "../Renderers/MusicFont.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { SelectableTypes } from "../Types/ISelectable.js";
 import { StaffType } from "./Instrument.js";
-import { GetStaffMiddleLine } from "./Staff.js";
 // TODO: Move this somewhere central
 const lineSpace = 10;
 class Clef {
@@ -43,7 +42,9 @@ class Clef {
         let lineBuffer = 2;
         //    let yBuffer = staff === 0 ? 0 : msr.GetMeasureHeight();
         let yBuffer = 0;
-        const msrMidLine = GetStaffMiddleLine(msr.Staves, staff);
+        // TODO: Replace with relative mid line function (i think it might exist
+        // already)
+        const msrMidLine = 10; //GetStaffActualMidLine(msr.Staves, staff);
         this.Position.x = xPosition + xBuffer;
         this.Bounds.x = xPosition + xBuffer;
         switch (this.Type) {

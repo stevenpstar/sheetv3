@@ -17,6 +17,9 @@ class Measure {
         this.Staves = [];
         this.Staves.push(new Staff(0));
         this.Staves.push(new Staff(1));
+        this.Staves.push(new Staff(2));
+        this.Staves.push(new Staff(3));
+        this.Staves.push(new Staff(4));
         this.Message = properties.Message;
         this.RunningID = runningId;
         this.ID = 0;
@@ -44,44 +47,38 @@ class Measure {
         this.PageLine = properties.Page.PageLines[0].Number;
         this.SetXOffset();
         this.CreateDivisions(this.Camera);
-        // create default clef
-        const trebleClef = new Clef(0, { x: this.Bounds.x + 16,
-            y: this.Bounds.y + (5 * GetStaffMiddleLine(this.Staves, StaffType.Single) + (10 * 2)) }, "treble", 1, StaffType.Single);
-        trebleClef.SetBounds(this, 0);
-        this.Clefs.push(trebleClef);
-        if (this.Instrument.Staff === StaffType.Grand) {
-            const bassClef = new Clef(1, {
-                x: this.Bounds.x + 30,
-                y: this.Bounds.y + this.GetMeasureHeight() + (this.GetGrandMeasureMidLine() * 5) - 2
-            }, "bass", 1, StaffType.Grand);
-            bassClef.SetBounds(this, 1);
-            this.Clefs.push(bassClef);
-        }
+        this.Staves.forEach((s) => {
+            const trebleClef = new Clef(0, { x: this.Bounds.x + 16,
+                y: this.Bounds.y + (5 * GetStaffMiddleLine(this.Staves, s.Num) + (10 * 2)) }, "treble", 1, s.Num);
+            trebleClef.SetBounds(this, s.Num);
+            this.Clefs.push(trebleClef);
+        });
         this.TimeSignature.SetBounds(this, 0);
         this.TimeSignature.SetBounds(this, 1);
     }
+    // Gets line hovered relative to staff (15 will always be middle of staff for
+    // example)
     GetLineHovered(y, staffNum) {
         const cam = this.Camera;
         const relYPos = y - this.Bounds.y - cam.y; //TODO: Dunno about scaling by zoom here
         let line = Math.floor(relYPos / (5)); // this should be a constant, line_height (defined somewhere)
         let actualLine = line;
-        let lineFound = false;
         const bounds = new Bounds(this.Bounds.x, 0, this.Bounds.width + this.XOffset, (5));
-        const staff = this.Staves.find((s) => s.Num === staffNum);
+        const staff = this.Staves.find(s => s.Num === staffNum);
+        const prevStaffLines = GetStaffHeightUntil(this.Staves, staffNum) / 5;
         actualLine = line + staff.TopLine;
+        const testLine = actualLine - prevStaffLines;
         const relativeLine = staff.TopLine < 0 ?
             actualLine + Math.abs(staff.TopLine) :
             actualLine - staff.TopLine;
-        bounds.y = 5 * (actualLine - staff.Buffer);
-        console.log('Buffer: ', staff.Buffer);
-        console.log('StaffHovered: ', staff);
-        return { num: (actualLine - staff.Buffer),
+        bounds.y = 5 * (actualLine);
+        return { num: testLine,
             bounds: bounds };
     }
     // Get note position relative to staff/measure
     GetNotePositionOnLine(line, staff) {
         const staffYPos = GetStaffHeightUntil(this.Staves, staff);
-        let y = this.Bounds.y + staffYPos + (line - this.Staves[staff].TopLine) * 5;
+        let y = staffYPos + this.Bounds.y + (line - this.Staves[staff].TopLine) * 5;
         return y - 2.5;
     }
     GetBoundsWithOffset() {

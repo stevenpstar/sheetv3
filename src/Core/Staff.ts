@@ -12,16 +12,43 @@ class Staff {
     this.Num = num;
     this.Buffer = this.Num * 1000;
     // These defaults will change/be configurable
-    this.TopLine = 5 + this.Buffer;
-    this.BotLine = 35 + this.Buffer;
-    this.MidLine = 15 + this.Buffer;
+    this.TopLine = 5;
+    this.BotLine = 35;
+    this.MidLine = 15;
   }
 }
 
 // helper functions
+function RenderMeasureLines(
+  renderProps: RenderProperties,
+  measure: Measure): void {
+
+  const { canvas, context, camera } = renderProps;
+  const line_space = 10;
+  const line_width = 1;
+  const endsWidth = 2;
+
+  const staves = measure.Staves;
+  const yStart = measure.Bounds.y + ( (GetStaffMiddleLine(staves, 0) - 4) * 5 )
+  const yEnd = measure.Bounds.y + GetStaffHeightUntil(staves, staves.length-1) + (3 * 5) - 1;
+
+  const measureBegin = 
+    `M${measure.Bounds.x + camera.x} 
+        ${ yStart + camera.y} h 
+        ${endsWidth} v ${yEnd} h -${endsWidth} Z`;
+
+  const measureEnd = 
+    `M${measure.Bounds.x + measure.Bounds.width + measure.XOffset + camera.x} 
+        ${ yStart + camera.y} h 
+        ${endsWidth} v ${yEnd} h -${endsWidth} Z`;
+
+  context.fill(new Path2D(measureBegin));
+  context.fill(new Path2D(measureEnd));
+
+  }
 
 // TODO: Probably move this render function once it is working.
-function RenderStaff(renderProps: RenderProperties, msr: Measure, staff: Staff): void {
+function RenderStaffLines(renderProps: RenderProperties, msr: Measure, staff: Staff): void {
   // These should be defined somewhere else
   const { canvas, context, camera } = renderProps;
   const line_space = 10;
@@ -31,20 +58,8 @@ function RenderStaff(renderProps: RenderProperties, msr: Measure, staff: Staff):
   const staves = msr.Staves;
   const yStart = msr.Bounds.y + GetStaffHeightUntil(staves, staff.Num);
   const staffMidLine = GetStaffMiddleLine(staves, staff.Num);
-  const staffHeight = GetStaffHeight(staves, staff.Num);
-
-  const measureBegin = 
-    `M${msr.Bounds.x + camera.x} 
-        ${ yStart + ((5) * staffMidLine) - (line_space * 2) + camera.y} h 
-        ${endsWidth} v ${staffHeight} h -${endsWidth} Z`;
-
-  const measureEnd = 
-    `M${msr.Bounds.x + msr.Bounds.width + msr.XOffset + camera.x} 
-      ${ yStart + ((5) * staffMidLine) - (line_space * 2) + camera.y} h 
-      ${endsWidth} v ${staffHeight + 1} h -${endsWidth} Z`;
-
-  context.fill(new Path2D(measureBegin));
-  context.fill(new Path2D(measureEnd));
+  const staffHeight = GetStaffHeightUntil(staves, staves.length-2) + 
+    GetStaffMiddleLine(staves, staves.length - 2) * 5;
 
   // Render Staff Lines
   for (let l=0;l<5;l++) {
@@ -55,7 +70,6 @@ function RenderStaff(renderProps: RenderProperties, msr: Measure, staff: Staff):
     const linePath = new Path2D(lineString);
     context.fill(linePath);
   }
- 
 }
 
 function GetStaffHeightUntil(staves: Staff[], staffNum: number = -1): number {
@@ -84,8 +98,17 @@ function GetStaffHeight(staves: Staff[], staffNum: number): number {
 }
 
 function GetStaffMiddleLine(staves: Staff[], staffNum: number): number {
+  const linesBefore = 0;//GetStaffHeightUntil(staves, staffNum) / 5;
   const staff = staves.find((s: Staff) => s.Num === staffNum);
-  return staff.MidLine - staff.TopLine;
+  return linesBefore + (staff.MidLine - staff.TopLine);
 }
 
-export { Staff, GetStaffHeightUntil, GetStaffMiddleLine, GetStaffHeight, RenderStaff }
+function GetStaffActualMidLine(staves: Staff[], staffNum: number): number {
+  const linesBefore = GetStaffHeightUntil(staves, staffNum) / 5;
+  const staff = staves.find((s: Staff) => s.Num === staffNum);
+  return linesBefore + (staff.MidLine - staff.TopLine);
+}
+
+
+export { Staff, GetStaffHeightUntil, GetStaffMiddleLine, GetStaffHeight, RenderStaffLines,
+ RenderMeasureLines, GetStaffActualMidLine}

@@ -6,7 +6,7 @@ import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
-import { GetStaffMiddleLine } from "./Staff.js";
+import { GetStaffMiddleLine, Staff } from "./Staff.js";
 //const Key: Map<string, string[]> = new Map<string, string[]>([
 //  ["amin", ""],
 //  ["
@@ -29,20 +29,13 @@ class TimeSignature implements ISelectable {
   ID: number;
   Selected: boolean;
   SelType: SelectableTypes;
-  Bounds: Bounds;
+  Bounds: Bounds[];
   Editable: boolean;
-  GBounds: Bounds;
   top: number;
   bottom: number;
 
-  TopPosition: { x: number, y: number };
-  BotPosition: { x: number, y: number };
-
-  // This is a temporary solution, will need to rework to make staff count
-  // generic
-  GTopPosition: { x: number, y: number };
-  GBotPosition: { x: number, y: number };
-
+  TopPosition: { x: number, y: number }[];
+  BotPosition: { x: number, y: number }[];
 
   constructor(top: number, bottom: number, useSymbol: boolean = false) {
     this.Selected = false;
@@ -50,54 +43,49 @@ class TimeSignature implements ISelectable {
     this.top = top;
     this.bottom = bottom;
     this.Editable = true;
-    this.TopPosition = { x: 0, y: 0 };
-    this.BotPosition = { x: 0, y: 0 };
-    this.GTopPosition = { x: 0, y: 0 };
-    this.GBotPosition = { x: 0, y: 0 };
-    this.Bounds = new Bounds(0, 0, 0, 0);
-    this.GBounds = new Bounds(0, 0, 0, 0);
+    this.TopPosition = [{ x: 0, y: 0 }];
+    this.BotPosition = [{ x: 0, y: 0 }];
+    this.Bounds = [new Bounds(0, 0, 0, 0)];
     // use symbol? (bad name) for things like common and cut common
   }
 
   render(renderProps: RenderProperties, msr: Measure, theme: Theme): void {
     let tGlyph: TimeSigNumbers = GetTimeSignatureGlyph(this.top);
     let bGlyph: TimeSigNumbers = GetTimeSignatureGlyph(this.bottom);
-
-    RenderSymbol( renderProps, tGlyph, this.TopPosition.x, this.TopPosition.y, theme, this.Selected);
-    RenderSymbol( renderProps, bGlyph, this.BotPosition.x, this.BotPosition.y, theme, this.Selected);
-
-    if (msr.Instrument.Staff === StaffType.Grand) {
-      RenderSymbol( renderProps, tGlyph, this.GTopPosition.x, this.GTopPosition.y, theme, this.Selected);
-      RenderSymbol( renderProps, bGlyph, this.GBotPosition.x, this.GBotPosition.y, theme, this.Selected);
-    }
+    msr.Staves.forEach(s => {
+//      if (this.TopPosition.length > msr.Staves.length || this.BotPosition.length >= msr.Staves.length) { return ;}
+      RenderSymbol( renderProps, tGlyph, this.TopPosition[s.Num].x, this.TopPosition[s.Num].y, theme, this.Selected);
+      RenderSymbol( renderProps, bGlyph, this.BotPosition[s.Num].x, this.BotPosition[s.Num].y, theme, this.Selected);
+    });
   }
 
   SetBounds(msr: Measure, staff: number): void {
-    if (staff === StaffType.Single) {
-      const msrMidLine = GetStaffMiddleLine(msr.Staves, staff);
-      this.Bounds.x = msr.Bounds.x + msr.XOffset - 25;
-      this.Bounds.y = msr.Bounds.y + ((msrMidLine - 4) * 5);
-      this.Bounds.width = 30;
-      this.Bounds.height = 50;
-      this.TopPosition.x = this.Bounds.x;
-      this.TopPosition.y = msr.Bounds.y + ((msrMidLine - 2) * 5);
-      this.BotPosition.x = this.Bounds.x;
-      this.BotPosition.y = msr.Bounds.y + ((msrMidLine + 2) * 5);
-    } else {
-      const msrMidLine = msr.GetGrandMeasureMidLine();
-      this.GBounds.x = msr.Bounds.x + msr.XOffset - 25;
-      this.GBounds.y = msr.Bounds.y + msr.GetMeasureHeight() +((msrMidLine - 4) * 5);
-      this.GBounds.width = 30;
-      this.GBounds.height = 50;
-      this.GTopPosition.x = this.Bounds.x;
-      this.GTopPosition.y = msr.Bounds.y + msr.GetMeasureHeight() + ((msrMidLine - 2) * 5);
-      this.GBotPosition.x = this.Bounds.x;
-      this.GBotPosition.y = msr.Bounds.y + msr.GetMeasureHeight() + ((msrMidLine + 2) * 5);
+    // Delete and recreate, potential for optimisation later
+    this.Bounds = [];
+    this.TopPosition = [];
+    this.BotPosition = [];
+    //
+    msr.Staves.forEach((s: Staff) => {
+      // TODO: These probably shouldn't be recreated every single time 
+      this.Bounds.push(new Bounds(0, 0, 0, 0));
+      this.TopPosition.push({x: 0, y: 0});
+      this.BotPosition.push({x: 0, y: 0});
+      //
+      const divY = msr.Divisions.find(div => div.Staff === s.Num).Bounds.y;
+      const msrMidLine = GetStaffMiddleLine(msr.Staves, s.Num);
+      this.Bounds[s.Num].x = msr.Bounds.x + msr.XOffset - 25;
+      this.Bounds[s.Num].y = divY + ((msrMidLine - 4) * 5);
+      this.Bounds[s.Num].width = 30;
+      this.Bounds[s.Num].height = 50;
+      this.TopPosition[s.Num].x = this.Bounds[s.Num].x;
+      this.TopPosition[s.Num].y = divY + ((msrMidLine - 2) * 5);
+      this.BotPosition[s.Num].x = this.Bounds[s.Num].x;
+      this.BotPosition[s.Num].y = divY + ((msrMidLine + 2) * 5);
+    });
     }
-  }
 
   IsHovered(x: number, y: number, cam: Camera): boolean {
-    return this.Bounds.IsHovered(x, y, cam) || this.GBounds.IsHovered(x, y, cam);
+    return this.Bounds.filter(b => b.IsHovered(x, y, cam)).length > 0;
   }
 }
 

@@ -24,8 +24,6 @@ function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     if (msr.Instrument.Staff === StaffType.Rhythm) {
         line.num = 15;
     }
-    console.log('divisions: ', msr.Divisions);
-    console.log('beatOver: ', beatOver);
     if (inputtingNote) {
         InputNote(msr, noteValue, beatOver, line, rest);
     }
@@ -56,7 +54,6 @@ function InputNote(msr, noteValue, division, line, rest, tupleCount = 1) {
         Clef: clefType,
     };
     const newNote = new Note(noteProps);
-    console.log('new Note?: ', newNote);
     if (division.Duration === noteValue) {
         msr.ClearRestNotes(division.Beat, division.Staff);
         msr.AddNote(newNote, true);
@@ -67,7 +64,6 @@ function InputNote(msr, noteValue, division, line, rest, tupleCount = 1) {
         }
     }
     msr.CreateDivisions(msr.Camera, true);
-    //UpdateNoteBounds(msr, division.Staff);
 }
 function UpdateNoteBounds(msr, staff) {
     // Maybe should go somewhere else
@@ -189,6 +185,7 @@ function AddToDivision(msr, noteProps, staff) {
                 }
                 remainingValue = 0;
                 msr.AddNote(newNote, true);
+                console.log("note added");
                 return;
             }
             // This note is not tying, but existing notes will 

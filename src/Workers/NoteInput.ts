@@ -37,8 +37,6 @@ function InputOnMeasure(msr: Measure,
   if (msr.Instrument.Staff === StaffType.Rhythm) {
     line.num = 15;
   }
-  console.log('divisions: ', msr.Divisions);
-  console.log('beatOver: ', beatOver);
   if (inputtingNote) {
     InputNote(msr, noteValue, beatOver, line, rest);
   }
@@ -74,7 +72,6 @@ function InputNote(
       Clef: clefType,
     };
     const newNote: Note = new Note(noteProps);
-    console.log('new Note?: ', newNote);
 
     if (division.Duration === noteValue) {
       msr.ClearRestNotes(division.Beat, division.Staff);
@@ -85,7 +82,6 @@ function InputNote(
       }
     } 
     msr.CreateDivisions(msr.Camera, true);
-    //UpdateNoteBounds(msr, division.Staff);
 }
 
 function UpdateNoteBounds(msr: Measure, staff: number): void {
@@ -214,6 +210,7 @@ function AddToDivision(msr: Measure, noteProps: NoteProps, staff: number): void 
 
           remainingValue = 0;
           msr.AddNote(newNote, true);
+          console.log("note added");
           return;
         } 
 

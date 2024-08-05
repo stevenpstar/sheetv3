@@ -98,7 +98,7 @@ function ResizeMeasuresOnPage(measures: Measure[], page: Page, cam: Camera, conf
         m.CreateDivisions(cam);
       }
       m.Clefs.forEach(c => {
-        c.SetBounds(m, 0);
+        c.SetBounds(m, c.Staff);
       });
       m.GrandClefs.forEach(c => {
         c.SetBounds(m, 1);

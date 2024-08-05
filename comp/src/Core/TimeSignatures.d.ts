@@ -8,27 +8,18 @@ declare class TimeSignature implements ISelectable {
     ID: number;
     Selected: boolean;
     SelType: SelectableTypes;
-    Bounds: Bounds;
+    Bounds: Bounds[];
     Editable: boolean;
-    GBounds: Bounds;
     top: number;
     bottom: number;
     TopPosition: {
         x: number;
         y: number;
-    };
+    }[];
     BotPosition: {
         x: number;
         y: number;
-    };
-    GTopPosition: {
-        x: number;
-        y: number;
-    };
-    GBotPosition: {
-        x: number;
-        y: number;
-    };
+    }[];
     constructor(top: number, bottom: number, useSymbol?: boolean);
     render(renderProps: RenderProperties, msr: Measure, theme: Theme): void;
     SetBounds(msr: Measure, staff: number): void;
