@@ -11,14 +11,15 @@ class Selector {
     TrySelectElement(msr, x, y, cam, shiftKey, msg, elems) {
         let elem; // element we have selected
         let elements = [];
-        let selectedElements = this.Elements.get(msr) ? this.Elements.get(msr) : [];
+        let selectedElements = this.Elements.get(msr)
+            ? this.Elements.get(msr)
+            : [];
         // if (!shiftKey) {
         //   this.DeselectAllElements();
         // }
         UpdateNoteBounds(msr, 0);
         elements.push(...msr.Notes);
         elements.push(...msr.Clefs);
-        elements.push(...msr.GrandClefs);
         elements.push(msr.TimeSignature);
         elements.forEach((e) => {
             if (e.IsHovered(x, y, cam) && e.Selected === false) {
@@ -33,11 +34,11 @@ class Selector {
                         messageData: {
                             MessageType: MessageType.Selection,
                             Message: {
-                                msg: 'selected',
+                                msg: "selected",
                                 obj: n,
                             },
                         },
-                        messageString: 'Selected Note'
+                        messageString: "Selected Note",
                     };
                     msg(m);
                     if (n.Tied) {
@@ -58,7 +59,7 @@ class Selector {
             });
             elems.delete(measure);
         }
-        return new Map;
+        return new Map();
     }
     SelectElement() {
         let elem; // element we have selected
@@ -67,20 +68,18 @@ class Selector {
     DeselectAll() {
         // TODO: Measure selection
         for (let [measure, notes] of this.Notes) {
-            notes.forEach(note => {
+            notes.forEach((note) => {
                 note.Selected = false;
             });
             this.Notes.delete(measure);
         }
-        ;
         // This should replace the above eventually
         for (let [measure, elem] of this.Elements) {
-            elem.forEach(e => {
+            elem.forEach((e) => {
                 e.Selected = false;
             });
             this.Elements.delete(measure);
         }
-        ;
     }
     DeselectNote(note) {
         let noteIndex = -1;
@@ -107,10 +106,10 @@ class Selector {
     SelectById(measures, id) {
         let selectable;
         this.DeselectAll();
-        measures.forEach(m => {
+        measures.forEach((m) => {
             // check here for measure selection when implemented
             // maybe also div/beam/stem/clef/sig/artic etc.
-            m.Notes.forEach(n => {
+            m.Notes.forEach((n) => {
                 if (n.ID === id) {
                     n.Selected = true;
                     selectable = n;
@@ -126,7 +125,7 @@ class Selector {
         return selectable;
     }
     SelectMeasure(msr) {
-        if (this.Measures.find(m => m.ID === msr.ID)) {
+        if (this.Measures.find((m) => m.ID === msr.ID)) {
             const index = this.Measures.indexOf(msr);
             msr.Selected = false;
             this.Measures.splice(index, 1);
@@ -138,13 +137,13 @@ class Selector {
     }
     // This should all be fairly generic eventually?
     SelectClef(clef) {
-        if (this.Clefs.find(c => c.ID === clef.ID)) {
+        if (this.Clefs.find((c) => c.ID === clef.ID)) {
             const index = this.Clefs.indexOf(clef);
             clef.Selected = false;
             this.Clefs.splice(index, 1);
         }
         else {
-            this.Clefs.map(c => c.Selected = false);
+            this.Clefs.map((c) => (c.Selected = false));
             this.Clefs = [];
             this.Clefs.push(clef);
             clef.Selected = true;
@@ -160,7 +159,7 @@ class Selector {
                     n.Selected = true;
                     if (this.Notes.has(msr)) {
                         let nArray = this.Notes.get(msr);
-                        if (!nArray.find(na => na === n)) {
+                        if (!nArray.find((na) => na === n)) {
                             nArray.push(n);
                             if (n.Tied) {
                                 nArray.push(...SelectTiedNotes(n, msr));
@@ -182,13 +181,13 @@ class Selector {
                     if (n.Selected && !shiftKey) {
                         let deselect = true;
                         if (n.Tied) {
-                            const tiedNotes = msr.Notes.filter(note => {
-                                return note !== n &&
+                            const tiedNotes = msr.Notes.filter((note) => {
+                                return (note !== n &&
                                     note.Beat >= n.TiedStart &&
                                     note.Beat <= n.TiedEnd &&
                                     note.Line === n.Line &&
                                     note.Staff === n.Staff &&
-                                    note.Selected === true;
+                                    note.Selected === true);
                             });
                             deselect = tiedNotes.length === 0;
                         }
@@ -211,14 +210,14 @@ function SelectTiedNotes(n, msr) {
     let nArray = [];
     let tStart = n.TiedStart;
     let tEnd = n.TiedEnd;
-    const tiedNotes = msr.Notes.filter(note => {
-        return note !== n &&
+    const tiedNotes = msr.Notes.filter((note) => {
+        return (note !== n &&
             note.Beat >= tStart &&
             note.Beat <= tEnd &&
             note.Staff === n.Staff &&
-            note.Line === n.Line;
+            note.Line === n.Line);
     });
-    tiedNotes.forEach(tn => {
+    tiedNotes.forEach((tn) => {
         tn.Selected = true;
         nArray.push(tn);
     });

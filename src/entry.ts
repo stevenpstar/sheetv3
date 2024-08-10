@@ -8,23 +8,23 @@ import { KeyMapping } from "./Workers/Mappings.js";
 let gSheet: App;
 
 const keymaps: KeyMapping = {
-  "addmeasure": "a",
-  "changeinputmode": "n",
-  "value1": "1",
-  "value2": "2",
-  "value3": "3",
-  "value4": "4",
-  "value5": "5",
-  "value6": "6",
-  "restInput": "r",
-  "delete": "d",
-  "sharpen": "+",
-  "flatten": "-",
-  "scaleToggle": "'",
-  "save": "s",
-  "load": "l",
-  "test_triplet": "t"
-}
+  addmeasure: "a",
+  changeinputmode: "n",
+  value1: "1",
+  value2: "2",
+  value3: "3",
+  value4: "4",
+  value5: "5",
+  value6: "6",
+  restInput: "r",
+  delete: "d",
+  sharpen: "+",
+  flatten: "-",
+  scaleToggle: "'",
+  save: "s",
+  load: "l",
+  test_triplet: "t",
+};
 
 const defaultTheme: Theme = {
   NoteElements: "black",
@@ -34,8 +34,7 @@ const defaultTheme: Theme = {
   BackgroundColour: "gray",
   PageColour: "white",
   PageShadowColour: "darkgray",
-}
-
+};
 
 const test_CONFIG: ConfigSettings = {
   CameraSettings: {
@@ -58,7 +57,7 @@ const test_CONFIG: ConfigSettings = {
     ContainerWidth: false,
   },
   Theme: defaultTheme,
-}
+};
 
 function mouseMove(app: App, canvas: HTMLCanvasElement, e: MouseEvent): void {
   let rect = canvas.getBoundingClientRect();
@@ -93,14 +92,19 @@ function keyDown(app: App, keymaps: any, e: KeyboardEvent): void {
 }
 
 function zoom(app: App, e: WheelEvent): void {
-    if (e.ctrlKey) {
+  if (e.ctrlKey) {
     e.preventDefault();
     const scale = e.deltaY * -0.01;
     scale > 0 ? app.AlterZoom(0.05) : app.AlterZoom(-0.05);
   }
 }
 
-function resize(app: App, context: CanvasRenderingContext2D, canvas: HTMLCanvasElement, container: HTMLElement): void {
+function resize(
+  app: App,
+  context: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement,
+  container: HTMLElement,
+): void {
   canvas.width = container.clientWidth - 50;
   if (app.Config.CameraSettings?.CenterMeasures === true) {
     app.CenterMeasures();
@@ -118,16 +122,21 @@ export module sheet {
     doc: Document,
     keyMap: any,
     notifyCallBack: (msg: Message) => void,
-    config: ConfigSettings): App {
+    config: ConfigSettings,
+  ): App {
     const ctx = canvas.getContext("2d");
     const app = new App(canvas, container, ctx, notifyCallBack, config);
     canvas.addEventListener("mousemove", (e) => mouseMove(app, canvas, e));
     canvas.addEventListener("mousedown", (e) => mouseDown(app, canvas, e));
     canvas.addEventListener("mouseup", (e) => mouseUp(app, canvas, e));
     doc.addEventListener("keydown", (e) => keyDown(app, keyMap, e));
-    window.addEventListener("resize", () => resize(app, app.Context, canvas, container));
+    window.addEventListener("resize", () =>
+      resize(app, app.Context, canvas, container),
+    );
     canvas.addEventListener("wheel", (e) => zoom(app, e));
-    screen.orientation.addEventListener("change", (e) => resize(app, app.Context, canvas, container));
+    screen.orientation.addEventListener("change", (e) =>
+      resize(app, app.Context, canvas, container),
+    );
     gSheet = app;
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
@@ -144,7 +153,7 @@ export module sheet {
   // API
   export function ChangeInputMode(): void {
     gSheet.ChangeInputMode();
-  } 
+  }
 
   export function SetAccidental(acc: number): void {
     gSheet.SetAccidental(acc);
@@ -166,18 +175,18 @@ export module sheet {
     gSheet.AddMeasure();
   }
 
+  export function AddStaff(instrIndex: number, clefString: string): void {
+    gSheet.AddStaff(instrIndex, clefString);
+  }
+
   export function AddNoteOnMeasure(
     msr: Measure,
     noteVal: number,
     line: number,
     div: Division,
-    rest: boolean): void {
-    gSheet.AddNoteOnMeasure(
-      msr,
-      noteVal,
-      line,
-      div,
-      rest);
+    rest: boolean,
+  ): void {
+    gSheet.AddNoteOnMeasure(msr, noteVal, line, div, rest);
   }
 
   export function Delete(): void {
@@ -199,15 +208,16 @@ export module sheet {
   export function ChangeTimeSignature(
     top: number,
     bottom: number,
-    transpose: boolean = false): void {
-      gSheet.ChangeTimeSignature(top, bottom, transpose);
+    transpose: boolean = false,
+  ): void {
+    gSheet.ChangeTimeSignature(top, bottom, transpose);
   }
 }
 //public exports
-export * from './Workers/Mappings.js';
-export * from './App.js';
-export * from './Workers/Loader.js';
-export * from './Core/Note.js';
-export * from './Workers/Pitcher.js';
-export * from './Types/Message.js';
-export * from './Types/Config.js';
+export * from "./Workers/Mappings.js";
+export * from "./App.js";
+export * from "./Workers/Loader.js";
+export * from "./Core/Note.js";
+export * from "./Workers/Pitcher.js";
+export * from "./Types/Message.js";
+export * from "./Types/Config.js";

@@ -13,7 +13,7 @@ function SetPagesAndLines(measures, pages, usePage, defaultLineHeight = 150) {
     let pageWidth = page.Bounds.width - (page.Margins.left + page.Margins.right);
     if (usePage === false && usePage !== null) {
         // set each measure to line 1
-        measures.forEach(m => {
+        measures.forEach((m) => {
             m.PageLine = currentLine;
         });
         return;
@@ -47,8 +47,8 @@ function GetMaxWidth(page, config, cam) {
 }
 function ResizeMeasuresOnPage(measures, page, cam, config) {
     const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
-    page.PageLines.forEach(line => {
-        const msrs = measures.filter(m => m.PageLine === line.Number);
+    page.PageLines.forEach((line) => {
+        const msrs = measures.filter((m) => m.PageLine === line.Number);
         let msrsLineWidth = 0;
         msrs.forEach((m, i) => {
             msrsLineWidth += m.GetMinimumWidth() + m.XOffset;
@@ -69,10 +69,12 @@ function ResizeMeasuresOnPage(measures, page, cam, config) {
                 // by config settings if they are set (maxWidth in
                 // measureformatsettings)
                 const maxWidth = GetMaxWidth(page, config, cam);
-                const calculatedWidth = m.GetMinimumWidth() + (fillWidth / msrs.length);
-                const msrWidth = maxWidth ?
-                    calculatedWidth > maxWidth ? maxWidth : calculatedWidth :
-                    calculatedWidth;
+                const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
+                const msrWidth = maxWidth
+                    ? calculatedWidth > maxWidth
+                        ? maxWidth
+                        : calculatedWidth
+                    : calculatedWidth;
                 m.Bounds.width = msrWidth;
                 m.CreateDivisions(cam);
             }
@@ -83,19 +85,18 @@ function ResizeMeasuresOnPage(measures, page, cam, config) {
                 m.RenderKey = false;
                 m.SetXOffset();
                 const maxWidth = GetMaxWidth(page, config, cam);
-                const calculatedWidth = m.GetMinimumWidth() + (fillWidth / msrs.length);
-                const msrWidth = maxWidth ?
-                    calculatedWidth > maxWidth ? maxWidth : calculatedWidth :
-                    calculatedWidth;
+                const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
+                const msrWidth = maxWidth
+                    ? calculatedWidth > maxWidth
+                        ? maxWidth
+                        : calculatedWidth
+                    : calculatedWidth;
                 m.Bounds.width = msrWidth;
                 msrs[i].Reposition(msrs[i - 1]);
                 m.CreateDivisions(cam);
             }
-            m.Clefs.forEach(c => {
+            m.Clefs.forEach((c) => {
                 c.SetBounds(m, c.Staff);
-            });
-            m.GrandClefs.forEach(c => {
-                c.SetBounds(m, 1);
             });
             m.TimeSignature.SetBounds(m, 0);
             if (m.Instrument.Staff === StaffType.Grand) {

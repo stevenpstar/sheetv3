@@ -1,7 +1,9 @@
 import { Camera } from "../Core/Camera.js";
 import { Instrument } from "../Core/Instrument.js";
+import { Clef } from "../Core/Measure.js";
 import { Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
+import { Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
 interface lNote {
@@ -16,7 +18,8 @@ interface lNote {
     Editable?: boolean;
 }
 interface lMeasure {
-    Clef: string;
+    Clefs: Clef[];
+    Staves: Staff[];
     TimeSignature: {
         top: number;
         bottom: number;

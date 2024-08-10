@@ -1,24 +1,36 @@
-import { Bounds } from '../Types/Bounds.js';
-import { ISelectable, SelectableTypes } from '../Types/ISelectable.js';
-import { Message, MessageType } from '../Types/Message.js';
-import { UpdateNoteBounds } from '../Workers/NoteInput.js';
-import { MeasureSettings } from '../entry.js';
-import { Camera } from './Camera.js';
-import { Clef, GetNoteClefType } from './Clef.js';
-import { CreateDivisions, type Division, ResizeDivisions, DivisionMinWidth } from './Division.js';
-import { Instrument, StaffType } from './Instrument.js';
-import { Note, NoteProps } from './Note.js';
-import { Page } from './Page.js';
-import { GetStaffActualMidLine, GetStaffHeight, GetStaffHeightUntil, GetStaffMiddleLine, Staff } from './Staff.js';
-import { CreateTimeSignature, TimeSignature } from './TimeSignatures.js';
+import { Bounds } from "../Types/Bounds.js";
+import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { Message, MessageType } from "../Types/Message.js";
+import { UpdateNoteBounds } from "../Workers/NoteInput.js";
+import { MeasureSettings } from "../entry.js";
+import { Camera } from "./Camera.js";
+import { Clef, GetNoteClefType } from "./Clef.js";
+import {
+  CreateDivisions,
+  type Division,
+  ResizeDivisions,
+  DivisionMinWidth,
+} from "./Division.js";
+import { Instrument, StaffType } from "./Instrument.js";
+import { Note, NoteProps } from "./Note.js";
+import { Page } from "./Page.js";
+import {
+  GetStaffActualMidLine,
+  GetStaffHeight,
+  GetStaffHeightUntil,
+  GetStaffMiddleLine,
+  Staff,
+} from "./Staff.js";
+import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
 
 interface MeasureProps {
-  Instrument: Instrument,
+  Instrument: Instrument;
   Bounds: Bounds;
-  TimeSignature: { top: number, bottom: number };
+  TimeSignature: { top: number; bottom: number };
   KeySignature: string;
   Notes: Note[];
-  Clef: string;
+  Staves: Staff[];
+  Clefs: Clef[];
   RenderClef: boolean;
   RenderTimeSig: boolean;
   RenderKey: boolean;
@@ -38,7 +50,6 @@ class Measure implements ISelectable {
   // TODO: Clefs should just be one array, each clef should have which staff they are
   // on
   Clefs: Clef[] = [];
-  GrandClefs: Clef[] = [];
   TimeSignature: TimeSignature;
   KeySignature: string;
   Notes: Note[];
@@ -59,9 +70,8 @@ class Measure implements ISelectable {
   RunningID: { count: number };
 
   constructor(properties: MeasureProps, runningId: { count: number }) {
-    this.Staves = [];
-    this.Staves.push(new Staff(0));
-    this.Staves.push(new Staff(1));
+    this.Staves = properties.Staves;
+    //    this.Staves.push(new Staff(1));
     this.Message = properties.Message;
     this.RunningID = runningId;
     this.ID = 0;
@@ -79,7 +89,9 @@ class Measure implements ISelectable {
     this.Notes = properties.Notes;
     this.Divisions = [];
     this.RenderClef = properties.RenderClef;
-    if (this.Instrument.Staff === StaffType.Rhythm) { this.RenderClef = false; }
+    if (this.Instrument.Staff === StaffType.Rhythm) {
+      this.RenderClef = false;
+    }
     this.RenderKey = properties.RenderKey;
     this.Camera = properties.Camera;
     this.RenderTimeSig = properties.RenderTimeSig;
@@ -91,34 +103,37 @@ class Measure implements ISelectable {
     this.CreateDivisions(this.Camera);
 
     this.Staves.forEach((s: Staff) => {
-      const trebleClef = new Clef(0, {x: 
-        this.Bounds.x + 16, 
-        y: this.Bounds.y + (5 * GetStaffMiddleLine(this.Staves, s.Num) + (10 * 2))}, "treble", 1, s.Num);
+      const trebleClef = new Clef(0, "treble", 1, s.Num);
       trebleClef.SetBounds(this, s.Num);
       this.Clefs.push(trebleClef);
-    })
+    });
     this.TimeSignature.SetBounds(this, 0);
     this.TimeSignature.SetBounds(this, 1);
   }
 
   // Gets line hovered relative to staff (15 will always be middle of staff for
   // example)
-  GetLineHovered(y: number, staffNum: number): { num: number, bounds: Bounds } {
+  GetLineHovered(y: number, staffNum: number): { num: number; bounds: Bounds } {
     const cam = this.Camera;
     const relYPos = y - this.Bounds.y - cam.y; //TODO: Dunno about scaling by zoom here
-    let line = Math.floor(relYPos / (5)); // this should be a constant, line_height (defined somewhere)
+    let line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
     let actualLine = line;
-    const bounds = new Bounds(this.Bounds.x, 0, this.Bounds.width + this.XOffset, (5));
-    const staff: Staff = this.Staves.find(s => s.Num === staffNum);
+    const bounds = new Bounds(
+      this.Bounds.x,
+      0,
+      this.Bounds.width + this.XOffset,
+      5,
+    );
+    const staff: Staff = this.Staves.find((s) => s.Num === staffNum);
     const prevStaffLines = GetStaffHeightUntil(this.Staves, staffNum) / 5;
     actualLine = line + staff.TopLine;
     const testLine = actualLine - prevStaffLines;
-    const relativeLine = staff.TopLine < 0 ?
-      actualLine + Math.abs(staff.TopLine) :
-      actualLine - staff.TopLine;
-    bounds.y = 5 * (actualLine);
-    return { num: testLine, 
-      bounds: bounds};
+    const relativeLine =
+      staff.TopLine < 0
+        ? actualLine + Math.abs(staff.TopLine)
+        : actualLine - staff.TopLine;
+    bounds.y = 5 * actualLine;
+    return { num: testLine, bounds: bounds };
   }
 
   // Get note position relative to staff/measure
@@ -126,20 +141,28 @@ class Measure implements ISelectable {
     const staffYPos = GetStaffHeightUntil(this.Staves, staff);
     let y = staffYPos + this.Bounds.y + (line - this.Staves[staff].TopLine) * 5;
     return y - 2.5;
-   }
+  }
 
   GetBoundsWithOffset(): Bounds {
-    return new Bounds(this.Bounds.x, 
-                      this.Bounds.y,
-                      this.Bounds.width + this.XOffset,
-                      this.Bounds.height);
+    return new Bounds(
+      this.Bounds.x,
+      this.Bounds.y,
+      this.Bounds.width + this.XOffset,
+      this.Bounds.height,
+    );
   }
 
   SetXOffset(): void {
     this.XOffset = 0;
-    if (this.RenderClef) { this.XOffset += (30); }
-    if (this.RenderKey) { this.XOffset += (30); }
-    if (this.RenderTimeSig) { this.XOffset += (30); }
+    if (this.RenderClef) {
+      this.XOffset += 30;
+    }
+    if (this.RenderKey) {
+      this.XOffset += 30;
+    }
+    if (this.RenderTimeSig) {
+      this.XOffset += 30;
+    }
   }
 
   CreateDivisions(cam: Camera, afterInput: boolean = false) {
@@ -148,7 +171,7 @@ class Measure implements ISelectable {
       this.Divisions.push(...CreateDivisions(this, this.Notes, s.Num, cam));
       ResizeDivisions(this, this.Divisions, s.Num);
       UpdateNoteBounds(this, s.Num);
-    })
+    });
   }
 
   Reposition(prevMsr: Measure): void {
@@ -158,10 +181,10 @@ class Measure implements ISelectable {
 
   // set height of measure based off of notes in measure
   // eventually will be determined by instrument / row etc.
-  
+
   // TODO: Remove these three methods (doing now)
   GetMeasureHeight(): number {
-    return 0;
+    return GetStaffHeightUntil(this.Staves);
   }
 
   GetGrandMeasureHeight(): number {
@@ -173,7 +196,7 @@ class Measure implements ISelectable {
   }
 
   /* End TODO
-  */
+   */
 
   // Gets total height of measure (all staffs)
   NEW_GetMeasureHeight(): number {
@@ -192,41 +215,45 @@ class Measure implements ISelectable {
 
     if (fromInput) {
       const msg: Message = {
-        messageString: 'AddNote',
+        messageString: "AddNote",
         messageData: {
           Message: {
             msg: "AddingNote",
             obj: note,
           },
           MessageType: MessageType.AddNote,
-        }
-        }
-        this.Message(msg);
-      }
+        },
+      };
+      this.Message(msg);
+    }
   }
 
   ClearNonRestNotes(beat: number, staff: number): void {
-    for (let n = this.Notes.length - 1;n >= 0; n--) {
-      if (this.Notes[n].Beat === beat &&
-          this.Notes[n].Rest === false &&
-          this.Notes[n].Staff === staff) {
+    for (let n = this.Notes.length - 1; n >= 0; n--) {
+      if (
+        this.Notes[n].Beat === beat &&
+        this.Notes[n].Rest === false &&
+        this.Notes[n].Staff === staff
+      ) {
         this.Notes.splice(n, 1);
       }
     }
   }
 
   ClearRestNotes(beat: number, staff: number): void {
-    for (let n = this.Notes.length - 1;n >= 0; n--) {
-      if (this.Notes[n].Beat === beat &&
-          this.Notes[n].Rest === true &&
-          this.Notes[n].Staff === staff) {
+    for (let n = this.Notes.length - 1; n >= 0; n--) {
+      if (
+        this.Notes[n].Beat === beat &&
+        this.Notes[n].Rest === true &&
+        this.Notes[n].Staff === staff
+      ) {
         this.Notes.splice(n, 1);
       }
     }
   }
 
   ClearMeasure(ignoreNotes?: Note[]): void {
-    for (let n = this.Notes.length-1;n >= 0;n--) {
+    for (let n = this.Notes.length - 1; n >= 0; n--) {
       if (this.Notes[n].Editable && !ignoreNotes.includes(this.Notes[n])) {
         this.Notes.splice(n, 1);
       }
@@ -242,7 +269,7 @@ class Measure implements ISelectable {
         let tuple = this.Notes[n].Tuple;
         let tupleDetails = this.Notes[n].TupleDetails;
         this.Notes.splice(n, 1);
-        const notesOnBeat = this.Notes.filter(n => n.Beat === beat);
+        const notesOnBeat = this.Notes.filter((n) => n.Beat === beat);
         if (notesOnBeat.length === 0) {
           const clefType = GetNoteClefType(this, beat, staff);
           // beat is empty and requires a rest note
@@ -256,7 +283,7 @@ class Measure implements ISelectable {
             Tuple: tuple,
             TupleDetails: tupleDetails,
             Clef: clefType,
-          }
+          };
 
           this.AddNote(new Note(restProps));
         }
@@ -265,17 +292,20 @@ class Measure implements ISelectable {
   }
 
   GetMinimumWidth(): number {
-    if (this.Notes.filter(n => n.Rest !== true).length === 0) {
+    if (this.Notes.filter((n) => n.Rest !== true).length === 0) {
       return DivisionMinWidth * 4;
     }
-    const staffZeroDivs = this.Divisions.filter(div => div.Staff === 0);
-    const staffOneDivs = this.Divisions.filter(div => div.Staff === 1);
+    const staffZeroDivs = this.Divisions.filter((div) => div.Staff === 0);
+    const staffOneDivs = this.Divisions.filter((div) => div.Staff === 1);
     const lowestValue = this.Divisions.sort((a: Division, b: Division) => {
       return a.Duration - b.Duration;
     })[0].Duration;
     //const count = 1 / lowestValue;
 
-    const count = staffZeroDivs.length > staffOneDivs.length ? staffZeroDivs.length : staffOneDivs.length;
+    const count =
+      staffZeroDivs.length > staffOneDivs.length
+        ? staffZeroDivs.length
+        : staffOneDivs.length;
     return count * DivisionMinWidth;
   }
 

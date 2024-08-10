@@ -1,22 +1,22 @@
 import { App } from "./App.js";
 let gSheet;
 const keymaps = {
-    "addmeasure": "a",
-    "changeinputmode": "n",
-    "value1": "1",
-    "value2": "2",
-    "value3": "3",
-    "value4": "4",
-    "value5": "5",
-    "value6": "6",
-    "restInput": "r",
-    "delete": "d",
-    "sharpen": "+",
-    "flatten": "-",
-    "scaleToggle": "'",
-    "save": "s",
-    "load": "l",
-    "test_triplet": "t"
+    addmeasure: "a",
+    changeinputmode: "n",
+    value1: "1",
+    value2: "2",
+    value3: "3",
+    value4: "4",
+    value5: "5",
+    value6: "6",
+    restInput: "r",
+    delete: "d",
+    sharpen: "+",
+    flatten: "-",
+    scaleToggle: "'",
+    save: "s",
+    load: "l",
+    test_triplet: "t",
 };
 const defaultTheme = {
     NoteElements: "black",
@@ -148,6 +148,10 @@ export var sheet;
         gSheet.AddMeasure();
     }
     sheet.AddMeasure = AddMeasure;
+    function AddStaff(instrIndex, clefString) {
+        gSheet.AddStaff(instrIndex, clefString);
+    }
+    sheet.AddStaff = AddStaff;
     function AddNoteOnMeasure(msr, noteVal, line, div, rest) {
         gSheet.AddNoteOnMeasure(msr, noteVal, line, div, rest);
     }
@@ -174,10 +178,10 @@ export var sheet;
     sheet.ChangeTimeSignature = ChangeTimeSignature;
 })(sheet || (sheet = {}));
 //public exports
-export * from './Workers/Mappings.js';
-export * from './App.js';
-export * from './Workers/Loader.js';
-export * from './Core/Note.js';
-export * from './Workers/Pitcher.js';
-export * from './Types/Message.js';
-export * from './Types/Config.js';
+export * from "./Workers/Mappings.js";
+export * from "./App.js";
+export * from "./Workers/Loader.js";
+export * from "./Core/Note.js";
+export * from "./Workers/Pitcher.js";
+export * from "./Types/Message.js";
+export * from "./Types/Config.js";

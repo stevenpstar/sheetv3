@@ -1,16 +1,3 @@
-declare enum StaffType {
-    Single = 0,
-    Grand = 1,
-    Rhythm = 2
-}
-interface Instrument {
-    Position: {
-        x: number;
-        y: number;
-    };
-    Staff: StaffType;
-}
-
 declare class Camera {
     x: number;
     y: number;
@@ -86,10 +73,7 @@ declare class Clef implements ISelectable {
     Type: string;
     Beat: number;
     Editable: boolean;
-    constructor(id: number, pos: {
-        x: number;
-        y: number;
-    }, type: string, beat: number, staff: number);
+    constructor(id: number, type: string, beat: number, staff: number);
     render(renderProps: RenderProperties, theme: Theme): void;
     SetBounds(msr: Measure, staff: number): void;
     IsHovered(x: number, y: number, cam: Camera): boolean;
@@ -172,15 +156,6 @@ declare class Page {
     AddLine(lineHeight: number): PageLine;
 }
 
-declare class Staff {
-    Num: number;
-    TopLine: number;
-    MidLine: number;
-    BotLine: number;
-    Buffer: number;
-    constructor(num: number);
-}
-
 declare class TimeSignature implements ISelectable {
     ID: number;
     Selected: boolean;
@@ -212,7 +187,8 @@ interface MeasureProps {
     };
     KeySignature: string;
     Notes: Note[];
-    Clef: string;
+    Staves: Staff[];
+    Clefs: Clef[];
     RenderClef: boolean;
     RenderTimeSig: boolean;
     RenderKey: boolean;
@@ -229,7 +205,6 @@ declare class Measure implements ISelectable {
     Bounds: Bounds;
     Editable: boolean;
     Clefs: Clef[];
-    GrandClefs: Clef[];
     TimeSignature: TimeSignature;
     KeySignature: string;
     Notes: Note[];
@@ -272,6 +247,81 @@ declare class Measure implements ISelectable {
     ReturnSelectableElements(): ISelectable[];
     IsHovered(x: number, y: number, cam: Camera): boolean;
     ChangeTimeSignature(top: number, bottom: number, transpose: boolean): void;
+}
+
+type CameraSettings = {
+    DragEnabled?: boolean;
+    ZoomEnabled?: boolean;
+    StartingPosition?: {
+        x: number;
+        y: number;
+    };
+    Zoom?: number;
+    CenterMeasures?: boolean;
+    CenterPage?: boolean;
+};
+type PageSettings = {
+    UsePages: boolean;
+    RenderPage: boolean;
+    RenderBackground: boolean;
+    ContainerWidth?: boolean;
+    PageWidth?: number;
+    AutoSize?: boolean;
+};
+type MeasureFormatSettings = {
+    MaxWidth?: number;
+    Selectable?: boolean;
+};
+type MeasureSettings = {
+    TopLine?: number;
+    BottomLine?: number;
+};
+type FormatSettings = {
+    MeasureFormatSettings?: MeasureFormatSettings;
+};
+type ConfigSettings = {
+    CameraSettings?: CameraSettings;
+    PageSettings?: PageSettings;
+    FormatSettings?: FormatSettings;
+    MeasureSettings?: MeasureSettings;
+    NoteSettings?: NoteSettings;
+    DefaultStaffType?: string;
+    Theme: Theme;
+};
+type NoteSettings = {
+    InputValue?: number;
+};
+type Theme = {
+    NoteElements: string;
+    SelectColour: string;
+    UneditableColour: string;
+    LineColour: string;
+    BackgroundColour: string;
+    PageColour: string;
+    PageShadowColour: string;
+};
+
+declare class Staff {
+    Num: number;
+    TopLine: number;
+    MidLine: number;
+    BotLine: number;
+    Buffer: number;
+    constructor(num: number);
+}
+
+declare enum StaffType {
+    Single = 0,
+    Grand = 1,
+    Rhythm = 2
+}
+interface Instrument {
+    Position: {
+        x: number;
+        y: number;
+    };
+    Staff: StaffType;
+    Staves: Staff[];
 }
 
 interface SheetProps {
@@ -346,58 +396,6 @@ type MappedMidi = {
     Accidental: number;
 };
 declare function GeneratePitchMap(): Map<number, MappedMidi>;
-
-type CameraSettings = {
-    DragEnabled?: boolean;
-    ZoomEnabled?: boolean;
-    StartingPosition?: {
-        x: number;
-        y: number;
-    };
-    Zoom?: number;
-    CenterMeasures?: boolean;
-    CenterPage?: boolean;
-};
-type PageSettings = {
-    UsePages: boolean;
-    RenderPage: boolean;
-    RenderBackground: boolean;
-    ContainerWidth?: boolean;
-    PageWidth?: number;
-    AutoSize?: boolean;
-};
-type MeasureFormatSettings = {
-    MaxWidth?: number;
-    Selectable?: boolean;
-};
-type MeasureSettings = {
-    TopLine?: number;
-    BottomLine?: number;
-};
-type FormatSettings = {
-    MeasureFormatSettings?: MeasureFormatSettings;
-};
-type ConfigSettings = {
-    CameraSettings?: CameraSettings;
-    PageSettings?: PageSettings;
-    FormatSettings?: FormatSettings;
-    MeasureSettings?: MeasureSettings;
-    NoteSettings?: NoteSettings;
-    DefaultStaffType?: string;
-    Theme: Theme;
-};
-type NoteSettings = {
-    InputValue?: number;
-};
-type Theme = {
-    NoteElements: string;
-    SelectColour: string;
-    UneditableColour: string;
-    LineColour: string;
-    BackgroundColour: string;
-    PageColour: string;
-    PageShadowColour: string;
-};
 
 declare class App {
     Config: ConfigSettings;
@@ -474,6 +472,7 @@ declare class App {
     CenterMeasures(): void;
     CenterPage(): void;
     AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
+    AddStaff(instrNum: number, clef: string): void;
 }
 
 interface lNote {
@@ -488,7 +487,8 @@ interface lNote {
     Editable?: boolean;
 }
 interface lMeasure {
-    Clef: string;
+    Clefs: Clef[];
+    Staves: Staff[];
     TimeSignature: {
         top: number;
         bottom: number;
@@ -512,6 +512,7 @@ declare namespace sheet {
     function Flatten(): void;
     function SetNoteValue(value: number): void;
     function AddMeasure(): void;
+    function AddStaff(instrIndex: number, clefString: string): void;
     function AddNoteOnMeasure(msr: Measure, noteVal: number, line: number, div: Division, rest: boolean): void;
     function Delete(): void;
     function SelectById(id: number): ISelectable;

@@ -1,15 +1,15 @@
-import { Bounds } from '../Types/Bounds.js';
-import { ISelectable, SelectableTypes } from '../Types/ISelectable.js';
-import { Message } from '../Types/Message.js';
-import { MeasureSettings } from '../entry.js';
-import { Camera } from './Camera.js';
-import { Clef } from './Clef.js';
-import { type Division } from './Division.js';
-import { Instrument } from './Instrument.js';
-import { Note } from './Note.js';
-import { Page } from './Page.js';
-import { Staff } from './Staff.js';
-import { TimeSignature } from './TimeSignatures.js';
+import { Bounds } from "../Types/Bounds.js";
+import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { Message } from "../Types/Message.js";
+import { MeasureSettings } from "../entry.js";
+import { Camera } from "./Camera.js";
+import { Clef } from "./Clef.js";
+import { type Division } from "./Division.js";
+import { Instrument } from "./Instrument.js";
+import { Note } from "./Note.js";
+import { Page } from "./Page.js";
+import { Staff } from "./Staff.js";
+import { TimeSignature } from "./TimeSignatures.js";
 interface MeasureProps {
     Instrument: Instrument;
     Bounds: Bounds;
@@ -19,7 +19,8 @@ interface MeasureProps {
     };
     KeySignature: string;
     Notes: Note[];
-    Clef: string;
+    Staves: Staff[];
+    Clefs: Clef[];
     RenderClef: boolean;
     RenderTimeSig: boolean;
     RenderKey: boolean;
@@ -36,7 +37,6 @@ declare class Measure implements ISelectable {
     Bounds: Bounds;
     Editable: boolean;
     Clefs: Clef[];
-    GrandClefs: Clef[];
     TimeSignature: TimeSignature;
     KeySignature: string;
     Notes: Note[];

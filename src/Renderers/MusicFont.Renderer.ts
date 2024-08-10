@@ -1,7 +1,8 @@
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 
-const stdFontSize = 42; enum Clefs {
+const stdFontSize = 42;
+enum Clefs {
   G = "\u{1D11E}",
   GOttavaBassa = "\u{1D120}",
   GOttavaAlta = "\u{1D11F}",
@@ -27,7 +28,7 @@ enum TimeSigNumbers {
   Eight = "\u{E088}",
   Nine = "\u{E089}",
   Common = "\u{E08A}",
-  CutCommon = "\u{E08B}"
+  CutCommon = "\u{E08B}",
 }
 
 enum TupletNumbers {
@@ -64,20 +65,22 @@ enum StdAccidentals {
 function RenderSymbol(
   renderProps: RenderProperties,
   symbol: string,
-  x: number, y: number,
+  x: number,
+  y: number,
   theme: Theme,
-  selected: boolean): void {
-
-    const { canvas, context, camera } = renderProps;
-    context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
-    context.font = `${stdFontSize}px Bravura`;
-    context.fillText(symbol, x + camera.x, y + camera.y);
+  selected: boolean,
+): void {
+  const { canvas, context, camera } = renderProps;
+  context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
+  context.font = `${stdFontSize}px Bravura`;
+  context.fillText(symbol, x + camera.x, y + camera.y);
 }
 
-export { 
+export {
   Clefs,
   NoteHeads,
   StdAccidentals,
   TimeSigNumbers,
   TupletNumbers,
-  RenderSymbol }
+  RenderSymbol,
+};

@@ -1,10 +1,14 @@
 import { Camera } from "../Core/Camera.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
-import { Measure } from "../Core/Measure.js";
+import { Clef, Measure } from "../Core/Measure.js";
 import { Note, NoteProps } from "../Core/Note.js";
 import { Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
-import { CreateDefaultMeasure, CreateMeasure } from "../Factory/Instrument.Factory.js";
+import { Staff } from "../Core/Staff.js";
+import {
+  CreateDefaultMeasure,
+  CreateMeasure,
+} from "../Factory/Instrument.Factory.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
 
@@ -20,8 +24,9 @@ interface lNote {
   Editable?: boolean;
 }
 interface lMeasure {
-  Clef: string;
-  TimeSignature: { top: number, bottom: number };
+  Clefs: Clef[];
+  Staves: Staff[];
+  TimeSignature: { top: number; bottom: number };
   Notes: lNote[];
   Bounds: Bounds;
   ShowClef: boolean;
@@ -31,15 +36,23 @@ interface LoadStructure {
   Measures: lMeasure[];
 }
 
-const LoadSheet = (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, savedJson: string, 
-                  callback: (msg: Message) => void) => {
+const LoadSheet = (
+  sheet: Sheet,
+  page: Page,
+  cam: Camera,
+  instr: Instrument,
+  savedJson: string,
+  callback: (msg: Message) => void,
+) => {
   let runningId = { count: 0 };
   const loaded: LoadStructure = JSON.parse(savedJson);
   // loading onto a single instrument to begin with
   loaded.Measures.forEach((m: lMeasure, i: number) => {
- //   const msr = CreateDefaultMeasure(runningId, instr, page, cam);
+    //   const msr = CreateDefaultMeasure(runningId, instr, page, cam);
     // TODO: Temporary
-    if (instr.Staff === StaffType.Rhythm) { m.ShowClef = false; }
+    if (instr.Staff === StaffType.Rhythm) {
+      m.ShowClef = false;
+    }
     const notes: Note[] = [];
     m.Notes.forEach((n: lNote, i: number) => {
       const noteProps: NoteProps = {
@@ -52,35 +65,39 @@ const LoadSheet = (sheet: Sheet, page: Page, cam: Camera, instr: Instrument, sav
         Tuple: false,
         Clef: n.Clef,
         Editable: false,
-      }
+      };
       const newNote = new Note(noteProps);
       notes.push(newNote);
     });
-    const msr = CreateMeasure(instr,
-                              m.Bounds,
-                             m.TimeSignature,
-                             "CMaj/Amin",
-                             "treble",
-                             cam,
-                             runningId,
-                             page,
-                             m.ShowClef,
-                             callback
-                             );
+    const msr = CreateMeasure(
+      instr,
+      m.Bounds,
+      m.TimeSignature,
+      "CMaj/Amin",
+      m.Clefs,
+      m.Staves,
+      cam,
+      runningId,
+      page,
+      m.ShowClef,
+      callback,
+    );
     msr.Notes = notes;
     sheet.Measures.push(msr);
     msr.CreateDivisions(cam);
   });
-}
+};
 
 const SaveSheet = (sheet: Sheet): string => {
   let saved: LoadStructure = {
-    Measures: []
+    Measures: [],
   };
   sheet.Measures.forEach((m: Measure, i: number) => {
     let notes: lNote[] = [];
     m.Notes.forEach((n: Note, i: number) => {
-      if (n.Rest) { return; }
+      if (n.Rest) {
+        return;
+      }
       notes.push({
         ID: n.ID,
         Beat: n.Beat,
@@ -94,17 +111,18 @@ const SaveSheet = (sheet: Sheet): string => {
       });
     });
     saved.Measures.push({
-      Clef: "treble",
+      Clefs: m.Clefs,
+      Staves: m.Staves,
       TimeSignature: m.TimeSignature,
       Notes: notes,
       Bounds: m.Bounds,
       ShowClef: m.RenderClef,
-      ShowTime: m.RenderTimeSig
+      ShowTime: m.RenderTimeSig,
     });
   });
 
   console.log(JSON.stringify(saved));
   return JSON.stringify(saved);
-}
+};
 
-export { LoadSheet, SaveSheet, LoadStructure, lNote, lMeasure};
+export { LoadSheet, SaveSheet, LoadStructure, lNote, lMeasure };

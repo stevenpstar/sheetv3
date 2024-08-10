@@ -93,7 +93,8 @@ function CreateStems(
     divNotes.sort((a: Note, b:Note) => a.Line - b.Line);
     // TODO: Was alternating between 11 and 12 causing mismatch, may need to be
     // adjusted later not sure.
-    const stemX = divNotes[0].Bounds.x + 11;//Math.floor( div.Bounds.x + xBuffer + dynNoteXBuffer);
+    const stemX = stemDir === StemDirection.Up ? 
+      divNotes[0].Bounds.x + 11 : divNotes[0].Bounds.x;//Math.floor( div.Bounds.x + xBuffer + dynNoteXBuffer);
     const stem: Stem = new Stem(new Bounds(stemX, 0, 1.5, 0));
 
     if (stemDir === StemDirection.Up) {

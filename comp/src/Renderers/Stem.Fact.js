@@ -55,13 +55,15 @@ function CreateStems(notes, divisions, staff, measure, camera) {
     divisions.forEach((div, i) => {
         const beamAlt = i * (10 / divisions.length - 1);
         const divNotes = notes[i];
-        console.log('divNotes: ', divNotes);
         const numOfAcc = divNotes.filter(n => n.Accidental !== 0).length;
         if (numOfAcc > 0) {
             dynNoteXBuffer += dynNoteXBuffer * numOfAcc - 1;
         }
         divNotes.sort((a, b) => a.Line - b.Line);
-        const stemX = divNotes[0].Bounds.x + 11; //Math.floor( div.Bounds.x + xBuffer + dynNoteXBuffer);
+        // TODO: Was alternating between 11 and 12 causing mismatch, may need to be
+        // adjusted later not sure.
+        const stemX = stemDir === StemDirection.Up ?
+            divNotes[0].Bounds.x + 11 : divNotes[0].Bounds.x; //Math.floor( div.Bounds.x + xBuffer + dynNoteXBuffer);
         const stem = new Stem(new Bounds(stemX, 0, 1.5, 0));
         if (stemDir === StemDirection.Up) {
             stem.Bounds.y = divNotes[divNotes.length - 1].Bounds.y + 2.5;
@@ -82,7 +84,6 @@ function CreateStems(notes, divisions, staff, measure, camera) {
         }
         stems.push(stem);
     });
-    console.log('stems: ', stems);
     return stems;
 }
 // v3 of this bloody function

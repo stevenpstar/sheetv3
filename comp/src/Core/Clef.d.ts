@@ -18,10 +18,7 @@ declare class Clef implements ISelectable {
     Type: string;
     Beat: number;
     Editable: boolean;
-    constructor(id: number, pos: {
-        x: number;
-        y: number;
-    }, type: string, beat: number, staff: number);
+    constructor(id: number, type: string, beat: number, staff: number);
     render(renderProps: RenderProperties, theme: Theme): void;
     SetBounds(msr: Measure, staff: number): void;
     IsHovered(x: number, y: number, cam: Camera): boolean;

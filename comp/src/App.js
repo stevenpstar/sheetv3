@@ -1,9 +1,10 @@
 import { Sheet } from "./Core/Sheet.js";
 import { RenderDebug, Renderer } from "./Core/Renderer.js";
-import { CreateDefaultMeasure, CreateInstrument, CreateMeasure } from "./Factory/Instrument.Factory.js";
+import { CreateDefaultMeasure, CreateInstrument, CreateMeasure, } from "./Factory/Instrument.Factory.js";
+import { Clef } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
-import { AddNoteOnMeasure, CreateTuplet, InputOnMeasure, UpdateNoteBounds } from "./Workers/NoteInput.js";
+import { AddNoteOnMeasure, CreateTuplet, InputOnMeasure, UpdateNoteBounds, } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
 import { StaffType } from "./Core/Instrument.js";
 import { KeyPress } from "./Workers/Mappings.js";
@@ -14,6 +15,7 @@ import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves } from "./testsaves.js";
 import { ClearMessage, MessageType } from "./Types/Message.js";
 import { GeneratePitchMap } from "./Workers/Pitcher.js";
+import { Staff } from "./Core/Staff.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
         var _a, _b, _c;
@@ -40,7 +42,7 @@ class App {
         }
         this.Camera = new Camera(camStartX, camStartY);
         this.Camera.Zoom = 1; //this.Config.CameraSettings.Zoom ? this.Config.CameraSettings.Zoom : 1;
-        this.NoteValue = 0.5; //this.Config?.NoteSettings?.InputValue ? 
+        this.NoteValue = 0.5; //this.Config?.NoteSettings?.InputValue ?
         //      this.Config.NoteSettings.InputValue : 0.25;
         // TODO: Remove to formatter
         this.StartDragY = 0;
@@ -98,7 +100,7 @@ class App {
                     m.Divisions.forEach((d) => {
                         if (d.Bounds.IsHovered(x, y, this.Camera)) {
                             //ManageHeight(m, d.Staff, x, y, this.Camera, this.Sheet.Measures);
-                            // TODO: Move this so it only is called 
+                            // TODO: Move this so it only is called
                             // at the appropriate time
                             UpdateNoteBounds(m, 0);
                             UpdateNoteBounds(m, 1);
@@ -107,7 +109,7 @@ class App {
                 }
                 else {
                     console.log("We were resetting height here for some reason!");
-                    //         m.ResetHeight();         
+                    //         m.ResetHeight();
                 }
             });
         }
@@ -125,14 +127,12 @@ class App {
         // will move this code elsewhere, testing note input
         x = x / this.Camera.Zoom;
         y = y / this.Camera.Zoom;
-        //TODO: NOT FINAL THIS IS PROTOTYPING NOT FINAL 
+        //TODO: NOT FINAL THIS IS PROTOTYPING NOT FINAL
         if (!this.NoteInput && this.Formatting) {
             this.SelectLiner(x, y);
         }
         this.HoveredElements.MeasureID = -1;
-        const msrOver = this.Sheet
-            .Measures
-            .find((msr) => msr.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
+        const msrOver = this.Sheet.Measures.find((msr) => msr.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
         if (msrOver === undefined) {
             if (!shiftKey) {
                 this.Selector.DeselectAll();
@@ -151,21 +151,24 @@ class App {
                 this.Selector.Elements = this.Selector.DeselectAllElements(this.Selector.Elements);
             }
             const elem = this.Selector.TrySelectElement(msrOver, x, y, this.Camera, shiftKey, this.NotifyCallback, this.Selector.Elements);
-            if (elem === undefined && this.Config.FormatSettings.MeasureFormatSettings.Selectable === true ||
-                this.Config.FormatSettings.MeasureFormatSettings.Selectable === undefined) {
+            if ((elem === undefined &&
+                this.Config.FormatSettings.MeasureFormatSettings.Selectable ===
+                    true) ||
+                this.Config.FormatSettings.MeasureFormatSettings.Selectable ===
+                    undefined) {
                 this.Selector.SelectMeasure(msrOver);
             }
             if (!this.DraggingNote) {
                 this.DraggingNote = true;
             }
-            const divOver = msrOver.Divisions.find(d => d.Bounds.IsHovered(x, y, this.Camera));
+            const divOver = msrOver.Divisions.find((d) => d.Bounds.IsHovered(x, y, this.Camera));
             if (divOver) {
                 this.StartLine = msrOver.GetLineHovered(y, divOver.Staff).num;
             }
         }
         else if (this.NoteInput) {
             InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput);
-            this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === msrOver.Instrument));
+            this.ResizeMeasures(this.Sheet.Measures.filter((m) => m.Instrument === msrOver.Instrument));
         }
         //  this.NotifyCallback(this.Message);
         this.Update(x, y);
@@ -185,18 +188,18 @@ class App {
         const newMeasureID = this.Sheet.Measures.length;
         const prevMsr = this.Sheet.Measures[this.Sheet.Measures.length - 1];
         let x = 0;
-        this.Sheet.Instruments.forEach(i => {
+        this.Sheet.Instruments.forEach((i) => {
             let latestLine = this.Sheet.Pages[0].PageLines[this.Sheet.Pages[0].PageLines.length - 1];
             //    const msrCountOnLine = this.Sheet.Measures.filter(m => m.PageLine === latestLine.Number);
             //    if (msrCountOnLine.length > 3) {
             //      latestLine = this.Sheet.Pages[0].AddLine();
             //    }
             const newMeasureBounds = new Bounds(x, latestLine.LineBounds.y, 150, prevMsr.Bounds.height);
-            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, "treble", this.Camera, this.RunningID, this.Sheet.Pages[0], // Page will need to be determined
+            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, prevMsr.Clefs, prevMsr.Staves, this.Camera, this.RunningID, this.Sheet.Pages[0], // Page will need to be determined
             false, this.NotifyCallback, this.Config.MeasureSettings);
             //      newMsr.PageLine = latestLine.Number;
             this.Sheet.Measures.push(newMsr);
-            this.ResizeMeasures(this.Sheet.Measures.filter(m => m.Instrument === i));
+            this.ResizeMeasures(this.Sheet.Measures.filter((m) => m.Instrument === i));
         });
     }
     ChangeInputMode() {
@@ -209,8 +212,8 @@ class App {
         if (!this.DragLining) {
             this.LineNumber = -1;
         }
-        this.Sheet.Pages.forEach(page => {
-            page.PageLines.forEach(line => {
+        this.Sheet.Pages.forEach((page) => {
+            page.PageLines.forEach((line) => {
                 if (line.LineBounds.IsHovered(x, y, this.Camera)) {
                     liner = line.LineBounds;
                     if (!this.DragLining) {
@@ -229,11 +232,11 @@ class App {
             this.LinerBounds.y = this.LinerBounds.y + (y - this.StartDragY);
             const page = this.Sheet.Pages[0];
             if (this.LinerBounds.y + 12.5 <= page.Bounds.y + page.Margins.top) {
-                this.LinerBounds.y = (page.Bounds.y + page.Margins.top) - 12.5;
+                this.LinerBounds.y = page.Bounds.y + page.Margins.top - 12.5;
             }
             this.StartDragY = y;
             // TODO: Super SCUFFED TEST PROTOTYPE NOT FINAL
-            this.Sheet.Measures.forEach(m => {
+            this.Sheet.Measures.forEach((m) => {
                 if (m.PageLine === this.LineNumber) {
                     m.Bounds.y = this.LinerBounds.y;
                 }
@@ -242,21 +245,22 @@ class App {
         }
     }
     DragNote(x, y) {
-        const msrOver = this.Sheet
-            .Measures.find(m => m.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
+        const msrOver = this.Sheet.Measures.find((m) => m.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
         if (msrOver === undefined) {
             this.DraggingNote = false;
             this.StartLine = -1;
             this.EndLine = -1;
             return;
         }
-        const divOver = msrOver.Divisions.find(d => d.Bounds.IsHovered(x, y, this.Camera));
+        const divOver = msrOver.Divisions.find((d) => d.Bounds.IsHovered(x, y, this.Camera));
         if (divOver) {
             this.EndLine = msrOver.GetLineHovered(y, divOver.Staff).num;
         }
         const lineDiff = this.EndLine - this.StartLine;
         for (let [msr, elem] of this.Selector.Elements) {
-            elem.filter((e) => e.SelType === SelectableTypes.Note).forEach((n) => {
+            elem
+                .filter((e) => e.SelType === SelectableTypes.Note)
+                .forEach((n) => {
                 // Should never be selected, currently band-aid fix for bug. Address
                 // when re-implementing dragging notes/selectables
                 if (n.Selected && n.Editable) {
@@ -268,11 +272,11 @@ class App {
                             messageData: {
                                 MessageType: MessageType.Selection,
                                 Message: {
-                                    msg: 'selected',
+                                    msg: "selected",
                                     obj: n,
                                 },
                             },
-                            messageString: 'Selected Note'
+                            messageString: "Selected Note",
                         };
                         this.Message = m;
                         this.NotifyCallback(this.Message);
@@ -301,8 +305,8 @@ class App {
         this.CamDragging = dragging;
         if (this.CamDragging) {
             // set initial drag position
-            this.DraggingPositions.x1 = (x / this.Camera.Zoom);
-            this.DraggingPositions.y1 = (y / this.Camera.Zoom);
+            this.DraggingPositions.x1 = x / this.Camera.Zoom;
+            this.DraggingPositions.y1 = y / this.Camera.Zoom;
         }
         else {
             // reset drag positions
@@ -356,7 +360,7 @@ class App {
     }
     SetAccidental(acc) {
         for (let [msr, elem] of this.Selector.Elements) {
-            elem.forEach(n => {
+            elem.forEach((n) => {
                 if (n.SelType === SelectableTypes.Note) {
                     const note = n;
                     note.Accidental = acc;
@@ -365,11 +369,11 @@ class App {
                         messageData: {
                             MessageType: MessageType.Selection,
                             Message: {
-                                msg: 'selected',
+                                msg: "selected",
                                 obj: note,
                             },
                         },
-                        messageString: 'Selected Note'
+                        messageString: "Selected Note",
                     };
                     this.Message = m;
                     this.NotifyCallback(m);
@@ -380,7 +384,7 @@ class App {
     }
     Sharpen() {
         for (let [msr, elem] of this.Selector.Elements) {
-            elem.forEach(n => {
+            elem.forEach((n) => {
                 if (n.SelType === SelectableTypes.Note) {
                     const note = n;
                     note.Accidental += 1;
@@ -394,7 +398,7 @@ class App {
     }
     Flatten() {
         for (let [msr, elem] of this.Selector.Elements) {
-            elem.forEach(e => {
+            elem.forEach((e) => {
                 if (e.SelType === SelectableTypes.Note) {
                     const n = e;
                     n.Accidental -= 1;
@@ -476,13 +480,16 @@ class App {
         if ((_b = (_a = this.Config.FormatSettings) === null || _a === void 0 ? void 0 : _a.MeasureFormatSettings) === null || _b === void 0 ? void 0 : _b.MaxWidth) {
             msrWidth = this.Config.FormatSettings.MeasureFormatSettings.MaxWidth;
         }
-        const padding = (this.Canvas.clientWidth - ((msrWidth + (msrWidth / 2)) * this.Camera.Zoom)) / 4;
+        const padding = (this.Canvas.clientWidth - (msrWidth + msrWidth / 2) * this.Camera.Zoom) /
+            4;
         this.Camera.x = padding;
-        if (this.Canvas.clientWidth < (msrWidth * this.Camera.Zoom)) {
+        if (this.Canvas.clientWidth < msrWidth * this.Camera.Zoom) {
             this.SetCameraZoom(this.Canvas.clientWidth / msrWidth);
         }
         else {
-            const z = ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.Zoom) ? this.Config.CameraSettings.Zoom : 1;
+            const z = ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.Zoom)
+                ? this.Config.CameraSettings.Zoom
+                : 1;
             this.SetCameraZoom(z);
         }
     }
@@ -497,14 +504,31 @@ class App {
             this.SetCameraZoom(this.Canvas.clientWidth / totalWidth);
         }
         else {
-            const z = ((_a = this.Config.CameraSettings) === null || _a === void 0 ? void 0 : _a.Zoom) ? this.Config.CameraSettings.Zoom : 1;
+            const z = ((_a = this.Config.CameraSettings) === null || _a === void 0 ? void 0 : _a.Zoom)
+                ? this.Config.CameraSettings.Zoom
+                : 1;
             this.SetCameraZoom(z);
         }
-        const emptySpace = this.Canvas.clientWidth - (totalWidth * this.Camera.Zoom);
+        const emptySpace = this.Canvas.clientWidth - totalWidth * this.Camera.Zoom;
         this.Camera.x = emptySpace / 2;
     }
     // Maybe instead of duplicate function we can expose note input function,
     // doesn't matter atm
-    AddNoteOnMeasure(msr, noteValue, line, beat, rest) { AddNoteOnMeasure(msr, noteValue, line, beat, rest); }
+    AddNoteOnMeasure(msr, noteValue, line, beat, rest) {
+        AddNoteOnMeasure(msr, noteValue, line, beat, rest);
+    }
+    AddStaff(instrNum, clef) {
+        const instr = this.Sheet.Instruments[instrNum];
+        if (!instr) {
+            return;
+        }
+        const newStaff = new Staff(instr.Staves.length);
+        instr.Staves.push(new Staff(instr.Staves.length));
+        const msrs = this.Sheet.Measures.filter((m) => m.Instrument === instr);
+        msrs.forEach((m) => {
+            m.Staves.push(newStaff);
+            m.Clefs.push(new Clef(m.Clefs.length - 1, clef, 1, newStaff.Num));
+        });
+    }
 }
 export { App };

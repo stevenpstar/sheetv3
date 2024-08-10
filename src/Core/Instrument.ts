@@ -1,3 +1,5 @@
+import { Staff } from "./Staff";
+
 interface HeightProps {
   aTop: number;
   aMid: number;
@@ -18,12 +20,15 @@ interface HeightProps {
 enum StaffType {
   Single = 0,
   Grand,
-  Rhythm
+  Rhythm,
 }
 interface Instrument {
-  Position: { x: number, y: number };
+  Position: { x: number; y: number };
   Staff: StaffType;
-//  HeightProps: HeightProps;
+  Staves: Staff[];
+  //  HeightProps: HeightProps;
 }
+
+function AddStaff(instr: Instrument, clef: string): void {}
 
 export { Instrument, StaffType };

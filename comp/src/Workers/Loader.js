@@ -1,6 +1,6 @@
 import { StaffType } from "../Core/Instrument.js";
 import { Note } from "../Core/Note.js";
-import { CreateMeasure } from "../Factory/Instrument.Factory.js";
+import { CreateMeasure, } from "../Factory/Instrument.Factory.js";
 const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
     let runningId = { count: 0 };
     const loaded = JSON.parse(savedJson);
@@ -27,7 +27,7 @@ const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
             const newNote = new Note(noteProps);
             notes.push(newNote);
         });
-        const msr = CreateMeasure(instr, m.Bounds, m.TimeSignature, "CMaj/Amin", "treble", cam, runningId, page, m.ShowClef, callback);
+        const msr = CreateMeasure(instr, m.Bounds, m.TimeSignature, "CMaj/Amin", m.Clefs, m.Staves, cam, runningId, page, m.ShowClef, callback);
         msr.Notes = notes;
         sheet.Measures.push(msr);
         msr.CreateDivisions(cam);
@@ -35,7 +35,7 @@ const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
 };
 const SaveSheet = (sheet) => {
     let saved = {
-        Measures: []
+        Measures: [],
     };
     sheet.Measures.forEach((m, i) => {
         let notes = [];
@@ -56,12 +56,13 @@ const SaveSheet = (sheet) => {
             });
         });
         saved.Measures.push({
-            Clef: "treble",
+            Clefs: m.Clefs,
+            Staves: m.Staves,
             TimeSignature: m.TimeSignature,
             Notes: notes,
             Bounds: m.Bounds,
             ShowClef: m.RenderClef,
-            ShowTime: m.RenderTimeSig
+            ShowTime: m.RenderTimeSig,
         });
     });
     console.log(JSON.stringify(saved));

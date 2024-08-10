@@ -84,6 +84,7 @@ declare class App {
     CenterMeasures(): void;
     CenterPage(): void;
     AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
+    AddStaff(instrNum: number, clef: string): void;
 }
 export { App };
 //# sourceMappingURL=App.d.ts.map

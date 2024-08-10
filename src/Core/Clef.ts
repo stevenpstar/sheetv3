@@ -15,15 +15,15 @@ class Clef implements ISelectable {
   ID: number;
   Selected: boolean;
   Staff: number;
-  Position: { x: number, y: number };
+  Position: { x: number; y: number };
   Bounds: Bounds;
   SelType: SelectableTypes;
   Type: string;
   Beat: number;
   Editable: boolean;
-  constructor(id: number, pos: { x: number, y: number }, type: string, beat: number, staff: number) {
+  constructor(id: number, type: string, beat: number, staff: number) {
     this.ID = id;
-    this.Position = pos;
+    this.Position = { x: 0, y: 0 };
     this.Staff = staff;
     this.Bounds = new Bounds(0, 0, 0, 0);
     this.Type = type;
@@ -47,35 +47,38 @@ class Clef implements ISelectable {
         clefSymbol = Clefs.G;
     }
 
-    RenderSymbol(renderProps,
-                 clefSymbol,
-                 this.Position.x,
-                 this.Position.y,
-                  theme,
-                  this.Selected);
+    RenderSymbol(
+      renderProps,
+      clefSymbol,
+      this.Position.x,
+      this.Position.y,
+      theme,
+      this.Selected,
+    );
   }
 
   SetBounds(msr: Measure, staff: number): void {
     // There is a difference between position and bounds
     // Position is for visually positioning the clef glyph, bounds is for selection
-    const div = msr.Divisions.find(d => d.Beat === this.Beat && d.Staff === staff);
-    const xPosition: number = this.Beat === 1 ? 
-      msr.Bounds.x : div.Bounds.x;
+    const div = msr.Divisions.find(
+      (d) => d.Beat === this.Beat && d.Staff === staff,
+    );
+    const xPosition: number = this.Beat === 1 ? msr.Bounds.x : div.Bounds.x;
     const xBuffer = 3;
     // Treble as default, 2
     let lineBuffer = 2;
-//    let yBuffer = staff === 0 ? 0 : msr.GetMeasureHeight();
+    //    let yBuffer = staff === 0 ? 0 : msr.GetMeasureHeight();
     let yBuffer = 0;
     // TODO: Replace with relative mid line function (i think it might exist
     // already)
-    const msrMidLine = 10;//GetStaffActualMidLine(msr.Staves, staff);
+    const msrMidLine = 10; //GetStaffActualMidLine(msr.Staves, staff);
     this.Position.x = xPosition + xBuffer;
     this.Bounds.x = xPosition + xBuffer;
     switch (this.Type) {
       case "bass":
         lineBuffer = -2;
     }
-    this.Position.y = div.Bounds.y + yBuffer + ((msrMidLine + lineBuffer) * 5);
+    this.Position.y = div.Bounds.y + yBuffer + (msrMidLine + lineBuffer) * 5;
     this.Bounds.y = div.Bounds.y;
     this.Bounds.width = 30;
     this.Bounds.height = 85;
@@ -86,26 +89,17 @@ class Clef implements ISelectable {
   }
 }
 
-function GetNoteClefType(msr: Measure, noteBeat: number, staff: StaffType): string {
-  let clefType: string = staff === StaffType.Single ?
-    "treble" : "bass";
+function GetNoteClefType(
+  msr: Measure,
+  noteBeat: number,
+  staff: StaffType,
+): string {
+  let clefType: string = staff === StaffType.Single ? "treble" : "bass";
   if (staff === StaffType.Single) {
     msr.Clefs.sort((a: Clef, b: Clef) => {
       return a.Beat - b.Beat;
-    })
-    msr.Clefs.forEach((c: Clef) => {
-      // clefs can change part way through measure
-      // need to find latest clef to pass on to note (by beat)
-      if (c.Beat <= noteBeat) {
-        clefType = c.Type;
-        return;
-      }
     });
-  } else {
-    msr.GrandClefs.sort((a: Clef, b: Clef) => {
-      return a.Beat - b.Beat;
-    })
-    msr.GrandClefs.forEach((c: Clef) => {
+    msr.Clefs.forEach((c: Clef) => {
       // clefs can change part way through measure
       // need to find latest clef to pass on to note (by beat)
       if (c.Beat <= noteBeat) {
@@ -117,4 +111,4 @@ function GetNoteClefType(msr: Measure, noteBeat: number, staff: StaffType): stri
   return clefType;
 }
 
-export { Clef, GetNoteClefType }
+export { Clef, GetNoteClefType };

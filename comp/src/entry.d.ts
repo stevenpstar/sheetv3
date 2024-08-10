@@ -11,6 +11,7 @@ export declare namespace sheet {
     function Flatten(): void;
     function SetNoteValue(value: number): void;
     function AddMeasure(): void;
+    function AddStaff(instrIndex: number, clefString: string): void;
     function AddNoteOnMeasure(msr: Measure, noteVal: number, line: number, div: Division, rest: boolean): void;
     function Delete(): void;
     function SelectById(id: number): ISelectable;
@@ -18,11 +19,11 @@ export declare namespace sheet {
     function DeleteSelected(): void;
     function ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
 }
-export * from './Workers/Mappings.js';
-export * from './App.js';
-export * from './Workers/Loader.js';
-export * from './Core/Note.js';
-export * from './Workers/Pitcher.js';
-export * from './Types/Message.js';
-export * from './Types/Config.js';
+export * from "./Workers/Mappings.js";
+export * from "./App.js";
+export * from "./Workers/Loader.js";
+export * from "./Core/Note.js";
+export * from "./Workers/Pitcher.js";
+export * from "./Types/Message.js";
+export * from "./Types/Config.js";
 //# sourceMappingURL=entry.d.ts.map

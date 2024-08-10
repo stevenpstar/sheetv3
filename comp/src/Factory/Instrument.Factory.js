@@ -1,5 +1,6 @@
 import { StaffType } from "../Core/Instrument.js";
-import { Measure } from "../Core/Measure.js";
+import { Clef, Measure } from "../Core/Measure.js";
+import { Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
 // Defaults, these will be moved somewhere else but fine here for now
 const sTopLine = 5;
@@ -9,7 +10,8 @@ const mh = (sBotLine - sTopLine) * lineHeight;
 const CreateDefaultPiano = () => {
     const defaultPiano = {
         Position: { x: 0, y: 5 },
-        Staff: StaffType.Grand
+        Staff: StaffType.Grand,
+        Staves: [new Staff(0), new Staff(1)],
     };
     return defaultPiano;
 };
@@ -30,7 +32,8 @@ function CreateInstrument(y, config) {
     }
     const instr = {
         Position: { x: 0, y: y },
-        Staff: staff
+        Staff: staff,
+        Staves: [new Staff(0)],
     };
     return instr;
 }
@@ -42,7 +45,8 @@ const CreateDefaultMeasure = (id, instr, page, cam, callback, settings) => {
         TimeSignature: { top: 4, bottom: 4 },
         KeySignature: "CMaj/Amin",
         Notes: [],
-        Clef: "treble",
+        Clefs: [new Clef(0, "treble", 1, 0)],
+        Staves: [new Staff(0)],
         RenderClef: true,
         RenderTimeSig: true,
         RenderKey: false,
@@ -53,14 +57,15 @@ const CreateDefaultMeasure = (id, instr, page, cam, callback, settings) => {
     };
     return new Measure(props, id);
 };
-const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, runningId, page, renderClef = false, callback, settings) => {
+const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, staves, cam, runningId, page, renderClef = false, callback, settings) => {
     const props = {
         Instrument: instr,
         Bounds: bounds,
         TimeSignature: timeSignature,
         KeySignature: keySignature,
         Notes: [],
-        Clef: clef,
+        Clefs: clef,
+        Staves: staves,
         RenderClef: false,
         RenderTimeSig: false,
         RenderKey: false,
@@ -71,4 +76,4 @@ const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, cam, ru
     };
     return new Measure(props, runningId);
 };
-export { CreateDefaultPiano, CreateDefaultMeasure, CreateMeasure, CreateInstrument };
+export { CreateDefaultPiano, CreateDefaultMeasure, CreateMeasure, CreateInstrument, };

@@ -1,25 +1,20 @@
-import { Bounds } from '../Types/Bounds.js';
-import { SelectableTypes } from '../Types/ISelectable.js';
-import { MessageType } from '../Types/Message.js';
-import { UpdateNoteBounds } from '../Workers/NoteInput.js';
-import { Clef, GetNoteClefType } from './Clef.js';
-import { CreateDivisions, ResizeDivisions, DivisionMinWidth } from './Division.js';
-import { StaffType } from './Instrument.js';
-import { Note } from './Note.js';
-import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from './Staff.js';
-import { CreateTimeSignature } from './TimeSignatures.js';
+import { Bounds } from "../Types/Bounds.js";
+import { SelectableTypes } from "../Types/ISelectable.js";
+import { MessageType } from "../Types/Message.js";
+import { UpdateNoteBounds } from "../Workers/NoteInput.js";
+import { Clef, GetNoteClefType } from "./Clef.js";
+import { CreateDivisions, ResizeDivisions, DivisionMinWidth, } from "./Division.js";
+import { StaffType } from "./Instrument.js";
+import { Note } from "./Note.js";
+import { GetStaffHeightUntil, } from "./Staff.js";
+import { CreateTimeSignature } from "./TimeSignatures.js";
 class Measure {
     constructor(properties, runningId) {
         // TODO: Clefs should just be one array, each clef should have which staff they are
         // on
         this.Clefs = [];
-        this.GrandClefs = [];
-        this.Staves = [];
-        this.Staves.push(new Staff(0));
-        this.Staves.push(new Staff(1));
-        this.Staves.push(new Staff(2));
-        this.Staves.push(new Staff(3));
-        this.Staves.push(new Staff(4));
+        this.Staves = properties.Staves;
+        //    this.Staves.push(new Staff(1));
         this.Message = properties.Message;
         this.RunningID = runningId;
         this.ID = 0;
@@ -48,8 +43,7 @@ class Measure {
         this.SetXOffset();
         this.CreateDivisions(this.Camera);
         this.Staves.forEach((s) => {
-            const trebleClef = new Clef(0, { x: this.Bounds.x + 16,
-                y: this.Bounds.y + (5 * GetStaffMiddleLine(this.Staves, s.Num) + (10 * 2)) }, "treble", 1, s.Num);
+            const trebleClef = new Clef(0, "treble", 1, s.Num);
             trebleClef.SetBounds(this, s.Num);
             this.Clefs.push(trebleClef);
         });
@@ -61,19 +55,18 @@ class Measure {
     GetLineHovered(y, staffNum) {
         const cam = this.Camera;
         const relYPos = y - this.Bounds.y - cam.y; //TODO: Dunno about scaling by zoom here
-        let line = Math.floor(relYPos / (5)); // this should be a constant, line_height (defined somewhere)
+        let line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
         let actualLine = line;
-        const bounds = new Bounds(this.Bounds.x, 0, this.Bounds.width + this.XOffset, (5));
-        const staff = this.Staves.find(s => s.Num === staffNum);
+        const bounds = new Bounds(this.Bounds.x, 0, this.Bounds.width + this.XOffset, 5);
+        const staff = this.Staves.find((s) => s.Num === staffNum);
         const prevStaffLines = GetStaffHeightUntil(this.Staves, staffNum) / 5;
         actualLine = line + staff.TopLine;
         const testLine = actualLine - prevStaffLines;
-        const relativeLine = staff.TopLine < 0 ?
-            actualLine + Math.abs(staff.TopLine) :
-            actualLine - staff.TopLine;
-        bounds.y = 5 * (actualLine);
-        return { num: testLine,
-            bounds: bounds };
+        const relativeLine = staff.TopLine < 0
+            ? actualLine + Math.abs(staff.TopLine)
+            : actualLine - staff.TopLine;
+        bounds.y = 5 * actualLine;
+        return { num: testLine, bounds: bounds };
     }
     // Get note position relative to staff/measure
     GetNotePositionOnLine(line, staff) {
@@ -87,13 +80,13 @@ class Measure {
     SetXOffset() {
         this.XOffset = 0;
         if (this.RenderClef) {
-            this.XOffset += (30);
+            this.XOffset += 30;
         }
         if (this.RenderKey) {
-            this.XOffset += (30);
+            this.XOffset += 30;
         }
         if (this.RenderTimeSig) {
-            this.XOffset += (30);
+            this.XOffset += 30;
         }
     }
     CreateDivisions(cam, afterInput = false) {
@@ -112,7 +105,7 @@ class Measure {
     // eventually will be determined by instrument / row etc.
     // TODO: Remove these three methods (doing now)
     GetMeasureHeight() {
-        return 0;
+        return GetStaffHeightUntil(this.Staves);
     }
     GetGrandMeasureHeight() {
         return 0;
@@ -121,7 +114,7 @@ class Measure {
         return 0;
     }
     /* End TODO
-    */
+     */
     // Gets total height of measure (all staffs)
     NEW_GetMeasureHeight() {
         return GetStaffHeightUntil(this.Staves);
@@ -138,14 +131,14 @@ class Measure {
         this.Notes.push(note);
         if (fromInput) {
             const msg = {
-                messageString: 'AddNote',
+                messageString: "AddNote",
                 messageData: {
                     Message: {
                         msg: "AddingNote",
                         obj: note,
                     },
                     MessageType: MessageType.AddNote,
-                }
+                },
             };
             this.Message(msg);
         }
@@ -184,7 +177,7 @@ class Measure {
                 let tuple = this.Notes[n].Tuple;
                 let tupleDetails = this.Notes[n].TupleDetails;
                 this.Notes.splice(n, 1);
-                const notesOnBeat = this.Notes.filter(n => n.Beat === beat);
+                const notesOnBeat = this.Notes.filter((n) => n.Beat === beat);
                 if (notesOnBeat.length === 0) {
                     const clefType = GetNoteClefType(this, beat, staff);
                     // beat is empty and requires a rest note
@@ -205,16 +198,18 @@ class Measure {
         }
     }
     GetMinimumWidth() {
-        if (this.Notes.filter(n => n.Rest !== true).length === 0) {
+        if (this.Notes.filter((n) => n.Rest !== true).length === 0) {
             return DivisionMinWidth * 4;
         }
-        const staffZeroDivs = this.Divisions.filter(div => div.Staff === 0);
-        const staffOneDivs = this.Divisions.filter(div => div.Staff === 1);
+        const staffZeroDivs = this.Divisions.filter((div) => div.Staff === 0);
+        const staffOneDivs = this.Divisions.filter((div) => div.Staff === 1);
         const lowestValue = this.Divisions.sort((a, b) => {
             return a.Duration - b.Duration;
         })[0].Duration;
         //const count = 1 / lowestValue;
-        const count = staffZeroDivs.length > staffOneDivs.length ? staffZeroDivs.length : staffOneDivs.length;
+        const count = staffZeroDivs.length > staffOneDivs.length
+            ? staffZeroDivs.length
+            : staffOneDivs.length;
         return count * DivisionMinWidth;
     }
     ReturnSelectableElements() {

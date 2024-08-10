@@ -65,4 +65,4 @@ function RenderSymbol(renderProps, symbol, x, y, theme, selected) {
     context.font = `${stdFontSize}px Bravura`;
     context.fillText(symbol, x + camera.x, y + camera.y);
 }
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol };
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol, };

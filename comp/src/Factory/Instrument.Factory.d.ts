@@ -1,7 +1,8 @@
 import { Camera } from "../Core/Camera.js";
 import { Instrument } from "../Core/Instrument.js";
-import { Measure } from "../Core/Measure.js";
+import { Clef, Measure } from "../Core/Measure.js";
 import { Page } from "../Core/Page.js";
+import { Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
 import { ConfigSettings, MeasureSettings } from "../entry.js";
@@ -13,8 +14,8 @@ declare const CreateDefaultMeasure: (id: {
 declare const CreateMeasure: (instr: Instrument, bounds: Bounds, timeSignature: {
     top: number;
     bottom: number;
-}, keySignature: string, clef: string, cam: Camera, runningId: {
+}, keySignature: string, clef: Clef[], staves: Staff[], cam: Camera, runningId: {
     count: number;
 }, page: Page, renderClef: boolean, callback: (msg: Message) => void, settings?: MeasureSettings) => Measure;
-export { CreateDefaultPiano, CreateDefaultMeasure, CreateMeasure, CreateInstrument };
+export { CreateDefaultPiano, CreateDefaultMeasure, CreateMeasure, CreateInstrument, };
 //# sourceMappingURL=Instrument.Factory.d.ts.map
