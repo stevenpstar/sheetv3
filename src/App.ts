@@ -28,7 +28,7 @@ import { allSaves, canonSave, intervalTest, saveFile } from "./testsaves.js";
 import { ClearMessage, Message, MessageType } from "./Types/Message.js";
 import { GeneratePitchMap, MappedMidi } from "./Workers/Pitcher.js";
 import { ConfigSettings } from "./Types/Config.js";
-import { Staff } from "./Core/Staff.js";
+import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
 
 class App {
   Config: ConfigSettings;
@@ -133,7 +133,6 @@ class App {
           this.Config.MeasureSettings,
         ),
       );
-
       this.Sheet = new Sheet(sProps);
     }
     this.NoteInput = false;
@@ -735,6 +734,8 @@ class App {
     msrs.forEach((m) => {
       m.Staves.push(newStaff);
       m.Clefs.push(new Clef(m.Clefs.length - 1, clef, 1, newStaff.Num));
+      // TODO: Temporarry measure height being set
+      m.Bounds.height = GetStaffHeightUntil(m.Staves);
     });
   }
 }

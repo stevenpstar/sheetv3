@@ -15,7 +15,7 @@ import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves } from "./testsaves.js";
 import { ClearMessage, MessageType } from "./Types/Message.js";
 import { GeneratePitchMap } from "./Workers/Pitcher.js";
-import { Staff } from "./Core/Staff.js";
+import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
         var _a, _b, _c;
@@ -528,6 +528,8 @@ class App {
         msrs.forEach((m) => {
             m.Staves.push(newStaff);
             m.Clefs.push(new Clef(m.Clefs.length - 1, clef, 1, newStaff.Num));
+            // TODO: Temporarry measure height being set
+            m.Bounds.height = GetStaffHeightUntil(m.Staves);
         });
     }
 }

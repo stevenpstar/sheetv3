@@ -3,6 +3,7 @@ import { Note } from "../Core/Note.js";
 import { CreateMeasure, } from "../Factory/Instrument.Factory.js";
 const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
     let runningId = { count: 0 };
+    // TODO: this could error
     const loaded = JSON.parse(savedJson);
     // loading onto a single instrument to begin with
     loaded.Measures.forEach((m, i) => {

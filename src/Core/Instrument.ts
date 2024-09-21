@@ -29,6 +29,4 @@ interface Instrument {
   //  HeightProps: HeightProps;
 }
 
-function AddStaff(instr: Instrument, clef: string): void {}
-
 export { Instrument, StaffType };

@@ -45,6 +45,7 @@ const LoadSheet = (
   callback: (msg: Message) => void,
 ) => {
   let runningId = { count: 0 };
+  // TODO: this could error
   const loaded: LoadStructure = JSON.parse(savedJson);
   // loading onto a single instrument to begin with
   loaded.Measures.forEach((m: lMeasure, i: number) => {

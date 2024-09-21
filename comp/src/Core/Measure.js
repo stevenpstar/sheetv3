@@ -42,10 +42,10 @@ class Measure {
         this.PageLine = properties.Page.PageLines[0].Number;
         this.SetXOffset();
         this.CreateDivisions(this.Camera);
-        this.Staves.forEach((s) => {
-            const trebleClef = new Clef(0, "treble", 1, s.Num);
-            trebleClef.SetBounds(this, s.Num);
-            this.Clefs.push(trebleClef);
+        this.Staves.forEach((s, i) => {
+            const clef = new Clef(0, properties.Clefs[i].Type, 1, s.Num);
+            clef.SetBounds(this, s.Num);
+            this.Clefs.push(clef);
         });
         this.TimeSignature.SetBounds(this, 0);
         this.TimeSignature.SetBounds(this, 1);

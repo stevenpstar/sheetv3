@@ -4,5 +4,4 @@ var StaffType;
     StaffType[StaffType["Grand"] = 1] = "Grand";
     StaffType[StaffType["Rhythm"] = 2] = "Rhythm";
 })(StaffType || (StaffType = {}));
-function AddStaff(instr, clef) { }
 export { StaffType };

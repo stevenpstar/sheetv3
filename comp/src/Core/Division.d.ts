@@ -22,5 +22,5 @@ declare function ResizeDivisions(msr: Measure, divisions: Division[], staff: num
 declare function GetDivisionTotalWidth(divisions: Division[]): number;
 declare function GetDivisionGroups(msr: Measure, staff: number): DivGroups;
 declare function IsRestOnBeat(beat: number, notes: Note[], staff: number): boolean;
-export { Division, CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, DivGroups, DivGroup, IsRestOnBeat, GetDivisionGroups, DivisionMinWidth, DivisionMaxWidth };
+export { Division, CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, DivGroups, DivGroup, IsRestOnBeat, GetDivisionGroups, DivisionMinWidth, DivisionMaxWidth, };
 //# sourceMappingURL=Division.d.ts.map

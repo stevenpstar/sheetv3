@@ -2,9 +2,8 @@ import { Bounds } from "../Types/Bounds.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { GetNoteClefType } from "./Clef.js";
 import { Note } from "./Note.js";
-import { GetStaffHeight, GetStaffHeightUntil, GetStaffMiddleLine } from "./Staff.js";
+import { GetStaffHeight, GetStaffHeightUntil, GetStaffMiddleLine, } from "./Staff.js";
 import { GetLargestValues } from "./Values.js";
-;
 const DivisionMinWidth = 30;
 const DivisionMaxWidth = 40;
 function CreateDivisions(msr, notes, staff, cam) {
@@ -14,7 +13,7 @@ function CreateDivisions(msr, notes, staff, cam) {
     notes.sort((a, b) => {
         return a.Beat - b.Beat;
     });
-    if (notes.filter(n => n.Staff === staff).length === 0) {
+    if (notes.filter((n) => n.Staff === staff).length === 0) {
         const restProps = {
             Beat: 1,
             Duration: 1,
@@ -25,26 +24,31 @@ function CreateDivisions(msr, notes, staff, cam) {
             Tuple: false,
             Clef: staff === 0 ? "treble" : "bass",
         };
+        // TODO: Clef should not be determined by staff that makes no sense
         msr.AddNote(new Note(restProps));
     }
-    notes.filter(n => n.Staff === staff).forEach(n => {
-        if (!divisions.find(div => div.Beat === n.Beat && div.Staff === n.Staff)) {
+    notes
+        .filter((n) => n.Staff === staff)
+        .forEach((n) => {
+        if (!divisions.find((div) => div.Beat === n.Beat && div.Staff === n.Staff)) {
             divisions.push({
                 Beat: n.Beat,
                 Duration: n.Duration,
                 Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff, cam),
-                Staff: staff
+                Staff: staff,
             });
             if (!n.Tuple) {
-                nextBeat = n.Beat + (n.Duration * msr.TimeSignature.bottom);
+                nextBeat = n.Beat + n.Duration * msr.TimeSignature.bottom;
             }
             else {
-                nextBeat = n.Beat + (n.Duration / n.TupleDetails.Count * msr.TimeSignature.bottom);
+                nextBeat =
+                    n.Beat +
+                        (n.Duration / n.TupleDetails.Count) * msr.TimeSignature.bottom;
             }
             runningValue += n.Duration;
         }
     });
-    if (runningValue > 0 && (nextBeat - 1) < msr.TimeSignature.bottom) {
+    if (runningValue > 0 && nextBeat - 1 < msr.TimeSignature.bottom) {
         GenerateMissingBeatDivisions(msr, divisions, staff);
     }
     GenerateMissingBeatDivisions(msr, divisions, staff);
@@ -55,24 +59,27 @@ function CreateBeatBounds(msr, beat, duration, staff, cam) {
     // single height
     const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
     const height = GetStaffHeight(msr.Staves, staff);
-    const x = msr.Bounds.x + msr.XOffset + ((beat - 1) / msr.TimeSignature.bottom) * msr.Bounds.width;
+    const x = msr.Bounds.x +
+        msr.XOffset +
+        ((beat - 1) / msr.TimeSignature.bottom) * msr.Bounds.width;
     const y = msr.Bounds.y + GetStaffHeightUntil(msr.Staves, staff);
     return new Bounds(x, y, width, height);
 }
 function PositionDivByBeat(msr, divisions) {
-    const s0divs = divisions.filter(d => d.Staff === 0);
-    const s1divs = divisions.filter(d => d.Staff === 1);
+    const s0divs = divisions.filter((d) => d.Staff === 0);
+    const s1divs = divisions.filter((d) => d.Staff === 1);
     if (s1divs.length > s0divs.length) {
         divisions.forEach((div) => {
             div.Bounds.x = 0;
         });
     }
-    else { }
+    else {
+    }
 }
 function ResizeDivisions(msr, divisions, staff) {
-    const divs = divisions.filter(d => d.Staff === staff);
-    const s0divs = divisions.filter(d => d.Staff === 0);
-    const s1divs = divisions.filter(d => d.Staff === 1);
+    const divs = divisions.filter((d) => d.Staff === staff);
+    const s0divs = divisions.filter((d) => d.Staff === 0);
+    const s1divs = divisions.filter((d) => d.Staff === 1);
     let divCount = s1divs.length > s0divs.length ? s1divs.length : s0divs.length;
     const minWidth = DivisionMinWidth * divCount;
     const space = msr.Bounds.width - minWidth;
@@ -87,7 +94,7 @@ function ResizeDivisions(msr, divisions, staff) {
         //    if (div.Bounds.width > DivisionMaxWidth || div.Duration >= 0.25) {
         //      div.Bounds.width = DivisionMinWidth + xBuffer;
         //    }
-        div.Bounds.width = (div.Duration) * msr.Bounds.width;
+        div.Bounds.width = div.Duration * msr.Bounds.width;
         if (i > 0) {
             const lastDivEnd = divs[i - 1].Bounds.x + divs[i - 1].Bounds.width;
             if (lastDivEnd !== div.Bounds.x) {
@@ -105,8 +112,10 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
     });
     let startingBeat = 1; // always start at the beginning
     const divisionsToAdd = [];
-    sortedDivs.filter(d => d.Staff === staff).forEach((div, i) => {
-        const notesOnDiv = msr.Notes.filter(n => n.Beat === div.Beat);
+    sortedDivs
+        .filter((d) => d.Staff === staff)
+        .forEach((div, i) => {
+        const notesOnDiv = msr.Notes.filter((n) => n.Beat === div.Beat);
         if (div.Beat === startingBeat) {
             // there is a div for this beat, set the startingBeat to the next
             // expected division
@@ -123,12 +132,12 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
             let newDivs = GetLargestValues(val);
             let sBeat = startingBeat;
             newDivs.sort();
-            newDivs.forEach(v => {
+            newDivs.forEach((v) => {
                 divisionsToAdd.push({
                     Beat: sBeat,
                     Duration: v,
                     Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff, msr.Camera),
-                    Staff: div.Staff
+                    Staff: div.Staff,
                 });
                 sBeat += v * msr.TimeSignature.bottom;
             });
@@ -138,8 +147,8 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
     // Add divisions created above and then empty
     divisions.push(...divisionsToAdd);
     // add RESTS to division gaps
-    divisionsToAdd.forEach(div => {
-        const notesOnBeat = msr.Notes.find(n => n.Beat === div.Beat);
+    divisionsToAdd.forEach((div) => {
+        const notesOnBeat = msr.Notes.find((n) => n.Beat === div.Beat);
         if (notesOnBeat !== undefined) {
             console.error("Note found in division gap");
         }
@@ -157,34 +166,35 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
         msr.AddNote(new Note(restProps));
     });
     // check remaining measure for empty divisions
-    const msrDuration = (msr.TimeSignature.top / msr.TimeSignature.bottom) * msr.TimeSignature.bottom + 1;
-    let reSortedDivs = divisions.filter(div => div.Staff === staff);
+    const msrDuration = (msr.TimeSignature.top / msr.TimeSignature.bottom) *
+        msr.TimeSignature.bottom +
+        1;
+    let reSortedDivs = divisions.filter((div) => div.Staff === staff);
     reSortedDivs = divisions.sort((divA, divB) => {
         return divA.Beat - divB.Beat;
     });
     const lastDiv = reSortedDivs[reSortedDivs.length - 1];
-    const lastBeat = lastDiv.Beat +
-        lastDiv.Duration * msr.TimeSignature.bottom;
+    const lastBeat = lastDiv.Beat + lastDiv.Duration * msr.TimeSignature.bottom;
     const lastDivisionsToAdd = [];
-    const rem = (msrDuration - lastBeat);
+    const rem = msrDuration - lastBeat;
     if (rem > 0) {
         let val = rem / msr.TimeSignature.bottom;
         let newDivs = GetLargestValues(val);
         let sBeat = lastBeat;
         newDivs.sort();
-        newDivs.forEach(v => {
+        newDivs.forEach((v) => {
             lastDivisionsToAdd.push({
                 Beat: sBeat,
                 Duration: v,
                 Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff, msr.Camera),
-                Staff: staff
+                Staff: staff,
             });
             sBeat += v * msr.TimeSignature.bottom;
         });
     }
     divisions.push(...lastDivisionsToAdd);
-    lastDivisionsToAdd.forEach(div => {
-        const notesOnBeat = msr.Notes.find(n => n.Beat === div.Beat && n.Staff === div.Staff);
+    lastDivisionsToAdd.forEach((div) => {
+        const notesOnBeat = msr.Notes.find((n) => n.Beat === div.Beat && n.Staff === div.Staff);
         if (notesOnBeat !== undefined) {
             console.error("Note found in division gap");
         }
@@ -206,10 +216,14 @@ function GetDivisionTotalWidth(divisions) {
     let width = 0;
     let staff0w = 0;
     let staff1w = 0;
-    divisions.filter(d => d.Staff === 0).forEach(div => {
+    divisions
+        .filter((d) => d.Staff === 0)
+        .forEach((div) => {
         staff0w += div.Bounds.width;
     });
-    divisions.filter(d => d.Staff === 1).forEach(div => {
+    divisions
+        .filter((d) => d.Staff === 1)
+        .forEach((div) => {
         staff1w += div.Bounds.width;
     });
     width = staff0w > staff1w ? staff0w : staff1w;
@@ -221,13 +235,11 @@ function GetDivisionGroups(msr, staff) {
     let notes = [];
     // started creating a div group or not
     let startFlag = false;
-    const mDivs = msr.Divisions.filter(d => d.Staff === staff)
-        .sort((a, b) => {
+    const mDivs = msr.Divisions.filter((d) => d.Staff === staff).sort((a, b) => {
         return a.Beat - b.Beat;
     });
     mDivs.forEach((div, i) => {
-        const divNotes = msr.Notes.filter(n => n.Beat === div.Beat &&
-            n.Staff === staff);
+        const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat && n.Staff === staff);
         divNotes.sort((a, b) => {
             return a.Line - b.Line;
         });
@@ -251,7 +263,7 @@ function GetDivisionGroups(msr, staff) {
                 }
                 else {
                     startFlag = true;
-                    if (i === msr.Divisions.filter(d => d.Staff === staff).length - 1) {
+                    if (i === msr.Divisions.filter((d) => d.Staff === staff).length - 1) {
                         // end of measure
                         divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
                         divs = [];
@@ -280,7 +292,7 @@ function GetDivisionGroups(msr, staff) {
                     }
                     divs.push(div);
                     notes.push(divNotes);
-                    if (i === msr.Divisions.filter(d => d.Staff === staff).length - 1) {
+                    if (i === msr.Divisions.filter((d) => d.Staff === staff).length - 1) {
                         divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
                         divs = [];
                         notes = [];
@@ -292,11 +304,11 @@ function GetDivisionGroups(msr, staff) {
     return divGroups;
 }
 function IsRestOnBeat(beat, notes, staff) {
-    const notesOnBeat = notes.filter(n => n.Beat === beat && n.Staff === staff);
-    const restFound = notesOnBeat.find(n => n.Rest);
+    const notesOnBeat = notes.filter((n) => n.Beat === beat && n.Staff === staff);
+    const restFound = notesOnBeat.find((n) => n.Rest);
     if (restFound && notesOnBeat.length > 1) {
         console.error("Rest found on beat with multiple notes, beat: ", beat);
     }
     return restFound !== undefined;
 }
-export { CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, IsRestOnBeat, GetDivisionGroups, DivisionMinWidth, DivisionMaxWidth };
+export { CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, IsRestOnBeat, GetDivisionGroups, DivisionMinWidth, DivisionMaxWidth, };
