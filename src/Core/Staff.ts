@@ -19,14 +19,15 @@ class Staff {
   }
 }
 
-// helper functions
 function RenderMeasureLines(
   renderProps: RenderProperties,
   measure: Measure,
+  lastMeasure: boolean,
   theme: Theme,
 ): void {
   const { context, camera } = renderProps;
-  const endsWidth = 2;
+  const endsWidth = lastMeasure ? 4 : 2;
+  const startWidth = 2;
 
   const staves = measure.Staves;
   let staffHeight = GetStaffHeightUntil(staves, staves.length - 1) + 41;
@@ -34,14 +35,21 @@ function RenderMeasureLines(
   context.fillStyle = theme.LineColour;
   const measureBegin = `M${measure.Bounds.x + camera.x} 
         ${yStart + camera.y} h 
-        ${endsWidth} v ${staffHeight} h -${endsWidth} Z`;
+        ${startWidth} v ${staffHeight} h -${startWidth} Z`;
 
   const measureEnd = `M${measure.Bounds.x + measure.Bounds.width + measure.XOffset + camera.x} 
         ${yStart + camera.y} h 
         ${endsWidth} v ${staffHeight} h -${endsWidth} Z`;
 
+  const measureEndDouble = `M${measure.Bounds.x + measure.Bounds.width + measure.XOffset + camera.x - 3} 
+        ${yStart + camera.y} h 
+        ${startWidth} v ${staffHeight} h -${startWidth} Z`;
+
   context.fill(new Path2D(measureBegin));
   context.fill(new Path2D(measureEnd));
+  if (lastMeasure) {
+    context.fill(new Path2D(measureEndDouble));
+  }
 }
 
 function GetStaffHeightUntil(staves: Staff[], staffNum: number = -1): number {

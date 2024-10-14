@@ -14,7 +14,7 @@ import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves } from "./testsaves.js";
 import { ClearMessage, MessageType } from "./Types/Message.js";
-import { GeneratePitchMap } from "./Workers/Pitcher.js";
+import { FromPitchMap, GeneratePitchMap, } from "./Workers/Pitcher.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
@@ -108,7 +108,6 @@ class App {
                     });
                 }
                 else {
-                    console.log("We were resetting height here for some reason!");
                     //         m.ResetHeight();
                 }
             });
@@ -531,6 +530,11 @@ class App {
             // TODO: Temporarry measure height being set
             m.Bounds.height = GetStaffHeightUntil(m.Staves);
         });
+    }
+    // TODO: Move
+    FromPitchMap(midiNote, clef) {
+        const midiMapped = FromPitchMap(midiNote, this.PitchMap, clef);
+        return midiMapped;
     }
 }
 export { App };

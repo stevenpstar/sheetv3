@@ -11,20 +11,22 @@ import { Sheet } from "./Sheet.js";
 const renderDebug = false;
 const scaleV = 1;
 
-const Renderer = (c: HTMLCanvasElement, 
-                  ctx: CanvasRenderingContext2D,
-                  measures: Measure[],
-                  pages: Page[],
-                  hovElements: {MeasureID: number},
-                  mousePos: {x: number, y: number},
-                 cam: Camera,
-                 noteInput: boolean,
-                 restInput: boolean,
-                 formatting: boolean,
-                  config: ConfigSettings,
-                 noteValue: number) => {
+const Renderer = (
+  c: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  measures: Measure[],
+  pages: Page[],
+  hovElements: { MeasureID: number },
+  mousePos: { x: number; y: number },
+  cam: Camera,
+  noteInput: boolean,
+  restInput: boolean,
+  formatting: boolean,
+  config: ConfigSettings,
+  noteValue: number,
+) => {
   // reset
-  ctx.fillStyle = config.Theme.BackgroundColour;//"grey";252c38 16191f
+  ctx.fillStyle = config.Theme.BackgroundColour; //"grey";252c38 16191f
 
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -34,7 +36,7 @@ const Renderer = (c: HTMLCanvasElement,
   }
   ctx.restore();
   if (config.PageSettings?.RenderPage) {
-    pages.forEach(page => {
+    pages.forEach((page) => {
       RenderPage(page, c, ctx, cam, formatting, config, measures);
     });
   }
@@ -44,34 +46,43 @@ const Renderer = (c: HTMLCanvasElement,
     const renderProps = {
       canvas: c,
       context: ctx,
-      camera: cam
-    }
-    const lastMeasure = (i === measures.length - 1);
-    RenderMeasure(m,
-                  renderProps,
-                  hovElements.MeasureID,
-                  mousePos,
-                  lastMeasure,
-                  noteInput,
-                  i,
-                  restInput,
-                 noteValue,
-                 config);
-  })
-}
+      camera: cam,
+    };
+    const lastMeasure =
+      i ===
+      measures.filter((msr: Measure) => m.Instrument === msr.Instrument)
+        .length -
+        1;
 
-const RenderDebug = (c: HTMLCanvasElement,
-                  ctx: CanvasRenderingContext2D,
-                  sheet: Sheet,
-                  mousePos: {x: number, y: number },
-                  cam: Camera,
-                  selector: Selector): void => {
-                    const renderProps = {
-                      canvas: c,
-                      context: ctx,
-                      camera: cam
-                    };
-   //                 RenderPanel(renderProps);
-                  }
+    RenderMeasure(
+      m,
+      renderProps,
+      hovElements.MeasureID,
+      mousePos,
+      lastMeasure,
+      noteInput,
+      i,
+      restInput,
+      noteValue,
+      config,
+    );
+  });
+};
+
+const RenderDebug = (
+  c: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  sheet: Sheet,
+  mousePos: { x: number; y: number },
+  cam: Camera,
+  selector: Selector,
+): void => {
+  const renderProps = {
+    canvas: c,
+    context: ctx,
+    camera: cam,
+  };
+  //                 RenderPanel(renderProps);
+};
 
 export { Renderer, RenderDebug };

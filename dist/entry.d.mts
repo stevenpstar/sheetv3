@@ -396,6 +396,7 @@ type MappedMidi = {
     Accidental: number;
 };
 declare function GeneratePitchMap(): Map<number, MappedMidi>;
+declare function FromPitchMap(midiNote: number, map: Map<number, MappedMidi>, clef: string): MappedMidi;
 
 declare class App {
     Config: ConfigSettings;
@@ -473,6 +474,7 @@ declare class App {
     CenterPage(): void;
     AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
     AddStaff(instrNum: number, clef: string): void;
+    FromPitchMap(midiNote: number, clef: string): MappedMidi;
 }
 
 interface lNote {
@@ -521,4 +523,4 @@ declare namespace sheet {
     function ChangeTimeSignature(top: number, bottom: number, transpose?: boolean): void;
 }
 
-export { App, ClearMessage, type ConfigSettings, GeneratePitchMap, type KeyMapping, KeyPress, LoadSheet, type LoadStructure, type MappedMidi, type MeasureSettings, type Message, MessageType, Note, type NoteProps, ReturnLineFromMidi, ReturnMidiNumber, SaveSheet, type Theme, type TupleDetails, type lMeasure, type lNote, sheet };
+export { App, ClearMessage, type ConfigSettings, FromPitchMap, GeneratePitchMap, type KeyMapping, KeyPress, LoadSheet, type LoadStructure, type MappedMidi, type MeasureSettings, type Message, MessageType, Note, type NoteProps, ReturnLineFromMidi, ReturnMidiNumber, SaveSheet, type Theme, type TupleDetails, type lMeasure, type lNote, sheet };

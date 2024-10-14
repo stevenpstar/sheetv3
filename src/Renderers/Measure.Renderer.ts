@@ -202,7 +202,7 @@ function RenderMeasureBase(
     );
   }
   context.fillStyle = theme.NoteElements;
-  RenderMeasureLines(renderProps, msr, theme);
+  RenderMeasureLines(renderProps, msr, lastMeasure, theme);
   msr.Staves.forEach((s: Staff) => {
     RenderStaffLines(renderProps, msr, s);
   });

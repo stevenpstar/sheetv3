@@ -262,7 +262,7 @@ class Measure implements ISelectable {
 
   DeleteSelected(): void {
     for (let n = this.Notes.length - 1; n >= 0; n--) {
-      if (this.Notes[n].Selected) {
+      if (this.Notes[n].Selected && this.Notes[n].Editable) {
         let beat = this.Notes[n].Beat;
         let duration = this.Notes[n].Duration;
         let staff = this.Notes[n].Staff;

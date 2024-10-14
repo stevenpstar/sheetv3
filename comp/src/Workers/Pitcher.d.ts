@@ -7,5 +7,6 @@ type MappedMidi = {
     Accidental: number;
 };
 declare function GeneratePitchMap(): Map<number, MappedMidi>;
-export { GeneratePitchMap, ReturnMidiNumber, ReturnLineFromMidi, MappedMidi };
+declare function FromPitchMap(midiNote: number, map: Map<number, MappedMidi>, clef: string): MappedMidi;
+export { GeneratePitchMap, ReturnMidiNumber, ReturnLineFromMidi, MappedMidi, FromPitchMap, };
 //# sourceMappingURL=Pitcher.d.ts.map

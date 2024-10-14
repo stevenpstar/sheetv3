@@ -33,11 +33,11 @@ const NoteNames = [
 // Clef type to line number of A4 (440hz)
 const ClefPitchRef = new Map([
     ["treble", 16],
-    ["bass", 3],
+    ["bass", 4],
 ]);
 // midiNumber = the integer assigned to the note value, A4 = 69 = 440hz
 function calcPitch(midiNumber) {
-    return Math.floor(A4Hz * Math.pow(2, ((midiNumber - A4Midi) / 12)) * 1000) / 1000;
+    return (Math.floor(A4Hz * Math.pow(2, (midiNumber - A4Midi) / 12) * 1000) / 1000);
 }
 function ReturnLineFromMidi(clef, midi, staff = 0) {
     let onNote = 0; // A note entry in NoteNames array
@@ -87,12 +87,6 @@ function ReturnLineFromMidi(clef, midi, staff = 0) {
 function ReturnMidiNumber(clef, line, acc = 0, staff = 0) {
     let onNote = 0; // A entry in NoteNames array
     let a4line = ClefPitchRef.get(clef);
-    if (staff === 1) {
-        a4line = 34;
-    }
-    else {
-        a4line = 16;
-    }
     let midiNumber = 69;
     let midiNote = midiNumber;
     if (line === a4line) {
@@ -178,7 +172,9 @@ function GeneratePitchMap() {
             noteNameCount = 0;
             noteNumberCount++;
         }
-        lineNum = [0, 2, 3, 5, 7, 8, 10].includes(lineCounter) ? lineNum - 1 : lineNum;
+        lineNum = [0, 2, 3, 5, 7, 8, 10].includes(lineCounter)
+            ? lineNum - 1
+            : lineNum;
         map.set((NoteNames[noteNameCount] + noteNumberCount).toString(), calcPitch(n));
         midiMap.set(n, {
             NoteString: (NoteNames[noteNameCount] + noteNumberCount).toString(),
@@ -196,4 +192,19 @@ function GeneratePitchMap() {
     }
     return midiMap;
 }
-export { GeneratePitchMap, ReturnMidiNumber, ReturnLineFromMidi };
+function FromPitchMap(midiNote, map, clef) {
+    const mapped = map.get(midiNote);
+    let alteredNote = {
+        NoteString: mapped.NoteString,
+        Line: mapped.Line,
+        Frequency: mapped.Frequency,
+        Accidental: mapped.Accidental,
+    };
+    // if the clef is not a treble clef we need to alter the line returned by a
+    // set amount
+    if (clef === "bass") {
+        alteredNote.Line -= 12;
+    }
+    return alteredNote;
+}
+export { GeneratePitchMap, ReturnMidiNumber, ReturnLineFromMidi, FromPitchMap, };

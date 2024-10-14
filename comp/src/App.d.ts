@@ -85,6 +85,7 @@ declare class App {
     CenterPage(): void;
     AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
     AddStaff(instrNum: number, clef: string): void;
+    FromPitchMap(midiNote: number, clef: string): MappedMidi;
 }
 export { App };
 //# sourceMappingURL=App.d.ts.map
