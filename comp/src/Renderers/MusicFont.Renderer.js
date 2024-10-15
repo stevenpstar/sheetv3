@@ -1,4 +1,4 @@
-const stdFontSize = 42;
+const stdFontSize = 40;
 var Clefs;
 (function (Clefs) {
     Clefs["G"] = "\uD834\uDD1E";

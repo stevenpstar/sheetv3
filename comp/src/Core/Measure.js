@@ -6,7 +6,7 @@ import { Clef, GetNoteClefType } from "./Clef.js";
 import { CreateDivisions, ResizeDivisions, DivisionMinWidth, } from "./Division.js";
 import { StaffType } from "./Instrument.js";
 import { Note } from "./Note.js";
-import { GetStaffHeightUntil, } from "./Staff.js";
+import { GetStaffHeightUntil } from "./Staff.js";
 import { CreateTimeSignature } from "./TimeSignatures.js";
 class Measure {
     constructor(properties, runningId) {
@@ -170,7 +170,7 @@ class Measure {
     }
     DeleteSelected() {
         for (let n = this.Notes.length - 1; n >= 0; n--) {
-            if (this.Notes[n].Selected) {
+            if (this.Notes[n].Selected && this.Notes[n].Editable) {
                 let beat = this.Notes[n].Beat;
                 let duration = this.Notes[n].Duration;
                 let staff = this.Notes[n].Staff;

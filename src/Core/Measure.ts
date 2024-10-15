@@ -14,13 +14,7 @@ import {
 import { Instrument, StaffType } from "./Instrument.js";
 import { Note, NoteProps } from "./Note.js";
 import { Page } from "./Page.js";
-import {
-  GetStaffActualMidLine,
-  GetStaffHeight,
-  GetStaffHeightUntil,
-  GetStaffMiddleLine,
-  Staff,
-} from "./Staff.js";
+import { GetStaffHeightUntil, Staff } from "./Staff.js";
 import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
 
 interface MeasureProps {

@@ -1,22 +1,22 @@
-import { sheet } from './src/entry.js';
+import { sheet } from "./src/entry.js";
 const keymaps = {
-    "rerender": "'",
-    "addmeasure": "a",
-    "changeinputmode": "n",
-    "value1": "1",
-    "value2": "2",
-    "value3": "3",
-    "value4": "4",
-    "value5": "5",
-    "value6": "6",
-    "restInput": "r",
-    "delete": "d",
-    "sharpen": "+",
-    "flatten": "-",
-    "scaleToggle": "'",
-    "save": "s",
-    "load": "l",
-    "test_triplet": "t",
+    rerender: "'",
+    addmeasure: "a",
+    changeinputmode: "n",
+    value1: "1",
+    value2: "2",
+    value3: "3",
+    value4: "4",
+    value5: "5",
+    value6: "6",
+    restInput: "r",
+    delete: "d",
+    sharpen: "+",
+    flatten: "-",
+    scaleToggle: "'",
+    save: "s",
+    load: "l",
+    test_triplet: "t",
 };
 const defaultTheme = {
     NoteElements: "black",
@@ -40,7 +40,7 @@ const test_CONFIG = {
     CameraSettings: {
         DragEnabled: true,
         ZoomEnabled: true,
-        Zoom: 1,
+        Zoom: 1.7,
         StartingPosition: { x: 20, y: 20 },
         CenterMeasures: false,
         CenterPage: false,
@@ -59,12 +59,15 @@ const test_CONFIG = {
         AutoSize: false,
     },
     DefaultStaffType: "single",
-    Theme: defaultTheme
+    Theme: defaultTheme,
 };
 function returnCanvas(id) {
     const canvas = document.getElementById(id);
     const context = canvas.getContext("2d");
-    if (canvas === null || canvas === undefined || context === null || context === undefined) {
+    if (canvas === null ||
+        canvas === undefined ||
+        context === null ||
+        context === undefined) {
         console.error("Canvas not found");
     }
     else {
@@ -72,8 +75,7 @@ function returnCanvas(id) {
     }
     return { canvas: canvas, context: context };
 }
-function notify(msg) {
-}
+function notify(msg) { }
 /* Globals */
 const { canvas, context } = returnCanvas("canvas");
 let Application;

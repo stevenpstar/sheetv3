@@ -104,7 +104,7 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure, theme) {
         context.fillRect(msr.Bounds.x + camera.x, msr.Bounds.y + camera.y, msr.Bounds.width + msr.XOffset, msr.Bounds.height);
     }
     context.fillStyle = theme.NoteElements;
-    RenderMeasureLines(renderProps, msr, theme);
+    RenderMeasureLines(renderProps, msr, lastMeasure, theme);
     msr.Staves.forEach((s) => {
         RenderStaffLines(renderProps, msr, s);
     });

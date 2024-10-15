@@ -14,7 +14,7 @@ const Renderer = (c, ctx, measures, pages, hovElements, mousePos, cam, noteInput
     }
     ctx.restore();
     if ((_b = config.PageSettings) === null || _b === void 0 ? void 0 : _b.RenderPage) {
-        pages.forEach(page => {
+        pages.forEach((page) => {
             RenderPage(page, c, ctx, cam, formatting, config, measures);
         });
     }
@@ -23,9 +23,12 @@ const Renderer = (c, ctx, measures, pages, hovElements, mousePos, cam, noteInput
         const renderProps = {
             canvas: c,
             context: ctx,
-            camera: cam
+            camera: cam,
         };
-        const lastMeasure = (i === measures.length - 1);
+        const lastMeasure = i ===
+            measures.filter((msr) => m.Instrument === msr.Instrument)
+                .length -
+                1;
         RenderMeasure(m, renderProps, hovElements.MeasureID, mousePos, lastMeasure, noteInput, i, restInput, noteValue, config);
     });
 };
@@ -33,7 +36,7 @@ const RenderDebug = (c, ctx, sheet, mousePos, cam, selector) => {
     const renderProps = {
         canvas: c,
         context: ctx,
-        camera: cam
+        camera: cam,
     };
     //                 RenderPanel(renderProps);
 };

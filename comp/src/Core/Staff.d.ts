@@ -9,7 +9,7 @@ declare class Staff {
     Buffer: number;
     constructor(num: number);
 }
-declare function RenderMeasureLines(renderProps: RenderProperties, measure: Measure, theme: Theme): void;
+declare function RenderMeasureLines(renderProps: RenderProperties, measure: Measure, lastMeasure: boolean, theme: Theme): void;
 declare function GetStaffHeightUntil(staves: Staff[], staffNum?: number): number;
 declare function GetStaffHeight(staves: Staff[], staffNum: number): number;
 declare function GetStaffMiddleLine(staves: Staff[], staffNum: number): number;

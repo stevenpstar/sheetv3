@@ -1,7 +1,7 @@
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 
-const stdFontSize = 42;
+const stdFontSize = 40;
 enum Clefs {
   G = "\u{1D11E}",
   GOttavaBassa = "\u{1D120}",

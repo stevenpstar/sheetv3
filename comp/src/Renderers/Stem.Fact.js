@@ -1,19 +1,16 @@
-import { BeamDirection, DetermineStemDirection, StemDirection } from "./Note.Renderer.js";
+import { BeamDirection, DetermineStemDirection, StemDirection, } from "./Note.Renderer.js";
 import { Stem } from "../Core/Stem.js";
 import { Bounds } from "../Types/Bounds.js";
 import { DetermineBeamDirection } from "../Core/Beam.js";
-import { GetStaffActualMidLine, GetStaffHeightUntil, GetStaffMiddleLine } from "../Core/Staff.js";
+import { GetStaffActualMidLine, GetStaffHeightUntil, GetStaffMiddleLine, } from "../Core/Staff.js";
+import { IsFlippedNote } from "./Measure.Renderer.js";
 function AlterHeightForBeam(stemDir, beamDir, height, alterAmount) {
-    if (stemDir === StemDirection.Up &&
-        beamDir === BeamDirection.UpMax ||
-        stemDir === StemDirection.Down &&
-            beamDir === BeamDirection.DownMax) {
+    if ((stemDir === StemDirection.Up && beamDir === BeamDirection.UpMax) ||
+        (stemDir === StemDirection.Down && beamDir === BeamDirection.DownMax)) {
         height -= alterAmount;
     }
-    else if (stemDir === StemDirection.Down &&
-        beamDir === BeamDirection.UpMax ||
-        stemDir === StemDirection.Up &&
-            beamDir === BeamDirection.DownMax) {
+    else if ((stemDir === StemDirection.Down && beamDir === BeamDirection.UpMax) ||
+        (stemDir === StemDirection.Up && beamDir === BeamDirection.DownMax)) {
         height += alterAmount;
     }
     return height;
@@ -48,33 +45,41 @@ function CreateStems(notes, divisions, staff, measure, camera) {
             }
         });
     });
-    const staffMidLinePos = GetStaffHeightUntil(measure.Staves, staff) + (GetStaffMiddleLine(measure.Staves, staff) * 5);
+    const staffMidLinePos = GetStaffHeightUntil(measure.Staves, staff) +
+        GetStaffMiddleLine(measure.Staves, staff) * 5;
     const xBuffer = stemDir === StemDirection.Up ? 11.5 : 0.25;
     const beamDir = DetermineBeamDirection(measure, { Divisions: divisions, Notes: notes }, stemDir);
     const shouldBeam = divisions.length > 1 && divisions[0].Duration <= 0.25;
     divisions.forEach((div, i) => {
         const beamAlt = i * (10 / divisions.length - 1);
         const divNotes = notes[i];
-        const numOfAcc = divNotes.filter(n => n.Accidental !== 0).length;
+        const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
         if (numOfAcc > 0) {
             dynNoteXBuffer += dynNoteXBuffer * numOfAcc - 1;
         }
         divNotes.sort((a, b) => a.Line - b.Line);
         // TODO: Was alternating between 11 and 12 causing mismatch, may need to be
         // adjusted later not sure.
-        const stemX = stemDir === StemDirection.Up ?
-            divNotes[0].Bounds.x + 11 : divNotes[0].Bounds.x; //Math.floor( div.Bounds.x + xBuffer + dynNoteXBuffer);
+        let stemX = stemDir === StemDirection.Up
+            ? divNotes[0].Bounds.x + 10.25
+            : divNotes[0].Bounds.x; //Math.floor( div.Bounds.x + xBuffer + dynNoteXBuffer);
+        if (IsFlippedNote(divNotes, 0, stemDir)) {
+            stemX = divNotes[0].Bounds.x;
+        }
+        // stem Y set to 0 for now, is updated later.
         const stem = new Stem(new Bounds(stemX, 0, 1.5, 0));
         if (stemDir === StemDirection.Up) {
-            stem.Bounds.y = divNotes[divNotes.length - 1].Bounds.y + 2.5;
-            stem.Bounds.height = hNote.Bounds.y - divNotes[divNotes.length - 1].Bounds.y - 35;
+            stem.Bounds.y = divNotes[divNotes.length - 1].Bounds.y + 2.0;
+            stem.Bounds.height =
+                hNote.Bounds.y - divNotes[divNotes.length - 1].Bounds.y - 35;
         }
         else {
             stem.Bounds.y = divNotes[0].Bounds.y + 2.5;
             stem.Bounds.height = lNote.Bounds.y - divNotes[0].Bounds.y + 35;
         }
-        const diff = measure.Staves[staff].TopLine < 0 ?
-            Math.abs(measure.Staves[staff].TopLine) : measure.Staves[staff].TopLine;
+        const diff = measure.Staves[staff].TopLine < 0
+            ? Math.abs(measure.Staves[staff].TopLine)
+            : measure.Staves[staff].TopLine;
         const staffRelativeMid = GetStaffActualMidLine(measure.Staves, staff) + diff;
         if (StemToCenter(stemDir, lowestLine, highestLine, staffRelativeMid)) {
             stem.Bounds.height = staffMidLinePos - stem.Bounds.y + measure.Bounds.y;
