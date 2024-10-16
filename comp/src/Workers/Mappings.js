@@ -47,8 +47,14 @@ function KeyPress(app, key, keyMaps) {
             break;
         case keyMaps.load:
             app.LoadSheet(allSaves[0].file);
+            break;
         case keyMaps.test_triplet:
             app.CreateTriplet();
+            break;
+        case keyMaps.debug_clear:
+            localStorage.removeItem("persist");
+            localStorage.removeItem("camera_data");
+            break;
         default:
     }
 }

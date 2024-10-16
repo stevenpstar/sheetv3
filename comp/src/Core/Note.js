@@ -23,6 +23,7 @@ class Note {
             this.TupleDetails = props.TupleDetails;
         }
         // note position is not based on bounds property
+        this.Opacity = 1.0;
     }
     SetBounds(bounds) {
         this.Bounds = bounds;
@@ -38,8 +39,7 @@ class Note {
         return this.Bounds.IsHovered(x, y, cam);
     }
     GetMidiNumber() {
-        const line = this.Staff === 0 ? this.Line :
-            this.Line - 1000;
+        const line = this.Staff === 0 ? this.Line : this.Line - 1000;
         return ReturnMidiNumber(this.Clef, line, this.Staff);
     }
 }

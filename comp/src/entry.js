@@ -17,6 +17,7 @@ const keymaps = {
     save: "s",
     load: "l",
     test_triplet: "t",
+    debug_clear: "c",
 };
 const defaultTheme = {
     NoteElements: "black",
@@ -120,6 +121,17 @@ export var sheet;
         if ((_b = config.CameraSettings) === null || _b === void 0 ? void 0 : _b.CenterMeasures) {
             app.CenterMeasures();
         }
+        // DEBUG SETTINGS FOR "HOT RELOADING"
+        const persistedData = localStorage.getItem("persist");
+        if (persistedData !== null) {
+            const cameraData = JSON.parse(localStorage.getItem("camera_data"));
+            app.LoadSheet(persistedData);
+            app.SetCameraZoom(cameraData.Zoom);
+            app.Camera.x = cameraData.X;
+            app.Camera.y = cameraData.Y;
+            app.ResizeMeasures(app.Sheet.Measures);
+        }
+        //
         return app;
     }
     sheet.CreateApp = CreateApp;

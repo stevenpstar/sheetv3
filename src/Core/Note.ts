@@ -28,11 +28,14 @@ class Note implements ISelectable {
   Line: number;
   Rest: boolean;
   Tied: boolean;
-  Accidental: number
+  Accidental: number;
   ID: number;
   SelType: SelectableTypes;
   Clef: string;
   Editable: boolean;
+
+  // TEST FOR ANIMATION:
+  Opacity: number;
 
   TiedStart: number; // beat
   TiedEnd: number; // beat
@@ -68,6 +71,7 @@ class Note implements ISelectable {
       this.TupleDetails = props.TupleDetails;
     }
     // note position is not based on bounds property
+    this.Opacity = 1.0;
   }
 
   SetBounds(bounds: Bounds): void {
@@ -88,10 +92,9 @@ class Note implements ISelectable {
   }
 
   GetMidiNumber(): number {
-    const line = this.Staff === 0 ? this.Line : 
-      this.Line - 1000;
+    const line = this.Staff === 0 ? this.Line : this.Line - 1000;
     return ReturnMidiNumber(this.Clef, line, this.Staff);
   }
 }
 
-export { Note, NoteProps, TupleDetails }
+export { Note, NoteProps, TupleDetails };

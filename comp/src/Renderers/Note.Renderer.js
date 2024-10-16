@@ -43,6 +43,9 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, them
         case 0.125:
         case 0.25:
             //   noteString = posString + noteHead;
+            if (note.Opacity < 1.0) {
+                note.Opacity += 0.01;
+            }
             RenderSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected);
             break;
         case 0.5:

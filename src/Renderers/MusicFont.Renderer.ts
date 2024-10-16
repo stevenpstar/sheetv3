@@ -76,6 +76,24 @@ function RenderSymbol(
   context.fillText(symbol, x + camera.x, y + camera.y);
 }
 
+//TODO: Test(?) Function, maybe. - testing opacity only here
+function RenderAnimatedSymbol(
+  renderProps: RenderProperties,
+  symbol: string,
+  x: number,
+  y: number,
+  theme: Theme,
+  opacity: number,
+): void {
+  renderProps.context.fillStyle = `rgba(0, 0, 0, ${opacity})`;
+  renderProps.context.font = `${stdFontSize}px Bravura`;
+  renderProps.context.fillText(
+    symbol,
+    x + renderProps.camera.x,
+    y + renderProps.camera.y,
+  );
+}
+
 export {
   Clefs,
   NoteHeads,
@@ -83,4 +101,5 @@ export {
   TimeSigNumbers,
   TupletNumbers,
   RenderSymbol,
+  RenderAnimatedSymbol,
 };

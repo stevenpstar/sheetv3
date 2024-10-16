@@ -2,22 +2,23 @@ import { App } from "../App.js";
 import { allSaves } from "../testsaves.js";
 
 interface KeyMapping {
-  addmeasure: string,
-  changeinputmode: string,
-  value1: string,
-  value2: string,
-  value3: string,
-  value4: string,
-  value5: string,
-  value6: string,
-  restInput: string,
-  delete: string,
-  sharpen: string,
-  flatten: string,
-  scaleToggle: string,
-  save: string,
-  load: string,
-  test_triplet: string,
+  addmeasure: string;
+  changeinputmode: string;
+  value1: string;
+  value2: string;
+  value3: string;
+  value4: string;
+  value5: string;
+  value6: string;
+  restInput: string;
+  delete: string;
+  sharpen: string;
+  flatten: string;
+  scaleToggle: string;
+  save: string;
+  load: string;
+  test_triplet: string;
+  debug_clear: string;
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -68,10 +69,16 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       break;
     case keyMaps.load:
       app.LoadSheet(allSaves[0].file);
+      break;
     case keyMaps.test_triplet:
       app.CreateTriplet();
+      break;
+    case keyMaps.debug_clear:
+      localStorage.removeItem("persist");
+      localStorage.removeItem("camera_data");
+      break;
     default:
   }
 }
 
-export { KeyMapping, KeyPress }
+export { KeyMapping, KeyPress };

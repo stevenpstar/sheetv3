@@ -56,5 +56,6 @@ declare enum StdAccidentals {
     ParenthFlat = "\uE26A\uE260\uE26B"
 }
 declare function RenderSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, selected: boolean): void;
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol, };
+declare function RenderAnimatedSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, opacity: number): void;
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol, RenderAnimatedSymbol, };
 //# sourceMappingURL=MusicFont.Renderer.d.ts.map

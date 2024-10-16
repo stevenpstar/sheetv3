@@ -23,7 +23,7 @@ const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
                 Staff: n.Staff,
                 Tuple: false,
                 Clef: n.Clef,
-                Editable: false,
+                Editable: true,
             };
             const newNote = new Note(noteProps);
             notes.push(newNote);
@@ -53,7 +53,7 @@ const SaveSheet = (sheet) => {
                 Tied: n.Tied,
                 Staff: n.Staff,
                 Clef: n.Clef,
-                Editable: false,
+                Editable: true,
             });
         });
         saved.Measures.push({

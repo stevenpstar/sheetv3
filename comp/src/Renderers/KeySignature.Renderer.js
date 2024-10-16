@@ -4,16 +4,16 @@ function RenderKeySignature(renderProps, msr, keyString, clefString, xOff) {
     const { canvas, context, camera } = renderProps;
     context.fillStyle = "black";
     const keyProps = GetKeyProps(clefString, keyString);
-    let posString = '';
+    let posString = "";
     keyProps.Lines.forEach((l, i) => {
         if (keyProps.Accidental === "#") {
-            posString = `m ${msr.Bounds.x + xOff + (i * 5) + camera.x + 5} 
-          ${msr.Bounds.y + (l * 5) + camera.y + 4}`;
+            posString = `m ${msr.Bounds.x + xOff + i * 5 + camera.x + 5}
+                ${msr.Bounds.y + l * 5 + camera.y + 4}`;
             posString += sharpPath;
         }
         else {
-            posString = `m ${msr.Bounds.x + xOff + (i * 5) + camera.x - 5} 
-          ${msr.Bounds.y + (l * 5) + camera.y + 4}`;
+            posString = `m ${msr.Bounds.x + xOff + i * 5 + camera.x - 5} 
+          ${msr.Bounds.y + l * 5 + camera.y + 4}`;
             posString += flatPath;
         }
         context.fill(new Path2D(posString));
@@ -24,7 +24,7 @@ function GetKeyProps(clefString, keyString) {
     const notes = KeySignatures.get(keyString);
     let acc = "";
     if (notes.length > 0) {
-        if (notes[0].includes('#')) {
+        if (notes[0].includes("#")) {
             acc = "#";
         }
         else {

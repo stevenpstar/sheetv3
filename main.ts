@@ -21,6 +21,7 @@ const keymaps = {
   save: "s",
   load: "l",
   test_triplet: "t",
+  debug_clear: "c",
 };
 
 interface CanText {

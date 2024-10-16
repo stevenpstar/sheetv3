@@ -24,6 +24,7 @@ const keymaps: KeyMapping = {
   save: "s",
   load: "l",
   test_triplet: "t",
+  debug_clear: "c",
 };
 
 const defaultTheme: Theme = {
@@ -147,6 +148,18 @@ export module sheet {
     if (config.CameraSettings?.CenterMeasures) {
       app.CenterMeasures();
     }
+    // DEBUG SETTINGS FOR "HOT RELOADING"
+    const persistedData = localStorage.getItem("persist");
+    if (persistedData !== null) {
+      const cameraData = JSON.parse(localStorage.getItem("camera_data"));
+      app.LoadSheet(persistedData);
+      app.SetCameraZoom(cameraData.Zoom);
+      app.Camera.x = cameraData.X;
+      app.Camera.y = cameraData.Y;
+      app.ResizeMeasures(app.Sheet.Measures);
+    }
+    //
+
     return app;
   }
 

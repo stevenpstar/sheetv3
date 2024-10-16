@@ -281,6 +281,16 @@ class App {
       );
     }
     //  this.NotifyCallback(this.Message);
+    const persist = SaveSheet(this.Sheet);
+    localStorage.setItem("persist", persist);
+    localStorage.setItem(
+      "camera_data",
+      JSON.stringify({
+        Zoom: this.Camera.Zoom,
+        X: this.Camera.x,
+        Y: this.Camera.y,
+      }),
+    );
     this.Update(x, y);
   }
   Update(x: number, y: number): void {

@@ -65,4 +65,10 @@ function RenderSymbol(renderProps, symbol, x, y, theme, selected) {
     context.font = `${stdFontSize}px Bravura`;
     context.fillText(symbol, x + camera.x, y + camera.y);
 }
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol, };
+//TODO: Test(?) Function, maybe. - testing opacity only here
+function RenderAnimatedSymbol(renderProps, symbol, x, y, theme, opacity) {
+    renderProps.context.fillStyle = `rgba(0, 0, 0, ${opacity})`;
+    renderProps.context.font = `${stdFontSize}px Bravura`;
+    renderProps.context.fillText(symbol, x + renderProps.camera.x, y + renderProps.camera.y);
+}
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol, RenderAnimatedSymbol, };

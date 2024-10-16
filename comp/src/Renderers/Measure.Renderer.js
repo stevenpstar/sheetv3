@@ -112,7 +112,8 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure, theme) {
         RenderMeasureClef(renderProps, msr, theme);
     }
     if (msr.RenderKey) {
-        const key = "CMaj/Amin";
+        console.log("??");
+        const key = msr.KeySignature; //"CMaj/Amin";
         if (key !== "CMaj/Amin") {
             const xOff = msr.RenderClef ? 24 : 4;
             RenderKeySignature(renderProps, msr, "CMaj/Amin", "treble", xOff);

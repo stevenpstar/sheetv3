@@ -10,6 +10,7 @@ import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 import {
   NoteHeads,
+  RenderAnimatedSymbol,
   RenderSymbol,
   TupletNumbers,
 } from "./MusicFont.Renderer.js";
@@ -70,6 +71,9 @@ function RenderNote(
     case 0.125:
     case 0.25:
       //   noteString = posString + noteHead;
+      if (note.Opacity < 1.0) {
+        note.Opacity += 0.01;
+      }
       RenderSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected);
       break;
     case 0.5:

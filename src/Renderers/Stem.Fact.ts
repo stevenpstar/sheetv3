@@ -113,9 +113,9 @@ function CreateStems(
     let stemX =
       stemDir === StemDirection.Up
         ? divNotes[0].Bounds.x + 10.25
-        : divNotes[0].Bounds.x; //Math.floor( div.Bounds.x + xBuffer + dynNoteXBuffer);
+        : divNotes[0].Bounds.x + 0.0; //Math.floor( div.Bounds.x + xBuffer + dynNoteXBuffer);
     if (IsFlippedNote(divNotes, 0, stemDir)) {
-      stemX = divNotes[0].Bounds.x;
+      stemX = divNotes[0].Bounds.x + 0.0;
     }
     // stem Y set to 0 for now, is updated later.
     const stem: Stem = new Stem(new Bounds(stemX, 0, 1.5, 0));
@@ -125,7 +125,7 @@ function CreateStems(
       stem.Bounds.height =
         hNote.Bounds.y - divNotes[divNotes.length - 1].Bounds.y - 35;
     } else {
-      stem.Bounds.y = divNotes[0].Bounds.y + 2.5;
+      stem.Bounds.y = divNotes[0].Bounds.y + 4.0;
       stem.Bounds.height = lNote.Bounds.y - divNotes[0].Bounds.y + 35;
     }
 
