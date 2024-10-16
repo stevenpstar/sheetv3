@@ -14,7 +14,7 @@ import {
 import { Instrument, StaffType } from "./Instrument.js";
 import { Note, NoteProps } from "./Note.js";
 import { Page } from "./Page.js";
-import { GetStaffHeightUntil, Staff } from "./Staff.js";
+import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
 import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
 
 interface MeasureProps {
@@ -270,7 +270,7 @@ class Measure implements ISelectable {
           const restProps: NoteProps = {
             Beat: beat,
             Duration: duration,
-            Line: 15,
+            Line: GetStaffMiddleLine(this.Staves, staff),
             Rest: true,
             Tied: false,
             Staff: staff,

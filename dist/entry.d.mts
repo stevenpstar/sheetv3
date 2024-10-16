@@ -108,6 +108,7 @@ declare class Note implements ISelectable {
     SelType: SelectableTypes;
     Clef: string;
     Editable: boolean;
+    Opacity: number;
     TiedStart: number;
     TiedEnd: number;
     Bounds: Bounds;
@@ -379,6 +380,7 @@ interface KeyMapping {
     save: string;
     load: string;
     test_triplet: string;
+    debug_clear: string;
 }
 declare function KeyPress(app: App, key: string, keyMaps: KeyMapping): void;
 

@@ -6,7 +6,7 @@ import { Clef, GetNoteClefType } from "./Clef.js";
 import { CreateDivisions, ResizeDivisions, DivisionMinWidth, } from "./Division.js";
 import { StaffType } from "./Instrument.js";
 import { Note } from "./Note.js";
-import { GetStaffHeightUntil } from "./Staff.js";
+import { GetStaffHeightUntil, GetStaffMiddleLine } from "./Staff.js";
 import { CreateTimeSignature } from "./TimeSignatures.js";
 class Measure {
     constructor(properties, runningId) {
@@ -184,7 +184,7 @@ class Measure {
                     const restProps = {
                         Beat: beat,
                         Duration: duration,
-                        Line: 15,
+                        Line: GetStaffMiddleLine(this.Staves, staff),
                         Rest: true,
                         Tied: false,
                         Staff: staff,
