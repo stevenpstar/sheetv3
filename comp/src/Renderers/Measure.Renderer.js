@@ -1,4 +1,4 @@
-import { DetermineBeamDirection } from "../Core/Beam.js";
+import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
 import { GetDivisionGroups, IsRestOnBeat, } from "../Core/Division.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Note } from "../Core/Note.js";
@@ -177,7 +177,7 @@ function RenderNotes(msr, renderProps, staff, theme) {
             let beams = [];
             if (group.Divisions.length > 1 && group.Divisions[0].Duration < 0.25) {
                 beams = CreateBeams(group, stems, msr);
-                beams.forEach((b) => b.Render(context, camera, 1, stemDir, theme));
+                beams.forEach((b) => b.Render(context, camera, Beam.BeamCount(group.Divisions[0].Duration), stemDir, theme));
             }
             stems.forEach((s) => s.Render(context, camera, theme));
             group.Divisions.forEach((div) => {

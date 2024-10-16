@@ -25,6 +25,7 @@ declare class Beam {
         y: number;
     });
     Render(context: CanvasRenderingContext2D, cam: Camera, count: number, stemDir: StemDirection, theme: Theme): void;
+    static BeamCount(duration: number): number;
 }
 export { Beam, GenerateBeams, DetermineBeamDirection };
 //# sourceMappingURL=Beam.d.ts.map
