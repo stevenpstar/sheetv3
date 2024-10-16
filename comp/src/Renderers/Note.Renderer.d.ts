@@ -21,7 +21,6 @@ declare function RenderRest(ctx: CanvasRenderingContext2D, div: Division, cam: C
 declare function RenderTuplets(renderProps: RenderProperties, divisions: Division[], notes: Note[], staff: number, msr: Measure, theme: Theme): void;
 declare function RenderTies(renderProps: RenderProperties, divisions: Division[], notes: Note[], staff: number, msr: Measure): void;
 declare function DetermineStemDirection(notes: Array<Note[]>, divisions: Division[], staff: number, measure: Measure): StemDirection;
-declare function RenderStemRevise(renderProps: RenderProperties, notes: Array<Note[]>, divisions: Division[], staff: number, msr: Measure, beamDir: BeamDirection, theme: Theme, colour?: string): void;
 declare function renderLedgerLines(notes: Note[], division: Division, renderProps: RenderProperties, staff: number, msr: Measure, theme: Theme, colour?: string): void;
-export { RenderNote, RenderRest, renderLedgerLines, RenderStemRevise, RenderTies, DetermineStemDirection, RenderDots, StemDirection, BeamDirection, RenderTuplets, };
+export { RenderNote, RenderRest, renderLedgerLines, RenderTies, DetermineStemDirection, RenderDots, StemDirection, BeamDirection, RenderTuplets, };
 //# sourceMappingURL=Note.Renderer.d.ts.map

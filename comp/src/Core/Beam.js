@@ -1,31 +1,5 @@
 import { BeamDirection, StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
-class Beam {
-    constructor(bounds, start, end) {
-        this.Bounds = bounds;
-        this.StartPoint = start;
-        this.EndPoint = end;
-    }
-    Render(context, cam, count, stemDir, theme) {
-        context.fillStyle = theme.NoteElements;
-        const baseThickness = 6;
-        const svgLine = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + cam.y}
-        L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + cam.y}
-        V${(this.EndPoint.y + cam.y) + baseThickness} 
-        L${this.StartPoint.x + cam.x} ${this.StartPoint.y + baseThickness + cam.y} z `;
-        context.fill(new Path2D(svgLine));
-        let yBuffer = stemDir === StemDirection.Up ? 2.5 : -8;
-        let flagBuffer = stemDir === StemDirection.Up ? 6 : 0;
-        for (let i = 1; i < count; i++) {
-            const thickness = 6;
-            const line = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + (flagBuffer * i) + (yBuffer * i) + cam.y}
-          L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + (flagBuffer * i) + (yBuffer * i) + cam.y}
-          V${(this.EndPoint.y + (flagBuffer * i) + (yBuffer * i) + cam.y) + thickness} 
-          L${this.StartPoint.x + cam.x} ${this.StartPoint.y + (flagBuffer * i) + (yBuffer * i) + thickness + cam.y} z`;
-            context.fill(new Path2D(line));
-        }
-    }
-}
 function DetermineBeamDirection(measure, divGroup, stemDir) {
     const divisions = divGroup.Divisions.sort((a, b) => {
         return a.Beat - b.Beat;
@@ -95,7 +69,33 @@ function GenerateBeams(measure, divGroup, stemDir) {
     const beamStartY = measure.GetNotePositionOnLine(startTopLine, staff) - 35;
     const beamEndX = divisions[divisions.length - 1].Bounds.x + 19;
     const beamEndY = measure.GetNotePositionOnLine(endTopLine, staff) - 35;
-    const beam = new Beam(new Bounds(beamStartX, beamStartY, (beamEndX - beamStartX), 5), { x: beamStartX, y: beamStartY }, { x: beamEndX, y: beamEndY });
+    const beam = new Beam(new Bounds(beamStartX, beamStartY, beamEndX - beamStartX, 5), { x: beamStartX, y: beamStartY }, { x: beamEndX, y: beamEndY });
     return beam;
+}
+class Beam {
+    constructor(bounds, start, end) {
+        this.Bounds = bounds;
+        this.StartPoint = start;
+        this.EndPoint = end;
+    }
+    Render(context, cam, count, stemDir, theme) {
+        context.fillStyle = theme.NoteElements;
+        const baseThickness = stemDir === StemDirection.Up ? -6 : 6;
+        const svgLine = `M ${this.StartPoint.x + cam.x + 1} ${this.StartPoint.y + cam.y - baseThickness}
+        L${this.EndPoint.x + cam.x + 1} ${this.EndPoint.y + cam.y - baseThickness}
+        V${this.EndPoint.y + cam.y} 
+        L${this.StartPoint.x + cam.x + 1} ${this.StartPoint.y + cam.y} z `;
+        context.fill(new Path2D(svgLine));
+        let yBuffer = stemDir === StemDirection.Up ? 2.5 : -8;
+        let flagBuffer = stemDir === StemDirection.Up ? 6 : 0;
+        for (let i = 1; i < count; i++) {
+            const thickness = 6;
+            const line = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + flagBuffer * i + yBuffer * i + cam.y}
+          L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + flagBuffer * i + yBuffer * i + cam.y}
+          V${this.EndPoint.y + flagBuffer * i + yBuffer * i + cam.y + thickness} 
+          L${this.StartPoint.x + cam.x} ${this.StartPoint.y + flagBuffer * i + yBuffer * i + thickness + cam.y} z`;
+            context.fill(new Path2D(line));
+        }
+    }
 }
 export { Beam, GenerateBeams, DetermineBeamDirection };

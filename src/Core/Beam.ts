@@ -6,44 +6,11 @@ import { DivGroup, Division } from "./Division.js";
 import { Measure } from "./Measure.js";
 import { Note } from "./Note.js";
 
-class Beam {
-  Bounds: Bounds;
-  Direction: string;
-  StartPoint: {x: number, y: number};
-  EndPoint: {x: number, y: number};
-  constructor(bounds: Bounds, start: {x: number, y: number}, end: {x: number, y: number}) {
-    this.Bounds = bounds;
-    this.StartPoint = start;
-    this.EndPoint = end;
-  }
-
-  Render(context: CanvasRenderingContext2D, cam: Camera, count: number, stemDir: StemDirection, theme: Theme): void {
-      context.fillStyle = theme.NoteElements;
-      const baseThickness = 6;
-      const svgLine = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + cam.y}
-        L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + cam.y}
-        V${(this.EndPoint.y + cam.y) + baseThickness} 
-        L${this.StartPoint.x + cam.x} ${this.StartPoint.y + baseThickness + cam.y} z `
-      context.fill(new Path2D(svgLine));
-
-      let yBuffer = stemDir === StemDirection.Up ? 2.5 : -8;
-      let flagBuffer = stemDir === StemDirection.Up ? 6 : 0;
-      for (let i=1;i<count;i++) {
-
-        const thickness = 6;
-        const line = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + (flagBuffer * i) + (yBuffer * i) + cam.y}
-          L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + (flagBuffer * i) + (yBuffer * i) + cam.y}
-          V${(this.EndPoint.y + (flagBuffer * i) + (yBuffer * i) + cam.y) + thickness} 
-          L${this.StartPoint.x + cam.x} ${this.StartPoint.y + (flagBuffer * i) + (yBuffer * i) + thickness + cam.y} z`;
-        context.fill(new Path2D(line));
-      }
-  }
-}
-
-function DetermineBeamDirection(measure: Measure,
-                                divGroup: DivGroup,
-                                stemDir: StemDirection): BeamDirection {
-
+function DetermineBeamDirection(
+  measure: Measure,
+  divGroup: DivGroup,
+  stemDir: StemDirection,
+): BeamDirection {
   const divisions = divGroup.Divisions.sort((a: Division, b: Division) => {
     return a.Beat - b.Beat;
   });
@@ -52,67 +19,132 @@ function DetermineBeamDirection(measure: Measure,
     const firstDivTopLine = divGroup.Notes[0].sort((a: Note, b: Note) => {
       return a.Line - b.Line;
     })[0].Line;
-    const lastDivTopLine = divGroup.Notes[divGroup.Notes.length-1].sort((a: Note, b:Note) => {
-      return a.Line - b.Line;
-    })[0].Line;
+    const lastDivTopLine = divGroup.Notes[divGroup.Notes.length - 1].sort(
+      (a: Note, b: Note) => {
+        return a.Line - b.Line;
+      },
+    )[0].Line;
 
-    if (firstDivTopLine === lastDivTopLine) { return BeamDirection.Flat}
-    else if (firstDivTopLine < lastDivTopLine) { return BeamDirection.DownMax; }
-    else if (firstDivTopLine > lastDivTopLine) { return BeamDirection.UpMax; }
+    if (firstDivTopLine === lastDivTopLine) {
+      return BeamDirection.Flat;
+    } else if (firstDivTopLine < lastDivTopLine) {
+      return BeamDirection.DownMax;
+    } else if (firstDivTopLine > lastDivTopLine) {
+      return BeamDirection.UpMax;
+    }
   } else {
     const firstDivBotLine = divGroup.Notes[0].sort((a: Note, b: Note) => {
       return a.Line - b.Line;
-    })[divGroup.Notes[0].length-1].Line;
-    const lastDivBotLine = divGroup.Notes[divGroup.Notes.length-1].sort((a: Note, b:Note) => {
-      return a.Line - b.Line;
-    })[divGroup.Notes[divGroup.Notes.length-1].length-1].Line;
+    })[divGroup.Notes[0].length - 1].Line;
+    const lastDivBotLine = divGroup.Notes[divGroup.Notes.length - 1].sort(
+      (a: Note, b: Note) => {
+        return a.Line - b.Line;
+      },
+    )[divGroup.Notes[divGroup.Notes.length - 1].length - 1].Line;
 
     // Flat beam direction
-    if (firstDivBotLine === lastDivBotLine) { return BeamDirection.Flat}
-    else if (firstDivBotLine < lastDivBotLine) { return BeamDirection.UpMax; }
-    else if (firstDivBotLine > lastDivBotLine) { return BeamDirection.DownMax; }
-
+    if (firstDivBotLine === lastDivBotLine) {
+      return BeamDirection.Flat;
+    } else if (firstDivBotLine < lastDivBotLine) {
+      return BeamDirection.UpMax;
+    } else if (firstDivBotLine > lastDivBotLine) {
+      return BeamDirection.DownMax;
+    }
   }
   return BeamDirection.Flat;
 }
 
-function GenerateBeams(measure: Measure, divGroup: DivGroup, stemDir: StemDirection): Beam {
+function GenerateBeams(
+  measure: Measure,
+  divGroup: DivGroup,
+  stemDir: StemDirection,
+): Beam {
   // lines go top - bot in terms of value (0... 30 etc.)
-  let startTopLine: number, endTopLine = Number.MIN_SAFE_INTEGER;
-  let startBotLine: number, endBotLine = Number.MAX_SAFE_INTEGER;
+  let startTopLine: number,
+    endTopLine = Number.MIN_SAFE_INTEGER;
+  let startBotLine: number,
+    endBotLine = Number.MAX_SAFE_INTEGER;
   const divisions = divGroup.Divisions.sort((a: Division, b: Division) => {
     return a.Beat - b.Beat;
   });
   const staff = divisions[0].Staff;
   // assuming that divGroup.notes array is sorted by beat
-  startTopLine = divGroup.Notes[0].sort((a: Note, b:Note) => {
+  startTopLine = divGroup.Notes[0].sort((a: Note, b: Note) => {
     return a.Line - b.Line;
   })[0].Line;
-  startBotLine = divGroup.Notes[0].sort((a: Note, b:Note) => {
+  startBotLine = divGroup.Notes[0].sort((a: Note, b: Note) => {
     return a.Line - b.Line;
   })[divGroup.Notes[0].length - 1].Line;
 
-  endTopLine = divGroup.Notes[divGroup.Notes.length-1].sort((a: Note, b:Note) => {
-    return a.Line - b.Line;
-  })[0].Line;
-  endBotLine = divGroup.Notes[divGroup.Notes.length-1].sort((a: Note, b:Note) => {
-    return a.Line - b.Line;
-  })[divGroup.Notes[divGroup.Notes.length-1].length - 1].Line;
+  endTopLine = divGroup.Notes[divGroup.Notes.length - 1].sort(
+    (a: Note, b: Note) => {
+      return a.Line - b.Line;
+    },
+  )[0].Line;
+  endBotLine = divGroup.Notes[divGroup.Notes.length - 1].sort(
+    (a: Note, b: Note) => {
+      return a.Line - b.Line;
+    },
+  )[divGroup.Notes[divGroup.Notes.length - 1].length - 1].Line;
 
   // we'll figure this shit out
-//  if (stemDir === StemDirection.Up) {}
+  //  if (stemDir === StemDirection.Up) {}
   //  19 = various buffers (x / note)
   const beamStartX = divisions[0].Bounds.x + 19;
   const beamStartY = measure.GetNotePositionOnLine(startTopLine, staff) - 35;
 
-  const beamEndX = divisions[divisions.length-1].Bounds.x + 19;
+  const beamEndX = divisions[divisions.length - 1].Bounds.x + 19;
   const beamEndY = measure.GetNotePositionOnLine(endTopLine, staff) - 35;
 
-  const beam = new Beam(new Bounds(
-    beamStartX, beamStartY, (beamEndX - beamStartX), 5),
-    {x: beamStartX, y: beamStartY },
-    {x: beamEndX, y: beamEndY });
+  const beam = new Beam(
+    new Bounds(beamStartX, beamStartY, beamEndX - beamStartX, 5),
+    { x: beamStartX, y: beamStartY },
+    { x: beamEndX, y: beamEndY },
+  );
   return beam;
 }
 
-export { Beam, GenerateBeams, DetermineBeamDirection } 
+class Beam {
+  Bounds: Bounds;
+  Direction: string;
+  StartPoint: { x: number; y: number };
+  EndPoint: { x: number; y: number };
+  constructor(
+    bounds: Bounds,
+    start: { x: number; y: number },
+    end: { x: number; y: number },
+  ) {
+    this.Bounds = bounds;
+    this.StartPoint = start;
+    this.EndPoint = end;
+  }
+
+  Render(
+    context: CanvasRenderingContext2D,
+    cam: Camera,
+    count: number,
+    stemDir: StemDirection,
+    theme: Theme,
+  ): void {
+    context.fillStyle = theme.NoteElements;
+    const baseThickness = stemDir === StemDirection.Up ? -6 : 6;
+    const svgLine = `M ${this.StartPoint.x + cam.x + 1} ${this.StartPoint.y + cam.y - baseThickness}
+        L${this.EndPoint.x + cam.x + 1} ${this.EndPoint.y + cam.y - baseThickness}
+        V${this.EndPoint.y + cam.y} 
+        L${this.StartPoint.x + cam.x + 1} ${this.StartPoint.y + cam.y} z `;
+    context.fill(new Path2D(svgLine));
+
+    let yBuffer = stemDir === StemDirection.Up ? 2.5 : -8;
+    let flagBuffer = stemDir === StemDirection.Up ? 6 : 0;
+    for (let i = 1; i < count; i++) {
+      const thickness = 6;
+      const line = `M ${this.StartPoint.x + cam.x} ${this.StartPoint.y + flagBuffer * i + yBuffer * i + cam.y}
+          L${this.EndPoint.x + cam.x + 2} ${this.EndPoint.y + flagBuffer * i + yBuffer * i + cam.y}
+          V${this.EndPoint.y + flagBuffer * i + yBuffer * i + cam.y + thickness} 
+          L${this.StartPoint.x + cam.x} ${this.StartPoint.y + flagBuffer * i + yBuffer * i + thickness + cam.y} z`;
+      context.fill(new Path2D(line));
+    }
+  }
+}
+
+export { Beam, GenerateBeams, DetermineBeamDirection };

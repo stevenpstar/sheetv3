@@ -25,7 +25,6 @@ import {
   RenderDots,
   RenderNote,
   RenderRest,
-  RenderStemRevise,
   RenderTies,
   RenderTuplets,
   StemDirection,
@@ -302,9 +301,6 @@ function RenderNotes(
       );
       const beamAngle = DetermineBeamDirection(msr, group, stemDir);
 
-      //      const beam = GenerateBeams(msr, group, stemDir);
-      //      beam.Render(context, camera);
-      //RenderStemRevise(renderProps, group.Notes, group.Divisions, staff, msr, beamAngle, theme);
       const stems = CreateStems(
         group.Notes,
         group.Divisions,
@@ -315,9 +311,7 @@ function RenderNotes(
       let beams: Beam[] = [];
       if (group.Divisions.length > 1 && group.Divisions[0].Duration < 0.25) {
         beams = CreateBeams(group, stems, msr);
-        beams.forEach((b) =>
-          b.Render(context, camera, 1, StemDirection.Up, theme),
-        );
+        beams.forEach((b) => b.Render(context, camera, 1, stemDir, theme));
       }
       stems.forEach((s) => s.Render(context, camera, theme));
       group.Divisions.forEach((div) => {
