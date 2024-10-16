@@ -59,6 +59,16 @@ var StdAccidentals;
     StdAccidentals["ParenthSharp"] = "\uE26A\uE262\uE26B";
     StdAccidentals["ParenthFlat"] = "\uE26A\uE260\uE26B";
 })(StdAccidentals || (StdAccidentals = {}));
+var DynamicSymbol;
+(function (DynamicSymbol) {
+    DynamicSymbol["Piano"] = "\uE520";
+    DynamicSymbol["Mezzo"] = "\uE521";
+    DynamicSymbol["Forte"] = "\uE522";
+    DynamicSymbol["Rinforzando"] = "\uE523";
+    DynamicSymbol["SForzando"] = "\uE524";
+    DynamicSymbol["Z"] = "\uE525";
+    DynamicSymbol["N"] = "\uE526";
+})(DynamicSymbol || (DynamicSymbol = {}));
 function RenderSymbol(renderProps, symbol, x, y, theme, selected) {
     const { canvas, context, camera } = renderProps;
     context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
@@ -71,4 +81,4 @@ function RenderAnimatedSymbol(renderProps, symbol, x, y, theme, opacity) {
     renderProps.context.font = `${stdFontSize}px Bravura`;
     renderProps.context.fillText(symbol, x + renderProps.camera.x, y + renderProps.camera.y);
 }
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol, RenderAnimatedSymbol, };
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, RenderSymbol, RenderAnimatedSymbol, };

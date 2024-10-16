@@ -1,10 +1,6 @@
-import { Beam, DetermineBeamDirection, GenerateBeams } from "../Core/Beam.js";
-import {
-  DivGroup,
-  DivGroups,
-  GetDivisionGroups,
-  IsRestOnBeat,
-} from "../Core/Division.js";
+import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
+import { DivGroup, GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
+import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
 
 import { StaffType } from "../Core/Instrument.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
@@ -16,11 +12,9 @@ import { RenderProperties } from "../Types/RenderProperties.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
 import { ConfigSettings, Theme } from "../entry.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
-import { RenderTrebleClef } from "./Elements/TrebleClef.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
-import { Clefs, RenderSymbol, TimeSigNumbers } from "./MusicFont.Renderer.js";
+import { DynamicSymbol } from "./MusicFont.Renderer.js";
 import {
-  BeamDirection,
   DetermineStemDirection,
   RenderDots,
   RenderNote,
@@ -67,6 +61,17 @@ function RenderMeasure(
   RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
   measure.Staves.forEach((s: Staff) => {
     RenderNotes(measure, renderProps, s.Num, config.Theme);
+    // TODO: Temporary for testing dynamics rendering
+    measure.Divisions.filter(
+      (div: Division) => div.Staff === s.Num && div.Beat === 1,
+    ).forEach((div: Division) => {
+      const tempDyn: Dynamic = new Dynamic(
+        DynamicSymbol.Forte,
+        div.Staff,
+        div.Beat,
+      );
+      RenderDynamic(renderProps, measure, tempDyn, config.Theme);
+    });
   });
 }
 

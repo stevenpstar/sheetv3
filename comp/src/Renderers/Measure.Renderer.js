@@ -1,5 +1,6 @@
 import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
-import { GetDivisionGroups, IsRestOnBeat, } from "../Core/Division.js";
+import { GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
+import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Note } from "../Core/Note.js";
 import { RenderMeasureLines, RenderStaffLines } from "../Core/Staff.js";
@@ -8,6 +9,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
+import { DynamicSymbol } from "./MusicFont.Renderer.js";
 import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderTies, RenderTuplets, StemDirection, renderLedgerLines, } from "./Note.Renderer.js";
 import { CreateStems } from "./Stem.Fact.js";
 const line_space = 10;
@@ -23,6 +25,11 @@ function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteI
     RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
     measure.Staves.forEach((s) => {
         RenderNotes(measure, renderProps, s.Num, config.Theme);
+        // TODO: Temporary for testing dynamics rendering
+        measure.Divisions.filter((div) => div.Staff === s.Num && div.Beat === 1).forEach((div) => {
+            const tempDyn = new Dynamic(DynamicSymbol.Forte, div.Staff, div.Beat);
+            RenderDynamic(renderProps, measure, tempDyn, config.Theme);
+        });
     });
 }
 // TODO: move this function elsewhere

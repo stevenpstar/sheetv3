@@ -55,7 +55,16 @@ declare enum StdAccidentals {
     ParenthSharp = "\uE26A\uE262\uE26B",
     ParenthFlat = "\uE26A\uE260\uE26B"
 }
+declare enum DynamicSymbol {
+    Piano = "\uE520",
+    Mezzo = "\uE521",
+    Forte = "\uE522",
+    Rinforzando = "\uE523",
+    SForzando = "\uE524",
+    Z = "\uE525",
+    N = "\uE526"
+}
 declare function RenderSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, selected: boolean): void;
 declare function RenderAnimatedSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, opacity: number): void;
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, RenderSymbol, RenderAnimatedSymbol, };
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, RenderSymbol, RenderAnimatedSymbol, };
 //# sourceMappingURL=MusicFont.Renderer.d.ts.map

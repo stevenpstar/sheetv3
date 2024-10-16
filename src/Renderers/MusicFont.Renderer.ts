@@ -62,6 +62,16 @@ enum StdAccidentals {
   ParenthFlat = "\u{E26A}\u{E260}\u{E26B}",
 }
 
+enum DynamicSymbol {
+  Piano = "\u{E520}",
+  Mezzo = "\u{E521}",
+  Forte = "\u{E522}",
+  Rinforzando = "\u{E523}",
+  SForzando = "\u{E524}",
+  Z = "\u{E525}",
+  N = "\u{E526}",
+}
+
 function RenderSymbol(
   renderProps: RenderProperties,
   symbol: string,
@@ -100,6 +110,7 @@ export {
   StdAccidentals,
   TimeSigNumbers,
   TupletNumbers,
+  DynamicSymbol,
   RenderSymbol,
   RenderAnimatedSymbol,
 };
