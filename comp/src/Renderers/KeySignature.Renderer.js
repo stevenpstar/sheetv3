@@ -4,7 +4,8 @@ function RenderKeySignature(renderProps, msr, keyString, clefString, xOff, theme
     const { canvas, context, camera } = renderProps;
     context.fillStyle = "black";
     const keyProps = GetKeyProps(clefString, keyString);
-    let posString = "";
+    console.log("trebleLines: ", GetKeyProps("treble", keyString).Lines);
+    console.log("bassLines: ", GetKeyProps("bass", keyString).Lines);
     keyProps.Lines.forEach((l, i) => {
         if (keyProps.Accidental === "#") {
             RenderSymbol(renderProps, StdAccidentals.Sharp, msr.Bounds.x + xOff + i * 10, msr.GetNotePositionOnLine(l, 0) + 2.5, theme, false);
@@ -37,6 +38,8 @@ function GetKeyProps(clefString, keyString) {
     props.Accidental = acc;
     switch (clefString) {
         case "bass":
+            props.Lines = fromTreble(notes, acc);
+            props.Lines = [...props.Lines.map((l) => (l += 2))];
             break;
         case "treble":
             props.Lines = fromTreble(notes, acc);

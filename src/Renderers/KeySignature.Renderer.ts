@@ -22,7 +22,8 @@ function RenderKeySignature(
   const { canvas, context, camera } = renderProps;
   context.fillStyle = "black";
   const keyProps = GetKeyProps(clefString, keyString);
-  let posString = "";
+  console.log("trebleLines: ", GetKeyProps("treble", keyString).Lines);
+  console.log("bassLines: ", GetKeyProps("bass", keyString).Lines);
   keyProps.Lines.forEach((l: number, i: number) => {
     if (keyProps.Accidental === "#") {
       RenderSymbol(
@@ -69,6 +70,8 @@ function GetKeyProps(clefString: string, keyString: string): keyProps {
   props.Accidental = acc;
   switch (clefString) {
     case "bass":
+      props.Lines = fromTreble(notes, acc);
+      props.Lines = [...props.Lines.map((l) => (l += 2))];
       break;
     case "treble":
       props.Lines = fromTreble(notes, acc);

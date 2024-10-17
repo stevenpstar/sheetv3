@@ -135,7 +135,7 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure, theme) {
         if (key !== "CMaj/Amin") {
             const xOff = msr.RenderClef ? 30 : 4;
             msr.Staves.forEach((s) => {
-                RenderKeySignature(renderProps, msr, key, "treble", xOff, theme, s.Num);
+                RenderKeySignature(renderProps, msr, key, msr.Clefs[0].Type, xOff, theme, s.Num);
             });
         }
         else {
