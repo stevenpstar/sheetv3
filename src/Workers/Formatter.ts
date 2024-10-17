@@ -79,7 +79,7 @@ function ResizeMeasuresOnPage(
         m.RenderClef = m.Instrument.Staff === StaffType.Rhythm ? false : true;
         m.RenderTimeSig = true;
         // TODO: When we work on keys
-        m.RenderKey = false;
+        m.RenderKey = true;
         m.SetXOffset();
         // the calculated new width of the measure, may need to be overwritten
         // by config settings if they are set (maxWidth in

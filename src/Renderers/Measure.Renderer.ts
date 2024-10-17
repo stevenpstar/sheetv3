@@ -223,10 +223,17 @@ function RenderMeasureBase(
     RenderMeasureClef(renderProps, msr, theme);
   }
   if (msr.RenderKey) {
-    const key = msr.KeySignature; //"CMaj/Amin";
+    let key = msr.KeySignature; //"CMaj/Amin";
+    if (key === undefined) {
+      key = "CMaj/Amin";
+      msr.RenderKey = false;
+      console.error("Measure Key Signature is undefined");
+    }
     if (key !== "CMaj/Amin") {
-      const xOff = msr.RenderClef ? 24 : 4;
-      RenderKeySignature(renderProps, msr, "CMaj/Amin", "treble", xOff);
+      const xOff = msr.RenderClef ? 30 : 4;
+      msr.Staves.forEach((s: Staff) => {
+        RenderKeySignature(renderProps, msr, key, "treble", xOff, theme, s.Num);
+      });
     } else {
       msr.RenderKey = false;
       // This is a temporary fix for dev

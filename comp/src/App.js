@@ -56,7 +56,7 @@ class App {
             }
             const sProps = {
                 Instruments: [],
-                KeySignature: [{ key: "CMaj", measureNo: 0 }],
+                KeySignature: [{ key: "CMaj/Amin", measureNo: 0 }],
                 Measures: [],
                 Pages: [newPage],
             };

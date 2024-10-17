@@ -109,7 +109,6 @@ class App {
     this.StartDragY = 0;
     this.EndDragY = 0;
     this.DragLining = false;
-
     if (!this.Load) {
       // Create New Sheet Properties
       let newPage: Page = new Page(0, 0, 1);
@@ -119,7 +118,7 @@ class App {
 
       const sProps: SheetProps = {
         Instruments: [],
-        KeySignature: [{ key: "CMaj", measureNo: 0 }],
+        KeySignature: [{ key: "CMaj/Amin", measureNo: 0 }],
         Measures: [],
         Pages: [newPage],
       };

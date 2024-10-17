@@ -28,7 +28,7 @@ const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
             const newNote = new Note(noteProps);
             notes.push(newNote);
         });
-        const msr = CreateMeasure(instr, m.Bounds, m.TimeSignature, "CMaj/Amin", m.Clefs, m.Staves, cam, runningId, page, m.ShowClef, callback);
+        const msr = CreateMeasure(instr, m.Bounds, m.TimeSignature, m.KeySignature, m.Clefs, m.Staves, cam, runningId, page, m.ShowClef, callback);
         msr.Notes = notes;
         sheet.Measures.push(msr);
         msr.CreateDivisions(cam);
@@ -60,13 +60,14 @@ const SaveSheet = (sheet) => {
             Clefs: m.Clefs,
             Staves: m.Staves,
             TimeSignature: m.TimeSignature,
+            KeySignature: m.KeySignature,
             Notes: notes,
             Bounds: m.Bounds,
             ShowClef: m.RenderClef,
             ShowTime: m.RenderTimeSig,
         });
     });
-    console.log(JSON.stringify(saved));
+    //  console.log(JSON.stringify(saved));
     return JSON.stringify(saved);
 };
 export { LoadSheet, SaveSheet };

@@ -24,6 +24,7 @@ interface lMeasure {
         top: number;
         bottom: number;
     };
+    KeySignature: string;
     Notes: lNote[];
     Bounds: Bounds;
     ShowClef: boolean;

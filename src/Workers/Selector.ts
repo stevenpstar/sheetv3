@@ -1,11 +1,9 @@
 import { Camera } from "../Core/Camera.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
-import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Message, MessageType } from "../Types/Message.js";
 import { UpdateNoteBounds } from "./NoteInput.js";
-import { ReturnMidiNumber } from "./Pitcher.js";
 class Selector {
   Measures: Measure[];
   Clefs: Clef[];

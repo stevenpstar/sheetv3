@@ -27,6 +27,7 @@ interface lMeasure {
   Clefs: Clef[];
   Staves: Staff[];
   TimeSignature: { top: number; bottom: number };
+  KeySignature: string;
   Notes: lNote[];
   Bounds: Bounds;
   ShowClef: boolean;
@@ -74,7 +75,7 @@ const LoadSheet = (
       instr,
       m.Bounds,
       m.TimeSignature,
-      "CMaj/Amin",
+      m.KeySignature,
       m.Clefs,
       m.Staves,
       cam,
@@ -115,6 +116,7 @@ const SaveSheet = (sheet: Sheet): string => {
       Clefs: m.Clefs,
       Staves: m.Staves,
       TimeSignature: m.TimeSignature,
+      KeySignature: m.KeySignature,
       Notes: notes,
       Bounds: m.Bounds,
       ShowClef: m.RenderClef,
@@ -122,7 +124,7 @@ const SaveSheet = (sheet: Sheet): string => {
     });
   });
 
-  console.log(JSON.stringify(saved));
+  //  console.log(JSON.stringify(saved));
   return JSON.stringify(saved);
 };
 

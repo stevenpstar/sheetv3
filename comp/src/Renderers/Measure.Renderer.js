@@ -89,7 +89,6 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
                 };
                 const tempNote = new Note(tempNoteProps);
                 if (!restInput) {
-                    console.log("line bounds y: ", line.bounds.y);
                     RenderNote(tempNote, renderProps, new Bounds(s.Bounds.x + noteXBuffer, line.bounds.y, 0, 0), true, false, StemDirection.Up, theme);
                     // RenderStemRevise(
                     //   renderProps,
@@ -126,11 +125,17 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure, theme) {
         RenderMeasureClef(renderProps, msr, theme);
     }
     if (msr.RenderKey) {
-        console.log("??");
-        const key = msr.KeySignature; //"CMaj/Amin";
+        let key = msr.KeySignature; //"CMaj/Amin";
+        if (key === undefined) {
+            key = "CMaj/Amin";
+            msr.RenderKey = false;
+            console.error("Measure Key Signature is undefined");
+        }
         if (key !== "CMaj/Amin") {
-            const xOff = msr.RenderClef ? 24 : 4;
-            RenderKeySignature(renderProps, msr, "CMaj/Amin", "treble", xOff);
+            const xOff = msr.RenderClef ? 30 : 4;
+            msr.Staves.forEach((s) => {
+                RenderKeySignature(renderProps, msr, key, "treble", xOff, theme, s.Num);
+            });
         }
         else {
             msr.RenderKey = false;

@@ -1,28 +1,31 @@
 import { KeySignatures } from "../Core/KeySignatures.js";
-import { flatPath, sharpPath } from "./Accidentals.Renderer.js";
-function RenderKeySignature(renderProps, msr, keyString, clefString, xOff) {
+import { RenderSymbol, StdAccidentals } from "./MusicFont.Renderer.js";
+function RenderKeySignature(renderProps, msr, keyString, clefString, xOff, theme, staff) {
     const { canvas, context, camera } = renderProps;
     context.fillStyle = "black";
     const keyProps = GetKeyProps(clefString, keyString);
     let posString = "";
     keyProps.Lines.forEach((l, i) => {
         if (keyProps.Accidental === "#") {
-            posString = `m ${msr.Bounds.x + xOff + i * 5 + camera.x + 5}
-                ${msr.Bounds.y + l * 5 + camera.y + 4}`;
-            posString += sharpPath;
+            RenderSymbol(renderProps, StdAccidentals.Sharp, msr.Bounds.x + xOff + i * 10, msr.GetNotePositionOnLine(l, 0) + 2.5, theme, false);
         }
         else {
-            posString = `m ${msr.Bounds.x + xOff + i * 5 + camera.x - 5} 
-          ${msr.Bounds.y + l * 5 + camera.y + 4}`;
-            posString += flatPath;
+            RenderSymbol(renderProps, StdAccidentals.Flat, msr.Bounds.x + xOff + i * 10, msr.GetNotePositionOnLine(l, 0) + 2.5, theme, false);
         }
-        context.fill(new Path2D(posString));
     });
 }
 function GetKeyProps(clefString, keyString) {
     const props = { Accidental: "", Lines: [] };
     const notes = KeySignatures.get(keyString);
     let acc = "";
+    if (clefString === "" || !clefString || !keyString || keyString === "") {
+        console.error("ClefString or KeyString missing");
+        return props;
+    }
+    if (!notes) {
+        console.error("Notes undefined/null");
+        return props;
+    }
     if (notes.length > 0) {
         if (notes[0].includes("#")) {
             acc = "#";
