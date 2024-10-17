@@ -31,6 +31,7 @@ interface MeasureProps {
 }
 declare class Measure implements ISelectable {
     ID: number;
+    Num: number;
     Selected: boolean;
     SelType: SelectableTypes;
     Instrument: Instrument;

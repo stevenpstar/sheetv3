@@ -9,7 +9,6 @@ import { Bounds } from "../Types/Bounds.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
-import { DynamicSymbol } from "./MusicFont.Renderer.js";
 import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderTies, RenderTuplets, StemDirection, renderLedgerLines, } from "./Note.Renderer.js";
 import { CreateStems } from "./Stem.Fact.js";
 const line_space = 10;
@@ -27,8 +26,15 @@ function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteI
         RenderNotes(measure, renderProps, s.Num, config.Theme);
         // TODO: Temporary for testing dynamics rendering
         measure.Divisions.filter((div) => div.Staff === s.Num && div.Beat === 1).forEach((div) => {
-            const tempDyn = new Dynamic(DynamicSymbol.Forte, div.Staff, div.Beat);
+            const tempDyn = new Dynamic("ppppp", div.Staff, div.Beat);
             RenderDynamic(renderProps, measure, tempDyn, config.Theme);
+            // temp msr no
+            renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
+            renderProps.context.font = `${12}px Bravura`;
+            renderProps.context.fillText((1).toString(), measure.Bounds.x +
+                measure.GetBoundsWithOffset().width +
+                renderProps.camera.x -
+                8, measure.Bounds.y + 9 * 10 + renderProps.camera.y);
         });
     });
 }
