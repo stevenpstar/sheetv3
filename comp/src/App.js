@@ -203,6 +203,8 @@ class App {
             const newMeasureBounds = new Bounds(x, latestLine.LineBounds.y, 150, prevMsr.Bounds.height);
             const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, prevMsr.Clefs, prevMsr.Staves, this.Camera, this.RunningID, this.Sheet.Pages[0], // Page will need to be determined
             false, this.NotifyCallback, this.Config.MeasureSettings);
+            // add measure number
+            newMsr.Num = this.Sheet.Measures.length + 1;
             //      newMsr.PageLine = latestLine.Number;
             this.Sheet.Measures.push(newMsr);
             this.ResizeMeasures(this.Sheet.Measures.filter((m) => m.Instrument === i));

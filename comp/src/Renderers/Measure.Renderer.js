@@ -31,7 +31,7 @@ function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteI
             // temp msr no
             renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
             renderProps.context.font = `${12}px Bravura`;
-            renderProps.context.fillText((1).toString(), measure.Bounds.x +
+            renderProps.context.fillText(measure.Num.toString(), measure.Bounds.x +
                 measure.GetBoundsWithOffset().width +
                 renderProps.camera.x -
                 8, measure.Bounds.y + 9 * 10 + renderProps.camera.y);
@@ -67,13 +67,13 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
                 line.num = 15;
                 line.bounds = MiddleLineBounds(measure);
             }
+            line.bounds.y = measure.GetNotePositionOnLine(line.num, s.Staff);
             // context.fillStyle="rgb(0, 0, 255, 0.1)";
             // context.fillRect(s.Bounds.x + camera.x,
             //                  s.Bounds.y + camera.y,
             //                  s.Bounds.width,
             //                  s.Bounds.height);
             if (noteInput) {
-                const noteY = measure.Bounds.y + line.num * (line_space / 2); // + (line_space / 2));
                 // temp note
                 const tempNoteProps = {
                     Beat: s.Beat,
@@ -89,6 +89,7 @@ function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInp
                 };
                 const tempNote = new Note(tempNoteProps);
                 if (!restInput) {
+                    console.log("line bounds y: ", line.bounds.y);
                     RenderNote(tempNote, renderProps, new Bounds(s.Bounds.x + noteXBuffer, line.bounds.y, 0, 0), true, false, StemDirection.Up, theme);
                     // RenderStemRevise(
                     //   renderProps,

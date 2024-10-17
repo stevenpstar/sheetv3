@@ -57,7 +57,6 @@ const CreateDefaultMeasure = (
   settings?: MeasureSettings,
 ): Measure => {
   const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
-
   const props: MeasureProps = {
     Instrument: instr,
     Bounds: new Bounds(

@@ -356,6 +356,8 @@ class App {
         this.NotifyCallback,
         this.Config.MeasureSettings,
       );
+      // add measure number
+      newMsr.Num = this.Sheet.Measures.length + 1;
       //      newMsr.PageLine = latestLine.Number;
       this.Sheet.Measures.push(newMsr);
       this.ResizeMeasures(

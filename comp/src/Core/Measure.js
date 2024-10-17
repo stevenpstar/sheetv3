@@ -13,6 +13,7 @@ class Measure {
         // TODO: Clefs should just be one array, each clef should have which staff they are
         // on
         this.Clefs = [];
+        this.Num = 1;
         this.Staves = properties.Staves;
         //    this.Staves.push(new Staff(1));
         this.Message = properties.Message;
@@ -65,7 +66,7 @@ class Measure {
         const relativeLine = staff.TopLine < 0
             ? actualLine + Math.abs(staff.TopLine)
             : actualLine - staff.TopLine;
-        bounds.y = 5 * actualLine;
+        bounds.y = this.Bounds.y - 27.5 + 5 * actualLine;
         return { num: testLine, bounds: bounds };
     }
     // Get note position relative to staff/measure

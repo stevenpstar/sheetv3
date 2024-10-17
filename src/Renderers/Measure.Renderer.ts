@@ -72,7 +72,7 @@ function RenderMeasure(
       renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
       renderProps.context.font = `${12}px Bravura`;
       renderProps.context.fillText(
-        (1).toString(),
+        measure.Num.toString(),
         measure.Bounds.x +
           measure.GetBoundsWithOffset().width +
           renderProps.camera.x -
@@ -128,6 +128,7 @@ function RenderHovered(
         line.num = 15;
         line.bounds = MiddleLineBounds(measure);
       }
+      line.bounds.y = measure.GetNotePositionOnLine(line.num, s.Staff);
       // context.fillStyle="rgb(0, 0, 255, 0.1)";
       // context.fillRect(s.Bounds.x + camera.x,
       //                  s.Bounds.y + camera.y,
@@ -135,7 +136,6 @@ function RenderHovered(
       //                  s.Bounds.height);
 
       if (noteInput) {
-        const noteY = measure.Bounds.y + line.num * (line_space / 2); // + (line_space / 2));
         // temp note
         const tempNoteProps = {
           Beat: s.Beat,
@@ -223,7 +223,6 @@ function RenderMeasureBase(
     RenderMeasureClef(renderProps, msr, theme);
   }
   if (msr.RenderKey) {
-    console.log("??");
     const key = msr.KeySignature; //"CMaj/Amin";
     if (key !== "CMaj/Amin") {
       const xOff = msr.RenderClef ? 24 : 4;

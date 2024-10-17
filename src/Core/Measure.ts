@@ -65,6 +65,7 @@ class Measure implements ISelectable {
   RunningID: { count: number };
 
   constructor(properties: MeasureProps, runningId: { count: number }) {
+    this.Num = 1;
     this.Staves = properties.Staves;
     //    this.Staves.push(new Staff(1));
     this.Message = properties.Message;
@@ -127,7 +128,7 @@ class Measure implements ISelectable {
       staff.TopLine < 0
         ? actualLine + Math.abs(staff.TopLine)
         : actualLine - staff.TopLine;
-    bounds.y = 5 * actualLine;
+    bounds.y = this.Bounds.y - 27.5 + 5 * actualLine;
     return { num: testLine, bounds: bounds };
   }
 
