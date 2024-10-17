@@ -43,7 +43,7 @@ const CreateDefaultMeasure = (id, instr, page, cam, callback, settings) => {
         Instrument: instr,
         Bounds: new Bounds(instr.Position.x, page.PageLines[0].LineBounds.y, 150, msrHeight),
         TimeSignature: { top: 4, bottom: 4 },
-        KeySignature: "EbMaj/Cmin",
+        KeySignature: "GbMaj/Ebmin",
         Notes: [],
         Clefs: [new Clef(0, "treble", 1, 0)],
         Staves: [new Staff(0)],

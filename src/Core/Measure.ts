@@ -12,6 +12,7 @@ import {
   DivisionMinWidth,
 } from "./Division.js";
 import { Instrument, StaffType } from "./Instrument.js";
+import { KeySignatures } from "./KeySignatures.js";
 import { Note, NoteProps } from "./Note.js";
 import { Page } from "./Page.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
@@ -154,11 +155,15 @@ class Measure implements ISelectable {
       this.XOffset += 30;
     }
     if (this.RenderKey) {
-      this.XOffset += 30;
+      // TODO: Change 10 to be a constant value defined somewhere (we have magic
+      // numbers everywhere atm)
+      this.XOffset += KeySignatures.get(this.KeySignature).length * 10;
     }
     if (this.RenderTimeSig) {
       this.XOffset += 30;
     }
+    // TODO: Staff parameter might not do anything in this function?
+    this.TimeSignature.SetBounds(this, 0);
   }
 
   CreateDivisions(cam: Camera, afterInput: boolean = false) {

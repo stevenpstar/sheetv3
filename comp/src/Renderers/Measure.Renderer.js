@@ -2,6 +2,7 @@ import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
 import { GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
 import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
 import { StaffType } from "../Core/Instrument.js";
+import { KeySignatures } from "../Core/KeySignatures.js";
 import { Note } from "../Core/Note.js";
 import { RenderMeasureLines, RenderStaffLines } from "../Core/Staff.js";
 import { CreateBeams } from "../Factory/Beam.Fact.js";
@@ -143,13 +144,13 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure, theme) {
         }
     }
     if (msr.RenderTimeSig) {
-        const xOff = msr.RenderClef ? (msr.RenderKey ? 48 : 36) : 4;
+        let xOff = msr.RenderClef ? 36 : 4;
+        if (msr.RenderKey && msr.KeySignature !== "CMaj/Amin") {
+            xOff += KeySignatures.get(msr.KeySignature).length * 10;
+        }
         RenderTimeSig(renderProps, msr, "4", "4", xOff, theme);
     }
 }
-// TODO: Move this
-const bassClef = "m0 0c0-1.276 1.012-2.288 2.288-2.288s2.288 1.012 2.288 2.288-1.012 2.288-2.288 2.288-2.288-1.012-2.288-2.288zm0-11c0-1.276 1.012-2.288 2.288-2.288s2.288 1.012 2.288 2.288-1.012 2.288-2.288 2.288-2.288-1.012-2.288-2.288zm-14.212-5.984c7.524 0 12.848 3.784 12.848 10.912 0 11.572-11.616 18.26-22.748 22.924-.088.088-.22.132-.352.132-.264 0-.484-.22-.484-.484 0-.132.044-.264.132-.352 8.932-5.192 18.26-11.66 18.26-21.736 0-5.324-2.816-10.428-7.656-10.428-3.476 0-6.072 2.508-7.216 5.852.616-.352 1.232-.572 1.892-.572 2.42 0 4.4 1.98 4.4 4.4 0 2.552-1.936 4.708-4.4 4.708-2.64 0-4.928-2.112-4.928-4.708 0-5.808 4.532-10.648 10.252-10.648z";
-const bassClefSmall = "m0 0c0-1.0208.8096-1.8304 1.8304-1.8304s1.8304.8096 1.8304 1.8304-.8096 1.8304-1.8304 1.8304-1.8304-.8096-1.8304-1.8304zm0-8.8c0-1.0208.8096-1.8304 1.8304-1.8304s1.8304.8096 1.8304 1.8304-.8096 1.8304-1.8304 1.8304-1.8304-.8096-1.8304-1.8304zm-11.3696-4.7872c6.0192 0 10.2784 3.0272 10.2784 8.7296 0 9.2576-9.2928 14.608-18.1984 18.3392-.0704.0704-.176.1056-.2816.1056-.2112 0-.3872-.176-.3872-.3872 0-.1056.0352-.2112.1056-.2816 7.1456-4.1536 14.608-9.328 14.608-17.3888 0-4.2592-2.2528-8.3424-6.1248-8.3424-2.7808 0-4.8576 2.0064-5.7728 4.6816.4928-.2816.9856-.4576 1.5136-.4576 1.936 0 3.52 1.584 3.52 3.52 0 2.0416-1.5488 3.7664-3.52 3.7664-2.112 0-3.9424-1.6896-3.9424-3.7664 0-4.6464 3.6256-8.5184 8.2016-8.5184z";
 function RenderMeasureClef(renderProps, msr, theme) {
     // TODO: Rewrite clef rendering code
     const { canvas, context, camera } = renderProps;

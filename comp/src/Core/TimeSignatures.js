@@ -1,4 +1,4 @@
-import { RenderSymbol, TimeSigNumbers } from "../Renderers/MusicFont.Renderer.js";
+import { RenderSymbol, TimeSigNumbers, } from "../Renderers/MusicFont.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { SelectableTypes } from "../Types/ISelectable.js";
 import { GetStaffMiddleLine } from "./Staff.js";
@@ -33,7 +33,7 @@ class TimeSignature {
     render(renderProps, msr, theme) {
         let tGlyph = GetTimeSignatureGlyph(this.top);
         let bGlyph = GetTimeSignatureGlyph(this.bottom);
-        msr.Staves.forEach(s => {
+        msr.Staves.forEach((s) => {
             //      if (this.TopPosition.length > msr.Staves.length || this.BotPosition.length >= msr.Staves.length) { return ;}
             RenderSymbol(renderProps, tGlyph, this.TopPosition[s.Num].x, this.TopPosition[s.Num].y, theme, this.Selected);
             RenderSymbol(renderProps, bGlyph, this.BotPosition[s.Num].x, this.BotPosition[s.Num].y, theme, this.Selected);
@@ -46,25 +46,29 @@ class TimeSignature {
         this.BotPosition = [];
         //
         msr.Staves.forEach((s) => {
-            // TODO: These probably shouldn't be recreated every single time 
+            // TODO: These probably shouldn't be recreated every single time
             this.Bounds.push(new Bounds(0, 0, 0, 0));
             this.TopPosition.push({ x: 0, y: 0 });
             this.BotPosition.push({ x: 0, y: 0 });
             //
-            const divY = msr.Divisions.find(div => div.Staff === s.Num).Bounds.y;
+            const div = msr.Divisions.find((div) => div.Staff === s.Num);
+            if (!div) {
+                return;
+            }
+            const divY = div.Bounds.y;
             const msrMidLine = GetStaffMiddleLine(msr.Staves, s.Num);
             this.Bounds[s.Num].x = msr.Bounds.x + msr.XOffset - 25;
-            this.Bounds[s.Num].y = divY + ((msrMidLine - 4) * 5);
+            this.Bounds[s.Num].y = divY + (msrMidLine - 4) * 5;
             this.Bounds[s.Num].width = 30;
             this.Bounds[s.Num].height = 50;
             this.TopPosition[s.Num].x = this.Bounds[s.Num].x;
-            this.TopPosition[s.Num].y = divY + ((msrMidLine - 2) * 5);
+            this.TopPosition[s.Num].y = divY + (msrMidLine - 2) * 5;
             this.BotPosition[s.Num].x = this.Bounds[s.Num].x;
-            this.BotPosition[s.Num].y = divY + ((msrMidLine + 2) * 5);
+            this.BotPosition[s.Num].y = divY + (msrMidLine + 2) * 5;
         });
     }
     IsHovered(x, y, cam) {
-        return this.Bounds.filter(b => b.IsHovered(x, y, cam)).length > 0;
+        return this.Bounds.filter((b) => b.IsHovered(x, y, cam)).length > 0;
     }
 }
 function GetTimeSignatureGlyph(n) {

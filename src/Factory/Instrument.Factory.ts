@@ -66,7 +66,7 @@ const CreateDefaultMeasure = (
       msrHeight,
     ),
     TimeSignature: { top: 4, bottom: 4 },
-    KeySignature: "EbMaj/Cmin",
+    KeySignature: "GbMaj/Ebmin",
     Notes: [],
     Clefs: [new Clef(0, "treble", 1, 0)],
     Staves: [new Staff(0)],

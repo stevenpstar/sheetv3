@@ -5,6 +5,7 @@ import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
 import { CreateDivisions, ResizeDivisions, DivisionMinWidth, } from "./Division.js";
 import { StaffType } from "./Instrument.js";
+import { KeySignatures } from "./KeySignatures.js";
 import { Note } from "./Note.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine } from "./Staff.js";
 import { CreateTimeSignature } from "./TimeSignatures.js";
@@ -84,11 +85,15 @@ class Measure {
             this.XOffset += 30;
         }
         if (this.RenderKey) {
-            this.XOffset += 30;
+            // TODO: Change 10 to be a constant value defined somewhere (we have magic
+            // numbers everywhere atm)
+            this.XOffset += KeySignatures.get(this.KeySignature).length * 10;
         }
         if (this.RenderTimeSig) {
             this.XOffset += 30;
         }
+        // TODO: Staff parameter might not do anything in this function?
+        this.TimeSignature.SetBounds(this, 0);
     }
     CreateDivisions(cam, afterInput = false) {
         this.Divisions = [];
