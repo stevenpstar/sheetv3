@@ -66,7 +66,7 @@ function RenderMeasure(
       (div: Division) => div.Staff === s.Num && div.Beat === 1,
     ).forEach((div: Division) => {
       const tempDyn: Dynamic = new Dynamic("ppppp", div.Staff, div.Beat);
-      RenderDynamic(renderProps, measure, tempDyn, config.Theme);
+      //RenderDynamic(renderProps, measure, tempDyn, config.Theme);
 
       // temp msr no
       renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;

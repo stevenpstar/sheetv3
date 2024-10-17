@@ -1,6 +1,6 @@
 import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
 import { GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
-import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
+import { Dynamic } from "../Core/Dynamic.js";
 import { StaffType } from "../Core/Instrument.js";
 import { KeySignatures } from "../Core/KeySignatures.js";
 import { Note } from "../Core/Note.js";
@@ -28,7 +28,7 @@ function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteI
         // TODO: Temporary for testing dynamics rendering
         measure.Divisions.filter((div) => div.Staff === s.Num && div.Beat === 1).forEach((div) => {
             const tempDyn = new Dynamic("ppppp", div.Staff, div.Beat);
-            RenderDynamic(renderProps, measure, tempDyn, config.Theme);
+            //RenderDynamic(renderProps, measure, tempDyn, config.Theme);
             // temp msr no
             renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
             renderProps.context.font = `${12}px Bravura`;

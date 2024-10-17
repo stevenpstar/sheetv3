@@ -1,5 +1,5 @@
 import { KeySignatures } from "../Core/KeySignatures.js";
-import { Measure } from "../Core/Measure.js";
+import { Clef, Measure } from "../Core/Measure.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 import { flatPath, sharpPath } from "./Accidentals.Renderer.js";
@@ -21,16 +21,21 @@ function RenderKeySignature(
 ): void {
   const { canvas, context, camera } = renderProps;
   context.fillStyle = "black";
-  const keyProps = GetKeyProps(clefString, keyString);
-  console.log("trebleLines: ", GetKeyProps("treble", keyString).Lines);
-  console.log("bassLines: ", GetKeyProps("bass", keyString).Lines);
+  const staffClefs = msr.Clefs.filter((c: Clef) => c.Staff === staff);
+  if (!staffClefs) {
+    console.error("(RenderKeySignature): Something went very wrong here");
+    return;
+  }
+  //staff clefs should probably be sorted by beat here
+  const clefTypeString = staffClefs[0].Type;
+  const keyProps = GetKeyProps(clefTypeString, keyString);
   keyProps.Lines.forEach((l: number, i: number) => {
     if (keyProps.Accidental === "#") {
       RenderSymbol(
         renderProps,
         StdAccidentals.Sharp,
         msr.Bounds.x + xOff + i * 10,
-        msr.GetNotePositionOnLine(l, 0) + 2.5,
+        msr.GetNotePositionOnLine(l, staff) + 2.5,
         theme,
         false,
       );
@@ -39,7 +44,7 @@ function RenderKeySignature(
         renderProps,
         StdAccidentals.Flat,
         msr.Bounds.x + xOff + i * 10,
-        msr.GetNotePositionOnLine(l, 0) + 2.5,
+        msr.GetNotePositionOnLine(l, staff) + 2.5,
         theme,
         false,
       );

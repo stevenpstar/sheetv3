@@ -3,15 +3,20 @@ import { RenderSymbol, StdAccidentals } from "./MusicFont.Renderer.js";
 function RenderKeySignature(renderProps, msr, keyString, clefString, xOff, theme, staff) {
     const { canvas, context, camera } = renderProps;
     context.fillStyle = "black";
-    const keyProps = GetKeyProps(clefString, keyString);
-    console.log("trebleLines: ", GetKeyProps("treble", keyString).Lines);
-    console.log("bassLines: ", GetKeyProps("bass", keyString).Lines);
+    const staffClefs = msr.Clefs.filter((c) => c.Staff === staff);
+    if (!staffClefs) {
+        console.error("(RenderKeySignature): Something went very wrong here");
+        return;
+    }
+    //staff clefs should probably be sorted by beat here
+    const clefTypeString = staffClefs[0].Type;
+    const keyProps = GetKeyProps(clefTypeString, keyString);
     keyProps.Lines.forEach((l, i) => {
         if (keyProps.Accidental === "#") {
-            RenderSymbol(renderProps, StdAccidentals.Sharp, msr.Bounds.x + xOff + i * 10, msr.GetNotePositionOnLine(l, 0) + 2.5, theme, false);
+            RenderSymbol(renderProps, StdAccidentals.Sharp, msr.Bounds.x + xOff + i * 10, msr.GetNotePositionOnLine(l, staff) + 2.5, theme, false);
         }
         else {
-            RenderSymbol(renderProps, StdAccidentals.Flat, msr.Bounds.x + xOff + i * 10, msr.GetNotePositionOnLine(l, 0) + 2.5, theme, false);
+            RenderSymbol(renderProps, StdAccidentals.Flat, msr.Bounds.x + xOff + i * 10, msr.GetNotePositionOnLine(l, staff) + 2.5, theme, false);
         }
     });
 }
