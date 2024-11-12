@@ -472,7 +472,7 @@ class App {
     }
     // TODO: Prototype code
     CreateTriplet() {
-        this.NoteValue = CreateTuplet(this.Selector.Notes, 3);
+        this.NoteValue = CreateTuplet(this.Selector.Elements, 3);
         this.ResizeMeasures(this.Sheet.Measures);
         this.Update(0, 0);
     }

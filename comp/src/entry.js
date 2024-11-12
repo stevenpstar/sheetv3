@@ -1,5 +1,6 @@
 import { App } from "./App.js";
 let gSheet;
+const hotReload = false;
 const keymaps = {
     addmeasure: "a",
     changeinputmode: "n",
@@ -122,16 +123,18 @@ export var sheet;
             app.CenterMeasures();
         }
         // DEBUG SETTINGS FOR "HOT RELOADING"
-        const persistedData = localStorage.getItem("persist");
-        if (persistedData !== null) {
-            const cameraData = JSON.parse(localStorage.getItem("camera_data"));
-            app.LoadSheet(persistedData);
-            app.SetCameraZoom(cameraData.Zoom);
-            app.Camera.x = cameraData.X;
-            app.Camera.y = cameraData.Y;
-            app.ResizeMeasures(app.Sheet.Measures);
+        if (hotReload) {
+            const persistedData = localStorage.getItem("persist");
+            if (persistedData !== null) {
+                const cameraData = JSON.parse(localStorage.getItem("camera_data"));
+                app.LoadSheet(persistedData);
+                app.SetCameraZoom(cameraData.Zoom);
+                app.Camera.x = cameraData.X;
+                app.Camera.y = cameraData.Y;
+                app.ResizeMeasures(app.Sheet.Measures);
+            }
+            //
         }
-        //
         return app;
     }
     sheet.CreateApp = CreateApp;

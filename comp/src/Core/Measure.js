@@ -15,6 +15,8 @@ class Measure {
         // on
         this.Clefs = [];
         this.Num = 1;
+        // TODO: Grand measure/non-grand or staff count should inform how
+        // many staves are created
         this.Staves = properties.Staves;
         //    this.Staves.push(new Staff(1));
         this.Message = properties.Message;
@@ -87,7 +89,7 @@ class Measure {
         if (this.RenderKey) {
             // TODO: Change 10 to be a constant value defined somewhere (we have magic
             // numbers everywhere atm)
-            this.XOffset += KeySignatures.get(this.KeySignature).length * 10;
+            this.XOffset += KeySignatures.get(this.KeySignature).length * 11;
         }
         if (this.RenderTimeSig) {
             this.XOffset += 30;

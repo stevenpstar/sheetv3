@@ -5,7 +5,7 @@ import { Note } from "../Core/Note.js";
 import { GetStaffMiddleLine } from "../Core/Staff.js";
 import { GetLargestValues } from "../Core/Values.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
-import { DetermineStemDirection, StemDirection } from "../Renderers/Note.Renderer.js";
+import { DetermineStemDirection, StemDirection, } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 const noteXBuffer = 9;
 // added for automatic/generated notes from external UIs.
@@ -15,9 +15,9 @@ function AddNoteOnMeasure(msr, noteValue, line, beat, rest) {
 }
 function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     let inputtingNote = true;
-    const beatOver = msr.Divisions.find(b => b.Bounds.IsHovered(x, y, cam));
+    const beatOver = msr.Divisions.find((b) => b.Bounds.IsHovered(x, y, cam));
     if (!beatOver) {
-        console.error('Beat Over Not Found');
+        console.error("Beat Over Not Found");
         return;
     }
     let line = msr.GetLineHovered(y, beatOver.Staff);
@@ -29,7 +29,7 @@ function InputOnMeasure(msr, noteValue, x, y, cam, rest) {
     }
 }
 function InputNote(msr, noteValue, division, line, rest, tupleCount = 1) {
-    const notesInDiv = msr.Notes.filter(n => n.Beat === division.Beat);
+    const notesInDiv = msr.Notes.filter((n) => n.Beat === division.Beat);
     if (notesInDiv.length < 1) {
         console.error("No notes found in division");
         return;
@@ -74,20 +74,22 @@ function UpdateNoteBounds(msr, staff) {
         const { Divisions, Notes } = g;
         const stemDir = DetermineStemDirection(Notes, Divisions, staff, msr);
         Divisions.forEach((div) => {
-            const divNotes = msr.Notes.filter(n => n.Beat === div.Beat &&
-                n.Staff === staff);
+            const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat && n.Staff === staff);
             divNotes.sort((a, b) => {
                 return a.Line - b.Line;
             });
             divNotes.forEach((n, i) => {
                 const isFlipped = IsFlippedNote(divNotes, i, stemDir);
-                let flipNoteOffset = isFlipped ?
-                    stemDir === StemDirection.Up ? 11 : -11 : 0;
+                let flipNoteOffset = isFlipped
+                    ? stemDir === StemDirection.Up
+                        ? 11
+                        : -11
+                    : 0;
                 // Note X Buffer needs to change if there are more than 1 accidental
                 // in div, TODO: Note this implementation does not account for natural
                 // accidentals at this point
                 let dynNoteXBuffer = noteXBuffer;
-                const numOfAcc = divNotes.filter(n => n.Accidental !== 0).length;
+                const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
                 if (numOfAcc > 0) {
                     dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
                 }
@@ -100,11 +102,11 @@ function UpdateNoteBounds(msr, staff) {
     });
 }
 function MeasureHasRoom(beat, duration, msr, tuple = 1) {
-    return (beat * duration) <= msr.TimeSignature.top * (1 / msr.TimeSignature.bottom);
+    return (beat * duration <= msr.TimeSignature.top * (1 / msr.TimeSignature.bottom));
 }
 function IsRestOnBeat(msr, beat, notes, staff) {
-    const notesOnBeat = notes.filter(n => n.Beat === beat && n.Staff === staff);
-    const restFound = notesOnBeat.find(n => n.Rest);
+    const notesOnBeat = notes.filter((n) => n.Beat === beat && n.Staff === staff);
+    const restFound = notesOnBeat.find((n) => n.Rest);
     if (restFound && notesOnBeat.length > 1) {
         console.error("Rest found on beat with multiple notes, beat: ", beat);
     }
@@ -122,17 +124,21 @@ function AddToDivision(msr, noteProps, staff) {
     let tying = false;
     let tStart = -1;
     let tEnd = -1;
-    msr.Divisions.filter(d => d.Staff === staff).forEach((div, i) => {
+    msr.Divisions.filter((d) => d.Staff === staff).forEach((div, i) => {
         if (tying && noteProps.Rest) {
             tying = false;
         }
         if (remainingValue >= div.Duration && beat === div.Beat) {
             // clear rests on beat regardless of what we are inputting
             msr.ClearRestNotes(beat, noteProps.Staff);
-            if (remainingValue > div.Duration && tying === false && !noteProps.Rest) {
+            if (remainingValue > div.Duration &&
+                tying === false &&
+                !noteProps.Rest) {
                 tying = true;
                 tStart = div.Beat;
-                tEnd = div.Beat + (remainingValue - div.Duration) * msr.TimeSignature.bottom;
+                tEnd =
+                    div.Beat +
+                        (remainingValue - div.Duration) * msr.TimeSignature.bottom;
             }
             const newNoteProps = {
                 Beat: div.Beat,
@@ -152,16 +158,15 @@ function AddToDivision(msr, noteProps, staff) {
                 }
             }
             remainingValue -= div.Duration;
-            beat += (div.Duration * msr.TimeSignature.bottom);
+            beat += div.Duration * msr.TimeSignature.bottom;
             msr.AddNote(newNote, true);
         }
-        else if (remainingValue < div.Duration && beat === div.Beat
-            && remainingValue > 0) {
+        else if (remainingValue < div.Duration &&
+            beat === div.Beat &&
+            remainingValue > 0) {
             // Get other notes that will be effected
-            const notesOnBeat = msr.Notes
-                .filter((note) => {
-                return note.Beat === div.Beat &&
-                    note.Staff === div.Staff;
+            const notesOnBeat = msr.Notes.filter((note) => {
+                return note.Beat === div.Beat && note.Staff === div.Staff;
             });
             if (IsRestOnBeat(msr, beat, notesOnBeat, div.Staff)) {
                 // If it does not effect any other notes (only rests in div)
@@ -188,7 +193,7 @@ function AddToDivision(msr, noteProps, staff) {
                 console.log("note added");
                 return;
             }
-            // This note is not tying, but existing notes will 
+            // This note is not tying, but existing notes will
             // need to be tied together
             const newNoteProps = {
                 Beat: div.Beat,
@@ -207,7 +212,7 @@ function AddToDivision(msr, noteProps, staff) {
             });
             const tiedStart = div.Beat;
             const tiedEnd = div.Beat + remValue * msr.TimeSignature.bottom;
-            notesOnBeat.forEach(n => {
+            notesOnBeat.forEach((n) => {
                 n.Duration = remainingValue;
                 n.Tied = true;
                 n.SetTiedStartEnd(tiedStart, tiedEnd);
@@ -238,7 +243,11 @@ function AddToDivision(msr, noteProps, staff) {
 function CreateTuplet(selNotes, count) {
     let duration = 0;
     for (let [measure, notes] of selNotes) {
-        notes.forEach((n) => {
+        notes.forEach((sel) => {
+            if (sel instanceof Note === false) {
+                return;
+            }
+            const n = sel;
             const tupleDuration = n.Duration;
             const newDuration = n.Duration / count;
             duration = newDuration;
@@ -249,7 +258,7 @@ function CreateTuplet(selNotes, count) {
                 StartBeat: n.Beat,
                 EndBeat: n.Beat + tupleDuration * measure.TimeSignature.bottom,
                 Value: tupleDuration,
-                Count: count
+                Count: count,
             };
             n.TupleDetails = details;
             // add newly created tuplet notes

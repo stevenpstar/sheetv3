@@ -32,10 +32,7 @@ function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteI
             // temp msr no
             renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
             renderProps.context.font = `${12}px Bravura`;
-            renderProps.context.fillText(measure.Num.toString(), measure.Bounds.x +
-                measure.GetBoundsWithOffset().width +
-                renderProps.camera.x -
-                8, measure.Bounds.y + 9 * 10 + renderProps.camera.y);
+            renderProps.context.fillText(measure.Num.toString(), measure.Bounds.x + 8 + renderProps.camera.x - 8, measure.Bounds.y + 10 + renderProps.camera.y);
         });
     });
 }
@@ -133,7 +130,7 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure, theme) {
             console.error("Measure Key Signature is undefined");
         }
         if (key !== "CMaj/Amin") {
-            const xOff = msr.RenderClef ? 30 : 4;
+            const xOff = msr.RenderClef ? 34 : 4;
             msr.Staves.forEach((s) => {
                 RenderKeySignature(renderProps, msr, key, msr.Clefs[0].Type, xOff, theme, s.Num);
             });
@@ -195,9 +192,10 @@ function RenderNotes(msr, renderProps, staff, theme) {
             const beamAngle = DetermineBeamDirection(msr, group, stemDir);
             const stems = CreateStems(group.Notes, group.Divisions, staff, msr, camera);
             let beams = [];
+            let tuplet = group.Notes[0][0].Tuple;
             if (group.Divisions.length > 1 && group.Divisions[0].Duration < 0.25) {
                 beams = CreateBeams(group, stems, msr);
-                beams.forEach((b) => b.Render(context, camera, Beam.BeamCount(group.Divisions[0].Duration), stemDir, theme));
+                beams.forEach((b) => b.Render(context, camera, Beam.BeamCount(group.Divisions[0].Duration, tuplet), stemDir, theme));
             }
             stems.forEach((s) => s.Render(context, camera, theme));
             group.Divisions.forEach((div) => {

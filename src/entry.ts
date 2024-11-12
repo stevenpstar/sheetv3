@@ -6,6 +6,7 @@ import { Message } from "./Types/Message.js";
 import { KeyMapping } from "./Workers/Mappings.js";
 
 let gSheet: App;
+const hotReload = false;
 
 const keymaps: KeyMapping = {
   addmeasure: "a",
@@ -149,16 +150,18 @@ export module sheet {
       app.CenterMeasures();
     }
     // DEBUG SETTINGS FOR "HOT RELOADING"
-    const persistedData = localStorage.getItem("persist");
-    if (persistedData !== null) {
-      const cameraData = JSON.parse(localStorage.getItem("camera_data"));
-      app.LoadSheet(persistedData);
-      app.SetCameraZoom(cameraData.Zoom);
-      app.Camera.x = cameraData.X;
-      app.Camera.y = cameraData.Y;
-      app.ResizeMeasures(app.Sheet.Measures);
+    if (hotReload) {
+      const persistedData = localStorage.getItem("persist");
+      if (persistedData !== null) {
+        const cameraData = JSON.parse(localStorage.getItem("camera_data"));
+        app.LoadSheet(persistedData);
+        app.SetCameraZoom(cameraData.Zoom);
+        app.Camera.x = cameraData.X;
+        app.Camera.y = cameraData.Y;
+        app.ResizeMeasures(app.Sheet.Measures);
+      }
+      //
     }
-    //
 
     return app;
   }

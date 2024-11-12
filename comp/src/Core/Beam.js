@@ -97,19 +97,25 @@ class Beam {
             context.fill(new Path2D(GetBeamString(this, cam, stemDir, i)));
         }
     }
-    static BeamCount(duration) {
+    static BeamCount(duration, tuplet = false) {
+        let count = 0;
         if (duration >= 0.25) {
-            return 0;
+            return count;
         }
         if (duration >= NoteValues.n32 && duration < NoteValues.n16) {
-            return 3;
+            count = 3;
         }
         else if (duration >= NoteValues.n16 && duration < NoteValues.n8) {
-            return 2;
+            count = 2;
         }
         else {
-            return 1;
+            count = 1;
         }
+        // TODO: This is a band-aid fix, may not work for all durations/counts
+        if (tuplet) {
+            count -= 1;
+        }
+        return count;
     }
 }
 export { Beam, GenerateBeams, DetermineBeamDirection };
