@@ -78,12 +78,20 @@ class App {
     Hover(x, y) {
         x = x / this.Camera.Zoom;
         y = y / this.Camera.Zoom;
-        if (this.CamDragging) {
-            this.Camera.x = Math.floor(this.Camera.oldX + x - this.DraggingPositions.x1);
-            this.Camera.y = Math.floor(this.Camera.oldY + y - this.DraggingPositions.y1);
+        if (this.Camera.DragCamera(x, y)) {
             this.Update(x, y);
             return;
         }
+        //  if (this.CamDragging) {
+        //    this.Camera.x = Math.floor(
+        //      this.Camera.oldX + x - this.DraggingPositions.x1,
+        //    );
+        //    this.Camera.y = Math.floor(
+        //      this.Camera.oldY + y - this.DraggingPositions.y1,
+        //    );
+        //    this.Update(x, y);
+        //    return;
+        //  }
         if (this.DraggingNote) {
             this.DragNote(x, y);
             this.Update(x, y);
@@ -305,26 +313,7 @@ class App {
         }
     }
     SetCameraDragging(dragging, x, y) {
-        var _a;
-        if (((_a = this.Config.CameraSettings) === null || _a === void 0 ? void 0 : _a.DragEnabled) === false) {
-            this.CamDragging = false;
-            return;
-        }
-        this.CamDragging = dragging;
-        if (this.CamDragging) {
-            // set initial drag position
-            this.DraggingPositions.x1 = x / this.Camera.Zoom;
-            this.DraggingPositions.y1 = y / this.Camera.Zoom;
-        }
-        else {
-            // reset drag positions
-            this.DraggingPositions.x1 = 0;
-            this.DraggingPositions.y1 = 0;
-            this.DraggingPositions.x2 = 0;
-            this.DraggingPositions.y2 = 0;
-            this.Camera.oldX = this.Camera.x;
-            this.Camera.oldY = this.Camera.y;
-        }
+        this.Camera.SetDragging(dragging, x, y, this.Config, this.Camera);
     }
     AlterZoom(num) {
         this.Zoom += num;
