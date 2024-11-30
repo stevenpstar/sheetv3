@@ -324,10 +324,6 @@ class App {
     this.Sheet.Instruments.forEach((i) => {
       let latestLine =
         this.Sheet.Pages[0].PageLines[this.Sheet.Pages[0].PageLines.length - 1];
-      //    const msrCountOnLine = this.Sheet.Measures.filter(m => m.PageLine === latestLine.Number);
-      //    if (msrCountOnLine.length > 3) {
-      //      latestLine = this.Sheet.Pages[0].AddLine();
-      //    }
       const newMeasureBounds = new Bounds(
         x,
         latestLine.LineBounds.y,
@@ -350,7 +346,6 @@ class App {
       );
       // add measure number
       newMsr.Num = this.Sheet.Measures.length + 1;
-      //      newMsr.PageLine = latestLine.Number;
       this.Sheet.Measures.push(newMsr);
       this.ResizeMeasures(
         this.Sheet.Measures.filter((m) => m.Instrument === i),

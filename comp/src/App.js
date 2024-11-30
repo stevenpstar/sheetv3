@@ -82,16 +82,6 @@ class App {
             this.Update(x, y);
             return;
         }
-        //  if (this.CamDragging) {
-        //    this.Camera.x = Math.floor(
-        //      this.Camera.oldX + x - this.DraggingPositions.x1,
-        //    );
-        //    this.Camera.y = Math.floor(
-        //      this.Camera.oldY + y - this.DraggingPositions.y1,
-        //    );
-        //    this.Update(x, y);
-        //    return;
-        //  }
         if (this.DraggingNote) {
             this.DragNote(x, y);
             this.Update(x, y);
@@ -204,16 +194,11 @@ class App {
         let x = 0;
         this.Sheet.Instruments.forEach((i) => {
             let latestLine = this.Sheet.Pages[0].PageLines[this.Sheet.Pages[0].PageLines.length - 1];
-            //    const msrCountOnLine = this.Sheet.Measures.filter(m => m.PageLine === latestLine.Number);
-            //    if (msrCountOnLine.length > 3) {
-            //      latestLine = this.Sheet.Pages[0].AddLine();
-            //    }
             const newMeasureBounds = new Bounds(x, latestLine.LineBounds.y, 150, prevMsr.Bounds.height);
             const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, prevMsr.Clefs, prevMsr.Staves, this.Camera, this.RunningID, this.Sheet.Pages[0], // Page will need to be determined
             false, this.NotifyCallback, this.Config.MeasureSettings);
             // add measure number
             newMsr.Num = this.Sheet.Measures.length + 1;
-            //      newMsr.PageLine = latestLine.Number;
             this.Sheet.Measures.push(newMsr);
             this.ResizeMeasures(this.Sheet.Measures.filter((m) => m.Instrument === i));
         });
@@ -317,13 +302,13 @@ class App {
     }
     AlterZoom(num) {
         this.Zoom += num;
-        this.Camera.Zoom = this.Zoom;
+        this.Camera.SetZoom(this.Zoom);
         this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
         this.Update(0, 0);
     }
     SetCameraZoom(num) {
         this.Zoom = num;
-        this.Camera.Zoom = this.Zoom;
+        this.Camera.SetZoom(this.Zoom);
         this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
         this.Update(0, 0);
     }

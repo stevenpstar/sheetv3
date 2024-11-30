@@ -11,6 +11,7 @@ declare class Camera {
     constructor(x: number, y: number);
     SetDragging(drag: boolean, x: number, y: number, config: ConfigSettings, cam: Camera): void;
     DragCamera(mx: number, my: number): boolean;
+    SetZoom(zoom: number): void;
 }
 export { Camera };
 //# sourceMappingURL=Camera.d.ts.map

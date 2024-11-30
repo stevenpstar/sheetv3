@@ -84,16 +84,17 @@ function GetBeamString(beam, cam, stemDir, no) {
     return svgLine;
 }
 class Beam {
-    constructor(bounds, start, end) {
+    constructor(bounds, start, end, count = 1) {
         this.Bounds = bounds;
         this.StartPoint = start;
         this.EndPoint = end;
+        this.Count = count;
     }
     Render(context, cam, count, stemDir, theme) {
         context.fillStyle = theme.NoteElements;
         const svgLine = GetBeamString(this, cam, stemDir, 0);
         context.fill(new Path2D(svgLine));
-        for (let i = 1; i < count; i++) {
+        for (let i = 1; i < this.Count; i++) {
             context.fill(new Path2D(GetBeamString(this, cam, stemDir, i)));
         }
     }

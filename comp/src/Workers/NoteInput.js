@@ -190,7 +190,6 @@ function AddToDivision(msr, noteProps, staff) {
                 }
                 remainingValue = 0;
                 msr.AddNote(newNote, true);
-                console.log("note added");
                 return;
             }
             // This note is not tying, but existing notes will

@@ -261,7 +261,6 @@ function AddToDivision(
 
           remainingValue = 0;
           msr.AddNote(newNote, true);
-          console.log("note added");
           return;
         }
 

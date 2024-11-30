@@ -5,7 +5,7 @@ import { StaffType } from "../Core/Instrument.js";
 import { KeySignatures } from "../Core/KeySignatures.js";
 import { Note } from "../Core/Note.js";
 import { RenderMeasureLines, RenderStaffLines } from "../Core/Staff.js";
-import { CreateBeams } from "../Factory/Beam.Fact.js";
+import { CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
@@ -194,7 +194,9 @@ function RenderNotes(msr, renderProps, staff, theme) {
             let beams = [];
             let tuplet = group.Notes[0][0].Tuple;
             if (group.Divisions.length > 1 && group.Divisions[0].Duration < 0.25) {
-                beams = CreateBeams(group, stems, msr);
+                // This is creating the primary beam
+                //beams = CreateBeams(group, stems, msr);
+                beams = CreateBeamsRevise(group, stems);
                 beams.forEach((b) => b.Render(context, camera, Beam.BeamCount(group.Divisions[0].Duration, tuplet), stemDir, theme));
             }
             stems.forEach((s) => s.Render(context, camera, theme));

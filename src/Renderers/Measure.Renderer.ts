@@ -7,7 +7,7 @@ import { KeySignatures } from "../Core/KeySignatures.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { RenderMeasureLines, RenderStaffLines, Staff } from "../Core/Staff.js";
-import { CreateBeams } from "../Factory/Beam.Fact.js";
+import { CreateBeams, CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
@@ -332,7 +332,9 @@ function RenderNotes(
       let beams: Beam[] = [];
       let tuplet = group.Notes[0][0].Tuple;
       if (group.Divisions.length > 1 && group.Divisions[0].Duration < 0.25) {
-        beams = CreateBeams(group, stems, msr);
+        // This is creating the primary beam
+        //beams = CreateBeams(group, stems, msr);
+        beams = CreateBeamsRevise(group, stems);
         beams.forEach((b) =>
           b.Render(
             context,

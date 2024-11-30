@@ -1,5 +1,6 @@
 import { BeamDirection, StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
+import { Vector2 } from "../Types/Vectors.js";
 import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { DivGroup, Division } from "./Division.js";
@@ -124,16 +125,14 @@ function GetBeamString(
 class Beam {
   Bounds: Bounds;
   Direction: string;
-  StartPoint: { x: number; y: number };
-  EndPoint: { x: number; y: number };
-  constructor(
-    bounds: Bounds,
-    start: { x: number; y: number },
-    end: { x: number; y: number },
-  ) {
+  StartPoint: Vector2;
+  EndPoint: Vector2;
+  Count: number;
+  constructor(bounds: Bounds, start: Vector2, end: Vector2, count: number = 1) {
     this.Bounds = bounds;
     this.StartPoint = start;
     this.EndPoint = end;
+    this.Count = count;
   }
 
   Render(
@@ -146,7 +145,7 @@ class Beam {
     context.fillStyle = theme.NoteElements;
     const svgLine = GetBeamString(this, cam, stemDir, 0);
     context.fill(new Path2D(svgLine));
-    for (let i = 1; i < count; i++) {
+    for (let i = 1; i < this.Count; i++) {
       context.fill(new Path2D(GetBeamString(this, cam, stemDir, i)));
     }
   }

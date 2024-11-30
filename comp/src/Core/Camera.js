@@ -33,5 +33,8 @@ class Camera {
         this.y = Math.floor(this.oldY + my - this.DraggingY);
         return true;
     }
+    SetZoom(zoom) {
+        this.Zoom = zoom;
+    }
 }
 export { Camera };
