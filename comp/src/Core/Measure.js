@@ -215,9 +215,14 @@ class Measure {
             return a.Duration - b.Duration;
         })[0].Duration;
         //const count = 1 / lowestValue;
-        const count = staffZeroDivs.length > staffOneDivs.length
-            ? staffZeroDivs.length
-            : staffOneDivs.length;
+        const lowestVal = this.Notes.sort((a, b) => {
+            return a.Duration - b.Duration;
+        })[0];
+        const count = 1 / lowestVal.Duration;
+        //const count =
+        //  staffZeroDivs.length > staffOneDivs.length
+        //    ? staffZeroDivs.length
+        //    : staffOneDivs.length;
         return count * DivisionMinWidth;
     }
     ReturnSelectableElements() {

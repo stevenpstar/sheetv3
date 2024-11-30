@@ -67,7 +67,7 @@ class App {
         }
         this.NoteInput = false;
         this.RestInput = false;
-        this.Formatting = false;
+        this.Formatting = true;
         if ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.Zoom) {
             this.Camera.Zoom = this.Config.CameraSettings.Zoom;
             this.SetCameraZoom(this.Camera.Zoom);

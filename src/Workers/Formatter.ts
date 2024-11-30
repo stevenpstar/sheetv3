@@ -9,7 +9,7 @@ function SetPagesAndLines(
   measures: Measure[],
   pages: Page,
   usePage: boolean | null,
-  defaultLineHeight: number = 150,
+  defaultLineHeight: number = 650,
 ): void {
   let page: Page = pages;
   if (!page) {
@@ -51,7 +51,8 @@ function GetMaxWidth(page: Page, config: ConfigSettings, cam: Camera): number {
   if (config.FormatSettings?.MeasureFormatSettings?.MaxWidth) {
     maxWidth = config.FormatSettings.MeasureFormatSettings.MaxWidth;
   } else {
-    maxWidth = 350; //= (page.Bounds.width * cam.Zoom) - 50;
+    // TODO: This is not right
+    maxWidth = page.Bounds.width * cam.Zoom - 50;
   }
   return maxWidth;
 }
@@ -86,11 +87,14 @@ function ResizeMeasuresOnPage(
         // measureformatsettings)
         const maxWidth = GetMaxWidth(page, config, cam);
         const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
-        const msrWidth = maxWidth
-          ? calculatedWidth > maxWidth
-            ? maxWidth
-            : calculatedWidth
-          : calculatedWidth;
+        let mWidth = 0;
+        if (calculatedWidth < GetMaxWidth(page, config, cam)) {
+          mWidth = calculatedWidth;
+        } else {
+          mWidth = GetMaxWidth(page, config, cam);
+        }
+        // TODO: This is impossible to understand why so many ternary operators
+        const msrWidth = mWidth;
         m.Bounds.width = msrWidth;
         m.CreateDivisions(cam);
       } else {

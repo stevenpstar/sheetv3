@@ -1,6 +1,6 @@
 import { StaffType } from "../Core/Instrument.js";
 // TODO: Add pages when necessary but for now we do just lines
-function SetPagesAndLines(measures, pages, usePage, defaultLineHeight = 150) {
+function SetPagesAndLines(measures, pages, usePage, defaultLineHeight = 650) {
     let page = pages;
     if (!page) {
         console.error("No page found!");
@@ -41,7 +41,8 @@ function GetMaxWidth(page, config, cam) {
         maxWidth = config.FormatSettings.MeasureFormatSettings.MaxWidth;
     }
     else {
-        maxWidth = 350; //= (page.Bounds.width * cam.Zoom) - 50;
+        // TODO: This is not right
+        maxWidth = page.Bounds.width * cam.Zoom - 50;
     }
     return maxWidth;
 }
@@ -70,11 +71,15 @@ function ResizeMeasuresOnPage(measures, page, cam, config) {
                 // measureformatsettings)
                 const maxWidth = GetMaxWidth(page, config, cam);
                 const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
-                const msrWidth = maxWidth
-                    ? calculatedWidth > maxWidth
-                        ? maxWidth
-                        : calculatedWidth
-                    : calculatedWidth;
+                let mWidth = 0;
+                if (calculatedWidth < GetMaxWidth(page, config, cam)) {
+                    mWidth = calculatedWidth;
+                }
+                else {
+                    mWidth = GetMaxWidth(page, config, cam);
+                }
+                // TODO: This is impossible to understand why so many ternary operators
+                const msrWidth = mWidth;
                 m.Bounds.width = msrWidth;
                 m.CreateDivisions(cam);
             }
