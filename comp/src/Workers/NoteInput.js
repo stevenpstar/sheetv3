@@ -131,6 +131,45 @@ function AddToDivision(msr, noteProps, staff) {
         if (remainingValue >= div.Duration && beat === div.Beat) {
             // clear rests on beat regardless of what we are inputting
             msr.ClearRestNotes(beat, noteProps.Staff);
+            // TODO: Add a method here to check if there's room for
+            // Entire duration in oncoming divs (i.e. are they rests)
+            let remVal = remainingValue;
+            let room = false;
+            let lastIndex = 0;
+            for (let j = i; j < msr.Divisions.length; j++) {
+                if (remVal <= 0 && !room) {
+                    continue;
+                }
+                const notesOnBeat = msr.Notes.filter((n) => n.Beat == msr.Divisions[j].Beat);
+                if (notesOnBeat.length > 0 && notesOnBeat[0].Rest) {
+                    remVal -= msr.Divisions[j].Duration;
+                    if (remVal <= 0) {
+                        room = true;
+                        lastIndex = j;
+                    }
+                }
+            }
+            // TODO: Probably separate this out somewhere else for readability
+            if (room) {
+                // Clear all rest notes
+                for (let j = i; j <= lastIndex; j++) {
+                    msr.ClearRestNotes(msr.Divisions[j].Beat, noteProps.Staff);
+                }
+                const newNoteProps = {
+                    Beat: div.Beat,
+                    Duration: remainingValue,
+                    Line: noteProps.Line,
+                    Rest: noteProps.Rest,
+                    Tied: false,
+                    Staff: div.Staff,
+                    Tuple: false,
+                    Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+                };
+                const newNote = new Note(newNoteProps);
+                msr.AddNote(newNote, true);
+                remainingValue = 0;
+                return;
+            }
             if (remainingValue > div.Duration &&
                 tying === false &&
                 !noteProps.Rest) {
