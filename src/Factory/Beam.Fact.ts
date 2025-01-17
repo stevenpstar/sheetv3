@@ -36,7 +36,11 @@ function CreateBeams(
   return beams;
 }
 
-function CreateBeamsRevise(divGroup: DivGroup, stems: Stem[]): Array<Beam> {
+function CreateBeamsRevise(
+  divGroup: DivGroup,
+  stems: Stem[],
+  tuplet: boolean,
+): Array<Beam> {
   const beams: Array<Beam> = [];
   let newBeam = true;
   let tempBeam: Beam = null;
@@ -48,13 +52,13 @@ function CreateBeamsRevise(divGroup: DivGroup, stems: Stem[]): Array<Beam> {
     const stem: Stem = stems[i];
     if (!newBeam) {
       if (
-        Beam.BeamCount(div.Duration, false) !== beams[beams.length - 1].Count
+        Beam.BeamCount(div.Duration, tuplet) !== beams[beams.length - 1].Count
       ) {
         newBeam = true;
       }
     }
     if (newBeam) {
-      const count = Beam.BeamCount(div.Duration, false);
+      const count = Beam.BeamCount(div.Duration, tuplet);
       tempBeam = new Beam(
         new Bounds(0, 0, 0, 0),
         {

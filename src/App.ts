@@ -140,7 +140,7 @@ class App {
     }
     this.NoteInput = false;
     this.RestInput = false;
-    this.Formatting = true;
+    this.Formatting = false;
 
     if (this.Config.CameraSettings?.Zoom) {
       this.Camera.Zoom = this.Config.CameraSettings.Zoom;
@@ -492,7 +492,7 @@ class App {
     const maxMeasuresPerLine = 4;
     const minMeasuresPerLine = 3;
     const lineHeight =
-      measures[0].Instrument.Staff === StaffType.Rhythm ? 200 : 200;
+      measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
     SetPagesAndLines(
       measures,
       this.Sheet.Pages[0],

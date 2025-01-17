@@ -13,7 +13,7 @@ function CreateBeams(divGroup, stems, measure) {
     //for divGroup.Divisions
     return beams;
 }
-function CreateBeamsRevise(divGroup, stems) {
+function CreateBeamsRevise(divGroup, stems, tuplet) {
     const beams = [];
     let newBeam = true;
     let tempBeam = null;
@@ -24,12 +24,12 @@ function CreateBeamsRevise(divGroup, stems) {
         const startingStem = i == 0 ? stems[i] : stems[i - 1];
         const stem = stems[i];
         if (!newBeam) {
-            if (Beam.BeamCount(div.Duration, false) !== beams[beams.length - 1].Count) {
+            if (Beam.BeamCount(div.Duration, tuplet) !== beams[beams.length - 1].Count) {
                 newBeam = true;
             }
         }
         if (newBeam) {
-            const count = Beam.BeamCount(div.Duration, false);
+            const count = Beam.BeamCount(div.Duration, tuplet);
             tempBeam = new Beam(new Bounds(0, 0, 0, 0), {
                 x: startingStem.Bounds.x,
                 y: startingStem.Bounds.y + startingStem.Bounds.height,

@@ -67,7 +67,7 @@ class App {
         }
         this.NoteInput = false;
         this.RestInput = false;
-        this.Formatting = true;
+        this.Formatting = false;
         if ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.Zoom) {
             this.Camera.Zoom = this.Config.CameraSettings.Zoom;
             this.SetCameraZoom(this.Camera.Zoom);
@@ -326,7 +326,7 @@ class App {
         // TODO: Prototyping stuff so refactor later
         const maxMeasuresPerLine = 4;
         const minMeasuresPerLine = 3;
-        const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 200 : 200;
+        const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
         SetPagesAndLines(measures, this.Sheet.Pages[0], (_a = this.Config.PageSettings) === null || _a === void 0 ? void 0 : _a.UsePages, lineHeight);
         ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera, this.Config);
         if ((_b = this.Config.CameraSettings) === null || _b === void 0 ? void 0 : _b.CenterMeasures) {

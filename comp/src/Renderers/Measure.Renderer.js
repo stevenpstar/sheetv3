@@ -196,7 +196,7 @@ function RenderNotes(msr, renderProps, staff, theme) {
             if (group.Divisions.length > 1 && group.Divisions[0].Duration < 0.25) {
                 // This is creating the primary beam
                 //beams = CreateBeams(group, stems, msr);
-                beams = CreateBeamsRevise(group, stems);
+                beams = CreateBeamsRevise(group, stems, tuplet);
                 beams.forEach((b) => b.Render(context, camera, Beam.BeamCount(group.Divisions[0].Duration, tuplet), stemDir, theme));
             }
             stems.forEach((s) => s.Render(context, camera, theme));
