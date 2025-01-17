@@ -14,6 +14,7 @@ import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
 import { ConfigSettings, Theme } from "../entry.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
+import { RenderMeasureRev } from "./Measure.RendererRev.js";
 import {
   DetermineStemDirection,
   RenderDots,
@@ -58,7 +59,8 @@ function RenderMeasure(
   );
   //    if (debug)
   // RenderDebug(measure, renderProps, index, mousePos);
-  RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
+  //RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
+  RenderMeasureRev(measure, renderProps, config.Theme);
   measure.Staves.forEach((s: Staff) => {
     RenderNotes(measure, renderProps, s.Num, config.Theme);
     // TODO: Temporary for testing dynamics rendering

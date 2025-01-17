@@ -1,5 +1,12 @@
 import { Bounds } from "../Types/Bounds.js";
 import { SelectableTypes } from "../Types/ISelectable.js";
+// TODO: Finish this enum, replace keys in keysig map
+var Key;
+(function (Key) {
+    Key["CMajAmin"] = "CMaj/Amin";
+    Key["GMajEmin"] = "GMaj/Emin";
+    Key["DMajBmin"] = "DMaj/Bmin";
+})(Key || (Key = {}));
 const KeySignatures = new Map([
     ["CMaj/Amin", []],
     ["GMaj/Emin", ["F#"]],

@@ -3,6 +3,7 @@ import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Message, MessageType } from "../Types/Message.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { MeasureSettings } from "../entry.js";
+import { Barline } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
 import {
@@ -58,6 +59,7 @@ class Measure implements ISelectable {
   PageLine: Number;
   Message: (msg: Message) => void;
   Staves: Staff[];
+  Barlines: Barline[];
 
   XOffset: number; // not sure if this is what we want to go with
 

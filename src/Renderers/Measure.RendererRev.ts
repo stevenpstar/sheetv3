@@ -1,0 +1,36 @@
+import { Clef, Measure } from "../Core/Measure.js";
+import { Staff } from "../Core/Staff.js";
+import { RenderProperties } from "../Types/RenderProperties.js";
+import { Theme } from "../entry.js";
+import { RenderClef } from "./Clef.Renderer.js";
+import { RenderKeySignature } from "./KeySignature.Renderer.js";
+import { RenderStaff } from "./Staff.Renderer.js";
+
+function RenderMeasureRev(
+  measure: Measure,
+  renderProps: RenderProperties,
+  theme: Theme,
+): void {
+  // Render Barlines here
+  measure.Staves.forEach((s: Staff) => RenderStaff(renderProps, measure, s));
+  if (measure.RenderClef)
+    measure.Clefs.forEach((c: Clef) => RenderClef(renderProps, c, theme));
+  if (measure.RenderKey) {
+    measure.Staves.forEach((s: Staff) => {
+      // This needs work
+      RenderKeySignature(
+        renderProps,
+        measure,
+        measure.KeySignature,
+        measure.Clefs[0].Type,
+        34, // this needs work
+        theme,
+        s.Num,
+      );
+    });
+  }
+  if (measure.RenderTimeSig)
+    measure.TimeSignature.render(renderProps, measure, theme);
+}
+
+export { RenderMeasureRev };

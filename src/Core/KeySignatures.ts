@@ -2,6 +2,13 @@ import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Camera } from "./Camera.js";
 
+// TODO: Finish this enum, replace keys in keysig map
+enum Key {
+  CMajAmin = "CMaj/Amin",
+  GMajEmin = "GMaj/Emin",
+  DMajBmin = "DMaj/Bmin",
+}
+
 const KeySignatures: Map<string, string[]> = new Map<string, string[]>([
   ["CMaj/Amin", []],
 
@@ -24,7 +31,7 @@ const KeySignatures: Map<string, string[]> = new Map<string, string[]>([
 
 interface KeySignature {
   Name: string;
-  Accidentals: string[]
+  Accidentals: string[];
 }
 
 class KeySig implements ISelectable {
@@ -42,7 +49,6 @@ class KeySig implements ISelectable {
   IsHovered(x: number, y: number, cam: Camera): boolean {
     return this.Bounds.IsHovered(x, y, cam);
   }
-
 }
 
-export { KeySignature, KeySignatures, KeySig }
+export { KeySignature, KeySignatures, KeySig };

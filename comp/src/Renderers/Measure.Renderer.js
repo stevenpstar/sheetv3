@@ -10,6 +10,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
+import { RenderMeasureRev } from "./Measure.RendererRev.js";
 import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderTies, RenderTuplets, StemDirection, renderLedgerLines, } from "./Note.Renderer.js";
 import { CreateStems } from "./Stem.Fact.js";
 const line_space = 10;
@@ -22,7 +23,8 @@ function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteI
     RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput, noteValue, config.Theme);
     //    if (debug)
     // RenderDebug(measure, renderProps, index, mousePos);
-    RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
+    //RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
+    RenderMeasureRev(measure, renderProps, config.Theme);
     measure.Staves.forEach((s) => {
         RenderNotes(measure, renderProps, s.Num, config.Theme);
         // TODO: Temporary for testing dynamics rendering
