@@ -69,6 +69,11 @@ var DynamicSymbol;
     DynamicSymbol["Z"] = "\uE525";
     DynamicSymbol["N"] = "\uE526";
 })(DynamicSymbol || (DynamicSymbol = {}));
+var ArticulationSymbol;
+(function (ArticulationSymbol) {
+    ArticulationSymbol["AccentAbove"] = "\uE4A0";
+    ArticulationSymbol["AccentBelow"] = "\uE4A1";
+})(ArticulationSymbol || (ArticulationSymbol = {}));
 function RenderSymbol(renderProps, symbol, x, y, theme, selected) {
     const { canvas, context, camera } = renderProps;
     context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
@@ -81,4 +86,4 @@ function RenderAnimatedSymbol(renderProps, symbol, x, y, theme, opacity) {
     renderProps.context.font = `${stdFontSize}px Bravura`;
     renderProps.context.fillText(symbol, x + renderProps.camera.x, y + renderProps.camera.y);
 }
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, RenderSymbol, RenderAnimatedSymbol, };
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderAnimatedSymbol, };

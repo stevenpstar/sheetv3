@@ -1,3 +1,4 @@
+import { StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Camera } from "./Camera.js";
 import { Measure } from "./Measure.js";
@@ -7,6 +8,8 @@ interface Division {
     Duration: number;
     Bounds: Bounds;
     Staff: number;
+    Direction: StemDirection;
+    NoteXBuffer: number;
 }
 interface DivGroup {
     Divisions: Division[];

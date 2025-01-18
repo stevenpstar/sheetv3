@@ -28,7 +28,7 @@ function StemToCenter(stemDir, lowestLine, highestLine, midLine) {
 function CreateStems(notes, divisions, staff, measure, camera) {
     const stems = [];
     let dynNoteXBuffer = 9;
-    const stemDir = DetermineStemDirection(notes, divisions, staff, measure);
+    const stemDir = DetermineStemDirection(notes, divisions);
     let highestLine = Number.MAX_SAFE_INTEGER;
     let lowestLine = Number.MIN_SAFE_INTEGER;
     let hNote;
@@ -95,7 +95,7 @@ function CreateStems(notes, divisions, staff, measure, camera) {
 function RenderStem(renderProps, notes, divisions, staff, msr, beamDir, theme) {
     const { canvas, context, camera } = renderProps;
     let dynNoteXBuffer = 9;
-    const stemDir = DetermineStemDirection(notes, divisions, staff, msr);
+    const stemDir = DetermineStemDirection(notes, divisions);
     const xBuffer = stemDir === StemDirection.Up ? 11.5 : 0.25;
     divisions.forEach((div, i) => {
         const divNotes = notes[i];

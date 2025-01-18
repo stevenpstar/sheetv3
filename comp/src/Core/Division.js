@@ -1,3 +1,4 @@
+import { StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { GetNoteClefType } from "./Clef.js";
@@ -36,6 +37,8 @@ function CreateDivisions(msr, notes, staff, cam) {
                 Duration: n.Duration,
                 Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff, cam),
                 Staff: staff,
+                Direction: StemDirection.Up,
+                NoteXBuffer: 0,
             });
             if (!n.Tuple) {
                 nextBeat = n.Beat + n.Duration * msr.TimeSignature.bottom;
@@ -88,12 +91,6 @@ function ResizeDivisions(msr, divisions, staff) {
         return a.Beat - b.Beat;
     });
     divs.forEach((div, i) => {
-        //    if (div.Bounds.width < DivisionMinWidth || div.Duration < 0.25) {
-        //      div.Bounds.width = DivisionMinWidth + xBuffer;
-        //    }
-        //    if (div.Bounds.width > DivisionMaxWidth || div.Duration >= 0.25) {
-        //      div.Bounds.width = DivisionMinWidth + xBuffer;
-        //    }
         div.Bounds.width = div.Duration * msr.Bounds.width;
         if (i > 0) {
             const lastDivEnd = divs[i - 1].Bounds.x + divs[i - 1].Bounds.width;
@@ -138,6 +135,8 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
                     Duration: v,
                     Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff, msr.Camera),
                     Staff: div.Staff,
+                    Direction: StemDirection.Up,
+                    NoteXBuffer: 0,
                 });
                 sBeat += v * msr.TimeSignature.bottom;
             });

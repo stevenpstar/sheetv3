@@ -72,6 +72,11 @@ enum DynamicSymbol {
   N = "\u{E526}",
 }
 
+enum ArticulationSymbol {
+  AccentAbove = "\u{E4A0}",
+  AccentBelow = "\u{E4A1}",
+}
+
 function RenderSymbol(
   renderProps: RenderProperties,
   symbol: string,
@@ -111,6 +116,7 @@ export {
   TimeSigNumbers,
   TupletNumbers,
   DynamicSymbol,
+  ArticulationSymbol,
   RenderSymbol,
   RenderAnimatedSymbol,
 };

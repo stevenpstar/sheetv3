@@ -72,12 +72,21 @@ function UpdateNoteBounds(msr, staff) {
     const groups = GetDivisionGroups(msr, staff);
     groups.DivGroups.forEach((g) => {
         const { Divisions, Notes } = g;
-        const stemDir = DetermineStemDirection(Notes, Divisions, staff, msr);
+        const stemDir = DetermineStemDirection(Notes, Divisions);
         Divisions.forEach((div) => {
+            // Set Division values for stem direction and X Buffer here
+            // TODO: This may need to be a function in the division file
+            div.Direction = stemDir;
             const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat && n.Staff === staff);
             divNotes.sort((a, b) => {
                 return a.Line - b.Line;
             });
+            let dynNoteXBuffer = noteXBuffer;
+            const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
+            if (numOfAcc > 0) {
+                dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
+            }
+            div.NoteXBuffer = dynNoteXBuffer;
             divNotes.forEach((n, i) => {
                 const isFlipped = IsFlippedNote(divNotes, i, stemDir);
                 let flipNoteOffset = isFlipped
@@ -85,14 +94,6 @@ function UpdateNoteBounds(msr, staff) {
                         ? 11
                         : -11
                     : 0;
-                // Note X Buffer needs to change if there are more than 1 accidental
-                // in div, TODO: Note this implementation does not account for natural
-                // accidentals at this point
-                let dynNoteXBuffer = noteXBuffer;
-                const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
-                if (numOfAcc > 0) {
-                    dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
-                }
                 if (!n.Rest) {
                     n.Bounds.x = Math.floor(div.Bounds.x + dynNoteXBuffer + flipNoteOffset);
                     n.Bounds.y = msr.GetNotePositionOnLine(n.Line, n.Staff);

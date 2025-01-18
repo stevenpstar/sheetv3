@@ -193,7 +193,7 @@ function RenderTuplets(renderProps, divisions, notes, staff, msr, theme) {
     divs.forEach((div, i) => {
         const notesInDiv = notes.filter((n) => n.Beat === div.Beat && n.Staff === staff);
         let nArray = [...notesInDiv];
-        const stemDir = DetermineStemDirection([notesInDiv], [div], staff, msr);
+        const stemDir = DetermineStemDirection([notesInDiv], [div]);
         if (!notesInDiv[0].Tuple) {
             if (foundTuplet) {
                 foundTuplet = false;
@@ -271,7 +271,7 @@ function RenderTies(renderProps, divisions, notes, staff, msr) {
     });
 }
 // This will replace some parts of renderStemRevise eventually
-function DetermineStemDirection(notes, divisions, staff, measure) {
+function DetermineStemDirection(notes, divisions) {
     let dir = StemDirection.Up;
     // TODO: Not sure we will actually need this, seems like it shouldn't come
     // out of order in the first place.

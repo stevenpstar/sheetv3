@@ -3,6 +3,7 @@ import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Message, MessageType } from "../Types/Message.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { MeasureSettings } from "../entry.js";
+import { Articulation, ArticulationType } from "./Articulation.js";
 import { Barline } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
@@ -59,6 +60,7 @@ class Measure implements ISelectable {
   Message: (msg: Message) => void;
   Staves: Staff[];
   Barlines: Barline[];
+  Articulations: Articulation[];
 
   XOffset: number; // not sure if this is what we want to go with
 
@@ -83,6 +85,7 @@ class Measure implements ISelectable {
     this.KeySignature = properties.KeySignature;
     this.Notes = properties.Notes;
     this.Divisions = [];
+    this.Articulations = [new Articulation(ArticulationType.ACCENT, 1, 0)];
     this.RenderClef = properties.RenderClef;
     if (this.Instrument.Staff === StaffType.Rhythm) {
       this.RenderClef = false;

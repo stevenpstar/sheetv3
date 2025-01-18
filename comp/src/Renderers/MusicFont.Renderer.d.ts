@@ -64,7 +64,11 @@ declare enum DynamicSymbol {
     Z = "\uE525",
     N = "\uE526"
 }
+declare enum ArticulationSymbol {
+    AccentAbove = "\uE4A0",
+    AccentBelow = "\uE4A1"
+}
 declare function RenderSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, selected: boolean): void;
 declare function RenderAnimatedSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, opacity: number): void;
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, RenderSymbol, RenderAnimatedSymbol, };
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderAnimatedSymbol, };
 //# sourceMappingURL=MusicFont.Renderer.d.ts.map

@@ -1,3 +1,4 @@
+import { Articulation } from "../Core/Articulation.js";
 import { RenderBarline } from "../Core/Barline.js";
 import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
 import { DivGroup, GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
@@ -68,6 +69,19 @@ function RenderMeasure(
     ).forEach((div: Division) => {
       const tempDyn: Dynamic = new Dynamic("ppppp", div.Staff, div.Beat);
       //RenderDynamic(renderProps, measure, tempDyn, config.Theme);
+      measure.Articulations.filter(
+        (a: Articulation) => a.Beat == div.Beat && a.Staff == div.Staff,
+      ).forEach((a: Articulation) => {
+        a.Render(
+          renderProps,
+          measure.Notes.filter(
+            (n: Note) => n.Beat == div.Beat && n.Staff == div.Staff,
+          ),
+          measure.Staves,
+          div,
+          config.Theme,
+        );
+      });
 
       // temp msr no
       renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
@@ -314,12 +328,7 @@ function RenderNotes(
   const dGroups = GetDivisionGroups(msr, staff);
   dGroups.DivGroups.forEach((group: DivGroup, i: number) => {
     if (group.Divisions.length > 0) {
-      const stemDir = DetermineStemDirection(
-        group.Notes,
-        group.Divisions,
-        staff,
-        msr,
-      );
+      const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
       const beamAngle = DetermineBeamDirection(msr, group, stemDir);
 
       const stems = CreateStems(

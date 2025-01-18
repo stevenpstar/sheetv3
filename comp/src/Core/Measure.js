@@ -2,6 +2,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { SelectableTypes } from "../Types/ISelectable.js";
 import { MessageType } from "../Types/Message.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
+import { Articulation, ArticulationType } from "./Articulation.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
 import { CreateDivisions, ResizeDivisions, DivisionMinWidth, } from "./Division.js";
 import { StaffType } from "./Instrument.js";
@@ -28,6 +29,7 @@ class Measure {
         this.KeySignature = properties.KeySignature;
         this.Notes = properties.Notes;
         this.Divisions = [];
+        this.Articulations = [new Articulation(ArticulationType.ACCENT, 1, 0)];
         this.RenderClef = properties.RenderClef;
         if (this.Instrument.Staff === StaffType.Rhythm) {
             this.RenderClef = false;

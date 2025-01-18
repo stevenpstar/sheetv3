@@ -31,6 +31,9 @@ function RenderMeasure(measure, renderProps, mousePos, lastMeasure, noteInput, i
         measure.Divisions.filter((div) => div.Staff === s.Num && div.Beat === 1).forEach((div) => {
             const tempDyn = new Dynamic("ppppp", div.Staff, div.Beat);
             //RenderDynamic(renderProps, measure, tempDyn, config.Theme);
+            measure.Articulations.filter((a) => a.Beat == div.Beat && a.Staff == div.Staff).forEach((a) => {
+                a.Render(renderProps, measure.Notes.filter((n) => n.Beat == div.Beat && n.Staff == div.Staff), measure.Staves, div, config.Theme);
+            });
             // temp msr no
             renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
             renderProps.context.font = `${12}px Bravura`;
@@ -190,7 +193,7 @@ function RenderNotes(msr, renderProps, staff, theme) {
     const dGroups = GetDivisionGroups(msr, staff);
     dGroups.DivGroups.forEach((group, i) => {
         if (group.Divisions.length > 0) {
-            const stemDir = DetermineStemDirection(group.Notes, group.Divisions, staff, msr);
+            const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
             const beamAngle = DetermineBeamDirection(msr, group, stemDir);
             const stems = CreateStems(group.Notes, group.Divisions, staff, msr, camera);
             let beams = [];

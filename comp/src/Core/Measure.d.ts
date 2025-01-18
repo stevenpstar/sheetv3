@@ -2,6 +2,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Message } from "../Types/Message.js";
 import { MeasureSettings } from "../entry.js";
+import { Articulation } from "./Articulation.js";
 import { Barline } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Clef } from "./Clef.js";
@@ -53,6 +54,7 @@ declare class Measure implements ISelectable {
     Message: (msg: Message) => void;
     Staves: Staff[];
     Barlines: Barline[];
+    Articulations: Articulation[];
     XOffset: number;
     Line: number;
     RunningID: {

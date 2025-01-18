@@ -64,12 +64,7 @@ function CreateStems(
 ): Stem[] {
   const stems: Stem[] = [];
   let dynNoteXBuffer = 9;
-  const stemDir: StemDirection = DetermineStemDirection(
-    notes,
-    divisions,
-    staff,
-    measure,
-  );
+  const stemDir: StemDirection = DetermineStemDirection(notes, divisions);
 
   let highestLine: number = Number.MAX_SAFE_INTEGER;
   let lowestLine: number = Number.MIN_SAFE_INTEGER;
@@ -164,12 +159,7 @@ function RenderStem(
   const { canvas, context, camera } = renderProps;
   let dynNoteXBuffer = 9;
 
-  const stemDir: StemDirection = DetermineStemDirection(
-    notes,
-    divisions,
-    staff,
-    msr,
-  );
+  const stemDir: StemDirection = DetermineStemDirection(notes, divisions);
 
   const xBuffer = stemDir === StemDirection.Up ? 11.5 : 0.25;
 

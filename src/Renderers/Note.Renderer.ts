@@ -275,7 +275,7 @@ function RenderTuplets(
       (n) => n.Beat === div.Beat && n.Staff === staff,
     );
     let nArray = [...notesInDiv];
-    const stemDir = DetermineStemDirection([notesInDiv], [div], staff, msr);
+    const stemDir = DetermineStemDirection([notesInDiv], [div]);
     if (!notesInDiv[0].Tuple) {
       if (foundTuplet) {
         foundTuplet = false;
@@ -377,8 +377,6 @@ function RenderTies(
 function DetermineStemDirection(
   notes: Array<Note[]>,
   divisions: Division[],
-  staff: number,
-  measure: Measure,
 ): StemDirection {
   let dir = StemDirection.Up;
   // TODO: Not sure we will actually need this, seems like it shouldn't come

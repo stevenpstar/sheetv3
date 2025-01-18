@@ -1,9 +1,9 @@
+import { StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { Camera } from "./Camera.js";
 import { GetNoteClefType } from "./Clef.js";
-import { StaffType } from "./Instrument.js";
-import { Clef, Measure } from "./Measure.js";
+import { Measure } from "./Measure.js";
 import { Note, NoteProps } from "./Note.js";
 import {
   GetStaffHeight,
@@ -17,6 +17,8 @@ interface Division {
   Duration: number;
   Bounds: Bounds;
   Staff: number;
+  Direction: StemDirection;
+  NoteXBuffer: number;
 }
 
 interface DivGroup {
@@ -70,6 +72,8 @@ function CreateDivisions(
           Duration: n.Duration,
           Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff, cam),
           Staff: staff,
+          Direction: StemDirection.Up,
+          NoteXBuffer: 0,
         });
         if (!n.Tuple) {
           nextBeat = n.Beat + n.Duration * msr.TimeSignature.bottom;
@@ -134,12 +138,6 @@ function ResizeDivisions(
     return a.Beat - b.Beat;
   });
   divs.forEach((div: Division, i: number) => {
-    //    if (div.Bounds.width < DivisionMinWidth || div.Duration < 0.25) {
-    //      div.Bounds.width = DivisionMinWidth + xBuffer;
-    //    }
-    //    if (div.Bounds.width > DivisionMaxWidth || div.Duration >= 0.25) {
-    //      div.Bounds.width = DivisionMinWidth + xBuffer;
-    //    }
     div.Bounds.width = div.Duration * msr.Bounds.width;
     if (i > 0) {
       const lastDivEnd = divs[i - 1].Bounds.x + divs[i - 1].Bounds.width;
@@ -189,6 +187,8 @@ function GenerateMissingBeatDivisions(
             Duration: v,
             Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff, msr.Camera),
             Staff: div.Staff,
+            Direction: StemDirection.Up,
+            NoteXBuffer: 0,
           });
           sBeat += v * msr.TimeSignature.bottom;
         });

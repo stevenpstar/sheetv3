@@ -74,6 +74,7 @@ function RenderStandardBarline(renderProps, measure, cam, pos) {
     if (pos == BarlinePos.END) {
         xStart += measure.GetBoundsWithOffset().width;
     }
+    xStart = Math.floor(xStart);
     const line = `M${xStart + cam.x}
       ${yStart + cam.y} h
       1 v ${barlineHeight} h -1 Z`;
