@@ -18,7 +18,7 @@ function SetPagesAndLines(measures, pages, usePage, defaultLineHeight = 650) {
         });
         return;
     }
-    measures.forEach((msr, i) => {
+    measures.forEach((msr) => {
         msrsOnLine++;
         const msrWidth = msr.GetMinimumWidth() + msr.XOffset;
         if (runningWidth + msrWidth > pageWidth || msrsOnLine > 4) {
@@ -41,8 +41,7 @@ function GetMaxWidth(page, config, cam) {
         maxWidth = config.FormatSettings.MeasureFormatSettings.MaxWidth;
     }
     else {
-        // TODO: This is not right
-        maxWidth = page.Bounds.width * cam.Zoom - 50;
+        maxWidth = page.Bounds.width;
     }
     return maxWidth;
 }
@@ -72,30 +71,27 @@ function ResizeMeasuresOnPage(measures, page, cam, config) {
                 const maxWidth = GetMaxWidth(page, config, cam);
                 const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
                 let mWidth = 0;
-                if (calculatedWidth < GetMaxWidth(page, config, cam)) {
+                if (calculatedWidth < maxWidth) {
                     mWidth = calculatedWidth;
                 }
                 else {
-                    mWidth = GetMaxWidth(page, config, cam);
+                    mWidth = maxWidth;
                 }
-                // TODO: This is impossible to understand why so many ternary operators
-                const msrWidth = mWidth;
-                m.Bounds.width = msrWidth;
+                m.Bounds.width = mWidth;
                 m.CreateDivisions(cam);
             }
             else {
                 m.RenderClef = false;
                 m.RenderTimeSig = false;
-                // TODO: When we work on keys
                 m.RenderKey = false;
                 m.SetXOffset();
                 const maxWidth = GetMaxWidth(page, config, cam);
                 const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
-                const msrWidth = maxWidth
-                    ? calculatedWidth > maxWidth
-                        ? maxWidth
-                        : calculatedWidth
-                    : calculatedWidth;
+                var msrWidth = calculatedWidth;
+                // Limit the width if the calculated width exceeds the maximum
+                if (calculatedWidth > maxWidth) {
+                    msrWidth = maxWidth;
+                }
                 m.Bounds.width = msrWidth;
                 msrs[i].Reposition(msrs[i - 1]);
                 m.CreateDivisions(cam);
@@ -103,10 +99,7 @@ function ResizeMeasuresOnPage(measures, page, cam, config) {
             m.Clefs.forEach((c) => {
                 c.SetBounds(m, c.Staff);
             });
-            m.TimeSignature.SetBounds(m, 0);
-            if (m.Instrument.Staff === StaffType.Grand) {
-                m.TimeSignature.SetBounds(m, 1);
-            }
+            m.TimeSignature.SetBounds(m);
         });
     });
 }

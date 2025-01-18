@@ -1,8 +1,9 @@
 import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
 import { RenderPage } from "../Renderers/Page.Renderer.js";
+import { RenderBarline } from "./Barline.js";
 const renderDebug = false;
 const scaleV = 1;
-const Renderer = (c, ctx, measures, pages, hovElements, mousePos, cam, noteInput, restInput, formatting, config, noteValue) => {
+const Renderer = (c, ctx, measures, pages, mousePos, cam, noteInput, restInput, formatting, config, noteValue) => {
     var _a, _b;
     // reset
     ctx.fillStyle = config.Theme.BackgroundColour; //"grey";252c38 16191f
@@ -29,7 +30,12 @@ const Renderer = (c, ctx, measures, pages, hovElements, mousePos, cam, noteInput
             measures.filter((msr) => m.Instrument === msr.Instrument)
                 .length -
                 1;
-        RenderMeasure(m, renderProps, hovElements.MeasureID, mousePos, lastMeasure, noteInput, i, restInput, noteValue, config);
+        RenderMeasure(m, renderProps, mousePos, lastMeasure, noteInput, i, restInput, noteValue, config);
+        if (i > 0) {
+            RenderBarline(renderProps, measures[i - 1], m, cam);
+        }
+        RenderBarline(renderProps, null, m, cam);
+        RenderBarline(renderProps, m, null, cam);
     });
 };
 const RenderDebug = (c, ctx, sheet, mousePos, cam, selector) => {

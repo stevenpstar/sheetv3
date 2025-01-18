@@ -1,3 +1,4 @@
+import { Barline, BarlinePos, BarlineType } from "../Core/Barline.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Clef, Measure } from "../Core/Measure.js";
 import { Staff } from "../Core/Staff.js";
@@ -54,6 +55,10 @@ const CreateDefaultMeasure = (id, instr, page, cam, callback, settings) => {
         Page: page,
         Message: callback,
         Settings: settings,
+        Barlines: [
+            new Barline(BarlinePos.START, BarlineType.SINGLE),
+            new Barline(BarlinePos.END, BarlineType.END),
+        ],
     };
     return new Measure(props, id);
 };
@@ -66,13 +71,17 @@ const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, staves,
         Notes: [],
         Clefs: clef,
         Staves: staves,
-        RenderClef: false,
+        RenderClef: renderClef,
         RenderTimeSig: false,
         RenderKey: false,
         Camera: cam,
         Page: page,
         Message: callback,
         Settings: settings,
+        Barlines: [
+            new Barline(BarlinePos.START, BarlineType.SINGLE),
+            new Barline(BarlinePos.END, BarlineType.END),
+        ],
     };
     return new Measure(props, runningId);
 };

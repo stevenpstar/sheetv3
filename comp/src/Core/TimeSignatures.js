@@ -39,18 +39,17 @@ class TimeSignature {
             RenderSymbol(renderProps, bGlyph, this.BotPosition[s.Num].x, this.BotPosition[s.Num].y, theme, this.Selected);
         });
     }
-    SetBounds(msr, staff) {
+    SetBounds(msr) {
         // Delete and recreate, potential for optimisation later
         this.Bounds = [];
         this.TopPosition = [];
         this.BotPosition = [];
         //
         msr.Staves.forEach((s) => {
-            // TODO: These probably shouldn't be recreated every single time
+            // These probably shouldn't be recreated every single time
             this.Bounds.push(new Bounds(0, 0, 0, 0));
             this.TopPosition.push({ x: 0, y: 0 });
             this.BotPosition.push({ x: 0, y: 0 });
-            //
             const div = msr.Divisions.find((div) => div.Staff === s.Num);
             if (!div) {
                 return;

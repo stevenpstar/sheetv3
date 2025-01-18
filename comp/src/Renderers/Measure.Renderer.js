@@ -18,9 +18,9 @@ const line_width = 1;
 const endsWidth = 2;
 const debug = true;
 const noteXBuffer = 9;
-function RenderMeasure(measure, renderProps, hovId, mousePos, lastMeasure, noteInput, index, restInput, noteValue, config) {
+function RenderMeasure(measure, renderProps, mousePos, lastMeasure, noteInput, index, restInput, noteValue, config) {
     //    if (hovId === measure.ID)
-    RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput, noteValue, config.Theme);
+    RenderHovered(measure, renderProps, mousePos, noteInput, restInput, noteValue, config.Theme);
     //    if (debug)
     // RenderDebug(measure, renderProps, index, mousePos);
     //RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
@@ -51,7 +51,7 @@ function MiddleLineBounds(measure) {
     b.y = measure.Bounds.y + measure.GetMeasureHeight() + (diff * 5 - 2.5);
     return b;
 }
-function RenderHovered(measure, renderProps, hovId, mousePos, noteInput, restInput, noteValue, theme) {
+function RenderHovered(measure, renderProps, mousePos, noteInput, restInput, noteValue, theme) {
     const { canvas, context, camera } = renderProps;
     if (noteInput) {
         // context.fillStyle = "rgb(0, 0, 255, 0.1)";

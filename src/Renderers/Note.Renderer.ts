@@ -1,16 +1,12 @@
-import { Beam } from "../Core/Beam.js";
 import { Camera } from "../Core/Camera.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
-import { GetStaffHeightUntil, Staff } from "../Core/Staff.js";
-import { Stem } from "../Core/Stem.js";
 import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 import {
   NoteHeads,
-  RenderAnimatedSymbol,
   RenderSymbol,
   TupletNumbers,
 } from "./MusicFont.Renderer.js";
@@ -429,20 +425,6 @@ function DetermineStemDirection(
   }
 
   return dir;
-}
-
-function GetFlagCount(value: number): number {
-  let count = 1;
-  switch (value) {
-    case 0.03125:
-      count = 3;
-      break;
-    case 0.0625:
-      count = 2;
-      break;
-    default:
-  }
-  return count;
 }
 
 function renderLedgerLines(

@@ -47,7 +47,7 @@ const test_CONFIG: ConfigSettings = {
     CenterMeasures: false,
   },
   FormatSettings: {
-    MeasureFormatSettings: { MaxWidth: 100, Selectable: false },
+    MeasureFormatSettings: { Selectable: false },
   },
   NoteSettings: {
     InputValue: 0.5,

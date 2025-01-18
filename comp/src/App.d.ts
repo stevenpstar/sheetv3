@@ -17,9 +17,6 @@ declare class App {
     Context: CanvasRenderingContext2D;
     Load: boolean;
     Sheet: Sheet;
-    HoveredElements: {
-        MeasureID: number;
-    };
     NoteInput: boolean;
     RestInput: boolean;
     Formatting: boolean;

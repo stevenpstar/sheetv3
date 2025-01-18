@@ -1,11 +1,6 @@
-import { Sheet, SheetProps } from "./Core/Sheet.js";
+import { CreateDefaultSheet, Sheet } from "./Core/Sheet.js";
 import { RenderDebug, Renderer } from "./Core/Renderer.js";
-import {
-  CreateDefaultMeasure,
-  CreateDefaultPiano,
-  CreateInstrument,
-  CreateMeasure,
-} from "./Factory/Instrument.Factory.js";
+import { CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Clef, Division, Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
@@ -17,14 +12,12 @@ import {
   UpdateNoteBounds,
 } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
-import { GetDivisionTotalWidth } from "./Core/Division.js";
-import { Instrument, StaffType } from "./Core/Instrument.js";
+import { StaffType } from "./Core/Instrument.js";
 import { KeyMapping, KeyPress } from "./Workers/Mappings.js";
 import { ISelectable, SelectableTypes } from "./Types/ISelectable.js";
-import { Page } from "./Core/Page.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
-import { allSaves, canonSave, intervalTest, saveFile } from "./testsaves.js";
+import { allSaves, saveFile } from "./testsaves.js";
 import { ClearMessage, Message, MessageType } from "./Types/Message.js";
 import {
   FromPitchMap,
@@ -33,6 +26,7 @@ import {
 } from "./Workers/Pitcher.js";
 import { ConfigSettings } from "./Types/Config.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
+import { BarlineType } from "./Core/Barline.js";
 
 class App {
   Config: ConfigSettings;
@@ -42,7 +36,6 @@ class App {
   Context: CanvasRenderingContext2D;
   Load: boolean;
   Sheet: Sheet;
-  HoveredElements: { MeasureID: number };
   NoteInput: boolean;
   RestInput: boolean;
   Formatting: boolean;
@@ -56,8 +49,6 @@ class App {
   RunningID: { count: number };
   PitchMap: Map<number, MappedMidi>;
 
-  // TODO: Off load some of this work to other classes/functions
-  // For now we prototype here
   DraggingNote: boolean;
   StartLine: number;
   EndLine: number;
@@ -89,8 +80,6 @@ class App {
     this.Selector = new Selector();
     this.Context = context;
     this.Load = load;
-    this.HoveredElements = { MeasureID: -1 };
-    this.Zoom = 1;
     this.RunningID = { count: 0 };
     this.CamDragging = false;
     this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
@@ -101,42 +90,19 @@ class App {
       camStartY = this.Config.CameraSettings.StartingPosition.y;
     }
     this.Camera = new Camera(camStartX, camStartY);
-    this.Camera.Zoom = 1; //this.Config.CameraSettings.Zoom ? this.Config.CameraSettings.Zoom : 1;
-    this.NoteValue = 0.5; //this.Config?.NoteSettings?.InputValue ?
-    //      this.Config.NoteSettings.InputValue : 0.25;
+    this.Camera.Zoom = 1;
+    this.NoteValue = 0.5;
 
     // TODO: Remove to formatter
     this.StartDragY = 0;
     this.EndDragY = 0;
     this.DragLining = false;
     if (!this.Load) {
-      // Create New Sheet Properties
-      let newPage: Page = new Page(0, 0, 1);
-      if (this.Config.PageSettings?.PageWidth) {
-        newPage.Bounds.width = this.Config.PageSettings.PageWidth;
-      }
-
-      const sProps: SheetProps = {
-        Instruments: [],
-        KeySignature: [{ key: "CMaj/Amin", measureNo: 0 }],
-        Measures: [],
-        Pages: [newPage],
-      };
-
-      const page = sProps.Pages[0];
-
-      sProps.Instruments.push(CreateInstrument(20, this.Config));
-      sProps.Measures.push(
-        CreateDefaultMeasure(
-          this.RunningID,
-          sProps.Instruments[0],
-          page,
-          this.Camera,
-          this.NotifyCallback,
-          this.Config.MeasureSettings,
-        ),
+      this.Sheet = CreateDefaultSheet(
+        this.Config,
+        this.Camera,
+        this.NotifyCallback,
       );
-      this.Sheet = new Sheet(sProps);
     }
     this.NoteInput = false;
     this.RestInput = false;
@@ -166,32 +132,14 @@ class App {
       this.DragLiner(x, y);
       this.Update(x, y);
     }
-    this.HoveredElements.MeasureID = -1;
-    // TODO: Move all this elsewhere
     if (this.NoteInput) {
-      this.Sheet.Measures.forEach((m: Measure) => {
-        if (m.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) {
-          m.Divisions.forEach((d: Division) => {
-            if (d.Bounds.IsHovered(x, y, this.Camera)) {
-              //ManageHeight(m, d.Staff, x, y, this.Camera, this.Sheet.Measures);
-              // TODO: Move this so it only is called
-              // at the appropriate time
-              UpdateNoteBounds(m, 0);
-              UpdateNoteBounds(m, 1);
-            }
-          });
-        } else {
-          //         m.ResetHeight();
-        }
-      });
+      this.Sheet.InputHover(x, y, this.Camera);
     }
-    // This shouldn't always update but will need to do serious work to figure
-    // out all bugs involved when it doesn't
     this.Update(x, y);
   }
 
   Delete(): void {
-    for (let [msr, elem] of this.Selector.Elements) {
+    for (let [msr, _] of this.Selector.Elements) {
       msr.DeleteSelected();
       msr.CreateDivisions(this.Camera);
     }
@@ -207,7 +155,6 @@ class App {
       this.SelectLiner(x, y);
     }
 
-    this.HoveredElements.MeasureID = -1;
     const msrOver: Measure | undefined = this.Sheet.Measures.find(
       (msr: Measure) => msr.GetBoundsWithOffset().IsHovered(x, y, this.Camera),
     );
@@ -224,9 +171,6 @@ class App {
     } // no measure over
 
     if (!this.NoteInput) {
-      let selectedMeasureElement: boolean = false;
-      // Measure Element selection, should be moved elsewhere eventually
-      // (probably Measure? Maybe somewhere else)
       if (!shiftKey) {
         this.Selector.Elements = this.Selector.DeselectAllElements(
           this.Selector.Elements,
@@ -286,8 +230,6 @@ class App {
     this.Update(x, y);
   }
   Update(x: number, y: number): void {
-    // this should be the only place that calls render
-    // this.NotifyCallback(this.Message);
     this.Render({ x: x, y: y });
   }
   Render(mousePos: { x: number; y: number }): void {
@@ -296,7 +238,6 @@ class App {
       this.Context,
       this.Sheet.Measures,
       this.Sheet.Pages,
-      this.HoveredElements,
       mousePos,
       this.Camera,
       this.NoteInput,
@@ -351,6 +292,11 @@ class App {
         this.Sheet.Measures.filter((m) => m.Instrument === i),
       );
     });
+    // Update previous measure end bar line
+    if (prevMsr.Barlines[1].Type == BarlineType.END) {
+      prevMsr.Barlines[1].Type = BarlineType.SINGLE;
+    }
+    this.ResizeMeasures(this.Sheet.Measures);
   }
 
   ChangeInputMode(): void {
@@ -464,15 +410,13 @@ class App {
   }
 
   AlterZoom(num: number): void {
-    this.Zoom += num;
-    this.Camera.SetZoom(this.Zoom);
+    this.Camera.SetZoom(this.Camera.Zoom + num);
     this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
     this.Update(0, 0);
   }
 
   SetCameraZoom(num: number): void {
-    this.Zoom = num;
-    this.Camera.SetZoom(this.Zoom);
+    this.Camera.SetZoom(num);
     this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
     this.Update(0, 0);
   }
@@ -576,25 +520,11 @@ class App {
   ScaleToggle(): number {
     if (this.Camera.Zoom !== 1) {
       this.Camera.Zoom = 1;
-      this.Zoom = 1;
     } else {
       this.Camera.Zoom = 1;
     }
     return this.Camera.Zoom;
   }
-
-  // Test_AddClefMiddle(): void {
-  //   const msr = this.Sheet.Measures[0];
-  //   const clef: Clef = {Type: "bass", Beat: 3};
-  //   let clefExist = false;
-  //   msr.Clefs.forEach((c: Clef) => {
-  //     if (c.Beat === clef.Beat && c.Type === clef.Type) {
-  //       clefExist = true;
-  //     }
-  //   });
-  //   if (!clefExist)
-  //     msr.Clefs.push(clef);
-  // }
 
   KeyInput(key: string, keymaps: KeyMapping): void {
     KeyPress(this, key, keymaps);

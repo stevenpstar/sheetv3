@@ -1,6 +1,6 @@
-import { Sheet } from "./Core/Sheet.js";
+import { CreateDefaultSheet } from "./Core/Sheet.js";
 import { RenderDebug, Renderer } from "./Core/Renderer.js";
-import { CreateDefaultMeasure, CreateInstrument, CreateMeasure, } from "./Factory/Instrument.Factory.js";
+import { CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Clef } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
@@ -9,16 +9,16 @@ import { Selector } from "./Workers/Selector.js";
 import { StaffType } from "./Core/Instrument.js";
 import { KeyPress } from "./Workers/Mappings.js";
 import { SelectableTypes } from "./Types/ISelectable.js";
-import { Page } from "./Core/Page.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves } from "./testsaves.js";
 import { ClearMessage, MessageType } from "./Types/Message.js";
 import { FromPitchMap, GeneratePitchMap, } from "./Workers/Pitcher.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
+import { BarlineType } from "./Core/Barline.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
-        var _a, _b, _c;
+        var _a, _b;
         this.Config = config;
         this.PitchMap = GeneratePitchMap();
         this.Message = ClearMessage();
@@ -29,8 +29,6 @@ class App {
         this.Selector = new Selector();
         this.Context = context;
         this.Load = load;
-        this.HoveredElements = { MeasureID: -1 };
-        this.Zoom = 1;
         this.RunningID = { count: 0 };
         this.CamDragging = false;
         this.DraggingPositions = { x1: 0, y1: 0, x2: 0, y2: 0 };
@@ -41,34 +39,19 @@ class App {
             camStartY = this.Config.CameraSettings.StartingPosition.y;
         }
         this.Camera = new Camera(camStartX, camStartY);
-        this.Camera.Zoom = 1; //this.Config.CameraSettings.Zoom ? this.Config.CameraSettings.Zoom : 1;
-        this.NoteValue = 0.5; //this.Config?.NoteSettings?.InputValue ?
-        //      this.Config.NoteSettings.InputValue : 0.25;
+        this.Camera.Zoom = 1;
+        this.NoteValue = 0.5;
         // TODO: Remove to formatter
         this.StartDragY = 0;
         this.EndDragY = 0;
         this.DragLining = false;
         if (!this.Load) {
-            // Create New Sheet Properties
-            let newPage = new Page(0, 0, 1);
-            if ((_b = this.Config.PageSettings) === null || _b === void 0 ? void 0 : _b.PageWidth) {
-                newPage.Bounds.width = this.Config.PageSettings.PageWidth;
-            }
-            const sProps = {
-                Instruments: [],
-                KeySignature: [{ key: "CMaj/Amin", measureNo: 0 }],
-                Measures: [],
-                Pages: [newPage],
-            };
-            const page = sProps.Pages[0];
-            sProps.Instruments.push(CreateInstrument(20, this.Config));
-            sProps.Measures.push(CreateDefaultMeasure(this.RunningID, sProps.Instruments[0], page, this.Camera, this.NotifyCallback, this.Config.MeasureSettings));
-            this.Sheet = new Sheet(sProps);
+            this.Sheet = CreateDefaultSheet(this.Config, this.Camera, this.NotifyCallback);
         }
         this.NoteInput = false;
         this.RestInput = false;
         this.Formatting = false;
-        if ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.Zoom) {
+        if ((_b = this.Config.CameraSettings) === null || _b === void 0 ? void 0 : _b.Zoom) {
             this.Camera.Zoom = this.Config.CameraSettings.Zoom;
             this.SetCameraZoom(this.Camera.Zoom);
             this.ResizeMeasures(this.Sheet.Measures);
@@ -90,32 +73,13 @@ class App {
             this.DragLiner(x, y);
             this.Update(x, y);
         }
-        this.HoveredElements.MeasureID = -1;
-        // TODO: Move all this elsewhere
         if (this.NoteInput) {
-            this.Sheet.Measures.forEach((m) => {
-                if (m.GetBoundsWithOffset().IsHovered(x, y, this.Camera)) {
-                    m.Divisions.forEach((d) => {
-                        if (d.Bounds.IsHovered(x, y, this.Camera)) {
-                            //ManageHeight(m, d.Staff, x, y, this.Camera, this.Sheet.Measures);
-                            // TODO: Move this so it only is called
-                            // at the appropriate time
-                            UpdateNoteBounds(m, 0);
-                            UpdateNoteBounds(m, 1);
-                        }
-                    });
-                }
-                else {
-                    //         m.ResetHeight();
-                }
-            });
+            this.Sheet.InputHover(x, y, this.Camera);
         }
-        // This shouldn't always update but will need to do serious work to figure
-        // out all bugs involved when it doesn't
         this.Update(x, y);
     }
     Delete() {
-        for (let [msr, elem] of this.Selector.Elements) {
+        for (let [msr, _] of this.Selector.Elements) {
             msr.DeleteSelected();
             msr.CreateDivisions(this.Camera);
         }
@@ -128,7 +92,6 @@ class App {
         if (!this.NoteInput && this.Formatting) {
             this.SelectLiner(x, y);
         }
-        this.HoveredElements.MeasureID = -1;
         const msrOver = this.Sheet.Measures.find((msr) => msr.GetBoundsWithOffset().IsHovered(x, y, this.Camera));
         if (msrOver === undefined) {
             if (!shiftKey) {
@@ -141,9 +104,6 @@ class App {
             return;
         } // no measure over
         if (!this.NoteInput) {
-            let selectedMeasureElement = false;
-            // Measure Element selection, should be moved elsewhere eventually
-            // (probably Measure? Maybe somewhere else)
             if (!shiftKey) {
                 this.Selector.Elements = this.Selector.DeselectAllElements(this.Selector.Elements);
             }
@@ -178,12 +138,10 @@ class App {
         this.Update(x, y);
     }
     Update(x, y) {
-        // this should be the only place that calls render
-        // this.NotifyCallback(this.Message);
         this.Render({ x: x, y: y });
     }
     Render(mousePos) {
-        Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.Sheet.Pages, this.HoveredElements, mousePos, this.Camera, this.NoteInput, this.RestInput, this.Formatting, this.Config, this.NoteValue);
+        Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.Sheet.Pages, mousePos, this.Camera, this.NoteInput, this.RestInput, this.Formatting, this.Config, this.NoteValue);
         if (this.Debug) {
             RenderDebug(this.Canvas, this.Context, this.Sheet, mousePos, this.Camera, this.Selector);
         }
@@ -202,6 +160,11 @@ class App {
             this.Sheet.Measures.push(newMsr);
             this.ResizeMeasures(this.Sheet.Measures.filter((m) => m.Instrument === i));
         });
+        // Update previous measure end bar line
+        if (prevMsr.Barlines[1].Type == BarlineType.END) {
+            prevMsr.Barlines[1].Type = BarlineType.SINGLE;
+        }
+        this.ResizeMeasures(this.Sheet.Measures);
     }
     ChangeInputMode() {
         this.NoteInput = !this.NoteInput;
@@ -301,14 +264,12 @@ class App {
         this.Camera.SetDragging(dragging, x, y, this.Config, this.Camera);
     }
     AlterZoom(num) {
-        this.Zoom += num;
-        this.Camera.SetZoom(this.Zoom);
+        this.Camera.SetZoom(this.Camera.Zoom + num);
         this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
         this.Update(0, 0);
     }
     SetCameraZoom(num) {
-        this.Zoom = num;
-        this.Camera.SetZoom(this.Zoom);
+        this.Camera.SetZoom(num);
         this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
         this.Update(0, 0);
     }
@@ -396,25 +357,12 @@ class App {
     ScaleToggle() {
         if (this.Camera.Zoom !== 1) {
             this.Camera.Zoom = 1;
-            this.Zoom = 1;
         }
         else {
             this.Camera.Zoom = 1;
         }
         return this.Camera.Zoom;
     }
-    // Test_AddClefMiddle(): void {
-    //   const msr = this.Sheet.Measures[0];
-    //   const clef: Clef = {Type: "bass", Beat: 3};
-    //   let clefExist = false;
-    //   msr.Clefs.forEach((c: Clef) => {
-    //     if (c.Beat === clef.Beat && c.Type === clef.Type) {
-    //       clefExist = true;
-    //     }
-    //   });
-    //   if (!clefExist)
-    //     msr.Clefs.push(clef);
-    // }
     KeyInput(key, keymaps) {
         KeyPress(this, key, keymaps);
         //    this.NotifyCallback(this.Message);

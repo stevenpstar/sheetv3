@@ -2,6 +2,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Message } from "../Types/Message.js";
 import { MeasureSettings } from "../entry.js";
+import { Barline } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Clef } from "./Clef.js";
 import { type Division } from "./Division.js";
@@ -28,6 +29,7 @@ interface MeasureProps {
     Page: Page;
     Message: (msg: Message) => void;
     Settings?: MeasureSettings;
+    Barlines: Barline[];
 }
 declare class Measure implements ISelectable {
     ID: number;
@@ -50,6 +52,7 @@ declare class Measure implements ISelectable {
     PageLine: Number;
     Message: (msg: Message) => void;
     Staves: Staff[];
+    Barlines: Barline[];
     XOffset: number;
     Line: number;
     RunningID: {
@@ -68,9 +71,6 @@ declare class Measure implements ISelectable {
     CreateDivisions(cam: Camera, afterInput?: boolean): void;
     Reposition(prevMsr: Measure): void;
     GetMeasureHeight(): number;
-    GetGrandMeasureHeight(): number;
-    GetGrandMeasureMidLine(): number;
-    NEW_GetMeasureHeight(): number;
     AddNote(note: Note, fromInput?: boolean): void;
     ClearNonRestNotes(beat: number, staff: number): void;
     ClearRestNotes(beat: number, staff: number): void;

@@ -1,3 +1,4 @@
+import { RenderBarline } from "../Core/Barline.js";
 import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
 import { DivGroup, GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
 import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
@@ -37,7 +38,6 @@ const noteXBuffer = 9;
 function RenderMeasure(
   measure: Measure,
   renderProps: RenderProperties,
-  hovId: number,
   mousePos: { x: number; y: number },
   lastMeasure: boolean,
   noteInput: boolean,
@@ -50,7 +50,6 @@ function RenderMeasure(
   RenderHovered(
     measure,
     renderProps,
-    hovId,
     mousePos,
     noteInput,
     restInput,
@@ -104,7 +103,6 @@ function MiddleLineBounds(measure: Measure): Bounds {
 function RenderHovered(
   measure: Measure,
   renderProps: RenderProperties,
-  hovId: number,
   mousePos: { x: number; y: number },
   noteInput: boolean,
   restInput: boolean,

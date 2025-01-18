@@ -313,19 +313,6 @@ function DetermineStemDirection(notes, divisions, staff, measure) {
     }
     return dir;
 }
-function GetFlagCount(value) {
-    let count = 1;
-    switch (value) {
-        case 0.03125:
-            count = 3;
-            break;
-        case 0.0625:
-            count = 2;
-            break;
-        default:
-    }
-    return count;
-}
 function renderLedgerLines(notes, division, renderProps, staff, msr, theme, colour) {
     const { canvas, context, camera } = renderProps;
     // TODO: This code is repeated (search for dynNoteXBuffer)

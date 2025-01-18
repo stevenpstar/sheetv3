@@ -1,10 +1,14 @@
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { RenderProperties } from "../Types/RenderProperties.js";
 import { Camera } from "./Camera.js";
+import { Measure } from "./Measure.js";
 declare enum BarlineType {
-    STANDARD = 0,
-    REPEAT_BEGIN = 1,
-    REPEAT_END = 2
+    SINGLE = 0,
+    DOUBLE = 1,
+    END = 2,
+    REPEAT_BEGIN = 3,
+    REPEAT_END = 4
 }
 declare enum BarlinePos {
     START = 0,
@@ -18,8 +22,9 @@ declare class Barline implements ISelectable {
     Editable: boolean;
     Position: BarlinePos;
     Type: BarlineType;
+    constructor(pos: BarlinePos, type: BarlineType);
     IsHovered(x: number, y: number, cam: Camera): boolean;
-    Render(): void;
 }
-export { Barline, BarlineType };
+declare function RenderBarline(renderProps: RenderProperties, endMeasure: Measure, beginMeasure: Measure, cam: Camera): void;
+export { Barline, BarlineType, BarlinePos, RenderBarline };
 //# sourceMappingURL=Barline.d.ts.map

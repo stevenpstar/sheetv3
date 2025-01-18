@@ -3,6 +3,7 @@ import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
 import { RenderPage } from "../Renderers/Page.Renderer.js";
 import { ConfigSettings } from "../Types/Config.js";
 import { Selector } from "../Workers/Selector.js";
+import { RenderBarline } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Measure } from "./Measure.js";
 import { Page } from "./Page.js";
@@ -16,7 +17,6 @@ const Renderer = (
   ctx: CanvasRenderingContext2D,
   measures: Measure[],
   pages: Page[],
-  hovElements: { MeasureID: number },
   mousePos: { x: number; y: number },
   cam: Camera,
   noteInput: boolean,
@@ -57,7 +57,6 @@ const Renderer = (
     RenderMeasure(
       m,
       renderProps,
-      hovElements.MeasureID,
       mousePos,
       lastMeasure,
       noteInput,
@@ -66,6 +65,11 @@ const Renderer = (
       noteValue,
       config,
     );
+    if (i > 0) {
+      RenderBarline(renderProps, measures[i - 1], m, cam);
+    }
+    RenderBarline(renderProps, null, m, cam);
+    RenderBarline(renderProps, m, null, cam);
   });
 };
 

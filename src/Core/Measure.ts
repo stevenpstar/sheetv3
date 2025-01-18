@@ -34,6 +34,7 @@ interface MeasureProps {
   Page: Page;
   Message: (msg: Message) => void;
   Settings?: MeasureSettings;
+  Barlines: Barline[];
 }
 
 class Measure implements ISelectable {
@@ -44,8 +45,6 @@ class Measure implements ISelectable {
   Instrument: Instrument;
   Bounds: Bounds;
   Editable: boolean;
-  // TODO: Clefs should just be one array, each clef should have which staff they are
-  // on
   Clefs: Clef[] = [];
   TimeSignature: TimeSignature;
   KeySignature: string;
@@ -69,10 +68,7 @@ class Measure implements ISelectable {
 
   constructor(properties: MeasureProps, runningId: { count: number }) {
     this.Num = 1;
-    // TODO: Grand measure/non-grand or staff count should inform how
-    // many staves are created
     this.Staves = properties.Staves;
-    //    this.Staves.push(new Staff(1));
     this.Message = properties.Message;
     this.RunningID = runningId;
     this.ID = 0;
@@ -82,9 +78,7 @@ class Measure implements ISelectable {
     this.Instrument = properties.Instrument;
     this.Line = 0;
     this.Bounds = properties.Bounds;
-    // TODO: This is not where measure bounds will be set
     this.Bounds.height = GetStaffHeightUntil(this.Staves);
-    //
     this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
     this.KeySignature = properties.KeySignature;
     this.Notes = properties.Notes;
@@ -108,15 +102,15 @@ class Measure implements ISelectable {
       clef.SetBounds(this, s.Num);
       this.Clefs.push(clef);
     });
-    this.TimeSignature.SetBounds(this, 0);
-    this.TimeSignature.SetBounds(this, 1);
+    this.TimeSignature.SetBounds(this);
+    this.Barlines = properties.Barlines;
   }
 
   // Gets line hovered relative to staff (15 will always be middle of staff for
   // example)
   GetLineHovered(y: number, staffNum: number): { num: number; bounds: Bounds } {
     const cam = this.Camera;
-    const relYPos = y - this.Bounds.y - cam.y; //TODO: Dunno about scaling by zoom here
+    const relYPos = y - this.Bounds.y - cam.y;
     let line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
     let actualLine = line;
     const bounds = new Bounds(
@@ -128,13 +122,8 @@ class Measure implements ISelectable {
     const staff: Staff = this.Staves.find((s) => s.Num === staffNum);
     const prevStaffLines = GetStaffHeightUntil(this.Staves, staffNum) / 5;
     actualLine = line + staff.TopLine;
-    const testLine = actualLine - prevStaffLines;
-    const relativeLine =
-      staff.TopLine < 0
-        ? actualLine + Math.abs(staff.TopLine)
-        : actualLine - staff.TopLine;
     bounds.y = this.Bounds.y + 5 * actualLine;
-    return { num: testLine, bounds: bounds };
+    return { num: actualLine - prevStaffLines, bounds: bounds };
   }
 
   // Get note position relative to staff/measure
@@ -159,15 +148,12 @@ class Measure implements ISelectable {
       this.XOffset += 30;
     }
     if (this.RenderKey) {
-      // TODO: Change 10 to be a constant value defined somewhere (we have magic
-      // numbers everywhere atm)
       this.XOffset += KeySignatures.get(this.KeySignature).length * 11;
     }
     if (this.RenderTimeSig) {
       this.XOffset += 30;
     }
-    // TODO: Staff parameter might not do anything in this function?
-    this.TimeSignature.SetBounds(this, 0);
+    this.TimeSignature.SetBounds(this);
   }
 
   CreateDivisions(cam: Camera, afterInput: boolean = false) {
@@ -184,27 +170,7 @@ class Measure implements ISelectable {
     this.CreateDivisions(this.Camera);
   }
 
-  // set height of measure based off of notes in measure
-  // eventually will be determined by instrument / row etc.
-
-  // TODO: Remove these three methods (doing now)
   GetMeasureHeight(): number {
-    return GetStaffHeightUntil(this.Staves);
-  }
-
-  GetGrandMeasureHeight(): number {
-    return 0;
-  }
-
-  GetGrandMeasureMidLine(): number {
-    return 0;
-  }
-
-  /* End TODO
-   */
-
-  // Gets total height of measure (all staffs)
-  NEW_GetMeasureHeight(): number {
     return GetStaffHeightUntil(this.Staves);
   }
 
@@ -300,20 +266,10 @@ class Measure implements ISelectable {
     if (this.Notes.filter((n) => n.Rest !== true).length === 0) {
       return DivisionMinWidth * 4;
     }
-    const staffZeroDivs = this.Divisions.filter((div) => div.Staff === 0);
-    const staffOneDivs = this.Divisions.filter((div) => div.Staff === 1);
-    const lowestValue = this.Divisions.sort((a: Division, b: Division) => {
-      return a.Duration - b.Duration;
-    })[0].Duration;
-    //const count = 1 / lowestValue;
     const lowestVal = this.Notes.sort((a: Note, b: Note) => {
       return a.Duration - b.Duration;
     })[0];
     const count = 1 / lowestVal.Duration;
-    //const count =
-    //  staffZeroDivs.length > staffOneDivs.length
-    //    ? staffZeroDivs.length
-    //    : staffOneDivs.length;
     return count * DivisionMinWidth;
   }
 

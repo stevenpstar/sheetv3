@@ -22,7 +22,7 @@ declare class TimeSignature implements ISelectable {
     }[];
     constructor(top: number, bottom: number, useSymbol?: boolean);
     render(renderProps: RenderProperties, msr: Measure, theme: Theme): void;
-    SetBounds(msr: Measure, staff: number): void;
+    SetBounds(msr: Measure): void;
     IsHovered(x: number, y: number, cam: Camera): boolean;
 }
 declare function CreateTimeSignature(props: {
