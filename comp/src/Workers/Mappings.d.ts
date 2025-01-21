@@ -18,6 +18,7 @@ interface KeyMapping {
     test_triplet: string;
     debug_clear: string;
     beam: string;
+    grace: string;
 }
 declare function KeyPress(app: App, key: string, keyMaps: KeyMapping): void;
 export { KeyMapping, KeyPress };

@@ -19,6 +19,7 @@ declare class App {
     Sheet: Sheet;
     NoteInput: boolean;
     RestInput: boolean;
+    GraceInput: boolean;
     Formatting: boolean;
     Zoom: number;
     Camera: Camera;

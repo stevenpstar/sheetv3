@@ -1,5 +1,5 @@
 import { NoteValues } from "../Core/Values.js";
-import { NoteHeads, RenderScaledSymbol, RenderSymbol, TupletNumbers, stdFontSize, } from "./MusicFont.Renderer.js";
+import { NoteHeads, RenderSymbol, TupletNumbers, } from "./MusicFont.Renderer.js";
 var StemDirection;
 (function (StemDirection) {
     StemDirection[StemDirection["Up"] = 0] = "Up";
@@ -40,26 +40,13 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, them
             if (note.Opacity < 1.0) {
                 note.Opacity += 0.01;
             }
-            if (note.Ghost) {
-                RenderScaledSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected, Math.floor(stdFontSize * 0.6));
-            }
-            else {
-                RenderSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected);
-            }
+            RenderSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected);
             break;
         case 0.5:
-            if (note.Ghost) {
-            }
-            else {
-                RenderSymbol(renderProps, NoteHeads.minim, x, y, theme, selected);
-            }
+            RenderSymbol(renderProps, NoteHeads.minim, x, y, theme, selected);
             break;
         case 1:
-            if (note.Ghost) {
-            }
-            else {
-                RenderSymbol(renderProps, NoteHeads.whole, x - 2.5, y, theme, selected);
-            }
+            RenderSymbol(renderProps, NoteHeads.whole, x - 2.5, y, theme, selected);
             break;
         default:
             RenderSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected);

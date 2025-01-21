@@ -78,7 +78,7 @@ function CreateDivisions(
         divisions.push({
           Beat: n.Beat,
           Duration: n.Duration,
-          Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff, cam),
+          Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff),
           Staff: staff,
           StaffGroup: n.StaffGroup,
           Direction: StemDirection.Up,
@@ -107,7 +107,6 @@ function CreateBeatBounds(
   beat: number,
   duration: number,
   staff: number,
-  cam: Camera,
 ): Bounds {
   // single height
   const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
@@ -194,7 +193,7 @@ function GenerateMissingBeatDivisions(
           divisionsToAdd.push({
             Beat: sBeat,
             Duration: v,
-            Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff, msr.Camera),
+            Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff),
             Staff: div.Staff,
             StaffGroup: notesOnDiv[0].StaffGroup,
             Direction: StemDirection.Up,
@@ -251,7 +250,7 @@ function GenerateMissingBeatDivisions(
       lastDivisionsToAdd.push({
         Beat: sBeat,
         Duration: v,
-        Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff, msr.Camera),
+        Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff),
         Staff: staff,
       });
       sBeat += v * msr.TimeSignature.bottom;
@@ -321,9 +320,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
     }
     const divNotes = msr.Notes.filter(
       (n) =>
-        n.Beat === div.Beat &&
-        (n.Staff === staff || n.StaffGroup === staff) &&
-        !n.Ghost,
+        n.Beat === div.Beat && (n.Staff === staff || n.StaffGroup === staff),
     );
     divNotes.sort((a: Note, b: Note) => {
       return a.Line - b.Line;

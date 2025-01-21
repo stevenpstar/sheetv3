@@ -58,6 +58,8 @@ function KeyPress(app, key, keyMaps) {
         case keyMaps.beam:
             app.BeamSelectedNotes();
             break;
+        case keyMaps.grace:
+            app.GraceInput = !app.GraceInput;
         default:
     }
 }

@@ -35,7 +35,7 @@ function CreateDivisions(msr, notes, staff, cam) {
             divisions.push({
                 Beat: n.Beat,
                 Duration: n.Duration,
-                Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff, cam),
+                Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff),
                 Staff: staff,
                 StaffGroup: n.StaffGroup,
                 Direction: StemDirection.Up,
@@ -59,7 +59,7 @@ function CreateDivisions(msr, notes, staff, cam) {
     UpdateNoteBounds(msr, staff);
     return divisions;
 }
-function CreateBeatBounds(msr, beat, duration, staff, cam) {
+function CreateBeatBounds(msr, beat, duration, staff) {
     // single height
     const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
     const height = GetStaffHeight(msr.Staves, staff);
@@ -134,7 +134,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
                 divisionsToAdd.push({
                     Beat: sBeat,
                     Duration: v,
-                    Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff, msr.Camera),
+                    Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff),
                     Staff: div.Staff,
                     StaffGroup: notesOnDiv[0].StaffGroup,
                     Direction: StemDirection.Up,
@@ -187,7 +187,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
             lastDivisionsToAdd.push({
                 Beat: sBeat,
                 Duration: v,
-                Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff, msr.Camera),
+                Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff),
                 Staff: staff,
             });
             sBeat += v * msr.TimeSignature.bottom;
@@ -244,9 +244,7 @@ function GetDivisionGroups(msr, staff) {
         if (div.Staff !== staff) {
             crossStaff = true;
         }
-        const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat &&
-            (n.Staff === staff || n.StaffGroup === staff) &&
-            !n.Ghost);
+        const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat && (n.Staff === staff || n.StaffGroup === staff));
         divNotes.sort((a, b) => {
             return a.Line - b.Line;
         });

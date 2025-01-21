@@ -1,4 +1,4 @@
-import { Clef, Measure } from "../Core/Measure.js";
+import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Staff } from "../Core/Staff.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
@@ -31,6 +31,15 @@ function RenderMeasureRev(
   }
   if (measure.RenderTimeSig)
     measure.TimeSignature.render(renderProps, measure, theme);
+  measure.Divisions.forEach((d: Division) => {
+    renderProps.context.strokeStyle = "blue";
+    renderProps.context.strokeRect(
+      d.Bounds.x + renderProps.camera.x,
+      d.Bounds.y + renderProps.camera.y,
+      d.Bounds.width,
+      d.Bounds.height,
+    );
+  });
 }
 
 export { RenderMeasureRev };

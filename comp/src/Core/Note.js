@@ -18,9 +18,6 @@ class Note {
         this.Bounds.height = 10;
         this.Editable = props.Editable !== undefined ? props.Editable : true;
         this.ID = -1;
-        // TEST
-        this.Ghost = false;
-        this.Slashed = false;
         this.Tuple = props.Tuple;
         if (props.TupleDetails) {
             this.TupleDetails = props.TupleDetails;

@@ -30,8 +30,6 @@ declare class Note implements ISelectable {
     SelType: SelectableTypes;
     Clef: string;
     Editable: boolean;
-    Ghost: boolean;
-    Slashed: boolean;
     Opacity: number;
     TiedStart: number;
     TiedEnd: number;

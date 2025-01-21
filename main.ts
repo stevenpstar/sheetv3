@@ -23,6 +23,7 @@ const keymaps = {
   test_triplet: "t",
   debug_clear: "c",
   beam: "b",
+  grace: "g",
 };
 
 interface CanText {

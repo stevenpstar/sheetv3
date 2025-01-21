@@ -19,6 +19,7 @@ import { BarlineType } from "./Core/Barline.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
         var _a, _b;
+        this.GraceInput = false;
         this.Config = config;
         this.PitchMap = GeneratePitchMap();
         this.Message = ClearMessage();

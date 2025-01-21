@@ -194,6 +194,7 @@ class Measure implements ISelectable {
     }
     note.SetID(this.RunningID.count);
     this.RunningID.count++;
+    console.log("note: ", note);
     this.Notes.push(note);
 
     if (fromInput) {

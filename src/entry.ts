@@ -27,6 +27,7 @@ const keymaps: KeyMapping = {
   test_triplet: "t",
   debug_clear: "c",
   beam: "b",
+  grace: "g",
 };
 
 const defaultTheme: Theme = {

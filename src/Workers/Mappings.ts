@@ -20,6 +20,7 @@ interface KeyMapping {
   test_triplet: string;
   debug_clear: string;
   beam: string;
+  grace: string;
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -81,6 +82,8 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
     case keyMaps.beam:
       app.BeamSelectedNotes();
       break;
+    case keyMaps.grace:
+      app.GraceInput = !app.GraceInput;
     default:
   }
 }

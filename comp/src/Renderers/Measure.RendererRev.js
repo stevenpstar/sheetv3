@@ -15,5 +15,9 @@ function RenderMeasureRev(measure, renderProps, theme) {
     }
     if (measure.RenderTimeSig)
         measure.TimeSignature.render(renderProps, measure, theme);
+    measure.Divisions.forEach((d) => {
+        renderProps.context.strokeStyle = "blue";
+        renderProps.context.strokeRect(d.Bounds.x + renderProps.camera.x, d.Bounds.y + renderProps.camera.y, d.Bounds.width, d.Bounds.height);
+    });
 }
 export { RenderMeasureRev };

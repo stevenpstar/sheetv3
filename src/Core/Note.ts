@@ -33,8 +33,6 @@ class Note implements ISelectable {
   SelType: SelectableTypes;
   Clef: string;
   Editable: boolean;
-  Ghost: boolean;
-  Slashed: boolean;
 
   // TEST FOR ANIMATION:
   Opacity: number;
@@ -70,10 +68,6 @@ class Note implements ISelectable {
     this.Bounds.height = 10;
     this.Editable = props.Editable !== undefined ? props.Editable : true;
     this.ID = -1;
-
-    // TEST
-    this.Ghost = false;
-    this.Slashed = false;
 
     this.Tuple = props.Tuple;
     if (props.TupleDetails) {

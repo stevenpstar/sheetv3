@@ -108,10 +108,10 @@ class Beam {
         for (let i = 1; i < this.Count; i++) {
             context.fill(new Path2D(GetBeamString(this, cam, stemDir, i)));
         }
-        //  this.RenderBounds(context, cam);
+        this.RenderBounds(context, cam);
     }
     RenderBounds(context, cam) {
-        context.strokeStyle = "red";
+        context.strokeStyle = "green";
         context.strokeRect(this.Bounds.x + cam.x, this.Bounds.y + cam.y, this.Bounds.width, this.Bounds.height);
         context.stroke();
     }
