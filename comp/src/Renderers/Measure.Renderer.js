@@ -1,18 +1,16 @@
-import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
-import { GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
+import { Beam } from "../Core/Beam.js";
+import { IsRestOnBeat } from "../Core/Division.js";
 import { Dynamic } from "../Core/Dynamic.js";
 import { StaffType } from "../Core/Instrument.js";
 import { KeySignatures } from "../Core/KeySignatures.js";
 import { Note } from "../Core/Note.js";
 import { RenderMeasureLines, RenderStaffLines } from "../Core/Staff.js";
-import { CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { RenderMeasureRev } from "./Measure.RendererRev.js";
 import { DetermineStemDirection, RenderDots, RenderNote, RenderRest, RenderTies, RenderTuplets, StemDirection, renderLedgerLines, } from "./Note.Renderer.js";
-import { CreateStems } from "./Stem.Fact.js";
 const line_space = 10;
 const line_width = 1;
 const endsWidth = 2;
@@ -179,7 +177,7 @@ function RenderTimeSig(renderProps, msr, top, bottom, xOffset, theme) {
 function RenderNotes(msr, renderProps, staff, theme) {
     const { canvas, context, camera } = renderProps;
     const mDivs = msr.Divisions.filter((d) => d.Staff === staff);
-    mDivs.forEach((div, i) => {
+    mDivs.forEach((div) => {
         const divNotes = msr.Notes.filter((note) => note.Beat === div.Beat && note.Staff === div.Staff);
         divNotes.sort((a, b) => {
             return a.Line - b.Line;
@@ -190,21 +188,21 @@ function RenderNotes(msr, renderProps, staff, theme) {
         }
         renderLedgerLines(msr.Notes, div, renderProps, staff, msr, theme);
     });
-    const dGroups = GetDivisionGroups(msr, staff);
-    dGroups.DivGroups.forEach((group, i) => {
+    msr.DivisionGroups.forEach((group, i) => {
         if (group.Divisions.length > 0) {
             const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
-            const beamAngle = DetermineBeamDirection(msr, group, stemDir);
-            const stems = CreateStems(group.Notes, group.Divisions, staff, msr, camera);
-            let beams = [];
-            let tuplet = group.Notes[0][0].Tuple;
-            if (group.Divisions.length > 1 && group.Divisions[0].Duration < 0.25) {
-                // This is creating the primary beam
-                //beams = CreateBeams(group, stems, msr);
-                beams = CreateBeamsRevise(group, stems, tuplet);
-                beams.forEach((b) => b.Render(context, camera, Beam.BeamCount(group.Divisions[0].Duration, tuplet), stemDir, theme));
+            if (!group.StemDir) {
+                // Just in case this has failed to be set
+                group.StemDir = stemDir;
             }
-            stems.forEach((s) => s.Render(context, camera, theme));
+            let tuplet = group.Notes[0][0].Tuple;
+            group.Stems.forEach((s) => {
+                s.Render(context, camera, theme);
+                //        s.RenderBounds(context, camera);
+            });
+            group.Beams.forEach((b) => {
+                b.Render(context, camera, Beam.BeamCount(group.Divisions[0].Duration, tuplet), group.StemDir, theme);
+            });
             group.Divisions.forEach((div) => {
                 let hasFlipped = false;
                 const dN = msr.Notes.filter((note) => note.Beat === div.Beat && note.Staff === staff);

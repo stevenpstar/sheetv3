@@ -20,9 +20,13 @@ class Selector {
         UpdateNoteBounds(msr, 0);
         elements.push(...msr.Notes);
         elements.push(...msr.Clefs);
+        msr.DivisionGroups.forEach((g) => {
+            elements.push(...g.Stems);
+        });
         elements.push(msr.TimeSignature);
         elements.forEach((e) => {
             if (e.IsHovered(x, y, cam) && e.Selected === false) {
+                console.log("hovered something!");
                 //        if (e.Editable !== undefined && e.Editable === false) {
                 //          return;
                 //        }

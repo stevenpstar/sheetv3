@@ -5,6 +5,7 @@ import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { MeasureSettings } from "../entry.js";
 import { Articulation, ArticulationType } from "./Articulation.js";
 import { Barline } from "./Barline.js";
+import { Beam } from "./Beam.js";
 import { Camera } from "./Camera.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
 import {
@@ -12,12 +13,15 @@ import {
   type Division,
   ResizeDivisions,
   DivisionMinWidth,
+  DivGroups,
+  DivGroup,
 } from "./Division.js";
 import { Instrument, StaffType } from "./Instrument.js";
 import { KeySignatures } from "./KeySignatures.js";
 import { Note, NoteProps } from "./Note.js";
 import { Page } from "./Page.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
+import { Stem } from "./Stem.js";
 import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
 
 interface MeasureProps {
@@ -46,11 +50,6 @@ class Measure implements ISelectable {
   Instrument: Instrument;
   Bounds: Bounds;
   Editable: boolean;
-  Clefs: Clef[] = [];
-  TimeSignature: TimeSignature;
-  KeySignature: string;
-  Notes: Note[];
-  Divisions: Division[];
   RenderClef: boolean;
   RenderKey: boolean;
   RenderTimeSig: boolean;
@@ -58,9 +57,17 @@ class Measure implements ISelectable {
   Page: Page;
   PageLine: Number;
   Message: (msg: Message) => void;
+
+  TimeSignature: TimeSignature;
+  KeySignature: string;
+
+  Notes: Note[];
+  Divisions: Division[];
+  Clefs: Clef[] = [];
   Staves: Staff[];
   Barlines: Barline[];
   Articulations: Articulation[];
+  DivisionGroups: DivGroup[];
 
   XOffset: number; // not sure if this is what we want to go with
 
@@ -85,7 +92,7 @@ class Measure implements ISelectable {
     this.KeySignature = properties.KeySignature;
     this.Notes = properties.Notes;
     this.Divisions = [];
-    this.Articulations = [new Articulation(ArticulationType.ACCENT, 1, 0)];
+    this.Articulations = [];
     this.RenderClef = properties.RenderClef;
     if (this.Instrument.Staff === StaffType.Rhythm) {
       this.RenderClef = false;
@@ -98,6 +105,9 @@ class Measure implements ISelectable {
 
     this.SetXOffset();
 
+    this.Barlines = properties.Barlines;
+    this.DivisionGroups = [];
+
     this.CreateDivisions(this.Camera);
 
     this.Staves.forEach((s: Staff, i: number) => {
@@ -106,7 +116,6 @@ class Measure implements ISelectable {
       this.Clefs.push(clef);
     });
     this.TimeSignature.SetBounds(this);
-    this.Barlines = properties.Barlines;
   }
 
   // Gets line hovered relative to staff (15 will always be middle of staff for

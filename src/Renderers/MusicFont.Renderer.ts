@@ -75,6 +75,8 @@ enum DynamicSymbol {
 enum ArticulationSymbol {
   AccentAbove = "\u{E4A0}",
   AccentBelow = "\u{E4A1}",
+  StaccatoAbove = "\u{E4A2}",
+  StaccatoBelow = "\u{E4A3}",
 }
 
 function RenderSymbol(
@@ -88,6 +90,21 @@ function RenderSymbol(
   const { canvas, context, camera } = renderProps;
   context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
   context.font = `${stdFontSize}px Bravura`;
+  context.fillText(symbol, x + camera.x, y + camera.y);
+}
+
+function RenderScaledSymbol(
+  renderProps: RenderProperties,
+  symbol: string,
+  x: number,
+  y: number,
+  theme: Theme,
+  selected: boolean,
+  fontSize: number,
+): void {
+  const { canvas, context, camera } = renderProps;
+  context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
+  context.font = `${fontSize}px Bravura`;
   context.fillText(symbol, x + camera.x, y + camera.y);
 }
 
@@ -118,5 +135,7 @@ export {
   DynamicSymbol,
   ArticulationSymbol,
   RenderSymbol,
+  RenderScaledSymbol,
   RenderAnimatedSymbol,
+  stdFontSize,
 };

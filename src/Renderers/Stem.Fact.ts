@@ -60,7 +60,6 @@ function CreateStems(
   divisions: Division[],
   staff: number,
   measure: Measure,
-  camera: Camera,
 ): Stem[] {
   const stems: Stem[] = [];
   let dynNoteXBuffer = 9;
@@ -90,7 +89,14 @@ function CreateStems(
   const xBuffer = stemDir === StemDirection.Up ? 11.5 : 0.25;
   const beamDir = DetermineBeamDirection(
     measure,
-    { Divisions: divisions, Notes: notes },
+    {
+      Divisions: divisions,
+      Notes: notes,
+      CrossStaff: false,
+      Staff: staff,
+      Stems: [],
+      Beams: [],
+    },
     stemDir,
   );
   const shouldBeam = divisions.length > 1 && divisions[0].Duration <= 0.25;
@@ -141,6 +147,7 @@ function CreateStems(
         beamAlt,
       );
     }
+    stem.Staff = staff;
     stems.push(stem);
   });
   return stems;

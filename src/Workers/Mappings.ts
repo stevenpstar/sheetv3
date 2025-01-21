@@ -19,6 +19,7 @@ interface KeyMapping {
   load: string;
   test_triplet: string;
   debug_clear: string;
+  beam: string;
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -76,6 +77,9 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
     case keyMaps.debug_clear:
       localStorage.removeItem("persist");
       localStorage.removeItem("camera_data");
+      break;
+    case keyMaps.beam:
+      app.BeamSelectedNotes();
       break;
     default:
   }

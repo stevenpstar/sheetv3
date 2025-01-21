@@ -45,7 +45,7 @@ function CreateBeamsRevise(
   let newBeam = true;
   let tempBeam: Beam = null;
   divGroup.Divisions.forEach((div: Division, i: number) => {
-    if (i > stems.length) {
+    if (i > stems.length || stems.length == 0) {
       return;
     }
     const startingStem: Stem = i == 0 ? stems[i] : stems[i - 1];

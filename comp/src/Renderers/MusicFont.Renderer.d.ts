@@ -1,5 +1,6 @@
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
+declare const stdFontSize = 40;
 declare enum Clefs {
     G = "\uD834\uDD1E",
     GOttavaBassa = "\uD834\uDD20",
@@ -66,9 +67,12 @@ declare enum DynamicSymbol {
 }
 declare enum ArticulationSymbol {
     AccentAbove = "\uE4A0",
-    AccentBelow = "\uE4A1"
+    AccentBelow = "\uE4A1",
+    StaccatoAbove = "\uE4A2",
+    StaccatoBelow = "\uE4A3"
 }
 declare function RenderSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, selected: boolean): void;
+declare function RenderScaledSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, selected: boolean, fontSize: number): void;
 declare function RenderAnimatedSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, opacity: number): void;
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderAnimatedSymbol, };
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderScaledSymbol, RenderAnimatedSymbol, stdFontSize, };
 //# sourceMappingURL=MusicFont.Renderer.d.ts.map

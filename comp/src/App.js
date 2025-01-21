@@ -4,7 +4,7 @@ import { CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Clef } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Camera } from "./Core/Camera.js";
-import { AddNoteOnMeasure, CreateTuplet, InputOnMeasure, UpdateNoteBounds, } from "./Workers/NoteInput.js";
+import { AddNoteOnMeasure, CreateTuplet, InputOnMeasure, RecreateDivisionGroups, UpdateNoteBounds, } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
 import { StaffType } from "./Core/Instrument.js";
 import { KeyPress } from "./Workers/Mappings.js";
@@ -296,6 +296,12 @@ class App {
         else if ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.CenterPage) {
             this.CenterPage();
         }
+        measures.forEach((m) => {
+            RecreateDivisionGroups(m);
+            m.Staves.forEach((s) => {
+                UpdateNoteBounds(m, s.Num);
+            });
+        });
         this.Update(0, 0);
     }
     SetNoteValue(val) {
@@ -446,6 +452,25 @@ class App {
     // doesn't matter atm
     AddNoteOnMeasure(msr, noteValue, line, beat, rest) {
         AddNoteOnMeasure(msr, noteValue, line, beat, rest);
+    }
+    BeamSelectedNotes() {
+        // currently only implementing for cross staff beaming
+        var beamFrom; // which staff to "beam from"
+        for (let [msr, elem] of this.Selector.Elements) {
+            elem
+                .filter((e) => e.SelType === SelectableTypes.Note)
+                .forEach((n, i) => {
+                if (i == 0) {
+                    beamFrom = n.Staff;
+                }
+                if (n.Staff !== beamFrom) {
+                    msr.Notes.filter((note) => note.Staff == n.Staff && note.Beat == n.Beat).forEach((note) => {
+                        note.StaffGroup = beamFrom;
+                    });
+                }
+            });
+        }
+        this.ResizeMeasures(this.Sheet.Measures);
     }
     AddStaff(instrNum, clef) {
         const instr = this.Sheet.Instruments[instrNum];

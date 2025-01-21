@@ -73,11 +73,19 @@ var ArticulationSymbol;
 (function (ArticulationSymbol) {
     ArticulationSymbol["AccentAbove"] = "\uE4A0";
     ArticulationSymbol["AccentBelow"] = "\uE4A1";
+    ArticulationSymbol["StaccatoAbove"] = "\uE4A2";
+    ArticulationSymbol["StaccatoBelow"] = "\uE4A3";
 })(ArticulationSymbol || (ArticulationSymbol = {}));
 function RenderSymbol(renderProps, symbol, x, y, theme, selected) {
     const { canvas, context, camera } = renderProps;
     context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
     context.font = `${stdFontSize}px Bravura`;
+    context.fillText(symbol, x + camera.x, y + camera.y);
+}
+function RenderScaledSymbol(renderProps, symbol, x, y, theme, selected, fontSize) {
+    const { canvas, context, camera } = renderProps;
+    context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
+    context.font = `${fontSize}px Bravura`;
     context.fillText(symbol, x + camera.x, y + camera.y);
 }
 //TODO: Test(?) Function, maybe. - testing opacity only here
@@ -86,4 +94,4 @@ function RenderAnimatedSymbol(renderProps, symbol, x, y, theme, opacity) {
     renderProps.context.font = `${stdFontSize}px Bravura`;
     renderProps.context.fillText(symbol, x + renderProps.camera.x, y + renderProps.camera.y);
 }
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderAnimatedSymbol, };
+export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderScaledSymbol, RenderAnimatedSymbol, stdFontSize, };

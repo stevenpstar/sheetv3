@@ -9,6 +9,7 @@ import { KeySignatures } from "../Core/KeySignatures.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { RenderMeasureLines, RenderStaffLines, Staff } from "../Core/Staff.js";
+import { Stem } from "../Core/Stem.js";
 import { CreateBeams, CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
@@ -311,7 +312,7 @@ function RenderNotes(
 ) {
   const { canvas, context, camera } = renderProps;
   const mDivs = msr.Divisions.filter((d) => d.Staff === staff);
-  mDivs.forEach((div: Division, i: number) => {
+  mDivs.forEach((div: Division) => {
     const divNotes = msr.Notes.filter(
       (note: Note) => note.Beat === div.Beat && note.Staff === div.Staff,
     );
@@ -325,36 +326,30 @@ function RenderNotes(
     }
     renderLedgerLines(msr.Notes, div, renderProps, staff, msr, theme);
   });
-  const dGroups = GetDivisionGroups(msr, staff);
-  dGroups.DivGroups.forEach((group: DivGroup, i: number) => {
+
+  msr.DivisionGroups.forEach((group: DivGroup, i: number) => {
     if (group.Divisions.length > 0) {
       const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
-      const beamAngle = DetermineBeamDirection(msr, group, stemDir);
 
-      const stems = CreateStems(
-        group.Notes,
-        group.Divisions,
-        staff,
-        msr,
-        camera,
-      );
-      let beams: Beam[] = [];
-      let tuplet = group.Notes[0][0].Tuple;
-      if (group.Divisions.length > 1 && group.Divisions[0].Duration < 0.25) {
-        // This is creating the primary beam
-        //beams = CreateBeams(group, stems, msr);
-        beams = CreateBeamsRevise(group, stems, tuplet);
-        beams.forEach((b) =>
-          b.Render(
-            context,
-            camera,
-            Beam.BeamCount(group.Divisions[0].Duration, tuplet),
-            stemDir,
-            theme,
-          ),
-        );
+      if (!group.StemDir) {
+        // Just in case this has failed to be set
+        group.StemDir = stemDir;
       }
-      stems.forEach((s) => s.Render(context, camera, theme));
+      let tuplet = group.Notes[0][0].Tuple;
+      group.Stems.forEach((s) => {
+        s.Render(context, camera, theme);
+        //        s.RenderBounds(context, camera);
+      });
+      group.Beams.forEach((b) => {
+        b.Render(
+          context,
+          camera,
+          Beam.BeamCount(group.Divisions[0].Duration, tuplet),
+          group.StemDir,
+          theme,
+        );
+      });
+
       group.Divisions.forEach((div) => {
         let hasFlipped = false;
 

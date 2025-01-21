@@ -55,6 +55,9 @@ function KeyPress(app, key, keyMaps) {
             localStorage.removeItem("persist");
             localStorage.removeItem("camera_data");
             break;
+        case keyMaps.beam:
+            app.BeamSelectedNotes();
+            break;
         default:
     }
 }

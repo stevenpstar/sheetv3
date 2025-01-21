@@ -11,9 +11,11 @@ declare class Stem implements ISelectable {
     Direction: string;
     StartPoint: number;
     EndPoint: number;
+    Staff: number;
     constructor(bounds: Bounds);
     IsHovered(x: number, y: number, cam: Camera): boolean;
     Render(context: CanvasRenderingContext2D, cam: Camera, theme: Theme): void;
+    RenderBounds(context: CanvasRenderingContext2D, cam: Camera): void;
 }
 export { Stem };
 //# sourceMappingURL=Stem.d.ts.map

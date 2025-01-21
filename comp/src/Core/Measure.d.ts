@@ -6,7 +6,7 @@ import { Articulation } from "./Articulation.js";
 import { Barline } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Clef } from "./Clef.js";
-import { type Division } from "./Division.js";
+import { type Division, DivGroup } from "./Division.js";
 import { Instrument } from "./Instrument.js";
 import { Note } from "./Note.js";
 import { Page } from "./Page.js";
@@ -40,11 +40,6 @@ declare class Measure implements ISelectable {
     Instrument: Instrument;
     Bounds: Bounds;
     Editable: boolean;
-    Clefs: Clef[];
-    TimeSignature: TimeSignature;
-    KeySignature: string;
-    Notes: Note[];
-    Divisions: Division[];
     RenderClef: boolean;
     RenderKey: boolean;
     RenderTimeSig: boolean;
@@ -52,9 +47,15 @@ declare class Measure implements ISelectable {
     Page: Page;
     PageLine: Number;
     Message: (msg: Message) => void;
+    TimeSignature: TimeSignature;
+    KeySignature: string;
+    Notes: Note[];
+    Divisions: Division[];
+    Clefs: Clef[];
     Staves: Staff[];
     Barlines: Barline[];
     Articulations: Articulation[];
+    DivisionGroups: DivGroup[];
     XOffset: number;
     Line: number;
     RunningID: {

@@ -81,6 +81,7 @@ declare class App {
     CenterMeasures(): void;
     CenterPage(): void;
     AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
+    BeamSelectedNotes(): void;
     AddStaff(instrNum: number, clef: string): void;
     FromPitchMap(midiNote: number, clef: string): MappedMidi;
 }

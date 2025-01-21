@@ -25,7 +25,7 @@ function StemToCenter(stemDir, lowestLine, highestLine, midLine) {
     }
 }
 // Create Stem Objects (Separate from render, allow to be selectable)
-function CreateStems(notes, divisions, staff, measure, camera) {
+function CreateStems(notes, divisions, staff, measure) {
     const stems = [];
     let dynNoteXBuffer = 9;
     const stemDir = DetermineStemDirection(notes, divisions);
@@ -48,7 +48,14 @@ function CreateStems(notes, divisions, staff, measure, camera) {
     const staffMidLinePos = GetStaffHeightUntil(measure.Staves, staff) +
         GetStaffMiddleLine(measure.Staves, staff) * 5;
     const xBuffer = stemDir === StemDirection.Up ? 11.5 : 0.25;
-    const beamDir = DetermineBeamDirection(measure, { Divisions: divisions, Notes: notes }, stemDir);
+    const beamDir = DetermineBeamDirection(measure, {
+        Divisions: divisions,
+        Notes: notes,
+        CrossStaff: false,
+        Staff: staff,
+        Stems: [],
+        Beams: [],
+    }, stemDir);
     const shouldBeam = divisions.length > 1 && divisions[0].Duration <= 0.25;
     divisions.forEach((div, i) => {
         const beamAlt = i * (10 / divisions.length - 1);
@@ -87,6 +94,7 @@ function CreateStems(notes, divisions, staff, measure, camera) {
         if (shouldBeam) {
             stem.Bounds.height = AlterHeightForBeam(stemDir, beamDir, stem.Bounds.height, beamAlt);
         }
+        stem.Staff = staff;
         stems.push(stem);
     });
     return stems;

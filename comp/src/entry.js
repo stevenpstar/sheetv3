@@ -19,6 +19,7 @@ const keymaps = {
     load: "l",
     test_triplet: "t",
     debug_clear: "c",
+    beam: "b",
 };
 const defaultTheme = {
     NoteElements: "black",

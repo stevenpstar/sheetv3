@@ -12,6 +12,7 @@ class Stem implements ISelectable {
   Direction: string;
   StartPoint: number;
   EndPoint: number;
+  Staff: number;
   constructor(bounds: Bounds) {
     this.Bounds = bounds;
   }
@@ -25,10 +26,24 @@ class Stem implements ISelectable {
   // the Note renderer
   Render(context: CanvasRenderingContext2D, cam: Camera, theme: Theme): void {
     context.fillStyle = theme.NoteElements;
-    context.fillRect(this.Bounds.x + cam.x,
-                     this.Bounds.y + cam.y,
-                     this.Bounds.width,
-                     this.Bounds.height);
+    if (this.Selected) {
+      context.fillStyle = theme.SelectColour;
+    }
+    context.fillRect(
+      this.Bounds.x + cam.x,
+      this.Bounds.y + cam.y,
+      this.Bounds.width,
+      this.Bounds.height,
+    );
+  }
+  RenderBounds(context: CanvasRenderingContext2D, cam: Camera): void {
+    context.fillStyle = "rgba(255, 0, 0, 255)";
+    context.fillRect(
+      this.Bounds.x + cam.x,
+      this.Bounds.y + cam.y,
+      this.Bounds.width,
+      this.Bounds.height,
+    );
   }
 }
 

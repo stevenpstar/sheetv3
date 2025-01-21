@@ -1,255 +1,3 @@
-declare class Camera {
-    x: number;
-    y: number;
-    oldX: number;
-    oldY: number;
-    Zoom: number;
-    constructor(x: number, y: number);
-}
-
-declare class Bounds {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    constructor(x: number, y: number, width: number, height: number);
-    IsHovered(ix: number, iy: number, cam: Camera): boolean;
-}
-
-declare enum SelectableTypes {
-    Measure = 0,
-    Note = 1,
-    Clef = 2,
-    TimeSig = 3,
-    KeySig = 4,
-    Beam = 5,
-    Stem = 6
-}
-interface ISelectable {
-    ID: number;
-    Selected: boolean;
-    SelType: SelectableTypes;
-    Bounds: Bounds | Bounds[];
-    Editable: boolean;
-    IsHovered: (x: number, y: number, cam: Camera) => boolean;
-}
-
-declare enum MessageType {
-    None = 0,
-    Selection = 1,
-    Deletion = 2,
-    InputChange = 3,
-    AddNote = 4
-}
-type MessageData = {
-    MessageType: MessageType;
-    Message: {
-        msg: string;
-        obj: any;
-    };
-};
-interface Message {
-    messageString: string;
-    messageData: MessageData;
-}
-declare function ClearMessage(): Message;
-
-interface RenderProperties {
-    canvas: HTMLCanvasElement;
-    context: CanvasRenderingContext2D;
-    camera: Camera;
-}
-
-declare class Clef implements ISelectable {
-    ID: number;
-    Selected: boolean;
-    Staff: number;
-    Position: {
-        x: number;
-        y: number;
-    };
-    Bounds: Bounds;
-    SelType: SelectableTypes;
-    Type: string;
-    Beat: number;
-    Editable: boolean;
-    constructor(id: number, type: string, beat: number, staff: number);
-    render(renderProps: RenderProperties, theme: Theme): void;
-    SetBounds(msr: Measure, staff: number): void;
-    IsHovered(x: number, y: number, cam: Camera): boolean;
-}
-
-interface TupleDetails {
-    StartBeat: number;
-    EndBeat: number;
-    Value: number;
-    Count: number;
-}
-interface NoteProps {
-    Beat: number;
-    Duration: number;
-    Line: number;
-    Rest: boolean;
-    Tied: boolean;
-    Staff: number;
-    Tuple: boolean;
-    TupleDetails?: TupleDetails;
-    Clef: string;
-    Editable?: boolean;
-}
-declare class Note implements ISelectable {
-    Beat: number;
-    Duration: number;
-    Line: number;
-    Rest: boolean;
-    Tied: boolean;
-    Accidental: number;
-    ID: number;
-    SelType: SelectableTypes;
-    Clef: string;
-    Editable: boolean;
-    Opacity: number;
-    TiedStart: number;
-    TiedEnd: number;
-    Bounds: Bounds;
-    Selected: boolean;
-    Staff: number;
-    Tuple: boolean;
-    TupleDetails?: TupleDetails;
-    constructor(props: NoteProps);
-    SetBounds(bounds: Bounds): void;
-    SetID(id: number): void;
-    SetTiedStartEnd(s: number, e: number): void;
-    IsHovered(x: number, y: number, cam: Camera): boolean;
-    GetMidiNumber(): number;
-}
-
-interface Division {
-    Beat: number;
-    Duration: number;
-    Bounds: Bounds;
-    Staff: number;
-}
-
-interface Margins {
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
-}
-interface PageLine {
-    Number: number;
-    YPos: number;
-    LineBounds: Bounds;
-}
-interface MarginAdjuster {
-    Name: string;
-    Direction: string;
-    Bounds: Bounds;
-}
-declare class Page {
-    Margins: Margins;
-    Bounds: Bounds;
-    Number: number;
-    PageLines: PageLine[];
-    MarginAdj: MarginAdjuster[];
-    constructor(x: number, y: number, pageNum: number);
-    AddLine(lineHeight: number): PageLine;
-}
-
-declare class TimeSignature implements ISelectable {
-    ID: number;
-    Selected: boolean;
-    SelType: SelectableTypes;
-    Bounds: Bounds[];
-    Editable: boolean;
-    top: number;
-    bottom: number;
-    TopPosition: {
-        x: number;
-        y: number;
-    }[];
-    BotPosition: {
-        x: number;
-        y: number;
-    }[];
-    constructor(top: number, bottom: number, useSymbol?: boolean);
-    render(renderProps: RenderProperties, msr: Measure, theme: Theme): void;
-    SetBounds(msr: Measure, staff: number): void;
-    IsHovered(x: number, y: number, cam: Camera): boolean;
-}
-
-interface MeasureProps {
-    Instrument: Instrument;
-    Bounds: Bounds;
-    TimeSignature: {
-        top: number;
-        bottom: number;
-    };
-    KeySignature: string;
-    Notes: Note[];
-    Staves: Staff[];
-    Clefs: Clef[];
-    RenderClef: boolean;
-    RenderTimeSig: boolean;
-    RenderKey: boolean;
-    Camera: Camera;
-    Page: Page;
-    Message: (msg: Message) => void;
-    Settings?: MeasureSettings;
-}
-declare class Measure implements ISelectable {
-    ID: number;
-    Selected: boolean;
-    SelType: SelectableTypes;
-    Instrument: Instrument;
-    Bounds: Bounds;
-    Editable: boolean;
-    Clefs: Clef[];
-    TimeSignature: TimeSignature;
-    KeySignature: string;
-    Notes: Note[];
-    Divisions: Division[];
-    RenderClef: boolean;
-    RenderKey: boolean;
-    RenderTimeSig: boolean;
-    Camera: Camera;
-    Page: Page;
-    PageLine: Number;
-    Message: (msg: Message) => void;
-    Staves: Staff[];
-    XOffset: number;
-    Line: number;
-    RunningID: {
-        count: number;
-    };
-    constructor(properties: MeasureProps, runningId: {
-        count: number;
-    });
-    GetLineHovered(y: number, staffNum: number): {
-        num: number;
-        bounds: Bounds;
-    };
-    GetNotePositionOnLine(line: number, staff: number): number;
-    GetBoundsWithOffset(): Bounds;
-    SetXOffset(): void;
-    CreateDivisions(cam: Camera, afterInput?: boolean): void;
-    Reposition(prevMsr: Measure): void;
-    GetMeasureHeight(): number;
-    GetGrandMeasureHeight(): number;
-    GetGrandMeasureMidLine(): number;
-    NEW_GetMeasureHeight(): number;
-    AddNote(note: Note, fromInput?: boolean): void;
-    ClearNonRestNotes(beat: number, staff: number): void;
-    ClearRestNotes(beat: number, staff: number): void;
-    ClearMeasure(ignoreNotes?: Note[]): void;
-    DeleteSelected(): void;
-    GetMinimumWidth(): number;
-    ReturnSelectableElements(): ISelectable[];
-    IsHovered(x: number, y: number, cam: Camera): boolean;
-    ChangeTimeSignature(top: number, bottom: number, transpose: boolean): void;
-}
-
 type CameraSettings = {
     DragEnabled?: boolean;
     ZoomEnabled?: boolean;
@@ -302,6 +50,307 @@ type Theme = {
     PageShadowColour: string;
 };
 
+declare class Camera {
+    Dragging: boolean;
+    DraggingX: number;
+    DraggingY: number;
+    x: number;
+    y: number;
+    oldX: number;
+    oldY: number;
+    Zoom: number;
+    constructor(x: number, y: number);
+    SetDragging(drag: boolean, x: number, y: number, config: ConfigSettings, cam: Camera): void;
+    DragCamera(mx: number, my: number): boolean;
+    SetZoom(zoom: number): void;
+}
+
+declare class Bounds {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    constructor(x: number, y: number, width: number, height: number);
+    IsHovered(ix: number, iy: number, cam: Camera): boolean;
+}
+
+declare enum SelectableTypes {
+    Measure = 0,
+    Note = 1,
+    Clef = 2,
+    TimeSig = 3,
+    KeySig = 4,
+    Beam = 5,
+    Stem = 6
+}
+interface ISelectable {
+    ID: number;
+    Selected: boolean;
+    SelType: SelectableTypes;
+    Bounds: Bounds | Bounds[];
+    Editable: boolean;
+    IsHovered: (x: number, y: number, cam: Camera) => boolean;
+}
+
+declare enum MessageType {
+    None = 0,
+    Selection = 1,
+    Deletion = 2,
+    InputChange = 3,
+    AddNote = 4
+}
+type MessageData = {
+    MessageType: MessageType;
+    Message: {
+        msg: string;
+        obj: any;
+    };
+};
+interface Message {
+    messageString: string;
+    messageData: MessageData;
+}
+declare function ClearMessage(): Message;
+
+interface TupleDetails {
+    StartBeat: number;
+    EndBeat: number;
+    Value: number;
+    Count: number;
+}
+interface NoteProps {
+    Beat: number;
+    Duration: number;
+    Line: number;
+    Rest: boolean;
+    Tied: boolean;
+    Staff: number;
+    Tuple: boolean;
+    TupleDetails?: TupleDetails;
+    Clef: string;
+    Editable?: boolean;
+}
+declare class Note implements ISelectable {
+    Beat: number;
+    Duration: number;
+    Line: number;
+    Rest: boolean;
+    Tied: boolean;
+    Accidental: number;
+    ID: number;
+    SelType: SelectableTypes;
+    Clef: string;
+    Editable: boolean;
+    Opacity: number;
+    TiedStart: number;
+    TiedEnd: number;
+    Bounds: Bounds;
+    Selected: boolean;
+    Staff: number;
+    Tuple: boolean;
+    TupleDetails?: TupleDetails;
+    constructor(props: NoteProps);
+    SetBounds(bounds: Bounds): void;
+    SetID(id: number): void;
+    SetTiedStartEnd(s: number, e: number): void;
+    IsHovered(x: number, y: number, cam: Camera): boolean;
+    GetMidiNumber(): number;
+}
+
+interface RenderProperties {
+    canvas: HTMLCanvasElement;
+    context: CanvasRenderingContext2D;
+    camera: Camera;
+}
+
+declare enum StemDirection {
+    Up = 0,
+    Down = 1
+}
+
+interface Division {
+    Beat: number;
+    Duration: number;
+    Bounds: Bounds;
+    Staff: number;
+    Direction: StemDirection;
+    NoteXBuffer: number;
+}
+
+declare enum ArticulationType {
+    NONE = 0,
+    ACCENT = 1
+}
+declare class Articulation {
+    Type: ArticulationType;
+    Beat: number;
+    Staff: number;
+    constructor(type: ArticulationType, beat: number, staff: number);
+    Render(renderProps: RenderProperties, notes: Note[], staves: Staff[], div: Division, theme: Theme): void;
+}
+
+declare enum BarlineType {
+    SINGLE = 0,
+    DOUBLE = 1,
+    END = 2,
+    REPEAT_BEGIN = 3,
+    REPEAT_END = 4
+}
+declare enum BarlinePos {
+    START = 0,
+    END = 1
+}
+declare class Barline implements ISelectable {
+    ID: number;
+    Selected: boolean;
+    SelType: SelectableTypes;
+    Bounds: Bounds;
+    Editable: boolean;
+    Position: BarlinePos;
+    Type: BarlineType;
+    constructor(pos: BarlinePos, type: BarlineType);
+    IsHovered(x: number, y: number, cam: Camera): boolean;
+}
+
+declare class Clef implements ISelectable {
+    ID: number;
+    Selected: boolean;
+    Staff: number;
+    Position: {
+        x: number;
+        y: number;
+    };
+    Bounds: Bounds;
+    SelType: SelectableTypes;
+    Type: string;
+    Beat: number;
+    Editable: boolean;
+    constructor(id: number, type: string, beat: number, staff: number);
+    render(renderProps: RenderProperties, theme: Theme): void;
+    SetBounds(msr: Measure, staff: number): void;
+    IsHovered(x: number, y: number, cam: Camera): boolean;
+}
+
+interface Margins {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+}
+interface PageLine {
+    Number: number;
+    YPos: number;
+    LineBounds: Bounds;
+}
+interface MarginAdjuster {
+    Name: string;
+    Direction: string;
+    Bounds: Bounds;
+}
+declare class Page {
+    Margins: Margins;
+    Bounds: Bounds;
+    Number: number;
+    PageLines: PageLine[];
+    MarginAdj: MarginAdjuster[];
+    constructor(x: number, y: number, pageNum: number);
+    AddLine(lineHeight: number): PageLine;
+}
+
+declare class TimeSignature implements ISelectable {
+    ID: number;
+    Selected: boolean;
+    SelType: SelectableTypes;
+    Bounds: Bounds[];
+    Editable: boolean;
+    top: number;
+    bottom: number;
+    TopPosition: {
+        x: number;
+        y: number;
+    }[];
+    BotPosition: {
+        x: number;
+        y: number;
+    }[];
+    constructor(top: number, bottom: number, useSymbol?: boolean);
+    render(renderProps: RenderProperties, msr: Measure, theme: Theme): void;
+    SetBounds(msr: Measure): void;
+    IsHovered(x: number, y: number, cam: Camera): boolean;
+}
+
+interface MeasureProps {
+    Instrument: Instrument;
+    Bounds: Bounds;
+    TimeSignature: {
+        top: number;
+        bottom: number;
+    };
+    KeySignature: string;
+    Notes: Note[];
+    Staves: Staff[];
+    Clefs: Clef[];
+    RenderClef: boolean;
+    RenderTimeSig: boolean;
+    RenderKey: boolean;
+    Camera: Camera;
+    Page: Page;
+    Message: (msg: Message) => void;
+    Settings?: MeasureSettings;
+    Barlines: Barline[];
+}
+declare class Measure implements ISelectable {
+    ID: number;
+    Num: number;
+    Selected: boolean;
+    SelType: SelectableTypes;
+    Instrument: Instrument;
+    Bounds: Bounds;
+    Editable: boolean;
+    Clefs: Clef[];
+    TimeSignature: TimeSignature;
+    KeySignature: string;
+    Notes: Note[];
+    Divisions: Division[];
+    RenderClef: boolean;
+    RenderKey: boolean;
+    RenderTimeSig: boolean;
+    Camera: Camera;
+    Page: Page;
+    PageLine: Number;
+    Message: (msg: Message) => void;
+    Staves: Staff[];
+    Barlines: Barline[];
+    Articulations: Articulation[];
+    XOffset: number;
+    Line: number;
+    RunningID: {
+        count: number;
+    };
+    constructor(properties: MeasureProps, runningId: {
+        count: number;
+    });
+    GetLineHovered(y: number, staffNum: number): {
+        num: number;
+        bounds: Bounds;
+    };
+    GetNotePositionOnLine(line: number, staff: number): number;
+    GetBoundsWithOffset(): Bounds;
+    SetXOffset(): void;
+    CreateDivisions(cam: Camera, afterInput?: boolean): void;
+    Reposition(prevMsr: Measure): void;
+    GetMeasureHeight(): number;
+    AddNote(note: Note, fromInput?: boolean): void;
+    ClearNonRestNotes(beat: number, staff: number): void;
+    ClearRestNotes(beat: number, staff: number): void;
+    ClearMeasure(ignoreNotes?: Note[]): void;
+    DeleteSelected(): void;
+    GetMinimumWidth(): number;
+    ReturnSelectableElements(): ISelectable[];
+    IsHovered(x: number, y: number, cam: Camera): boolean;
+    ChangeTimeSignature(top: number, bottom: number, transpose: boolean): void;
+}
+
 declare class Staff {
     Num: number;
     TopLine: number;
@@ -343,6 +392,7 @@ declare class Sheet {
     Measures: Measure[];
     Pages: Page[];
     constructor(properties: SheetProps);
+    InputHover(x: number, y: number, camera: Camera): void;
 }
 
 declare class Selector {
@@ -408,9 +458,6 @@ declare class App {
     Context: CanvasRenderingContext2D;
     Load: boolean;
     Sheet: Sheet;
-    HoveredElements: {
-        MeasureID: number;
-    };
     NoteInput: boolean;
     RestInput: boolean;
     Formatting: boolean;
@@ -497,6 +544,7 @@ interface lMeasure {
         top: number;
         bottom: number;
     };
+    KeySignature: string;
     Notes: lNote[];
     Bounds: Bounds;
     ShowClef: boolean;

@@ -12,6 +12,13 @@ class Stem {
     // the Note renderer
     Render(context, cam, theme) {
         context.fillStyle = theme.NoteElements;
+        if (this.Selected) {
+            context.fillStyle = theme.SelectColour;
+        }
+        context.fillRect(this.Bounds.x + cam.x, this.Bounds.y + cam.y, this.Bounds.width, this.Bounds.height);
+    }
+    RenderBounds(context, cam) {
+        context.fillStyle = "rgba(255, 0, 0, 255)";
         context.fillRect(this.Bounds.x + cam.x, this.Bounds.y + cam.y, this.Bounds.width, this.Bounds.height);
     }
 }

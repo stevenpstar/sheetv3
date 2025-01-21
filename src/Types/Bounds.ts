@@ -13,8 +13,20 @@ class Bounds {
   }
 
   IsHovered(ix: number, iy: number, cam: Camera): boolean {
-      return (ix >= this.x + cam.x && ix <= this.x + cam.x + (this.width) &&
-            iy >= this.y + cam.y && iy <= this.y + cam.y + (this.height));
+    if (this.height < 0) {
+      return (
+        ix >= this.x + cam.x &&
+        ix <= this.x + cam.x + this.width &&
+        iy > this.y - Math.abs(this.height) + cam.y &&
+        iy <= this.y + cam.y
+      );
+    }
+    return (
+      ix >= this.x + cam.x &&
+      ix <= this.x + cam.x + this.width &&
+      iy >= this.y + cam.y &&
+      iy <= this.y + cam.y + this.height
+    );
   }
 }
 

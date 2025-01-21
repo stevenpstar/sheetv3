@@ -2,7 +2,6 @@ import { Bounds } from "../Types/Bounds.js";
 import { SelectableTypes } from "../Types/ISelectable.js";
 import { MessageType } from "../Types/Message.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
-import { Articulation, ArticulationType } from "./Articulation.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
 import { CreateDivisions, ResizeDivisions, DivisionMinWidth, } from "./Division.js";
 import { StaffType } from "./Instrument.js";
@@ -29,7 +28,7 @@ class Measure {
         this.KeySignature = properties.KeySignature;
         this.Notes = properties.Notes;
         this.Divisions = [];
-        this.Articulations = [new Articulation(ArticulationType.ACCENT, 1, 0)];
+        this.Articulations = [];
         this.RenderClef = properties.RenderClef;
         if (this.Instrument.Staff === StaffType.Rhythm) {
             this.RenderClef = false;
@@ -40,6 +39,8 @@ class Measure {
         this.Page = properties.Page;
         this.PageLine = properties.Page.PageLines[0].Number;
         this.SetXOffset();
+        this.Barlines = properties.Barlines;
+        this.DivisionGroups = [];
         this.CreateDivisions(this.Camera);
         this.Staves.forEach((s, i) => {
             const clef = new Clef(0, properties.Clefs[i].Type, 1, s.Num);
@@ -47,7 +48,6 @@ class Measure {
             this.Clefs.push(clef);
         });
         this.TimeSignature.SetBounds(this);
-        this.Barlines = properties.Barlines;
     }
     // Gets line hovered relative to staff (15 will always be middle of staff for
     // example)

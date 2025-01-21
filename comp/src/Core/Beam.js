@@ -49,7 +49,7 @@ function GenerateBeams(measure, divGroup, stemDir) {
     const divisions = divGroup.Divisions.sort((a, b) => {
         return a.Beat - b.Beat;
     });
-    const staff = divisions[0].Staff;
+    const staff = divisions[0].StaffGroup;
     // assuming that divGroup.notes array is sorted by beat
     startTopLine = divGroup.Notes[0].sort((a, b) => {
         return a.Line - b.Line;

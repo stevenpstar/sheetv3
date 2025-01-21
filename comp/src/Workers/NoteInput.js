@@ -4,8 +4,10 @@ import { StaffType } from "../Core/Instrument.js";
 import { Note } from "../Core/Note.js";
 import { GetStaffMiddleLine } from "../Core/Staff.js";
 import { GetLargestValues } from "../Core/Values.js";
+import { CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
 import { DetermineStemDirection, StemDirection, } from "../Renderers/Note.Renderer.js";
+import { CreateStems } from "../Renderers/Stem.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 const noteXBuffer = 9;
 // added for automatic/generated notes from external UIs.
@@ -63,14 +65,31 @@ function InputNote(msr, noteValue, division, line, rest, tupleCount = 1) {
             AddToDivision(msr, noteProps, division.Staff);
         }
     }
+    RecreateDivisionGroups(msr);
     msr.CreateDivisions(msr.Camera, true);
+    RecreateStemAndBeams(msr);
+}
+function RecreateStemAndBeams(msr) {
+    msr.DivisionGroups.forEach((g) => {
+        g.Stems = [];
+        g.Beams = [];
+        g.Stems.push(...CreateStems(g.Notes, g.Divisions, g.Staff, msr));
+        g.Beams.push(...CreateBeamsRevise(g, g.Stems, false));
+    });
+}
+function RecreateDivisionGroups(msr) {
+    var groups = [];
+    msr.Staves.forEach((staff) => {
+        const group = GetDivisionGroups(msr, staff.Num);
+        groups.push(...group);
+    });
+    msr.DivisionGroups = groups;
 }
 function UpdateNoteBounds(msr, staff) {
     // Maybe should go somewhere else
     // Maybe should be more optimised
     // For now seems to update bounds of notes properly
-    const groups = GetDivisionGroups(msr, staff);
-    groups.DivGroups.forEach((g) => {
+    msr.DivisionGroups.forEach((g) => {
         const { Divisions, Notes } = g;
         const stemDir = DetermineStemDirection(Notes, Divisions);
         Divisions.forEach((div) => {
@@ -101,6 +120,7 @@ function UpdateNoteBounds(msr, staff) {
             });
         });
     });
+    RecreateStemAndBeams(msr);
 }
 function MeasureHasRoom(beat, duration, msr, tuple = 1) {
     return (beat * duration <= msr.TimeSignature.top * (1 / msr.TimeSignature.bottom));
@@ -341,4 +361,4 @@ function AllNotesByBeat(msr) {
     });
     return notes;
 }
-export { InputOnMeasure, UpdateNoteBounds, CreateTuplet, AddNoteOnMeasure };
+export { InputOnMeasure, UpdateNoteBounds, CreateTuplet, AddNoteOnMeasure, RecreateDivisionGroups, };

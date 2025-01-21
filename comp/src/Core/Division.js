@@ -37,6 +37,7 @@ function CreateDivisions(msr, notes, staff, cam) {
                 Duration: n.Duration,
                 Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff, cam),
                 Staff: staff,
+                StaffGroup: n.StaffGroup,
                 Direction: StemDirection.Up,
                 NoteXBuffer: 0,
             });
@@ -135,6 +136,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
                     Duration: v,
                     Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff, msr.Camera),
                     Staff: div.Staff,
+                    StaffGroup: notesOnDiv[0].StaffGroup,
                     Direction: StemDirection.Up,
                     NoteXBuffer: 0,
                 });
@@ -232,13 +234,19 @@ function GetDivisionGroups(msr, staff) {
     const divGroups = { DivGroups: [] };
     let divs = [];
     let notes = [];
+    let crossStaff = false;
     // started creating a div group or not
     let startFlag = false;
-    const mDivs = msr.Divisions.filter((d) => d.Staff === staff).sort((a, b) => {
+    const mDivs = msr.Divisions.filter((d) => d.Staff === staff || d.StaffGroup === staff).sort((a, b) => {
         return a.Beat - b.Beat;
     });
     mDivs.forEach((div, i) => {
-        const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat && n.Staff === staff);
+        if (div.Staff !== staff) {
+            crossStaff = true;
+        }
+        const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat &&
+            (n.Staff === staff || n.StaffGroup === staff) &&
+            !n.Ghost);
         divNotes.sort((a, b) => {
             return a.Line - b.Line;
         });
@@ -246,7 +254,14 @@ function GetDivisionGroups(msr, staff) {
         // this can definitely be cleaned up but it seems to
         // work for now, add tests later and then refactor
         if (restBeat && startFlag) {
-            divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+            divGroups.DivGroups.push({
+                Divisions: divs,
+                Notes: notes,
+                CrossStaff: crossStaff,
+                Staff: staff,
+                Stems: [],
+                Beams: [],
+            });
             divs = [];
             notes = [];
             startFlag = false;
@@ -256,15 +271,31 @@ function GetDivisionGroups(msr, staff) {
                 divs.push(div);
                 notes.push(divNotes);
                 if (div.Duration > 0.125) {
-                    divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                    divGroups.DivGroups.push({
+                        Divisions: divs,
+                        Notes: notes,
+                        CrossStaff: crossStaff,
+                        Staff: staff,
+                        Stems: [],
+                        Beams: [],
+                    });
                     divs = [];
                     notes = [];
                 }
                 else {
                     startFlag = true;
-                    if (i === msr.Divisions.filter((d) => d.Staff === staff).length - 1) {
+                    if (i ===
+                        msr.Divisions.filter((d) => d.Staff === staff || d.StaffGroup === staff).length -
+                            1) {
                         // end of measure
-                        divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                        divGroups.DivGroups.push({
+                            Divisions: divs,
+                            Notes: notes,
+                            CrossStaff: crossStaff,
+                            Staff: staff,
+                            Stems: [],
+                            Beams: [],
+                        });
                         divs = [];
                         notes = [];
                     }
@@ -273,26 +304,56 @@ function GetDivisionGroups(msr, staff) {
             else {
                 if (div.Duration > 0.125) {
                     startFlag = false;
-                    divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                    divGroups.DivGroups.push({
+                        Divisions: divs,
+                        Notes: notes,
+                        CrossStaff: crossStaff,
+                        Staff: staff,
+                        Stems: [],
+                        Beams: [],
+                    });
                     divs = [];
                     notes = [];
                     divs.push(div);
                     notes.push(divNotes);
-                    divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                    divGroups.DivGroups.push({
+                        Divisions: divs,
+                        Notes: notes,
+                        CrossStaff: crossStaff,
+                        Staff: staff,
+                        Stems: [],
+                        Beams: [],
+                    });
                     divs = [];
                     notes = [];
                 }
                 else {
                     // breakpoint check TODO: Actually implement this is prototype code
                     if (div.Beat === 3) {
-                        divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                        divGroups.DivGroups.push({
+                            Divisions: divs,
+                            Notes: notes,
+                            CrossStaff: crossStaff,
+                            Staff: staff,
+                            Stems: [],
+                            Beams: [],
+                        });
                         divs = [];
                         notes = [];
                     }
                     divs.push(div);
                     notes.push(divNotes);
-                    if (i === msr.Divisions.filter((d) => d.Staff === staff).length - 1) {
-                        divGroups.DivGroups.push({ Divisions: divs, Notes: notes });
+                    if (i ===
+                        msr.Divisions.filter((d) => d.Staff === staff || d.StaffGroup === staff).length -
+                            1) {
+                        divGroups.DivGroups.push({
+                            Divisions: divs,
+                            Notes: notes,
+                            CrossStaff: crossStaff,
+                            Staff: staff,
+                            Stems: [],
+                            Beams: [],
+                        });
                         divs = [];
                         notes = [];
                     }
@@ -300,14 +361,17 @@ function GetDivisionGroups(msr, staff) {
             }
         }
     });
-    return divGroups;
+    return divGroups.DivGroups;
 }
 function IsRestOnBeat(beat, notes, staff) {
-    const notesOnBeat = notes.filter((n) => n.Beat === beat && n.Staff === staff);
-    const restFound = notesOnBeat.find((n) => n.Rest);
-    if (restFound && notesOnBeat.length > 1) {
-        console.error("Rest found on beat with multiple notes, beat: ", beat);
+    const notesOnBeat = notes.filter((n) => n.Beat === beat && (n.Staff === staff || n.StaffGroup === staff));
+    var restFound = !notesOnBeat.find((n) => !n.Rest);
+    if (restFound === undefined) {
+        restFound = false;
     }
-    return restFound !== undefined;
+    //  if (restFound && notesOnBeat.length > 1) {
+    //    console.error("Rest found on beat with multiple notes, beat: ", beat);
+    //  }
+    return restFound;
 }
 export { CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, IsRestOnBeat, GetDivisionGroups, DivisionMinWidth, DivisionMaxWidth, };

@@ -4,13 +4,16 @@ import { DivGroup, GetDivisionGroups } from "../Core/Division.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note, NoteProps, TupleDetails } from "../Core/Note.js";
-import { GetStaffMiddleLine } from "../Core/Staff.js";
+import { GetStaffMiddleLine, Staff } from "../Core/Staff.js";
+import { Stem } from "../Core/Stem.js";
 import { GetLargestValues } from "../Core/Values.js";
+import { CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
 import {
   DetermineStemDirection,
   StemDirection,
 } from "../Renderers/Note.Renderer.js";
+import { CreateStems } from "../Renderers/Stem.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable } from "../Types/ISelectable.js";
 
@@ -99,15 +102,35 @@ function InputNote(
       AddToDivision(msr, noteProps, division.Staff);
     }
   }
+  RecreateDivisionGroups(msr);
   msr.CreateDivisions(msr.Camera, true);
+  RecreateStemAndBeams(msr);
+}
+
+function RecreateStemAndBeams(msr: Measure): void {
+  msr.DivisionGroups.forEach((g: DivGroup) => {
+    g.Stems = [];
+    g.Beams = [];
+    g.Stems.push(...CreateStems(g.Notes, g.Divisions, g.Staff, msr));
+    g.Beams.push(...CreateBeamsRevise(g, g.Stems, false));
+  });
+}
+
+function RecreateDivisionGroups(msr: Measure): void {
+  var groups = [];
+  msr.Staves.forEach((staff: Staff) => {
+    const group = GetDivisionGroups(msr, staff.Num);
+    groups.push(...group);
+  });
+
+  msr.DivisionGroups = groups;
 }
 
 function UpdateNoteBounds(msr: Measure, staff: number): void {
   // Maybe should go somewhere else
   // Maybe should be more optimised
   // For now seems to update bounds of notes properly
-  const groups = GetDivisionGroups(msr, staff);
-  groups.DivGroups.forEach((g: DivGroup) => {
+  msr.DivisionGroups.forEach((g: DivGroup) => {
     const { Divisions, Notes } = g;
     const stemDir = DetermineStemDirection(Notes, Divisions);
     Divisions.forEach((div: Division) => {
@@ -145,6 +168,7 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
       });
     });
   });
+  RecreateStemAndBeams(msr);
 }
 
 function MeasureHasRoom(
@@ -435,4 +459,10 @@ function AllNotesByBeat(msr: Measure): Array<Note[]> {
   return notes;
 }
 
-export { InputOnMeasure, UpdateNoteBounds, CreateTuplet, AddNoteOnMeasure };
+export {
+  InputOnMeasure,
+  UpdateNoteBounds,
+  CreateTuplet,
+  AddNoteOnMeasure,
+  RecreateDivisionGroups,
+};

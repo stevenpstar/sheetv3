@@ -18,7 +18,7 @@ function CreateBeamsRevise(divGroup, stems, tuplet) {
     let newBeam = true;
     let tempBeam = null;
     divGroup.Divisions.forEach((div, i) => {
-        if (i > stems.length) {
+        if (i > stems.length || stems.length == 0) {
             return;
         }
         const startingStem = i == 0 ? stems[i] : stems[i - 1];

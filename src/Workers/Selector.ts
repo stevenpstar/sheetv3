@@ -1,4 +1,5 @@
 import { Camera } from "../Core/Camera.js";
+import { DivGroup } from "../Core/Division.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
@@ -40,9 +41,13 @@ class Selector {
     UpdateNoteBounds(msr, 0);
     elements.push(...msr.Notes);
     elements.push(...msr.Clefs);
+    msr.DivisionGroups.forEach((g: DivGroup) => {
+      elements.push(...g.Stems);
+    });
     elements.push(msr.TimeSignature);
     elements.forEach((e: ISelectable) => {
       if (e.IsHovered(x, y, cam) && e.Selected === false) {
+        console.log("hovered something!");
         //        if (e.Editable !== undefined && e.Editable === false) {
         //          return;
         //        }

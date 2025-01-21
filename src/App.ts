@@ -9,6 +9,7 @@ import {
   AddNoteOnMeasure,
   CreateTuplet,
   InputOnMeasure,
+  RecreateDivisionGroups,
   UpdateNoteBounds,
 } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
@@ -454,6 +455,12 @@ class App {
     } else if (this.Config.CameraSettings?.CenterPage) {
       this.CenterPage();
     }
+    measures.forEach((m: Measure) => {
+      RecreateDivisionGroups(m);
+      m.Staves.forEach((s: Staff) => {
+        UpdateNoteBounds(m, s.Num);
+      });
+    });
 
     this.Update(0, 0);
   }
@@ -634,6 +641,28 @@ class App {
     rest: boolean,
   ): void {
     AddNoteOnMeasure(msr, noteValue, line, beat, rest);
+  }
+
+  BeamSelectedNotes(): void {
+    // currently only implementing for cross staff beaming
+    var beamFrom: number; // which staff to "beam from"
+    for (let [msr, elem] of this.Selector.Elements) {
+      elem
+        .filter((e: ISelectable) => e.SelType === SelectableTypes.Note)
+        .forEach((n: Note, i: number) => {
+          if (i == 0) {
+            beamFrom = n.Staff;
+          }
+          if (n.Staff !== beamFrom) {
+            msr.Notes.filter(
+              (note: Note) => note.Staff == n.Staff && note.Beat == n.Beat,
+            ).forEach((note: Note) => {
+              note.StaffGroup = beamFrom;
+            });
+          }
+        });
+    }
+    this.ResizeMeasures(this.Sheet.Measures);
   }
 
   AddStaff(instrNum: number, clef: string): void {
