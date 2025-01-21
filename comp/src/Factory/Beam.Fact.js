@@ -1,5 +1,5 @@
 import { Beam } from "../Core/Beam.js";
-import { DetermineStemDirection, } from "../Renderers/Note.Renderer.js";
+import { DetermineStemDirection, StemDirection, } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 function CreateBeams(divGroup, stems, measure) {
     let beams = [];
@@ -45,20 +45,39 @@ function CreateBeamsRevise(divGroup, stems, tuplet) {
                 y: stem.Bounds.y + stem.Bounds.height,
             };
         }
-        // Beam angle is up or straight
-        if (tempBeam.StartPoint.y > tempBeam.EndPoint.y) {
-            tempBeam.Bounds.x = tempBeam.StartPoint.x;
-            tempBeam.Bounds.y = tempBeam.EndPoint.y;
-            tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
-            tempBeam.Bounds.height = tempBeam.StartPoint.y - tempBeam.EndPoint.y + 6;
+        // Updating beam bounds
+        if (stemDir == StemDirection.Up) {
+            if (tempBeam.StartPoint.y > tempBeam.EndPoint.y) {
+                tempBeam.Bounds.x = tempBeam.StartPoint.x;
+                tempBeam.Bounds.y = tempBeam.EndPoint.y;
+                tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
+                tempBeam.Bounds.height =
+                    tempBeam.StartPoint.y - tempBeam.EndPoint.y + 6;
+            }
+            else {
+                tempBeam.Bounds.x = tempBeam.StartPoint.x;
+                tempBeam.Bounds.y = tempBeam.StartPoint.y;
+                tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
+                tempBeam.Bounds.height =
+                    tempBeam.EndPoint.y - tempBeam.StartPoint.y + 6;
+            }
         }
-        else {
-            tempBeam.Bounds.x = tempBeam.StartPoint.x;
-            tempBeam.Bounds.y = tempBeam.StartPoint.y - 6;
-            tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
-            tempBeam.Bounds.height = tempBeam.EndPoint.y - tempBeam.StartPoint.y + 6;
+        else if (stemDir === StemDirection.Down) {
+            if (tempBeam.StartPoint.y > tempBeam.EndPoint.y) {
+                tempBeam.Bounds.x = tempBeam.StartPoint.x;
+                tempBeam.Bounds.y = tempBeam.EndPoint.y - 6;
+                tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
+                tempBeam.Bounds.height =
+                    tempBeam.StartPoint.y - tempBeam.EndPoint.y + 6;
+            }
+            else {
+                tempBeam.Bounds.x = tempBeam.StartPoint.x;
+                tempBeam.Bounds.y = tempBeam.StartPoint.y - 6;
+                tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
+                tempBeam.Bounds.height =
+                    tempBeam.EndPoint.y - tempBeam.StartPoint.y + 6;
+            }
         }
-        console.log("temp beam: ", tempBeam);
     });
     return beams;
 }
