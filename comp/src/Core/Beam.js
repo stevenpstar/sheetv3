@@ -1,5 +1,6 @@
 import { BeamDirection, StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
+import { SelectableTypes } from "../Types/ISelectable.js";
 import { NoteValues } from "./Values.js";
 function DetermineBeamDirection(measure, divGroup, stemDir) {
     const divisions = divGroup.Divisions.sort((a, b) => {
@@ -85,18 +86,34 @@ function GetBeamString(beam, cam, stemDir, no) {
 }
 class Beam {
     constructor(bounds, start, end, count = 1) {
+        this.Selected = false;
+        this.SelType = SelectableTypes.Beam;
+        this.Editable = false;
         this.Bounds = bounds;
         this.StartPoint = start;
         this.EndPoint = end;
         this.Count = count;
+        this.ID = 0;
+    }
+    IsHovered(x, y, cam) {
+        return this.Bounds.IsHovered(x, y, cam);
     }
     Render(context, cam, count, stemDir, theme) {
         context.fillStyle = theme.NoteElements;
+        if (this.Selected) {
+            context.fillStyle = theme.SelectColour;
+        }
         const svgLine = GetBeamString(this, cam, stemDir, 0);
         context.fill(new Path2D(svgLine));
         for (let i = 1; i < this.Count; i++) {
             context.fill(new Path2D(GetBeamString(this, cam, stemDir, i)));
         }
+        //    this.RenderBounds(context, cam);
+    }
+    RenderBounds(context, cam) {
+        context.strokeStyle = "red";
+        context.strokeRect(this.Bounds.x + cam.x, this.Bounds.y + cam.y, this.Bounds.width, this.Bounds.height);
+        context.stroke();
     }
     static BeamCount(duration, tuplet = false) {
         let count = 0;

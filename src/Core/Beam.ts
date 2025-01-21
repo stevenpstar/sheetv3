@@ -1,5 +1,6 @@
 import { BeamDirection, StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
+import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Vector2 } from "../Types/Vectors.js";
 import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
@@ -122,8 +123,12 @@ function GetBeamString(
   return svgLine;
 }
 
-class Beam {
+class Beam implements ISelectable {
+  ID: number;
+  Selected: boolean = false;
   Bounds: Bounds;
+  SelType: SelectableTypes = SelectableTypes.Beam;
+  Editable: boolean = false;
   Direction: string;
   StartPoint: Vector2;
   EndPoint: Vector2;
@@ -133,6 +138,11 @@ class Beam {
     this.StartPoint = start;
     this.EndPoint = end;
     this.Count = count;
+    this.ID = 0;
+  }
+
+  IsHovered(x: number, y: number, cam: Camera): boolean {
+    return this.Bounds.IsHovered(x, y, cam);
   }
 
   Render(
@@ -143,11 +153,27 @@ class Beam {
     theme: Theme,
   ): void {
     context.fillStyle = theme.NoteElements;
+    if (this.Selected) {
+      context.fillStyle = theme.SelectColour;
+    }
     const svgLine = GetBeamString(this, cam, stemDir, 0);
     context.fill(new Path2D(svgLine));
     for (let i = 1; i < this.Count; i++) {
       context.fill(new Path2D(GetBeamString(this, cam, stemDir, i)));
     }
+
+    //    this.RenderBounds(context, cam);
+  }
+
+  RenderBounds(context: CanvasRenderingContext2D, cam: Camera): void {
+    context.strokeStyle = "red";
+    context.strokeRect(
+      this.Bounds.x + cam.x,
+      this.Bounds.y + cam.y,
+      this.Bounds.width,
+      this.Bounds.height,
+    );
+    context.stroke();
   }
 
   static BeamCount(duration: number, tuplet: boolean = false): number {

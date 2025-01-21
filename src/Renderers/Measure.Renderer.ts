@@ -1,16 +1,13 @@
 import { Articulation } from "../Core/Articulation.js";
-import { RenderBarline } from "../Core/Barline.js";
-import { Beam, DetermineBeamDirection } from "../Core/Beam.js";
-import { DivGroup, GetDivisionGroups, IsRestOnBeat } from "../Core/Division.js";
-import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
+import { Beam } from "../Core/Beam.js";
+import { DivGroup, IsRestOnBeat } from "../Core/Division.js";
+import { Dynamic } from "../Core/Dynamic.js";
 
 import { StaffType } from "../Core/Instrument.js";
 import { KeySignatures } from "../Core/KeySignatures.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
 import { RenderMeasureLines, RenderStaffLines, Staff } from "../Core/Staff.js";
-import { Stem } from "../Core/Stem.js";
-import { CreateBeams, CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
@@ -28,7 +25,6 @@ import {
   StemDirection,
   renderLedgerLines,
 } from "./Note.Renderer.js";
-import { CreateStems } from "./Stem.Fact.js";
 
 const line_space = 10;
 const line_width = 1;

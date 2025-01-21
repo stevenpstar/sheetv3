@@ -2,6 +2,10 @@ import { Beam } from "../Core/Beam.js";
 import { DivGroup, Division } from "../Core/Division.js";
 import { Measure } from "../Core/Measure.js";
 import { Stem } from "../Core/Stem.js";
+import {
+  DetermineStemDirection,
+  StemDirection,
+} from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Vector2 } from "../Types/Vectors.js";
 
@@ -44,6 +48,7 @@ function CreateBeamsRevise(
   const beams: Array<Beam> = [];
   let newBeam = true;
   let tempBeam: Beam = null;
+  const stemDir = DetermineStemDirection(divGroup.Notes, divGroup.Divisions);
   divGroup.Divisions.forEach((div: Division, i: number) => {
     if (i > stems.length || stems.length == 0) {
       return;
@@ -76,6 +81,21 @@ function CreateBeamsRevise(
         y: stem.Bounds.y + stem.Bounds.height,
       };
     }
+
+    // Beam angle is up or straight
+    if (tempBeam.StartPoint.y > tempBeam.EndPoint.y) {
+      tempBeam.Bounds.x = tempBeam.StartPoint.x;
+      tempBeam.Bounds.y = tempBeam.EndPoint.y;
+      tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
+      tempBeam.Bounds.height = tempBeam.StartPoint.y - tempBeam.EndPoint.y + 6;
+    } else {
+      tempBeam.Bounds.x = tempBeam.StartPoint.x;
+      tempBeam.Bounds.y = tempBeam.StartPoint.y - 6;
+      tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
+      tempBeam.Bounds.height = tempBeam.EndPoint.y - tempBeam.StartPoint.y + 6;
+    }
+
+    console.log("temp beam: ", tempBeam);
   });
 
   return beams;

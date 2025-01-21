@@ -43,7 +43,9 @@ class Selector {
     elements.push(...msr.Clefs);
     msr.DivisionGroups.forEach((g: DivGroup) => {
       elements.push(...g.Stems);
+      elements.push(...g.Beams);
     });
+
     elements.push(msr.TimeSignature);
     elements.forEach((e: ISelectable) => {
       if (e.IsHovered(x, y, cam) && e.Selected === false) {
