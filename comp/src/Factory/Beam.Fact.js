@@ -46,36 +46,48 @@ function CreateBeamsRevise(divGroup, stems, tuplet) {
             };
         }
         // Updating beam bounds
+        tempBeam.Bounds.x = tempBeam.StartPoint.x + 1;
+        var beamGapBuffer = 0;
+        if (tempBeam.Count > 1) {
+            beamGapBuffer = 2 * (tempBeam.Count - 1);
+        }
+        tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
         if (stemDir == StemDirection.Up) {
             if (tempBeam.StartPoint.y > tempBeam.EndPoint.y) {
-                tempBeam.Bounds.x = tempBeam.StartPoint.x;
                 tempBeam.Bounds.y = tempBeam.EndPoint.y;
-                tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
                 tempBeam.Bounds.height =
-                    tempBeam.StartPoint.y - tempBeam.EndPoint.y + 6;
+                    tempBeam.StartPoint.y -
+                        tempBeam.EndPoint.y +
+                        6 * tempBeam.Count +
+                        beamGapBuffer;
             }
             else {
-                tempBeam.Bounds.x = tempBeam.StartPoint.x;
                 tempBeam.Bounds.y = tempBeam.StartPoint.y;
-                tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
                 tempBeam.Bounds.height =
-                    tempBeam.EndPoint.y - tempBeam.StartPoint.y + 6;
+                    tempBeam.EndPoint.y -
+                        tempBeam.StartPoint.y +
+                        6 * tempBeam.Count +
+                        beamGapBuffer;
             }
         }
         else if (stemDir === StemDirection.Down) {
             if (tempBeam.StartPoint.y > tempBeam.EndPoint.y) {
-                tempBeam.Bounds.x = tempBeam.StartPoint.x;
-                tempBeam.Bounds.y = tempBeam.EndPoint.y - 6;
-                tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
+                tempBeam.Bounds.y =
+                    tempBeam.EndPoint.y - 6 * tempBeam.Count - beamGapBuffer;
                 tempBeam.Bounds.height =
-                    tempBeam.StartPoint.y - tempBeam.EndPoint.y + 6;
+                    tempBeam.StartPoint.y -
+                        tempBeam.EndPoint.y +
+                        6 * tempBeam.Count +
+                        beamGapBuffer;
             }
             else {
-                tempBeam.Bounds.x = tempBeam.StartPoint.x;
-                tempBeam.Bounds.y = tempBeam.StartPoint.y - 6;
-                tempBeam.Bounds.width = tempBeam.EndPoint.x - tempBeam.StartPoint.x;
+                tempBeam.Bounds.y =
+                    tempBeam.StartPoint.y - 6 * tempBeam.Count - beamGapBuffer;
                 tempBeam.Bounds.height =
-                    tempBeam.EndPoint.y - tempBeam.StartPoint.y + 6;
+                    tempBeam.EndPoint.y -
+                        tempBeam.StartPoint.y +
+                        6 * tempBeam.Count +
+                        beamGapBuffer;
             }
         }
     });
