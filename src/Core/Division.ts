@@ -14,6 +14,17 @@ import {
 import { Stem } from "./Stem.js";
 import { GetLargestValues } from "./Values.js";
 
+enum SubdivisionType {
+  CLEF,
+  GRACE_NOTE,
+  NOTE,
+}
+
+type Subdivision = {
+  Type: SubdivisionType;
+  Bounds: Bounds;
+};
+
 interface Division {
   Beat: number;
   Duration: number;
@@ -22,6 +33,7 @@ interface Division {
   StaffGroup: number;
   Direction: StemDirection;
   NoteXBuffer: number;
+  Subdivisions: Subdivision[];
 }
 
 interface DivGroup {
@@ -65,6 +77,7 @@ function CreateDivisions(
       Staff: staff,
       Tuple: false,
       Clef: staff === 0 ? "treble" : "bass",
+      Grace: false,
     };
     // TODO: Clef should not be determined by staff that makes no sense
     msr.AddNote(new Note(restProps));
@@ -75,15 +88,7 @@ function CreateDivisions(
       if (
         !divisions.find((div) => div.Beat === n.Beat && div.Staff === n.Staff)
       ) {
-        divisions.push({
-          Beat: n.Beat,
-          Duration: n.Duration,
-          Bounds: CreateBeatBounds(msr, n.Beat, n.Duration, staff),
-          Staff: staff,
-          StaffGroup: n.StaffGroup,
-          Direction: StemDirection.Up,
-          NoteXBuffer: 0,
-        });
+        divisions.push(CreateDivision(msr, n, staff, StemDirection.Up));
         if (!n.Tuple) {
           nextBeat = n.Beat + n.Duration * msr.TimeSignature.bottom;
         } else {
@@ -92,14 +97,86 @@ function CreateDivisions(
             (n.Duration / n.TupleDetails.Count) * msr.TimeSignature.bottom;
         }
         runningValue += n.Duration;
+      } else {
+        const division = divisions.find(
+          (div: Division) => div.Beat === n.Beat && div.Staff === n.Staff,
+        );
       }
     });
   if (runningValue > 0 && nextBeat - 1 < msr.TimeSignature.bottom) {
     GenerateMissingBeatDivisions(msr, divisions, staff);
   }
   GenerateMissingBeatDivisions(msr, divisions, staff);
+  divisions
+    .filter((div: Division) => div.Staff === staff)
+    .forEach((div: Division) => {
+      CreateSubdivisions(
+        div,
+        notes.filter((n: Note) => n.Beat === div.Beat),
+      );
+    });
   UpdateNoteBounds(msr, staff);
   return divisions;
+}
+
+function CreateDivision(
+  msr: Measure,
+  note: Note,
+  staff: number,
+  stemDir: StemDirection,
+): Division {
+  // clefs
+  // grace notes
+  // else
+  var div: Division = {
+    Beat: note.Beat,
+    Duration: note.Duration,
+    Bounds: CreateBeatBounds(msr, note.Beat, note.Duration, staff),
+    Staff: staff,
+    StaffGroup: note.StaffGroup,
+    Direction: stemDir,
+    NoteXBuffer: 0,
+    Subdivisions: [],
+  };
+
+  return div;
+}
+
+function CreateSubdivisions(div: Division, notes: Note[]): void {
+  div.Subdivisions = [];
+  notes.forEach((note) => {
+    if (
+      note.Grace &&
+      !div.Subdivisions.find(
+        (sd: Subdivision) => sd.Type === SubdivisionType.GRACE_NOTE,
+      )
+    ) {
+      const graceSubdiv: Subdivision = {
+        Type: SubdivisionType.GRACE_NOTE,
+        Bounds: new Bounds(div.Bounds.x, div.Bounds.y, 30, div.Bounds.height),
+      };
+
+      div.Subdivisions.push(graceSubdiv);
+    }
+  });
+  var xBuffer = 0;
+  div.Subdivisions.forEach((sd: Subdivision) => {
+    xBuffer += sd.Bounds.width;
+  });
+  const noteSubdiv: Subdivision = {
+    Type: SubdivisionType.NOTE,
+    Bounds: new Bounds(
+      div.Bounds.x + xBuffer,
+      div.Bounds.y,
+      div.Bounds.width - xBuffer,
+      div.Bounds.height,
+    ),
+  };
+
+  div.Subdivisions.push(noteSubdiv);
+  div.Subdivisions.sort((a: Subdivision, b: Subdivision) => {
+    return b.Type - a.Type;
+  });
 }
 
 function CreateBeatBounds(
@@ -198,6 +275,7 @@ function GenerateMissingBeatDivisions(
             StaffGroup: notesOnDiv[0].StaffGroup,
             Direction: StemDirection.Up,
             NoteXBuffer: 0,
+            Subdivisions: [],
           });
           sBeat += v * msr.TimeSignature.bottom;
         });
@@ -223,6 +301,7 @@ function GenerateMissingBeatDivisions(
       Staff: div.Staff,
       Tuple: false,
       Clef: clefType,
+      Grace: false,
     };
     msr.AddNote(new Note(restProps));
   });
@@ -275,6 +354,7 @@ function GenerateMissingBeatDivisions(
       Staff: div.Staff,
       Tuple: false,
       Clef: clefType,
+      Grace: false,
     };
     msr.AddNote(new Note(restProps));
   });
@@ -314,13 +394,36 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
     return a.Beat - b.Beat;
   });
 
+  // only looking for grace notes, eventually refactor below and only need one
+  // loop with functions/branching
+  mDivs.forEach((div: Division, i: number) => {
+    const divNotes = msr.Notes.filter(
+      (n: Note) =>
+        n.Beat === div.Beat &&
+        (n.Staff === staff || n.StaffGroup === staff) &&
+        n.Grace,
+    );
+    if (divNotes.length > 0) {
+      divGroups.DivGroups.push({
+        Divisions: [div],
+        Notes: [divNotes],
+        CrossStaff: crossStaff,
+        Staff: staff,
+        Stems: [],
+        Beams: [],
+      });
+    }
+  });
+
   mDivs.forEach((div: Division, i: number) => {
     if (div.Staff !== staff) {
       crossStaff = true;
     }
     const divNotes = msr.Notes.filter(
       (n) =>
-        n.Beat === div.Beat && (n.Staff === staff || n.StaffGroup === staff),
+        n.Beat === div.Beat &&
+        (n.Staff === staff || n.StaffGroup === staff) &&
+        !n.Grace,
     );
     divNotes.sort((a: Note, b: Note) => {
       return a.Line - b.Line;
@@ -467,6 +570,8 @@ export {
   GetDivisionTotalWidth,
   DivGroups,
   DivGroup,
+  Subdivision,
+  SubdivisionType,
   IsRestOnBeat,
   GetDivisionGroups,
   DivisionMinWidth,

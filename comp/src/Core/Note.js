@@ -11,6 +11,7 @@ class Note {
         this.Accidental = 0;
         this.Staff = props.Staff;
         this.Clef = props.Clef;
+        this.Grace = props.Grace;
         this.Selected = false;
         this.SelType = SelectableTypes.Note;
         this.Bounds = new Bounds(0, 0, 0, 0);

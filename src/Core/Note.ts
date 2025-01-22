@@ -20,6 +20,7 @@ interface NoteProps {
   TupleDetails?: TupleDetails;
   Clef: string;
   Editable?: boolean;
+  Grace: boolean;
 }
 
 class Note implements ISelectable {
@@ -33,6 +34,7 @@ class Note implements ISelectable {
   SelType: SelectableTypes;
   Clef: string;
   Editable: boolean;
+  Grace: boolean;
 
   // TEST FOR ANIMATION:
   Opacity: number;
@@ -60,6 +62,7 @@ class Note implements ISelectable {
     this.Accidental = 0;
     this.Staff = props.Staff;
     this.Clef = props.Clef;
+    this.Grace = props.Grace;
 
     this.Selected = false;
     this.SelType = SelectableTypes.Note;

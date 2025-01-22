@@ -87,6 +87,7 @@ function RenderHovered(measure, renderProps, mousePos, noteInput, restInput, not
                     TupleIndex: 0,
                     TupleCount: 1,
                     Clef: "treble",
+                    Grace: false,
                 };
                 const tempNote = new Note(tempNoteProps);
                 if (!restInput) {
@@ -205,7 +206,7 @@ function RenderNotes(msr, renderProps, staff, theme) {
             });
             group.Divisions.forEach((div) => {
                 let hasFlipped = false;
-                const dN = msr.Notes.filter((note) => note.Beat === div.Beat && note.Staff === staff);
+                const dN = msr.Notes.filter((note) => note.Beat === div.Beat && note.Staff === staff && !note.Grace);
                 dN.sort((a, b) => {
                     return a.Line - b.Line;
                 });
@@ -246,12 +247,18 @@ function RenderNotes(msr, renderProps, staff, theme) {
             });
         }
     });
+    RenderGraceNotes(renderProps, msr, theme);
     RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Single, msr);
     RenderTuplets(renderProps, msr.Divisions, msr.Notes, StaffType.Single, msr, theme);
     if (msr.Instrument.Staff === StaffType.Grand) {
         RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Grand, msr);
         RenderTuplets(renderProps, msr.Divisions, msr.Notes, StaffType.Grand, msr, theme);
     }
+}
+function RenderGraceNotes(renderProps, msr, theme) {
+    msr.Notes.filter((n) => n.Grace).forEach((n) => {
+        RenderNote(n, renderProps, n.Bounds, n.Selected, false, StemDirection.Up, theme);
+    });
 }
 function IsFlippedNote(notes, index, dir) {
     let flipped = false;

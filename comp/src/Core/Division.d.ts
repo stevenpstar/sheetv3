@@ -5,6 +5,15 @@ import { Camera } from "./Camera.js";
 import { Measure } from "./Measure.js";
 import { Note } from "./Note.js";
 import { Stem } from "./Stem.js";
+declare enum SubdivisionType {
+    CLEF = 0,
+    GRACE_NOTE = 1,
+    NOTE = 2
+}
+type Subdivision = {
+    Type: SubdivisionType;
+    Bounds: Bounds;
+};
 interface Division {
     Beat: number;
     Duration: number;
@@ -13,6 +22,7 @@ interface Division {
     StaffGroup: number;
     Direction: StemDirection;
     NoteXBuffer: number;
+    Subdivisions: Subdivision[];
 }
 interface DivGroup {
     Divisions: Division[];
@@ -33,5 +43,5 @@ declare function ResizeDivisions(msr: Measure, divisions: Division[], staff: num
 declare function GetDivisionTotalWidth(divisions: Division[]): number;
 declare function GetDivisionGroups(msr: Measure, staff: number): DivGroup[];
 declare function IsRestOnBeat(beat: number, notes: Note[], staff: number): boolean;
-export { Division, CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, DivGroups, DivGroup, IsRestOnBeat, GetDivisionGroups, DivisionMinWidth, DivisionMaxWidth, };
+export { Division, CreateDivisions, ResizeDivisions, GetDivisionTotalWidth, DivGroups, DivGroup, Subdivision, SubdivisionType, IsRestOnBeat, GetDivisionGroups, DivisionMinWidth, DivisionMaxWidth, };
 //# sourceMappingURL=Division.d.ts.map

@@ -5,10 +5,7 @@ import { Note, NoteProps } from "../Core/Note.js";
 import { Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { Staff } from "../Core/Staff.js";
-import {
-  CreateDefaultMeasure,
-  CreateMeasure,
-} from "../Factory/Instrument.Factory.js";
+import { CreateMeasure } from "../Factory/Instrument.Factory.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
 
@@ -22,6 +19,7 @@ interface lNote {
   Staff: number;
   Clef: string;
   Editable?: boolean;
+  Grace: boolean;
 }
 interface lMeasure {
   Clefs: Clef[];
@@ -67,6 +65,7 @@ const LoadSheet = (
         Tuple: false,
         Clef: n.Clef,
         Editable: true,
+        Grace: n.Grace,
       };
       const newNote = new Note(noteProps);
       notes.push(newNote);
@@ -110,6 +109,7 @@ const SaveSheet = (sheet: Sheet): string => {
         Staff: n.Staff,
         Clef: n.Clef,
         Editable: true,
+        Grace: n.Grace,
       });
     });
     saved.Measures.push({

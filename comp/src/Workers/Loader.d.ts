@@ -16,6 +16,7 @@ interface lNote {
     Staff: number;
     Clef: string;
     Editable?: boolean;
+    Grace: boolean;
 }
 interface lMeasure {
     Clefs: Clef[];

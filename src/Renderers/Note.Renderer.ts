@@ -52,14 +52,12 @@ function RenderNote(
   // }
   let { x, y, width, height } = Bounds;
   const { canvas, context, camera } = renderProps;
-  let flipNoteOffset = flipNote ? (stemDir === StemDirection.Up ? 11 : -11) : 0;
-  let posString = `m ${x + camera.x} ${y + 7.5 - 1 + camera.y}`;
   // TODO: Move this offset somewhere else to be constant
   y = y + 3;
   //
   colour = note.Editable ? theme.NoteElements : theme.UneditableColour;
   colour = selected ? theme.SelectColour : colour;
-  let noteString = "";
+  const noteScale = note.Grace ? Math.floor(stdFontSize * 0.6) : stdFontSize;
   switch (note.Duration) {
     case 0.125:
     case 0.25:
@@ -67,22 +65,53 @@ function RenderNote(
       if (note.Opacity < 1.0) {
         note.Opacity += 0.01;
       }
-      RenderSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected);
+      RenderScaledSymbol(
+        renderProps,
+        NoteHeads.crotchet,
+        x,
+        y,
+        theme,
+        selected,
+        noteScale,
+      );
       break;
     case 0.5:
-      RenderSymbol(renderProps, NoteHeads.minim, x, y, theme, selected);
+      RenderScaledSymbol(
+        renderProps,
+        NoteHeads.minim,
+        x,
+        y,
+        theme,
+        selected,
+        noteScale,
+      );
       break;
     case 1:
-      RenderSymbol(renderProps, NoteHeads.whole, x - 2.5, y, theme, selected);
+      RenderScaledSymbol(
+        renderProps,
+        NoteHeads.whole,
+        x - 2.5,
+        y,
+        theme,
+        selected,
+        noteScale,
+      );
       break;
     default:
-      RenderSymbol(renderProps, NoteHeads.crotchet, x, y, theme, selected);
+      RenderScaledSymbol(
+        renderProps,
+        NoteHeads.crotchet,
+        x,
+        y,
+        theme,
+        selected,
+        noteScale,
+      );
   }
   context.fillStyle = theme.NoteElements;
   if (selected) {
     context.fillStyle = theme.SelectColour;
   }
-  // context.fill(new Path2D(noteString));
 
   let debug = false;
   if (debug) {

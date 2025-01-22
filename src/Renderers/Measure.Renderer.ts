@@ -156,6 +156,7 @@ function RenderHovered(
           TupleIndex: 0,
           TupleCount: 1,
           Clef: "treble",
+          Grace: false,
         };
         const tempNote = new Note(tempNoteProps);
         if (!restInput) {
@@ -350,7 +351,8 @@ function RenderNotes(
         let hasFlipped = false;
 
         const dN = msr.Notes.filter(
-          (note: Note) => note.Beat === div.Beat && note.Staff === staff,
+          (note: Note) =>
+            note.Beat === div.Beat && note.Staff === staff && !note.Grace,
         );
         dN.sort((a: Note, b: Note) => {
           return a.Line - b.Line;
@@ -406,6 +408,7 @@ function RenderNotes(
       });
     }
   });
+  RenderGraceNotes(renderProps, msr, theme);
   RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Single, msr);
   RenderTuplets(
     renderProps,
@@ -427,6 +430,24 @@ function RenderNotes(
       theme,
     );
   }
+}
+
+function RenderGraceNotes(
+  renderProps: RenderProperties,
+  msr: Measure,
+  theme: Theme,
+): void {
+  msr.Notes.filter((n: Note) => n.Grace).forEach((n: Note) => {
+    RenderNote(
+      n,
+      renderProps,
+      n.Bounds,
+      n.Selected,
+      false,
+      StemDirection.Up,
+      theme,
+    );
+  });
 }
 
 function IsFlippedNote(

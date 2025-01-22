@@ -109,7 +109,6 @@ class Measure {
         }
         note.SetID(this.RunningID.count);
         this.RunningID.count++;
-        console.log("note: ", note);
         this.Notes.push(note);
         if (fromInput) {
             const msg = {
@@ -173,6 +172,7 @@ class Measure {
                         Tuple: tuple,
                         TupleDetails: tupleDetails,
                         Clef: clefType,
+                        Grace: false,
                     };
                     this.AddNote(new Note(restProps));
                 }

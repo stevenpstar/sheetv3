@@ -194,7 +194,6 @@ class Measure implements ISelectable {
     }
     note.SetID(this.RunningID.count);
     this.RunningID.count++;
-    console.log("note: ", note);
     this.Notes.push(note);
 
     if (fromInput) {
@@ -267,6 +266,7 @@ class Measure implements ISelectable {
             Tuple: tuple,
             TupleDetails: tupleDetails,
             Clef: clefType,
+            Grace: false,
           };
 
           this.AddNote(new Note(restProps));

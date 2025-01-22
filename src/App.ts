@@ -213,6 +213,7 @@ class App {
         y,
         this.Camera,
         this.RestInput,
+        this.GraceInput,
       );
       this.ResizeMeasures(
         this.Sheet.Measures.filter((m) => m.Instrument === msrOver.Instrument),
@@ -641,7 +642,7 @@ class App {
     beat: Division,
     rest: boolean,
   ): void {
-    AddNoteOnMeasure(msr, noteValue, line, beat, rest);
+    AddNoteOnMeasure(msr, noteValue, line, beat, rest, this.GraceInput);
   }
 
   BeamSelectedNotes(): void {

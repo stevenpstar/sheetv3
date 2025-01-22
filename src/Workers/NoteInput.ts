@@ -1,6 +1,11 @@
 import { Camera } from "../Core/Camera.js";
 import { GetNoteClefType } from "../Core/Clef.js";
-import { DivGroup, GetDivisionGroups } from "../Core/Division.js";
+import {
+  DivGroup,
+  GetDivisionGroups,
+  Subdivision,
+  SubdivisionType,
+} from "../Core/Division.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note, NoteProps, TupleDetails } from "../Core/Note.js";
@@ -27,6 +32,7 @@ function AddNoteOnMeasure(
   line: number,
   beat: Division,
   rest: boolean,
+  grace: boolean,
 ): void {
   InputNote(
     msr,
@@ -34,6 +40,7 @@ function AddNoteOnMeasure(
     beat,
     { num: line, bounds: new Bounds(0, 0, 0, 0) },
     rest,
+    grace,
   );
 }
 
@@ -44,6 +51,7 @@ function InputOnMeasure(
   y: number,
   cam: Camera,
   rest: boolean,
+  grace: boolean,
 ): void {
   let inputtingNote = true;
   const beatOver = msr.Divisions.find((b) => b.Bounds.IsHovered(x, y, cam));
@@ -56,7 +64,7 @@ function InputOnMeasure(
     line.num = 15;
   }
   if (inputtingNote) {
-    InputNote(msr, noteValue, beatOver, line, rest);
+    InputNote(msr, noteValue, beatOver, line, rest, grace);
   }
 }
 
@@ -66,6 +74,7 @@ function InputNote(
   division: Division,
   line: { num: number; bounds: Bounds },
   rest: boolean,
+  grace: boolean,
   tupleCount: number = 1,
 ): void {
   const notesInDiv = msr.Notes.filter((n) => n.Beat === division.Beat);
@@ -91,6 +100,7 @@ function InputNote(
     Tuple: addingToTuple,
     TupleDetails: notesInDiv[0].TupleDetails,
     Clef: clefType,
+    Grace: grace,
   };
   const newNote: Note = new Note(noteProps);
 
@@ -149,7 +159,14 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
       if (numOfAcc > 0) {
         dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
       }
-      div.NoteXBuffer = dynNoteXBuffer;
+      const noteSubDiv = div.Subdivisions.find(
+        (sd: Subdivision) => sd.Type === SubdivisionType.NOTE,
+      );
+      var subDivBuffer = 0;
+      if (noteSubDiv) {
+        subDivBuffer = noteSubDiv.Bounds.x - div.Bounds.x;
+      }
+      div.NoteXBuffer = dynNoteXBuffer + subDivBuffer;
 
       divNotes.forEach((n: Note, i: number) => {
         const isFlipped = IsFlippedNote(divNotes, i, stemDir);
@@ -161,8 +178,12 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
 
         if (!n.Rest) {
           n.Bounds.x = Math.floor(
-            div.Bounds.x + dynNoteXBuffer + flipNoteOffset,
+            div.Bounds.x + dynNoteXBuffer + subDivBuffer + flipNoteOffset,
           );
+          // This is really stupid, don't do this for final
+          if (n.Grace) {
+            n.Bounds.x -= subDivBuffer;
+          }
           n.Bounds.y = msr.GetNotePositionOnLine(n.Line, n.Staff);
         }
       });
@@ -257,6 +278,7 @@ function AddToDivision(
             Staff: div.Staff,
             Tuple: false,
             Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+            Grace: noteProps.Grace,
           };
 
           const newNote = new Note(newNoteProps);
@@ -286,6 +308,7 @@ function AddToDivision(
           Staff: div.Staff,
           Tuple: false,
           Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+          Grace: noteProps.Grace,
         };
 
         const newNote = new Note(newNoteProps);
@@ -321,6 +344,7 @@ function AddToDivision(
             Staff: div.Staff,
             Tuple: false,
             Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+            Grace: noteProps.Grace,
           };
           const newNote = new Note(newNoteProps);
 
@@ -348,6 +372,7 @@ function AddToDivision(
           Tuple: noteProps.Tuple,
           TupleDetails: noteProps.TupleDetails,
           Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+          Grace: noteProps.Grace,
         };
 
         const remValue = div.Duration - remainingValue;
@@ -376,6 +401,7 @@ function AddToDivision(
               Tuple: n.Tuple,
               TupleDetails: n.TupleDetails,
               Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+              Grace: n.Grace,
             };
             const noteObj = new Note(tiedNote);
             noteObj.SetTiedStartEnd(tiedStart, tiedEnd);
@@ -429,6 +455,7 @@ function CreateTuplet(
             lastBeat + newDuration * measure.TimeSignature.bottom,
             n.Staff,
           ),
+          Grace: n.Grace,
         });
         lastBeat = newNote.Beat;
         measure.AddNote(newNote, true);

@@ -125,7 +125,7 @@ class App {
             }
         }
         else if (this.NoteInput) {
-            InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput);
+            InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput, this.GraceInput);
             this.ResizeMeasures(this.Sheet.Measures.filter((m) => m.Instrument === msrOver.Instrument));
         }
         //  this.NotifyCallback(this.Message);
@@ -452,7 +452,7 @@ class App {
     // Maybe instead of duplicate function we can expose note input function,
     // doesn't matter atm
     AddNoteOnMeasure(msr, noteValue, line, beat, rest) {
-        AddNoteOnMeasure(msr, noteValue, line, beat, rest);
+        AddNoteOnMeasure(msr, noteValue, line, beat, rest, this.GraceInput);
     }
     BeamSelectedNotes() {
         // currently only implementing for cross staff beaming

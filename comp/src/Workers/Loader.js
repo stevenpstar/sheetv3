@@ -1,6 +1,6 @@
 import { StaffType } from "../Core/Instrument.js";
 import { Note } from "../Core/Note.js";
-import { CreateMeasure, } from "../Factory/Instrument.Factory.js";
+import { CreateMeasure } from "../Factory/Instrument.Factory.js";
 const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
     let runningId = { count: 0 };
     // TODO: this could error
@@ -24,6 +24,7 @@ const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
                 Tuple: false,
                 Clef: n.Clef,
                 Editable: true,
+                Grace: n.Grace,
             };
             const newNote = new Note(noteProps);
             notes.push(newNote);
@@ -54,6 +55,7 @@ const SaveSheet = (sheet) => {
                 Staff: n.Staff,
                 Clef: n.Clef,
                 Editable: true,
+                Grace: n.Grace,
             });
         });
         saved.Measures.push({
