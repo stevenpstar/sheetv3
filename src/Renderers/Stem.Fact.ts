@@ -9,7 +9,6 @@ import { Note } from "../Core/Note.js";
 import { Measure } from "../Core/Measure.js";
 import { Theme } from "../Types/Config.js";
 import { Stem } from "../Core/Stem.js";
-import { Camera } from "../Core/Camera.js";
 import { Bounds } from "../Types/Bounds.js";
 import { DetermineBeamDirection } from "../Core/Beam.js";
 import {
@@ -17,7 +16,6 @@ import {
   GetStaffHeightUntil,
   GetStaffMiddleLine,
 } from "../Core/Staff.js";
-import { CreateBeams } from "../Factory/Beam.Fact.js";
 import { IsFlippedNote } from "./Measure.Renderer.js";
 
 function AlterHeightForBeam(
@@ -104,17 +102,17 @@ function CreateStems(
   divisions.forEach((div: Division, i: number) => {
     const beamAlt = i * (10 / divisions.length - 1);
     const divNotes = notes[i];
+    const isGraceStem = divNotes[0].Grace ? true : false;
+    const scale = isGraceStem ? 0.6 : 1.0;
     const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
     if (numOfAcc > 0) {
       dynNoteXBuffer += dynNoteXBuffer * numOfAcc - 1;
     }
     divNotes.sort((a: Note, b: Note) => a.Line - b.Line);
-    // TODO: Was alternating between 11 and 12 causing mismatch, may need to be
-    // adjusted later not sure.
     let stemX =
       stemDir === StemDirection.Up
-        ? divNotes[0].Bounds.x + 10.25
-        : divNotes[0].Bounds.x + 0.0; //Math.floor( div.Bounds.x + xBuffer + dynNoteXBuffer);
+        ? divNotes[0].Bounds.x + 10.25 * scale
+        : divNotes[0].Bounds.x + 0.0 * scale;
     if (IsFlippedNote(divNotes, 0, stemDir)) {
       stemX = divNotes[0].Bounds.x + 0.0;
     }
@@ -146,6 +144,10 @@ function CreateStems(
         stem.Bounds.height,
         beamAlt,
       );
+    }
+    // scale
+    if (notes.length > 0 && notes[0][0].Grace) {
+      stem.Bounds.height *= 0.6;
     }
     stem.Staff = staff;
     stems.push(stem);

@@ -460,10 +460,14 @@ function IsFlippedNote(
   let countBelow = 0;
   const nLine = notes[index].Line;
   if (notes.length <= 1) {
-    return flipped;
+    return false;
   }
 
   for (let b = index + 1; b <= notes.length - 1; b++) {
+    // ignore grace notes?
+    if (notes[b].Grace) {
+      continue;
+    }
     const line = notes[b].Line;
     if (line - nLine === b - index || line - nLine === index - index) {
       countBelow++;
@@ -473,6 +477,10 @@ function IsFlippedNote(
   }
 
   for (let a = index - 1; a >= 0; a--) {
+    if (notes[a].Grace) {
+      continue;
+    }
+
     const line = notes[a].Line;
     if (nLine - line === index - a || nLine - line === index - index) {
       countAbove++;
