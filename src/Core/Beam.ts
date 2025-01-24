@@ -162,7 +162,7 @@ class Beam implements ISelectable {
       context.fill(new Path2D(GetBeamString(this, cam, stemDir, i)));
     }
 
-    this.RenderBounds(context, cam);
+    //    this.RenderBounds(context, cam);
   }
 
   RenderBounds(context: CanvasRenderingContext2D, cam: Camera): void {

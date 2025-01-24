@@ -3,9 +3,8 @@ import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Message, MessageType } from "../Types/Message.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { MeasureSettings } from "../entry.js";
-import { Articulation, ArticulationType } from "./Articulation.js";
+import { Articulation } from "./Articulation.js";
 import { Barline } from "./Barline.js";
-import { Beam } from "./Beam.js";
 import { Camera } from "./Camera.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
 import {
@@ -13,7 +12,6 @@ import {
   type Division,
   ResizeDivisions,
   DivisionMinWidth,
-  DivGroups,
   DivGroup,
 } from "./Division.js";
 import { Instrument, StaffType } from "./Instrument.js";
@@ -21,7 +19,6 @@ import { KeySignatures } from "./KeySignatures.js";
 import { Note, NoteProps } from "./Note.js";
 import { Page } from "./Page.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
-import { Stem } from "./Stem.js";
 import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
 
 interface MeasureProps {

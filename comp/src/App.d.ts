@@ -62,7 +62,7 @@ declare class App {
     DragNote(x: number, y: number): void;
     StopNoteDrag(x: number, y: number): void;
     SetCameraDragging(dragging: boolean, x: number, y: number): void;
-    AlterZoom(num: number): void;
+    AlterZoom(num: number, mx: number, my: number): void;
     SetCameraZoom(num: number): void;
     ResizeFirstMeasure(): void;
     ResizeMeasures(measures: Measure[]): void;

@@ -412,9 +412,18 @@ class App {
     this.Camera.SetDragging(dragging, x, y, this.Config, this.Camera);
   }
 
-  AlterZoom(num: number): void {
+  AlterZoom(num: number, mx: number, my: number): void {
+    const originalX = mx / this.Camera.Zoom;
+    const ogY = my / this.Camera.Zoom;
     this.Camera.SetZoom(this.Camera.Zoom + num);
     this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
+    const newX = mx / this.Camera.Zoom;
+    const newY = my / this.Camera.Zoom;
+    this.Camera.x += newX - originalX;
+    this.Camera.y += newY - ogY;
+    this.Camera.oldX = this.Camera.x;
+    this.Camera.oldY = this.Camera.y;
+
     this.Update(0, 0);
   }
 

@@ -95,11 +95,15 @@ function keyDown(app: App, keymaps: any, e: KeyboardEvent): void {
   app.KeyInput(key, keymaps);
 }
 
-function zoom(app: App, e: WheelEvent): void {
+function zoom(app: App, canvas: HTMLCanvasElement, e: WheelEvent): void {
   if (e.ctrlKey) {
+    let rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
     e.preventDefault();
     const scale = e.deltaY * -0.01;
-    scale > 0 ? app.AlterZoom(0.05) : app.AlterZoom(-0.05);
+    scale > 0 ? app.AlterZoom(0.075, x, y) : app.AlterZoom(-0.075, x, y);
   }
 }
 
@@ -115,7 +119,7 @@ function resize(
   } else if (app.Config.CameraSettings?.CenterPage) {
     app.CenterPage();
   }
-  app.AlterZoom(0);
+  app.AlterZoom(0, 0, 0);
   app.Update(0, 0);
 }
 
@@ -137,7 +141,7 @@ export module sheet {
     window.addEventListener("resize", () =>
       resize(app, app.Context, canvas, container),
     );
-    canvas.addEventListener("wheel", (e) => zoom(app, e));
+    canvas.addEventListener("wheel", (e) => zoom(app, canvas, e));
     screen.orientation.addEventListener("change", (e) =>
       resize(app, app.Context, canvas, container),
     );

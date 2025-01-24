@@ -129,6 +129,7 @@ interface NoteProps {
     TupleDetails?: TupleDetails;
     Clef: string;
     Editable?: boolean;
+    Grace: boolean;
 }
 declare class Note implements ISelectable {
     Beat: number;
@@ -141,12 +142,14 @@ declare class Note implements ISelectable {
     SelType: SelectableTypes;
     Clef: string;
     Editable: boolean;
+    Grace: boolean;
     Opacity: number;
     TiedStart: number;
     TiedEnd: number;
     Bounds: Bounds;
     Selected: boolean;
     Staff: number;
+    StaffGroup: number;
     Tuple: boolean;
     TupleDetails?: TupleDetails;
     constructor(props: NoteProps);
@@ -168,13 +171,71 @@ declare enum StemDirection {
     Down = 1
 }
 
+type Vector2 = {
+    x: number;
+    y: number;
+};
+
+declare class Beam implements ISelectable {
+    ID: number;
+    Selected: boolean;
+    Bounds: Bounds;
+    SelType: SelectableTypes;
+    Editable: boolean;
+    Direction: string;
+    StartPoint: Vector2;
+    EndPoint: Vector2;
+    Count: number;
+    constructor(bounds: Bounds, start: Vector2, end: Vector2, count?: number);
+    IsHovered(x: number, y: number, cam: Camera): boolean;
+    Render(context: CanvasRenderingContext2D, cam: Camera, count: number, stemDir: StemDirection, theme: Theme): void;
+    RenderBounds(context: CanvasRenderingContext2D, cam: Camera): void;
+    static BeamCount(duration: number, tuplet?: boolean): number;
+}
+
+declare class Stem implements ISelectable {
+    ID: number;
+    Selected: boolean;
+    Bounds: Bounds;
+    SelType: SelectableTypes.Stem;
+    Editable: boolean;
+    Direction: string;
+    StartPoint: number;
+    EndPoint: number;
+    Staff: number;
+    constructor(bounds: Bounds);
+    IsHovered(x: number, y: number, cam: Camera): boolean;
+    Render(context: CanvasRenderingContext2D, cam: Camera, theme: Theme): void;
+    RenderBounds(context: CanvasRenderingContext2D, cam: Camera): void;
+}
+
+declare enum SubdivisionType {
+    CLEF = 0,
+    GRACE_NOTE = 1,
+    NOTE = 2
+}
+type Subdivision = {
+    Type: SubdivisionType;
+    Bounds: Bounds;
+};
 interface Division {
     Beat: number;
     Duration: number;
     Bounds: Bounds;
     Staff: number;
+    StaffGroup: number;
     Direction: StemDirection;
     NoteXBuffer: number;
+    Subdivisions: Subdivision[];
+}
+interface DivGroup {
+    Divisions: Division[];
+    Notes: Array<Note[]>;
+    CrossStaff: boolean;
+    Staff: number;
+    Beams: Beam[];
+    Stems: Stem[];
+    StemDir?: StemDirection;
 }
 
 declare enum ArticulationType {
@@ -307,11 +368,6 @@ declare class Measure implements ISelectable {
     Instrument: Instrument;
     Bounds: Bounds;
     Editable: boolean;
-    Clefs: Clef[];
-    TimeSignature: TimeSignature;
-    KeySignature: string;
-    Notes: Note[];
-    Divisions: Division[];
     RenderClef: boolean;
     RenderKey: boolean;
     RenderTimeSig: boolean;
@@ -319,9 +375,15 @@ declare class Measure implements ISelectable {
     Page: Page;
     PageLine: Number;
     Message: (msg: Message) => void;
+    TimeSignature: TimeSignature;
+    KeySignature: string;
+    Notes: Note[];
+    Divisions: Division[];
+    Clefs: Clef[];
     Staves: Staff[];
     Barlines: Barline[];
     Articulations: Articulation[];
+    DivisionGroups: DivGroup[];
     XOffset: number;
     Line: number;
     RunningID: {
@@ -431,6 +493,8 @@ interface KeyMapping {
     load: string;
     test_triplet: string;
     debug_clear: string;
+    beam: string;
+    grace: string;
 }
 declare function KeyPress(app: App, key: string, keyMaps: KeyMapping): void;
 
@@ -460,6 +524,7 @@ declare class App {
     Sheet: Sheet;
     NoteInput: boolean;
     RestInput: boolean;
+    GraceInput: boolean;
     Formatting: boolean;
     Zoom: number;
     Camera: Camera;
@@ -522,6 +587,7 @@ declare class App {
     CenterMeasures(): void;
     CenterPage(): void;
     AddNoteOnMeasure(msr: Measure, noteValue: number, line: number, beat: Division, rest: boolean): void;
+    BeamSelectedNotes(): void;
     AddStaff(instrNum: number, clef: string): void;
     FromPitchMap(midiNote: number, clef: string): MappedMidi;
 }
@@ -536,6 +602,7 @@ interface lNote {
     Staff: number;
     Clef: string;
     Editable?: boolean;
+    Grace: boolean;
 }
 interface lMeasure {
     Clefs: Clef[];

@@ -82,11 +82,14 @@ function keyDown(app, keymaps, e) {
     const key = e.key;
     app.KeyInput(key, keymaps);
 }
-function zoom(app, e) {
+function zoom(app, canvas, e) {
     if (e.ctrlKey) {
+        let rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
         e.preventDefault();
         const scale = e.deltaY * -0.01;
-        scale > 0 ? app.AlterZoom(0.05) : app.AlterZoom(-0.05);
+        scale > 0 ? app.AlterZoom(0.1, x, y) : app.AlterZoom(-0.1, x, y);
     }
 }
 function resize(app, context, canvas, container) {
@@ -98,7 +101,7 @@ function resize(app, context, canvas, container) {
     else if ((_b = app.Config.CameraSettings) === null || _b === void 0 ? void 0 : _b.CenterPage) {
         app.CenterPage();
     }
-    app.AlterZoom(0);
+    app.AlterZoom(0, 0, 0);
     app.Update(0, 0);
 }
 export var sheet;
@@ -112,7 +115,7 @@ export var sheet;
         canvas.addEventListener("mouseup", (e) => mouseUp(app, canvas, e));
         doc.addEventListener("keydown", (e) => keyDown(app, keyMap, e));
         window.addEventListener("resize", () => resize(app, app.Context, canvas, container));
-        canvas.addEventListener("wheel", (e) => zoom(app, e));
+        canvas.addEventListener("wheel", (e) => zoom(app, canvas, e));
         screen.orientation.addEventListener("change", (e) => resize(app, app.Context, canvas, container));
         gSheet = app;
         canvas.width = container.clientWidth;
