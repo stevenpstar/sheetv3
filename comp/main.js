@@ -20,6 +20,7 @@ const keymaps = {
     debug_clear: "c",
     beam: "b",
     grace: "g",
+    change_barline: "z",
 };
 const defaultTheme = {
     NoteElements: "black",

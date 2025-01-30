@@ -15,7 +15,7 @@ import { allSaves } from "./testsaves.js";
 import { ClearMessage, MessageType } from "./Types/Message.js";
 import { FromPitchMap, GeneratePitchMap, } from "./Workers/Pitcher.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
-import { BarlineType } from "./Core/Barline.js";
+import { BarlinePos, BarlineType } from "./Core/Barline.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
         var _a, _b;
@@ -271,7 +271,6 @@ class App {
         this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
         const newX = mx / this.Camera.Zoom;
         const newY = my / this.Camera.Zoom;
-        console.log("og: " + originalX + " newX: " + newX);
         this.Camera.x += newX - originalX;
         this.Camera.y += newY - ogY;
         this.Camera.oldX = this.Camera.x;
@@ -294,9 +293,6 @@ class App {
     }
     ResizeMeasures(measures) {
         var _a, _b, _c;
-        // TODO: Prototyping stuff so refactor later
-        const maxMeasuresPerLine = 4;
-        const minMeasuresPerLine = 3;
         const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
         SetPagesAndLines(measures, this.Sheet.Pages[0], (_a = this.Config.PageSettings) === null || _a === void 0 ? void 0 : _a.UsePages, lineHeight);
         ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera, this.Config);
@@ -311,6 +307,7 @@ class App {
             m.Staves.forEach((s) => {
                 UpdateNoteBounds(m, s.Num);
             });
+            m.RecalculateBarlines();
         });
         this.Update(0, 0);
     }
@@ -457,6 +454,7 @@ class App {
         }
         const emptySpace = this.Canvas.clientWidth - totalWidth * this.Camera.Zoom;
         this.Camera.x = emptySpace / 2;
+        this.Camera.oldX = this.Camera.x;
     }
     // Maybe instead of duplicate function we can expose note input function,
     // doesn't matter atm
@@ -474,7 +472,7 @@ class App {
                     beamFrom = n.Staff;
                 }
                 if (n.Staff !== beamFrom) {
-                    msr.Notes.filter((note) => note.Staff == n.Staff && note.Beat == n.Beat).forEach((note) => {
+                    msr.Voices[msr.ActiveVoice].Notes.filter((note) => note.Staff == n.Staff && note.Beat == n.Beat).forEach((note) => {
                         note.StaffGroup = beamFrom;
                     });
                 }
@@ -501,6 +499,17 @@ class App {
     FromPitchMap(midiNote, clef) {
         const midiMapped = FromPitchMap(midiNote, this.PitchMap, clef);
         return midiMapped;
+    }
+    ChangeBarline() {
+        for (let [_, elem] of this.Selector.Elements) {
+            elem
+                .filter((e) => e.SelType === SelectableTypes.Barline)
+                .forEach((bl) => {
+                if (bl.Position == BarlinePos.END) {
+                    bl.Type = BarlineType.REPEAT_END;
+                }
+            });
+        }
     }
 }
 export { App };

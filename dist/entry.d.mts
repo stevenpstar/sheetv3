@@ -340,6 +340,12 @@ declare class TimeSignature implements ISelectable {
     IsHovered(x: number, y: number, cam: Camera): boolean;
 }
 
+declare class Voice {
+    Notes: Note[];
+    Divisions: Division[];
+    constructor();
+}
+
 interface MeasureProps {
     Instrument: Instrument;
     Bounds: Bounds;
@@ -377,7 +383,8 @@ declare class Measure implements ISelectable {
     Message: (msg: Message) => void;
     TimeSignature: TimeSignature;
     KeySignature: string;
-    Notes: Note[];
+    Voices: Voice[];
+    ActiveVoice: number;
     Divisions: Division[];
     Clefs: Clef[];
     Staves: Staff[];
@@ -567,7 +574,7 @@ declare class App {
     DragNote(x: number, y: number): void;
     StopNoteDrag(x: number, y: number): void;
     SetCameraDragging(dragging: boolean, x: number, y: number): void;
-    AlterZoom(num: number): void;
+    AlterZoom(num: number, mx: number, my: number): void;
     SetCameraZoom(num: number): void;
     ResizeFirstMeasure(): void;
     ResizeMeasures(measures: Measure[]): void;

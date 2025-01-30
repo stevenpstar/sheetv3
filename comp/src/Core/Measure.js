@@ -9,9 +9,12 @@ import { KeySignatures } from "./KeySignatures.js";
 import { Note } from "./Note.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine } from "./Staff.js";
 import { CreateTimeSignature } from "./TimeSignatures.js";
+import { Voice } from "./Voice.js";
 class Measure {
     constructor(properties, runningId) {
+        this.ActiveVoice = 0;
         this.Clefs = [];
+        this.Voices = [new Voice(), new Voice(), new Voice(), new Voice()];
         this.Num = 1;
         this.Staves = properties.Staves;
         this.Message = properties.Message;
@@ -26,7 +29,7 @@ class Measure {
         this.Bounds.height = GetStaffHeightUntil(this.Staves);
         this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
         this.KeySignature = properties.KeySignature;
-        this.Notes = properties.Notes;
+        this.Voices[this.ActiveVoice].Notes = properties.Notes;
         this.Divisions = [];
         this.Articulations = [];
         this.RenderClef = properties.RenderClef;
@@ -88,7 +91,7 @@ class Measure {
     CreateDivisions(cam, afterInput = false) {
         this.Divisions = [];
         this.Staves.forEach((s) => {
-            this.Divisions.push(...CreateDivisions(this, this.Notes, s.Num, cam));
+            this.Divisions.push(...CreateDivisions(this, this.Voices[this.ActiveVoice].Notes, s.Num, cam));
             ResizeDivisions(this, this.Divisions, s.Num);
             UpdateNoteBounds(this, s.Num);
         });
@@ -109,7 +112,7 @@ class Measure {
         }
         note.SetID(this.RunningID.count);
         this.RunningID.count++;
-        this.Notes.push(note);
+        this.Voices[this.ActiveVoice].Notes.push(note);
         if (fromInput) {
             const msg = {
                 messageString: "AddNote",
@@ -125,40 +128,42 @@ class Measure {
         }
     }
     ClearNonRestNotes(beat, staff) {
-        for (let n = this.Notes.length - 1; n >= 0; n--) {
-            if (this.Notes[n].Beat === beat &&
-                this.Notes[n].Rest === false &&
-                this.Notes[n].Staff === staff) {
-                this.Notes.splice(n, 1);
+        for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+            if (this.Voices[this.ActiveVoice].Notes[n].Beat === beat &&
+                this.Voices[this.ActiveVoice].Notes[n].Rest === false &&
+                this.Voices[this.ActiveVoice].Notes[n].Staff === staff) {
+                this.Voices[this.ActiveVoice].Notes.splice(n, 1);
             }
         }
     }
     ClearRestNotes(beat, staff) {
-        for (let n = this.Notes.length - 1; n >= 0; n--) {
-            if (this.Notes[n].Beat === beat &&
-                this.Notes[n].Rest === true &&
-                this.Notes[n].Staff === staff) {
-                this.Notes.splice(n, 1);
+        for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+            if (this.Voices[this.ActiveVoice].Notes[n].Beat === beat &&
+                this.Voices[this.ActiveVoice].Notes[n].Rest === true &&
+                this.Voices[this.ActiveVoice].Notes[n].Staff === staff) {
+                this.Voices[this.ActiveVoice].Notes.splice(n, 1);
             }
         }
     }
     ClearMeasure(ignoreNotes) {
-        for (let n = this.Notes.length - 1; n >= 0; n--) {
-            if (this.Notes[n].Editable && !ignoreNotes.includes(this.Notes[n])) {
-                this.Notes.splice(n, 1);
+        for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+            if (this.Voices[this.ActiveVoice].Notes[n].Editable &&
+                !ignoreNotes.includes(this.Voices[this.ActiveVoice].Notes[n])) {
+                this.Voices[this.ActiveVoice].Notes.splice(n, 1);
             }
         }
     }
     DeleteSelected() {
-        for (let n = this.Notes.length - 1; n >= 0; n--) {
-            if (this.Notes[n].Selected && this.Notes[n].Editable) {
-                let beat = this.Notes[n].Beat;
-                let duration = this.Notes[n].Duration;
-                let staff = this.Notes[n].Staff;
-                let tuple = this.Notes[n].Tuple;
-                let tupleDetails = this.Notes[n].TupleDetails;
-                this.Notes.splice(n, 1);
-                const notesOnBeat = this.Notes.filter((n) => n.Beat === beat);
+        for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+            if (this.Voices[this.ActiveVoice].Notes[n].Selected &&
+                this.Voices[this.ActiveVoice].Notes[n].Editable) {
+                let beat = this.Voices[this.ActiveVoice].Notes[n].Beat;
+                let duration = this.Voices[this.ActiveVoice].Notes[n].Duration;
+                let staff = this.Voices[this.ActiveVoice].Notes[n].Staff;
+                let tuple = this.Voices[this.ActiveVoice].Notes[n].Tuple;
+                let tupleDetails = this.Voices[this.ActiveVoice].Notes[n].TupleDetails;
+                this.Voices[this.ActiveVoice].Notes.splice(n, 1);
+                const notesOnBeat = this.Voices[this.ActiveVoice].Notes.filter((n) => n.Beat === beat);
                 if (notesOnBeat.length === 0) {
                     const clefType = GetNoteClefType(this, beat, staff);
                     // beat is empty and requires a rest note
@@ -180,10 +185,11 @@ class Measure {
         }
     }
     GetMinimumWidth() {
-        if (this.Notes.filter((n) => n.Rest !== true).length === 0) {
+        if (this.Voices[this.ActiveVoice].Notes.filter((n) => n.Rest !== true)
+            .length === 0) {
             return DivisionMinWidth * 4;
         }
-        const lowestVal = this.Notes.sort((a, b) => {
+        const lowestVal = this.Voices[this.ActiveVoice].Notes.sort((a, b) => {
             return a.Duration - b.Duration;
         })[0];
         const count = 1 / lowestVal.Duration;
@@ -191,7 +197,7 @@ class Measure {
     }
     ReturnSelectableElements() {
         const sel = [];
-        sel.push(...this.Notes);
+        sel.push(...this.Voices[this.ActiveVoice].Notes);
         sel.push(...this.Clefs);
         return sel;
     }
@@ -201,6 +207,10 @@ class Measure {
     ChangeTimeSignature(top, bottom, transpose) {
         this.TimeSignature.top = top;
         this.TimeSignature.bottom = bottom;
+    }
+    RecalculateBarlines() {
+        this.Barlines[0].Bounds = new Bounds(this.Bounds.x, this.Bounds.y, 10, this.GetMeasureHeight());
+        this.Barlines[1].Bounds = new Bounds(this.Bounds.x + this.GetBoundsWithOffset().width - 10, this.Bounds.y, 10, this.GetMeasureHeight());
     }
 }
 export { Measure, Clef };

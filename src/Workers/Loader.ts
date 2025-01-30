@@ -83,7 +83,7 @@ const LoadSheet = (
       m.ShowClef,
       callback,
     );
-    msr.Notes = notes;
+    msr.Voices[msr.ActiveVoice].Notes = notes;
     sheet.Measures.push(msr);
     msr.CreateDivisions(cam);
   });
@@ -95,7 +95,7 @@ const SaveSheet = (sheet: Sheet): string => {
   };
   sheet.Measures.forEach((m: Measure, i: number) => {
     let notes: lNote[] = [];
-    m.Notes.forEach((n: Note, i: number) => {
+    m.Voices[m.ActiveVoice].Notes.forEach((n: Note, i: number) => {
       if (n.Rest) {
         return;
       }

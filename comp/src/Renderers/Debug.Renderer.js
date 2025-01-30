@@ -49,23 +49,21 @@ function RenderDebugOld(measure, renderProps, index, mousePos) {
     }
     const renderNoteBounds = false;
     if (renderNoteBounds) {
-        measure.Notes.forEach(n => {
+        measure.Voices[measure.ActiveVoice].Notes.forEach((n) => {
             context.fillStyle = "rgba(0 ,0, 255, 0.8)";
             context.fillRect(n.Bounds.x + camera.x, n.Bounds.y + camera.y, n.Bounds.width, n.Bounds.height);
         });
     }
     // note details
-    const selectedNotes = measure
-        .Notes
-        .filter(n => n.Selected);
+    const selectedNotes = measure.Voices[measure.ActiveVoice].Notes.filter((n) => n.Selected);
     if (selectedNotes.length > 0) {
         const selNote = selectedNotes[0];
         context.fillStyle = "black";
         context.font = "8px serif";
-        context.fillText('Beat: ' + selNote.Beat.toString(), 10, 10);
-        context.fillText('Duration: ' + selNote.Duration.toString(), 10, 20);
-        context.fillText('Line: ' + selNote.Line.toString(), 10, 30);
-        context.fillText('Tied: ' + selNote.Tied.toString(), 10, 40);
+        context.fillText("Beat: " + selNote.Beat.toString(), 10, 10);
+        context.fillText("Duration: " + selNote.Duration.toString(), 10, 20);
+        context.fillText("Line: " + selNote.Line.toString(), 10, 30);
+        context.fillText("Tied: " + selNote.Tied.toString(), 10, 40);
         if (selNote.Tied) {
             context.fillText(selNote.TiedStart.toString(), 40, 40);
             context.fillText(selNote.TiedEnd.toString(), 60, 40);
@@ -88,15 +86,15 @@ function RenderDebugOld(measure, renderProps, index, mousePos) {
     let lineNum = line.num;
     context.fillText("Line Hovered: " + lineNum.toString(), 130, 10);
     context.fillStyle = "rgba(0, 0, 50, 0.2)";
-    const div1 = measure.Divisions.filter(d => d.Staff === 0)[0];
-    const div2 = measure.Divisions.filter(d => d.Staff === 1)[0];
+    const div1 = measure.Divisions.filter((d) => d.Staff === 0)[0];
+    const div2 = measure.Divisions.filter((d) => d.Staff === 1)[0];
     //    context.fillRect(div1.Bounds.x + camera.x,
-    //                     div1.Bounds.y + camera.y, 
+    //                     div1.Bounds.y + camera.y,
     //                     div1.Bounds.width,
     //                     div1.Bounds.height);
     context.fillStyle = "rgba(0, 50, 0, 0.2)";
     //    context.fillRect(div2.Bounds.x + camera.x,
-    //                     div2.Bounds.y + camera.y, 
+    //                     div2.Bounds.y + camera.y,
     //                     div2.Bounds.width,
     //                     div2.Bounds.height);
     context.strokeStyle = "black";

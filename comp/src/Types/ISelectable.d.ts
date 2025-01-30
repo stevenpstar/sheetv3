@@ -7,7 +7,8 @@ declare enum SelectableTypes {
     TimeSig = 3,
     KeySig = 4,
     Beam = 5,
-    Stem = 6
+    Stem = 6,
+    Barline = 7
 }
 interface ISelectable {
     ID: number;

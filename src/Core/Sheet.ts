@@ -4,6 +4,7 @@ import {
 } from "../Factory/Instrument.Factory.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { ConfigSettings, Message } from "../entry.js";
+import { Barline, BarlineType } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Instrument } from "./Instrument.js";
 import { Division, Measure } from "./Measure.js";

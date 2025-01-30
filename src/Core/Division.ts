@@ -250,7 +250,9 @@ function GenerateMissingBeatDivisions(
   sortedDivs
     .filter((d) => d.Staff === staff)
     .forEach((div: Division, i: number) => {
-      const notesOnDiv = msr.Notes.filter((n) => n.Beat === div.Beat);
+      const notesOnDiv = msr.Voices[msr.ActiveVoice].Notes.filter(
+        (n) => n.Beat === div.Beat,
+      );
       if (div.Beat === startingBeat) {
         // there is a div for this beat, set the startingBeat to the next
         // expected division
@@ -287,7 +289,9 @@ function GenerateMissingBeatDivisions(
   divisions.push(...divisionsToAdd);
   // add RESTS to division gaps
   divisionsToAdd.forEach((div) => {
-    const notesOnBeat = msr.Notes.find((n) => n.Beat === div.Beat);
+    const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.find(
+      (n) => n.Beat === div.Beat,
+    );
     if (notesOnBeat !== undefined) {
       console.error("Note found in division gap");
     }
@@ -337,7 +341,7 @@ function GenerateMissingBeatDivisions(
   }
   divisions.push(...lastDivisionsToAdd);
   lastDivisionsToAdd.forEach((div) => {
-    const notesOnBeat = msr.Notes.find(
+    const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.find(
       (n) => n.Beat === div.Beat && n.Staff === div.Staff,
     );
     if (notesOnBeat !== undefined) {
@@ -397,7 +401,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
   // only looking for grace notes, eventually refactor below and only need one
   // loop with functions/branching
   mDivs.forEach((div: Division, i: number) => {
-    const divNotes = msr.Notes.filter(
+    const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
       (n: Note) =>
         n.Beat === div.Beat &&
         (n.Staff === staff || n.StaffGroup === staff) &&
@@ -419,7 +423,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
     if (div.Staff !== staff) {
       crossStaff = true;
     }
-    const divNotes = msr.Notes.filter(
+    const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
       (n) =>
         n.Beat === div.Beat &&
         (n.Staff === staff || n.StaffGroup === staff) &&

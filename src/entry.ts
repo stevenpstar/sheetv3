@@ -28,6 +28,7 @@ const keymaps: KeyMapping = {
   debug_clear: "c",
   beam: "b",
   grace: "g",
+  change_barline: "z",
 };
 
 const defaultTheme: Theme = {

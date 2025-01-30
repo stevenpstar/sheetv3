@@ -10,7 +10,6 @@ import { StaffType } from "../Core/Instrument.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note, NoteProps, TupleDetails } from "../Core/Note.js";
 import { GetStaffMiddleLine, Staff } from "../Core/Staff.js";
-import { Stem } from "../Core/Stem.js";
 import { GetLargestValues } from "../Core/Values.js";
 import { CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
@@ -77,7 +76,9 @@ function InputNote(
   grace: boolean,
   tupleCount: number = 1,
 ): void {
-  const notesInDiv = msr.Notes.filter((n) => n.Beat === division.Beat);
+  const notesInDiv = msr.Voices[msr.ActiveVoice].Notes.filter(
+    (n) => n.Beat === division.Beat,
+  );
   if (notesInDiv.length < 1) {
     console.error("No notes found in division");
     return;
@@ -148,7 +149,7 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
       // TODO: This may need to be a function in the division file
       div.Direction = stemDir;
 
-      const divNotes = msr.Notes.filter(
+      const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
         (n) => n.Beat === div.Beat && n.Staff === staff,
       );
       divNotes.sort((a: Note, b: Note) => {
@@ -251,7 +252,7 @@ function AddToDivision(
           if (remVal <= 0 && !room) {
             continue;
           }
-          const notesOnBeat = msr.Notes.filter(
+          const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter(
             (n: Note) => n.Beat == msr.Divisions[j].Beat,
           );
           if (notesOnBeat.length > 0 && notesOnBeat[0].Rest) {
@@ -329,9 +330,11 @@ function AddToDivision(
         remainingValue > 0
       ) {
         // Get other notes that will be effected
-        const notesOnBeat = msr.Notes.filter((note: Note) => {
-          return note.Beat === div.Beat && note.Staff === div.Staff;
-        });
+        const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter(
+          (note: Note) => {
+            return note.Beat === div.Beat && note.Staff === div.Staff;
+          },
+        );
         if (IsRestOnBeat(msr, beat, notesOnBeat, div.Staff)) {
           // If it does not effect any other notes (only rests in div)
           // We can just add a note of our desired Duration.
@@ -470,10 +473,10 @@ function AllNotesByBeat(msr: Measure): Array<Note[]> {
   notes.push([]);
   let currentBeat = 1;
   let nIndex = 0;
-  msr.Notes.sort((a: Note, b: Note) => {
+  msr.Voices[msr.ActiveVoice].Notes.sort((a: Note, b: Note) => {
     return a.Beat - b.Beat;
   });
-  msr.Notes.forEach((n: Note) => {
+  msr.Voices[msr.ActiveVoice].Notes.forEach((n: Note) => {
     if (n.Beat === currentBeat) {
       notes[nIndex].push(n);
     } else {

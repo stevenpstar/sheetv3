@@ -80,7 +80,7 @@ const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, staves,
         Settings: settings,
         Barlines: [
             new Barline(BarlinePos.START, BarlineType.SINGLE),
-            new Barline(BarlinePos.END, BarlineType.END),
+            new Barline(BarlinePos.END, BarlineType.SINGLE),
         ],
     };
     return new Measure(props, runningId);

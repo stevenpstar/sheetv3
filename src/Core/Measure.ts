@@ -20,6 +20,7 @@ import { Note, NoteProps } from "./Note.js";
 import { Page } from "./Page.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
 import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
+import { Voice } from "./Voice.js";
 
 interface MeasureProps {
   Instrument: Instrument;
@@ -58,7 +59,8 @@ class Measure implements ISelectable {
   TimeSignature: TimeSignature;
   KeySignature: string;
 
-  Notes: Note[];
+  Voices: Voice[];
+  ActiveVoice: number = 0;
   Divisions: Division[];
   Clefs: Clef[] = [];
   Staves: Staff[];
@@ -73,6 +75,7 @@ class Measure implements ISelectable {
   RunningID: { count: number };
 
   constructor(properties: MeasureProps, runningId: { count: number }) {
+    this.Voices = [new Voice(), new Voice(), new Voice(), new Voice()];
     this.Num = 1;
     this.Staves = properties.Staves;
     this.Message = properties.Message;
@@ -87,7 +90,7 @@ class Measure implements ISelectable {
     this.Bounds.height = GetStaffHeightUntil(this.Staves);
     this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
     this.KeySignature = properties.KeySignature;
-    this.Notes = properties.Notes;
+    this.Voices[this.ActiveVoice].Notes = properties.Notes;
     this.Divisions = [];
     this.Articulations = [];
     this.RenderClef = properties.RenderClef;
@@ -168,7 +171,14 @@ class Measure implements ISelectable {
   CreateDivisions(cam: Camera, afterInput: boolean = false) {
     this.Divisions = [];
     this.Staves.forEach((s: Staff) => {
-      this.Divisions.push(...CreateDivisions(this, this.Notes, s.Num, cam));
+      this.Divisions.push(
+        ...CreateDivisions(
+          this,
+          this.Voices[this.ActiveVoice].Notes,
+          s.Num,
+          cam,
+        ),
+      );
       ResizeDivisions(this, this.Divisions, s.Num);
       UpdateNoteBounds(this, s.Num);
     });
@@ -191,7 +201,7 @@ class Measure implements ISelectable {
     }
     note.SetID(this.RunningID.count);
     this.RunningID.count++;
-    this.Notes.push(note);
+    this.Voices[this.ActiveVoice].Notes.push(note);
 
     if (fromInput) {
       const msg: Message = {
@@ -209,47 +219,55 @@ class Measure implements ISelectable {
   }
 
   ClearNonRestNotes(beat: number, staff: number): void {
-    for (let n = this.Notes.length - 1; n >= 0; n--) {
+    for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
       if (
-        this.Notes[n].Beat === beat &&
-        this.Notes[n].Rest === false &&
-        this.Notes[n].Staff === staff
+        this.Voices[this.ActiveVoice].Notes[n].Beat === beat &&
+        this.Voices[this.ActiveVoice].Notes[n].Rest === false &&
+        this.Voices[this.ActiveVoice].Notes[n].Staff === staff
       ) {
-        this.Notes.splice(n, 1);
+        this.Voices[this.ActiveVoice].Notes.splice(n, 1);
       }
     }
   }
 
   ClearRestNotes(beat: number, staff: number): void {
-    for (let n = this.Notes.length - 1; n >= 0; n--) {
+    for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
       if (
-        this.Notes[n].Beat === beat &&
-        this.Notes[n].Rest === true &&
-        this.Notes[n].Staff === staff
+        this.Voices[this.ActiveVoice].Notes[n].Beat === beat &&
+        this.Voices[this.ActiveVoice].Notes[n].Rest === true &&
+        this.Voices[this.ActiveVoice].Notes[n].Staff === staff
       ) {
-        this.Notes.splice(n, 1);
+        this.Voices[this.ActiveVoice].Notes.splice(n, 1);
       }
     }
   }
 
   ClearMeasure(ignoreNotes?: Note[]): void {
-    for (let n = this.Notes.length - 1; n >= 0; n--) {
-      if (this.Notes[n].Editable && !ignoreNotes.includes(this.Notes[n])) {
-        this.Notes.splice(n, 1);
+    for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+      if (
+        this.Voices[this.ActiveVoice].Notes[n].Editable &&
+        !ignoreNotes.includes(this.Voices[this.ActiveVoice].Notes[n])
+      ) {
+        this.Voices[this.ActiveVoice].Notes.splice(n, 1);
       }
     }
   }
 
   DeleteSelected(): void {
-    for (let n = this.Notes.length - 1; n >= 0; n--) {
-      if (this.Notes[n].Selected && this.Notes[n].Editable) {
-        let beat = this.Notes[n].Beat;
-        let duration = this.Notes[n].Duration;
-        let staff = this.Notes[n].Staff;
-        let tuple = this.Notes[n].Tuple;
-        let tupleDetails = this.Notes[n].TupleDetails;
-        this.Notes.splice(n, 1);
-        const notesOnBeat = this.Notes.filter((n) => n.Beat === beat);
+    for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+      if (
+        this.Voices[this.ActiveVoice].Notes[n].Selected &&
+        this.Voices[this.ActiveVoice].Notes[n].Editable
+      ) {
+        let beat = this.Voices[this.ActiveVoice].Notes[n].Beat;
+        let duration = this.Voices[this.ActiveVoice].Notes[n].Duration;
+        let staff = this.Voices[this.ActiveVoice].Notes[n].Staff;
+        let tuple = this.Voices[this.ActiveVoice].Notes[n].Tuple;
+        let tupleDetails = this.Voices[this.ActiveVoice].Notes[n].TupleDetails;
+        this.Voices[this.ActiveVoice].Notes.splice(n, 1);
+        const notesOnBeat = this.Voices[this.ActiveVoice].Notes.filter(
+          (n) => n.Beat === beat,
+        );
         if (notesOnBeat.length === 0) {
           const clefType = GetNoteClefType(this, beat, staff);
           // beat is empty and requires a rest note
@@ -273,19 +291,24 @@ class Measure implements ISelectable {
   }
 
   GetMinimumWidth(): number {
-    if (this.Notes.filter((n) => n.Rest !== true).length === 0) {
+    if (
+      this.Voices[this.ActiveVoice].Notes.filter((n) => n.Rest !== true)
+        .length === 0
+    ) {
       return DivisionMinWidth * 4;
     }
-    const lowestVal = this.Notes.sort((a: Note, b: Note) => {
-      return a.Duration - b.Duration;
-    })[0];
+    const lowestVal = this.Voices[this.ActiveVoice].Notes.sort(
+      (a: Note, b: Note) => {
+        return a.Duration - b.Duration;
+      },
+    )[0];
     const count = 1 / lowestVal.Duration;
     return count * DivisionMinWidth;
   }
 
   ReturnSelectableElements(): ISelectable[] {
     const sel: ISelectable[] = [];
-    sel.push(...this.Notes);
+    sel.push(...this.Voices[this.ActiveVoice].Notes);
     sel.push(...this.Clefs);
     return sel;
   }
@@ -297,6 +320,22 @@ class Measure implements ISelectable {
   ChangeTimeSignature(top: number, bottom: number, transpose: boolean): void {
     this.TimeSignature.top = top;
     this.TimeSignature.bottom = bottom;
+  }
+
+  RecalculateBarlines(): void {
+    this.Barlines[0].Bounds = new Bounds(
+      this.Bounds.x,
+      this.Bounds.y,
+      10,
+      this.GetMeasureHeight(),
+    );
+
+    this.Barlines[1].Bounds = new Bounds(
+      this.Bounds.x + this.GetBoundsWithOffset().width - 10,
+      this.Bounds.y,
+      10,
+      this.GetMeasureHeight(),
+    );
   }
 }
 

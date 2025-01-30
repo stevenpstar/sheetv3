@@ -12,6 +12,7 @@ import { Note } from "./Note.js";
 import { Page } from "./Page.js";
 import { Staff } from "./Staff.js";
 import { TimeSignature } from "./TimeSignatures.js";
+import { Voice } from "./Voice.js";
 interface MeasureProps {
     Instrument: Instrument;
     Bounds: Bounds;
@@ -49,7 +50,8 @@ declare class Measure implements ISelectable {
     Message: (msg: Message) => void;
     TimeSignature: TimeSignature;
     KeySignature: string;
-    Notes: Note[];
+    Voices: Voice[];
+    ActiveVoice: number;
     Divisions: Division[];
     Clefs: Clef[];
     Staves: Staff[];
@@ -83,6 +85,7 @@ declare class Measure implements ISelectable {
     ReturnSelectableElements(): ISelectable[];
     IsHovered(x: number, y: number, cam: Camera): boolean;
     ChangeTimeSignature(top: number, bottom: number, transpose: boolean): void;
+    RecalculateBarlines(): void;
 }
 export { Measure, MeasureProps, Division, Clef };
 //# sourceMappingURL=Measure.d.ts.map

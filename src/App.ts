@@ -27,7 +27,7 @@ import {
 } from "./Workers/Pitcher.js";
 import { ConfigSettings } from "./Types/Config.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
-import { BarlineType } from "./Core/Barline.js";
+import { Barline, BarlinePos, BarlineType } from "./Core/Barline.js";
 
 class App {
   Config: ConfigSettings;
@@ -444,9 +444,6 @@ class App {
   }
 
   ResizeMeasures(measures: Measure[]): void {
-    // TODO: Prototyping stuff so refactor later
-    const maxMeasuresPerLine = 4;
-    const minMeasuresPerLine = 3;
     const lineHeight =
       measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
     SetPagesAndLines(
@@ -471,6 +468,7 @@ class App {
       m.Staves.forEach((s: Staff) => {
         UpdateNoteBounds(m, s.Num);
       });
+      m.RecalculateBarlines();
     });
 
     this.Update(0, 0);
@@ -640,6 +638,7 @@ class App {
 
     const emptySpace = this.Canvas.clientWidth - totalWidth * this.Camera.Zoom;
     this.Camera.x = emptySpace / 2;
+    this.Camera.oldX = this.Camera.x;
   }
 
   // Maybe instead of duplicate function we can expose note input function,
@@ -665,7 +664,7 @@ class App {
             beamFrom = n.Staff;
           }
           if (n.Staff !== beamFrom) {
-            msr.Notes.filter(
+            msr.Voices[msr.ActiveVoice].Notes.filter(
               (note: Note) => note.Staff == n.Staff && note.Beat == n.Beat,
             ).forEach((note: Note) => {
               note.StaffGroup = beamFrom;
@@ -698,6 +697,18 @@ class App {
   FromPitchMap(midiNote: number, clef: string): MappedMidi {
     const midiMapped: MappedMidi = FromPitchMap(midiNote, this.PitchMap, clef);
     return midiMapped;
+  }
+
+  ChangeBarline(): void {
+    for (let [_, elem] of this.Selector.Elements) {
+      elem
+        .filter((e: ISelectable) => e.SelType === SelectableTypes.Barline)
+        .forEach((bl: Barline) => {
+          if (bl.Position == BarlinePos.END) {
+            bl.Type = BarlineType.REPEAT_END;
+          }
+        });
+    }
   }
 }
 

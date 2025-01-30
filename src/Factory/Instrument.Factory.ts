@@ -117,7 +117,7 @@ const CreateMeasure = (
     Settings: settings,
     Barlines: [
       new Barline(BarlinePos.START, BarlineType.SINGLE),
-      new Barline(BarlinePos.END, BarlineType.END),
+      new Barline(BarlinePos.END, BarlineType.SINGLE),
     ],
   };
   return new Measure(props, runningId);

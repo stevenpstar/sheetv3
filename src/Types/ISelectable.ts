@@ -8,7 +8,8 @@ enum SelectableTypes {
   TimeSig,
   KeySig,
   Beam,
-  Stem
+  Stem,
+  Barline,
 }
 interface ISelectable {
   ID: number;

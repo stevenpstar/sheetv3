@@ -104,6 +104,9 @@ function RenderDots(renderProps, note, dotXStart) {
     }
 }
 function RenderRest(ctx, div, cam, note, msr, theme) {
+    if (!note) {
+        return;
+    }
     ctx.fillStyle = theme.NoteElements;
     let x = div.Bounds.x + cam.x + noteXBuffer;
     //    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
@@ -315,7 +318,7 @@ function renderLedgerLines(notes, division, renderProps, staff, msr, theme, colo
     // TODO: This code is repeated (search for dynNoteXBuffer)
     // Could be a good idea to make it a function
     let dynNoteXBuffer = noteXBuffer;
-    const divNotes = msr.Notes.filter((n) => n.Beat === division.Beat && n.Staff === division.Staff);
+    const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat === division.Beat && n.Staff === division.Staff);
     const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
     if (numOfAcc > 0) {
         dynNoteXBuffer += noteXBuffer * numOfAcc - 1;

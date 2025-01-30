@@ -21,6 +21,7 @@ const keymaps = {
     debug_clear: "c",
     beam: "b",
     grace: "g",
+    change_barline: "z",
 };
 const defaultTheme = {
     NoteElements: "black",
@@ -89,7 +90,7 @@ function zoom(app, canvas, e) {
         const y = e.clientY - rect.top;
         e.preventDefault();
         const scale = e.deltaY * -0.01;
-        scale > 0 ? app.AlterZoom(0.1, x, y) : app.AlterZoom(-0.1, x, y);
+        scale > 0 ? app.AlterZoom(0.075, x, y) : app.AlterZoom(-0.075, x, y);
     }
 }
 function resize(app, context, canvas, container) {

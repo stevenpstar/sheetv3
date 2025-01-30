@@ -26,11 +26,6 @@ import {
   renderLedgerLines,
 } from "./Note.Renderer.js";
 
-const line_space = 10;
-const line_width = 1;
-const endsWidth = 2;
-
-const debug = true;
 const noteXBuffer = 9;
 
 function RenderMeasure(
@@ -71,7 +66,7 @@ function RenderMeasure(
       ).forEach((a: Articulation) => {
         a.Render(
           renderProps,
-          measure.Notes.filter(
+          measure.Voices[measure.ActiveVoice].Notes.filter(
             (n: Note) => n.Beat == div.Beat && n.Staff == div.Staff,
           ),
           measure.Staves,
@@ -80,7 +75,6 @@ function RenderMeasure(
         );
       });
 
-      // temp msr no
       renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
       renderProps.context.font = `${12}px Bravura`;
       renderProps.context.fillText(
@@ -310,7 +304,7 @@ function RenderNotes(
   const { canvas, context, camera } = renderProps;
   const mDivs = msr.Divisions.filter((d) => d.Staff === staff);
   mDivs.forEach((div: Division) => {
-    const divNotes = msr.Notes.filter(
+    const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
       (note: Note) => note.Beat === div.Beat && note.Staff === div.Staff,
     );
     divNotes.sort((a: Note, b: Note) => {
@@ -321,7 +315,14 @@ function RenderNotes(
       RenderRest(context, div, camera, divNotes[0], msr, theme);
       return;
     }
-    renderLedgerLines(msr.Notes, div, renderProps, staff, msr, theme);
+    renderLedgerLines(
+      msr.Voices[msr.ActiveVoice].Notes,
+      div,
+      renderProps,
+      staff,
+      msr,
+      theme,
+    );
   });
 
   msr.DivisionGroups.forEach((group: DivGroup, i: number) => {
@@ -350,7 +351,7 @@ function RenderNotes(
       group.Divisions.forEach((div) => {
         let hasFlipped = false;
 
-        const dN = msr.Notes.filter(
+        const dN = msr.Voices[msr.ActiveVoice].Notes.filter(
           (note: Note) =>
             note.Beat === div.Beat && note.Staff === staff && !note.Grace,
         );
@@ -409,22 +410,34 @@ function RenderNotes(
     }
   });
   RenderGraceNotes(renderProps, msr, theme);
-  RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Single, msr);
+  RenderTies(
+    renderProps,
+    msr.Divisions,
+    msr.Voices[msr.ActiveVoice].Notes,
+    StaffType.Single,
+    msr,
+  );
   RenderTuplets(
     renderProps,
     msr.Divisions,
-    msr.Notes,
+    msr.Voices[msr.ActiveVoice].Notes,
     StaffType.Single,
     msr,
     theme,
   );
 
   if (msr.Instrument.Staff === StaffType.Grand) {
-    RenderTies(renderProps, msr.Divisions, msr.Notes, StaffType.Grand, msr);
+    RenderTies(
+      renderProps,
+      msr.Divisions,
+      msr.Voices[msr.ActiveVoice].Notes,
+      StaffType.Grand,
+      msr,
+    );
     RenderTuplets(
       renderProps,
       msr.Divisions,
-      msr.Notes,
+      msr.Voices[msr.ActiveVoice].Notes,
       StaffType.Grand,
       msr,
       theme,
@@ -437,17 +450,19 @@ function RenderGraceNotes(
   msr: Measure,
   theme: Theme,
 ): void {
-  msr.Notes.filter((n: Note) => n.Grace).forEach((n: Note) => {
-    RenderNote(
-      n,
-      renderProps,
-      n.Bounds,
-      n.Selected,
-      false,
-      StemDirection.Up,
-      theme,
-    );
-  });
+  msr.Voices[msr.ActiveVoice].Notes.filter((n: Note) => n.Grace).forEach(
+    (n: Note) => {
+      RenderNote(
+        n,
+        renderProps,
+        n.Bounds,
+        n.Selected,
+        false,
+        StemDirection.Up,
+        theme,
+      );
+    },
+  );
 }
 
 function IsFlippedNote(

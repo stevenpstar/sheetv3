@@ -31,7 +31,7 @@ function InputOnMeasure(msr, noteValue, x, y, cam, rest, grace) {
     }
 }
 function InputNote(msr, noteValue, division, line, rest, grace, tupleCount = 1) {
-    const notesInDiv = msr.Notes.filter((n) => n.Beat === division.Beat);
+    const notesInDiv = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat === division.Beat);
     if (notesInDiv.length < 1) {
         console.error("No notes found in division");
         return;
@@ -97,7 +97,7 @@ function UpdateNoteBounds(msr, staff) {
             // Set Division values for stem direction and X Buffer here
             // TODO: This may need to be a function in the division file
             div.Direction = stemDir;
-            const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat && n.Staff === staff);
+            const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat === div.Beat && n.Staff === staff);
             divNotes.sort((a, b) => {
                 return a.Line - b.Line;
             });
@@ -171,7 +171,7 @@ function AddToDivision(msr, noteProps, staff) {
                 if (remVal <= 0 && !room) {
                     continue;
                 }
-                const notesOnBeat = msr.Notes.filter((n) => n.Beat == msr.Divisions[j].Beat);
+                const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat == msr.Divisions[j].Beat);
                 if (notesOnBeat.length > 0 && notesOnBeat[0].Rest) {
                     remVal -= msr.Divisions[j].Duration;
                     if (remVal <= 0) {
@@ -237,7 +237,7 @@ function AddToDivision(msr, noteProps, staff) {
             beat === div.Beat &&
             remainingValue > 0) {
             // Get other notes that will be effected
-            const notesOnBeat = msr.Notes.filter((note) => {
+            const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter((note) => {
                 return note.Beat === div.Beat && note.Staff === div.Staff;
             });
             if (IsRestOnBeat(msr, beat, notesOnBeat, div.Staff)) {
@@ -361,10 +361,10 @@ function AllNotesByBeat(msr) {
     notes.push([]);
     let currentBeat = 1;
     let nIndex = 0;
-    msr.Notes.sort((a, b) => {
+    msr.Voices[msr.ActiveVoice].Notes.sort((a, b) => {
         return a.Beat - b.Beat;
     });
-    msr.Notes.forEach((n) => {
+    msr.Voices[msr.ActiveVoice].Notes.forEach((n) => {
         if (n.Beat === currentBeat) {
             notes[nIndex].push(n);
         }

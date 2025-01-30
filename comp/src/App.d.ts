@@ -85,6 +85,7 @@ declare class App {
     BeamSelectedNotes(): void;
     AddStaff(instrNum: number, clef: string): void;
     FromPitchMap(midiNote: number, clef: string): MappedMidi;
+    ChangeBarline(): void;
 }
 export { App };
 //# sourceMappingURL=App.d.ts.map

@@ -1,3 +1,4 @@
+import { Barline } from "../Core/Barline.js";
 import { Camera } from "../Core/Camera.js";
 import { DivGroup } from "../Core/Division.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
@@ -39,12 +40,13 @@ class Selector {
     //   this.DeselectAllElements();
     // }
     UpdateNoteBounds(msr, 0);
-    elements.push(...msr.Notes);
+    elements.push(...msr.Voices[msr.ActiveVoice].Notes);
     elements.push(...msr.Clefs);
     msr.DivisionGroups.forEach((g: DivGroup) => {
       elements.push(...g.Stems);
       elements.push(...g.Beams);
     });
+    elements.push(...msr.Barlines);
 
     elements.push(msr.TimeSignature);
     elements.forEach((e: ISelectable) => {
@@ -147,7 +149,7 @@ class Selector {
     measures.forEach((m) => {
       // check here for measure selection when implemented
       // maybe also div/beam/stem/clef/sig/artic etc.
-      m.Notes.forEach((n) => {
+      m.Voices[m.ActiveVoice].Notes.forEach((n) => {
         if (n.ID === id) {
           n.Selected = true;
           selectable = n;
@@ -197,7 +199,9 @@ class Selector {
   ): boolean {
     let noteHit = false;
     msr.Divisions.forEach((div: Division) => {
-      const divNotes = msr.Notes.filter((note: Note) => note.Beat === div.Beat);
+      const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
+        (note: Note) => note.Beat === div.Beat,
+      );
       divNotes.forEach((n: Note) => {
         const noteBounds = n.Bounds;
         if (noteBounds.IsHovered(x, y, cam)) {
@@ -224,16 +228,18 @@ class Selector {
           if (n.Selected && !shiftKey) {
             let deselect = true;
             if (n.Tied) {
-              const tiedNotes = msr.Notes.filter((note) => {
-                return (
-                  note !== n &&
-                  note.Beat >= n.TiedStart &&
-                  note.Beat <= n.TiedEnd &&
-                  note.Line === n.Line &&
-                  note.Staff === n.Staff &&
-                  note.Selected === true
-                );
-              });
+              const tiedNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
+                (note) => {
+                  return (
+                    note !== n &&
+                    note.Beat >= n.TiedStart &&
+                    note.Beat <= n.TiedEnd &&
+                    note.Line === n.Line &&
+                    note.Staff === n.Staff &&
+                    note.Selected === true
+                  );
+                },
+              );
               deselect = tiedNotes.length === 0;
             }
             if (deselect) {
@@ -256,7 +262,7 @@ function SelectTiedNotes(n: Note, msr: Measure): Note[] {
   let nArray: Note[] = [];
   let tStart = n.TiedStart;
   let tEnd = n.TiedEnd;
-  const tiedNotes = msr.Notes.filter((note) => {
+  const tiedNotes = msr.Voices[msr.ActiveVoice].Notes.filter((note) => {
     return (
       note !== n &&
       note.Beat >= tStart &&

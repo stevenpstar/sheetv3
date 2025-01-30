@@ -21,6 +21,7 @@ interface KeyMapping {
   debug_clear: string;
   beam: string;
   grace: string;
+  change_barline: string; // TEST KEYMAP
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -84,6 +85,8 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       break;
     case keyMaps.grace:
       app.GraceInput = !app.GraceInput;
+    case keyMaps.change_barline:
+      app.ChangeBarline();
     default:
   }
 }

@@ -30,7 +30,7 @@ const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
             notes.push(newNote);
         });
         const msr = CreateMeasure(instr, m.Bounds, m.TimeSignature, m.KeySignature, m.Clefs, m.Staves, cam, runningId, page, m.ShowClef, callback);
-        msr.Notes = notes;
+        msr.Voices[msr.ActiveVoice].Notes = notes;
         sheet.Measures.push(msr);
         msr.CreateDivisions(cam);
     });
@@ -41,7 +41,7 @@ const SaveSheet = (sheet) => {
     };
     sheet.Measures.forEach((m, i) => {
         let notes = [];
-        m.Notes.forEach((n, i) => {
+        m.Voices[m.ActiveVoice].Notes.forEach((n, i) => {
             if (n.Rest) {
                 return;
             }

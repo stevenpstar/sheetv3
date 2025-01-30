@@ -161,7 +161,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
     sortedDivs
         .filter((d) => d.Staff === staff)
         .forEach((div, i) => {
-        const notesOnDiv = msr.Notes.filter((n) => n.Beat === div.Beat);
+        const notesOnDiv = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat === div.Beat);
         if (div.Beat === startingBeat) {
             // there is a div for this beat, set the startingBeat to the next
             // expected division
@@ -198,7 +198,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
     divisions.push(...divisionsToAdd);
     // add RESTS to division gaps
     divisionsToAdd.forEach((div) => {
-        const notesOnBeat = msr.Notes.find((n) => n.Beat === div.Beat);
+        const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.find((n) => n.Beat === div.Beat);
         if (notesOnBeat !== undefined) {
             console.error("Note found in division gap");
         }
@@ -245,7 +245,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
     }
     divisions.push(...lastDivisionsToAdd);
     lastDivisionsToAdd.forEach((div) => {
-        const notesOnBeat = msr.Notes.find((n) => n.Beat === div.Beat && n.Staff === div.Staff);
+        const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.find((n) => n.Beat === div.Beat && n.Staff === div.Staff);
         if (notesOnBeat !== undefined) {
             console.error("Note found in division gap");
         }
@@ -294,7 +294,7 @@ function GetDivisionGroups(msr, staff) {
     // only looking for grace notes, eventually refactor below and only need one
     // loop with functions/branching
     mDivs.forEach((div, i) => {
-        const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat &&
+        const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat === div.Beat &&
             (n.Staff === staff || n.StaffGroup === staff) &&
             n.Grace);
         if (divNotes.length > 0) {
@@ -312,7 +312,7 @@ function GetDivisionGroups(msr, staff) {
         if (div.Staff !== staff) {
             crossStaff = true;
         }
-        const divNotes = msr.Notes.filter((n) => n.Beat === div.Beat &&
+        const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat === div.Beat &&
             (n.Staff === staff || n.StaffGroup === staff) &&
             !n.Grace);
         divNotes.sort((a, b) => {

@@ -36,7 +36,7 @@ function RenderDynamic(renderProps, measure, dynamic, theme) {
         return;
     }
     const div = findDiv[0];
-    const divNotes = measure.Notes.filter((n) => n.Beat === div.Beat).sort((a, b) => a.Line - b.Line);
+    const divNotes = measure.Voices[measure.ActiveVoice].Notes.filter((n) => n.Beat === div.Beat).sort((a, b) => a.Line - b.Line);
     const minHeight = div.Bounds.y + 11 * 10;
     const noteHeight = divNotes[divNotes.length - 1].Bounds.y;
     const yBuffer = 20; // this will  be changed, needs a minimum y value so the dynamic is not on the staff

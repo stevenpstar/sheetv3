@@ -60,6 +60,8 @@ function KeyPress(app, key, keyMaps) {
             break;
         case keyMaps.grace:
             app.GraceInput = !app.GraceInput;
+        case keyMaps.change_barline:
+            app.ChangeBarline();
         default:
     }
 }
