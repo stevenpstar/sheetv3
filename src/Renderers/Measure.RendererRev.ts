@@ -1,3 +1,4 @@
+import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Staff } from "../Core/Staff.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
@@ -23,7 +24,7 @@ function RenderMeasureRev(
         measure,
         measure.KeySignature,
         measure.Clefs[0].Type,
-        34, // this needs work
+        34, // this is xOffset, should not be a constant.
         theme,
         s.Num,
       );
@@ -31,6 +32,9 @@ function RenderMeasureRev(
   }
   if (measure.RenderTimeSig)
     measure.TimeSignature.render(renderProps, measure, theme);
+  measure.Dynamics.forEach((d: Dynamic) =>
+    RenderDynamic(renderProps, measure, d, theme),
+  );
   const debug = false;
   if (debug) {
     measure.Divisions.forEach((d: Division) => {

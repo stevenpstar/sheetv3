@@ -12,6 +12,7 @@ class Note {
         this.Staff = props.Staff;
         this.Clef = props.Clef;
         this.Grace = props.Grace;
+        this.OutOfBounds = false; // Out of bounds may happen when changing time signatures (4th beat in a 3/4 bar for example)
         this.Selected = false;
         this.SelType = SelectableTypes.Note;
         this.Bounds = new Bounds(0, 0, 0, 0);

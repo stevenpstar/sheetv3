@@ -24,7 +24,8 @@ const keymaps = {
   debug_clear: "c",
   beam: "b",
   grace: "g",
-  change_barline: "z",
+  change_timesig: "z",
+  add_dynamic: "f",
 };
 
 interface CanText {

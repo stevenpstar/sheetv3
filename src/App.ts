@@ -28,6 +28,7 @@ import {
 import { ConfigSettings } from "./Types/Config.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
 import { Barline, BarlinePos, BarlineType } from "./Core/Barline.js";
+import { Dynamic } from "./Core/Dynamic.js";
 
 class App {
   Config: ConfigSettings;
@@ -699,6 +700,8 @@ class App {
     return midiMapped;
   }
 
+  // These are test/temp functions (kinda)
+
   ChangeBarline(): void {
     for (let [_, elem] of this.Selector.Elements) {
       elem
@@ -707,6 +710,23 @@ class App {
           if (bl.Position == BarlinePos.END) {
             bl.Type = BarlineType.REPEAT_END;
           }
+        });
+    }
+  }
+
+  ChangeTimeSig(): void {
+    const msr1 = this.Sheet.Measures[0];
+    if (msr1) {
+      msr1.ChangeTimeSignature(3, 4, false);
+    }
+  }
+
+  AddDynamic(dynString: string): void {
+    for (let [msr, elem] of this.Selector.Elements) {
+      elem
+        .filter((e: ISelectable) => e.SelType === SelectableTypes.Note)
+        .forEach((n: Note) => {
+          msr.Dynamics.push(new Dynamic(dynString, n.Staff, n.Beat));
         });
     }
   }

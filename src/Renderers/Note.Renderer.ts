@@ -7,7 +7,7 @@ import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 import {
   NoteHeads,
-  RenderScaledSymbol,
+  RenderScaledNote,
   RenderSymbol,
   TupletNumbers,
   stdFontSize,
@@ -65,7 +65,8 @@ function RenderNote(
       if (note.Opacity < 1.0) {
         note.Opacity += 0.01;
       }
-      RenderScaledSymbol(
+      RenderScaledNote(
+        note,
         renderProps,
         NoteHeads.crotchet,
         x,
@@ -76,7 +77,8 @@ function RenderNote(
       );
       break;
     case 0.5:
-      RenderScaledSymbol(
+      RenderScaledNote(
+        note,
         renderProps,
         NoteHeads.minim,
         x,
@@ -87,7 +89,8 @@ function RenderNote(
       );
       break;
     case 1:
-      RenderScaledSymbol(
+      RenderScaledNote(
+        note,
         renderProps,
         NoteHeads.whole,
         x - 2.5,
@@ -98,7 +101,8 @@ function RenderNote(
       );
       break;
     default:
-      RenderScaledSymbol(
+      RenderScaledNote(
+        note,
         renderProps,
         NoteHeads.crotchet,
         x,

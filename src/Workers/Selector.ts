@@ -47,14 +47,10 @@ class Selector {
       elements.push(...g.Beams);
     });
     elements.push(...msr.Barlines);
-
+    elements.push(...msr.Dynamics);
     elements.push(msr.TimeSignature);
     elements.forEach((e: ISelectable) => {
       if (e.IsHovered(x, y, cam) && e.Selected === false) {
-        console.log("hovered something!");
-        //        if (e.Editable !== undefined && e.Editable === false) {
-        //          return;
-        //        }
         e.Selected = true;
         selectedElements.push(e);
         if (e.SelType === SelectableTypes.Note) {

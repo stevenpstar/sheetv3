@@ -35,6 +35,7 @@ class Note implements ISelectable {
   Clef: string;
   Editable: boolean;
   Grace: boolean;
+  OutOfBounds: boolean;
 
   // TEST FOR ANIMATION:
   Opacity: number;
@@ -63,6 +64,7 @@ class Note implements ISelectable {
     this.Staff = props.Staff;
     this.Clef = props.Clef;
     this.Grace = props.Grace;
+    this.OutOfBounds = false; // Out of bounds may happen when changing time signatures (4th beat in a 3/4 bar for example)
 
     this.Selected = false;
     this.SelType = SelectableTypes.Note;

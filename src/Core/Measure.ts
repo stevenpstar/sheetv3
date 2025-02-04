@@ -14,6 +14,7 @@ import {
   DivisionMinWidth,
   DivGroup,
 } from "./Division.js";
+import { Dynamic } from "./Dynamic.js";
 import { Instrument, StaffType } from "./Instrument.js";
 import { KeySignatures } from "./KeySignatures.js";
 import { Note, NoteProps } from "./Note.js";
@@ -66,6 +67,7 @@ class Measure implements ISelectable {
   Staves: Staff[];
   Barlines: Barline[];
   Articulations: Articulation[];
+  Dynamics: Dynamic[];
   DivisionGroups: DivGroup[];
 
   XOffset: number; // not sure if this is what we want to go with
@@ -93,6 +95,7 @@ class Measure implements ISelectable {
     this.Voices[this.ActiveVoice].Notes = properties.Notes;
     this.Divisions = [];
     this.Articulations = [];
+    this.Dynamics = [];
     this.RenderClef = properties.RenderClef;
     if (this.Instrument.Staff === StaffType.Rhythm) {
       this.RenderClef = false;
@@ -118,8 +121,6 @@ class Measure implements ISelectable {
     this.TimeSignature.SetBounds(this);
   }
 
-  // Gets line hovered relative to staff (15 will always be middle of staff for
-  // example)
   GetLineHovered(y: number, staffNum: number): { num: number; bounds: Bounds } {
     const cam = this.Camera;
     const relYPos = y - this.Bounds.y - cam.y;
@@ -138,7 +139,6 @@ class Measure implements ISelectable {
     return { num: actualLine - prevStaffLines, bounds: bounds };
   }
 
-  // Get note position relative to staff/measure
   GetNotePositionOnLine(line: number, staff: number): number {
     const staffYPos = GetStaffHeightUntil(this.Staves, staff);
     let y = staffYPos + this.Bounds.y + (line - this.Staves[staff].TopLine) * 5;
@@ -286,6 +286,11 @@ class Measure implements ISelectable {
 
           this.AddNote(new Note(restProps));
         }
+      }
+    }
+    for (let d = this.Dynamics.length - 1; d >= 0; d--) {
+      if (this.Dynamics[d].Selected) {
+        this.Dynamics.splice(d, 1);
       }
     }
   }

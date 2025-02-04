@@ -85,6 +85,12 @@ function CreateDivisions(
   notes
     .filter((n) => n.Staff === staff)
     .forEach((n) => {
+      // TODO: This should be somewhere else but testing
+      if (n.Beat >= msr.TimeSignature.top + 1) {
+        n.OutOfBounds = true;
+      } else {
+        n.OutOfBounds = false;
+      }
       if (
         !divisions.find((div) => div.Beat === n.Beat && div.Staff === n.Staff)
       ) {
@@ -97,10 +103,6 @@ function CreateDivisions(
             (n.Duration / n.TupleDetails.Count) * msr.TimeSignature.bottom;
         }
         runningValue += n.Duration;
-      } else {
-        const division = divisions.find(
-          (div: Division) => div.Beat === n.Beat && div.Staff === n.Staff,
-        );
       }
     });
   if (runningValue > 0 && nextBeat - 1 < msr.TimeSignature.bottom) {

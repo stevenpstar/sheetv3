@@ -81,7 +81,8 @@ declare enum SelectableTypes {
     TimeSig = 3,
     KeySig = 4,
     Beam = 5,
-    Stem = 6
+    Stem = 6,
+    Barline = 7
 }
 interface ISelectable {
     ID: number;
@@ -143,6 +144,7 @@ declare class Note implements ISelectable {
     Clef: string;
     Editable: boolean;
     Grace: boolean;
+    OutOfBounds: boolean;
     Opacity: number;
     TiedStart: number;
     TiedEnd: number;
@@ -418,6 +420,7 @@ declare class Measure implements ISelectable {
     ReturnSelectableElements(): ISelectable[];
     IsHovered(x: number, y: number, cam: Camera): boolean;
     ChangeTimeSignature(top: number, bottom: number, transpose: boolean): void;
+    RecalculateBarlines(): void;
 }
 
 declare class Staff {
@@ -502,6 +505,7 @@ interface KeyMapping {
     debug_clear: string;
     beam: string;
     grace: string;
+    change_timesig: string;
 }
 declare function KeyPress(app: App, key: string, keyMaps: KeyMapping): void;
 
@@ -597,6 +601,8 @@ declare class App {
     BeamSelectedNotes(): void;
     AddStaff(instrNum: number, clef: string): void;
     FromPitchMap(midiNote: number, clef: string): MappedMidi;
+    ChangeBarline(): void;
+    ChangeTimeSig(): void;
 }
 
 interface lNote {

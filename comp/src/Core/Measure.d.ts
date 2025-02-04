@@ -7,6 +7,7 @@ import { Barline } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Clef } from "./Clef.js";
 import { type Division, DivGroup } from "./Division.js";
+import { Dynamic } from "./Dynamic.js";
 import { Instrument } from "./Instrument.js";
 import { Note } from "./Note.js";
 import { Page } from "./Page.js";
@@ -57,6 +58,7 @@ declare class Measure implements ISelectable {
     Staves: Staff[];
     Barlines: Barline[];
     Articulations: Articulation[];
+    Dynamics: Dynamic[];
     DivisionGroups: DivGroup[];
     XOffset: number;
     Line: number;

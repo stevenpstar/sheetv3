@@ -1,4 +1,5 @@
 import { DynamicSymbol, RenderSymbol, } from "../Renderers/MusicFont.Renderer.js";
+import { Bounds } from "../Types/Bounds.js";
 const DynamicSymbolMap = new Map([
     ["p", DynamicSymbol.Piano],
     ["m", DynamicSymbol.Mezzo],
@@ -14,11 +15,13 @@ const DynamicSymbolMap = new Map([
 class Dynamic {
     constructor(symbol, staff, beat) {
         this.Symbol = symbol;
+        this.Selected = false;
         this.Staff = staff;
         this.Beat = beat;
+        this.Bounds = new Bounds(0, 0, 13 * symbol.length, 20);
     }
     IsHovered(x, y, cam) {
-        return false;
+        return this.Bounds.IsHovered(x, y, cam);
     }
 }
 function RenderDynamic(renderProps, measure, dynamic, theme) {
@@ -41,9 +44,18 @@ function RenderDynamic(renderProps, measure, dynamic, theme) {
     const noteHeight = divNotes[divNotes.length - 1].Bounds.y;
     const yBuffer = 20; // this will  be changed, needs a minimum y value so the dynamic is not on the staff
     const yPos = minHeight > noteHeight ? minHeight : noteHeight + yBuffer;
-    const xBuffer = 16;
+    const xBuffer = 8;
+    // Updating bounds here is a bit ugly
+    dynamic.Bounds.x = div.Bounds.x + xBuffer;
+    dynamic.Bounds.y = yPos - 10;
     for (let i = 0; i < dynamic.Symbol.length; i++) {
-        RenderSymbol(renderProps, DynamicSymbolMap.get(dynamic.Symbol[i]), div.Bounds.x + xBuffer * i, yPos, theme, false);
+        RenderSymbol(renderProps, DynamicSymbolMap.get(dynamic.Symbol[i]), div.Bounds.x + xBuffer * (i + 1) + i * 5, yPos, theme, dynamic.Selected);
     }
+    RenderBounds(renderProps, dynamic);
+}
+function RenderBounds(renderProps, dynamic) {
+    renderProps.context.strokeStyle = "green";
+    renderProps.context.strokeRect(dynamic.Bounds.x + renderProps.camera.x, dynamic.Bounds.y + renderProps.camera.y, dynamic.Bounds.width, dynamic.Bounds.height);
+    renderProps.context.strokeStyle = "black";
 }
 export { Dynamic, RenderDynamic };

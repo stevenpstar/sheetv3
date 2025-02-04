@@ -1,3 +1,4 @@
+import { RenderDynamic } from "../Core/Dynamic.js";
 import { RenderClef } from "./Clef.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { RenderStaff } from "./Staff.Renderer.js";
@@ -9,12 +10,13 @@ function RenderMeasureRev(measure, renderProps, theme) {
     if (measure.RenderKey) {
         measure.Staves.forEach((s) => {
             // This needs work
-            RenderKeySignature(renderProps, measure, measure.KeySignature, measure.Clefs[0].Type, 34, // this needs work
+            RenderKeySignature(renderProps, measure, measure.KeySignature, measure.Clefs[0].Type, 34, // this is xOffset, should not be a constant.
             theme, s.Num);
         });
     }
     if (measure.RenderTimeSig)
         measure.TimeSignature.render(renderProps, measure, theme);
+    measure.Dynamics.forEach((d) => RenderDynamic(renderProps, measure, d, theme));
     const debug = false;
     if (debug) {
         measure.Divisions.forEach((d) => {

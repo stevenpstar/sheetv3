@@ -1,4 +1,5 @@
 import { App } from "../App.js";
+import { NoteValues } from "../Core/Values.js";
 import { allSaves } from "../testsaves.js";
 
 interface KeyMapping {
@@ -21,7 +22,8 @@ interface KeyMapping {
   debug_clear: string;
   beam: string;
   grace: string;
-  change_barline: string; // TEST KEYMAP
+  change_timesig: string; // TEST KEYMAP
+  add_dynamic: string;
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -49,7 +51,7 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       app.SetNoteValue(0.5);
       break;
     case keyMaps.value6:
-      app.SetNoteValue(1);
+      app.SetNoteValue(NoteValues.n1);
       break;
     case keyMaps.restInput:
       //TODO: Prob change this
@@ -85,8 +87,13 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       break;
     case keyMaps.grace:
       app.GraceInput = !app.GraceInput;
-    case keyMaps.change_barline:
-      app.ChangeBarline();
+      break;
+    case keyMaps.change_timesig:
+      app.ChangeTimeSig();
+      break;
+    case keyMaps.add_dynamic:
+      app.AddDynamic("mpf");
+      break;
     default:
   }
 }

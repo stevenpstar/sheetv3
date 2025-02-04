@@ -19,7 +19,8 @@ interface KeyMapping {
     debug_clear: string;
     beam: string;
     grace: string;
-    change_barline: string;
+    change_timesig: string;
+    add_dynamic: string;
 }
 declare function KeyPress(app: App, key: string, keyMaps: KeyMapping): void;
 export { KeyMapping, KeyPress };

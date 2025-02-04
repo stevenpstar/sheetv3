@@ -1,5 +1,5 @@
 import { RenderProperties } from "../Types/RenderProperties.js";
-import { Theme } from "../entry.js";
+import { Note, Theme } from "../entry.js";
 
 const stdFontSize = 40;
 enum Clefs {
@@ -103,7 +103,28 @@ function RenderScaledSymbol(
   fontSize: number,
 ): void {
   const { canvas, context, camera } = renderProps;
+  var colour = selected ? theme.SelectColour : theme.NoteElements;
   context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
+  context.font = `${fontSize}px Bravura`;
+  context.fillText(symbol, x + camera.x, y + camera.y);
+}
+
+function RenderScaledNote(
+  note: Note,
+  renderProps: RenderProperties,
+  symbol: string,
+  x: number,
+  y: number,
+  theme: Theme,
+  selected: boolean,
+  fontSize: number,
+): void {
+  const { canvas, context, camera } = renderProps;
+  var colour = selected ? theme.SelectColour : theme.NoteElements;
+  if (note.OutOfBounds) {
+    colour = "red";
+  }
+  context.fillStyle = colour;
   context.font = `${fontSize}px Bravura`;
   context.fillText(symbol, x + camera.x, y + camera.y);
 }
@@ -136,6 +157,7 @@ export {
   ArticulationSymbol,
   RenderSymbol,
   RenderScaledSymbol,
+  RenderScaledNote,
   RenderAnimatedSymbol,
   stdFontSize,
 };

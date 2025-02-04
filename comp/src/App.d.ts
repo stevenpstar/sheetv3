@@ -86,6 +86,8 @@ declare class App {
     AddStaff(instrNum: number, clef: string): void;
     FromPitchMap(midiNote: number, clef: string): MappedMidi;
     ChangeBarline(): void;
+    ChangeTimeSig(): void;
+    AddDynamic(dynString: string): void;
 }
 export { App };
 //# sourceMappingURL=App.d.ts.map

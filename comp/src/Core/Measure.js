@@ -32,6 +32,7 @@ class Measure {
         this.Voices[this.ActiveVoice].Notes = properties.Notes;
         this.Divisions = [];
         this.Articulations = [];
+        this.Dynamics = [];
         this.RenderClef = properties.RenderClef;
         if (this.Instrument.Staff === StaffType.Rhythm) {
             this.RenderClef = false;
@@ -52,8 +53,6 @@ class Measure {
         });
         this.TimeSignature.SetBounds(this);
     }
-    // Gets line hovered relative to staff (15 will always be middle of staff for
-    // example)
     GetLineHovered(y, staffNum) {
         const cam = this.Camera;
         const relYPos = y - this.Bounds.y - cam.y;
@@ -66,7 +65,6 @@ class Measure {
         bounds.y = this.Bounds.y + 5 * actualLine;
         return { num: actualLine - prevStaffLines, bounds: bounds };
     }
-    // Get note position relative to staff/measure
     GetNotePositionOnLine(line, staff) {
         const staffYPos = GetStaffHeightUntil(this.Staves, staff);
         let y = staffYPos + this.Bounds.y + (line - this.Staves[staff].TopLine) * 5;
@@ -181,6 +179,11 @@ class Measure {
                     };
                     this.AddNote(new Note(restProps));
                 }
+            }
+        }
+        for (let d = this.Dynamics.length - 1; d >= 0; d--) {
+            if (this.Dynamics[d].Selected) {
+                this.Dynamics.splice(d, 1);
             }
         }
     }

@@ -16,6 +16,7 @@ import { ClearMessage, MessageType } from "./Types/Message.js";
 import { FromPitchMap, GeneratePitchMap, } from "./Workers/Pitcher.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
 import { BarlinePos, BarlineType } from "./Core/Barline.js";
+import { Dynamic } from "./Core/Dynamic.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
         var _a, _b;
@@ -500,6 +501,7 @@ class App {
         const midiMapped = FromPitchMap(midiNote, this.PitchMap, clef);
         return midiMapped;
     }
+    // These are test/temp functions (kinda)
     ChangeBarline() {
         for (let [_, elem] of this.Selector.Elements) {
             elem
@@ -508,6 +510,21 @@ class App {
                 if (bl.Position == BarlinePos.END) {
                     bl.Type = BarlineType.REPEAT_END;
                 }
+            });
+        }
+    }
+    ChangeTimeSig() {
+        const msr1 = this.Sheet.Measures[0];
+        if (msr1) {
+            msr1.ChangeTimeSignature(3, 4, false);
+        }
+    }
+    AddDynamic(dynString) {
+        for (let [msr, elem] of this.Selector.Elements) {
+            elem
+                .filter((e) => e.SelType === SelectableTypes.Note)
+                .forEach((n) => {
+                msr.Dynamics.push(new Dynamic(dynString, n.Staff, n.Beat));
             });
         }
     }
