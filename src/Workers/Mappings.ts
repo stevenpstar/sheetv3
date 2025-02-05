@@ -92,7 +92,7 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       app.ChangeTimeSig();
       break;
     case keyMaps.add_dynamic:
-      app.AddDynamic("mpf");
+      app.AddDynamic("f");
       break;
     default:
   }
