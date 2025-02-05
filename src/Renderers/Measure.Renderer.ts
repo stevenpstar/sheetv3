@@ -59,7 +59,7 @@ function RenderMeasure(
     measure.Divisions.filter(
       (div: Division) => div.Staff === s.Num && div.Beat === 1,
     ).forEach((div: Division) => {
-      const tempDyn: Dynamic = new Dynamic("ppppp", div.Staff, div.Beat);
+      //      const tempDyn: Dynamic = new Dynamic("ppppp", div.Staff, div.Beat);
       //RenderDynamic(renderProps, measure, tempDyn, config.Theme);
       measure.Articulations.filter(
         (a: Articulation) => a.Beat == div.Beat && a.Staff == div.Staff,
