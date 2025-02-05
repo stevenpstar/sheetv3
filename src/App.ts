@@ -200,7 +200,7 @@ class App {
       if (!this.DraggingNote) {
         this.DraggingNote = true;
       }
-      const divOver = msrOver.Divisions.find((d) =>
+      const divOver = msrOver.Voices[msrOver.ActiveVoice].Divisions.find((d) =>
         d.Bounds.IsHovered(x, y, this.Camera),
       );
       if (divOver) {
@@ -361,7 +361,7 @@ class App {
       return;
     }
 
-    const divOver = msrOver.Divisions.find((d) =>
+    const divOver = msrOver.Voices[msrOver.ActiveVoice].Divisions.find((d) =>
       d.Bounds.IsHovered(x, y, this.Camera),
     );
     if (divOver) {
@@ -729,6 +729,15 @@ class App {
           msr.Dynamics.push(new Dynamic(dynString, n.Staff, n.Beat));
         });
     }
+  }
+
+  CycleActiveVoice(): void {
+    this.Sheet.Measures.forEach((m: Measure) => {
+      m.ActiveVoice += 1;
+      if (m.ActiveVoice > 3) {
+        m.ActiveVoice = 0;
+      }
+    });
   }
 }
 

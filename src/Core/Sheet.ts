@@ -4,7 +4,6 @@ import {
 } from "../Factory/Instrument.Factory.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { ConfigSettings, Message } from "../entry.js";
-import { Barline, BarlineType } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Instrument } from "./Instrument.js";
 import { Division, Measure } from "./Measure.js";
@@ -33,7 +32,7 @@ class Sheet {
   InputHover(x: number, y: number, camera: Camera): void {
     this.Measures.forEach((m: Measure) => {
       if (m.GetBoundsWithOffset().IsHovered(x, y, camera)) {
-        m.Divisions.forEach((d: Division) => {
+        m.Voices[m.ActiveVoice].Divisions.forEach((d: Division) => {
           if (d.Bounds.IsHovered(x, y, camera)) {
             m.Staves.forEach((s: Staff) => {
               UpdateNoteBounds(m, s.Num);

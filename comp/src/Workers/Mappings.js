@@ -66,8 +66,10 @@ function KeyPress(app, key, keyMaps) {
             app.ChangeTimeSig();
             break;
         case keyMaps.add_dynamic:
-            app.AddDynamic("mpf");
+            app.AddDynamic("f");
             break;
+        case keyMaps.cycle_voice:
+            app.CycleActiveVoice();
         default:
     }
 }

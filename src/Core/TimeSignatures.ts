@@ -7,14 +7,8 @@ import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
-import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
 import { GetStaffMiddleLine, Staff } from "./Staff.js";
-//const Key: Map<string, string[]> = new Map<string, string[]>([
-//  ["amin", ""],
-//  ["
-//])
-//
 
 // Returns beats that should separate note groupings etc.
 function ReturnBreakPoints(timeSig: { top: number; bottom: number }): number[] {
@@ -88,7 +82,9 @@ class TimeSignature implements ISelectable {
       this.Bounds.push(new Bounds(0, 0, 0, 0));
       this.TopPosition.push({ x: 0, y: 0 });
       this.BotPosition.push({ x: 0, y: 0 });
-      const div = msr.Divisions.find((div) => div.Staff === s.Num);
+      const div = msr.Voices[msr.ActiveVoice].Divisions.find(
+        (div) => div.Staff === s.Num,
+      );
       if (!div) {
         return;
       }

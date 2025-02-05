@@ -120,7 +120,7 @@ class App {
             if (!this.DraggingNote) {
                 this.DraggingNote = true;
             }
-            const divOver = msrOver.Divisions.find((d) => d.Bounds.IsHovered(x, y, this.Camera));
+            const divOver = msrOver.Voices[msrOver.ActiveVoice].Divisions.find((d) => d.Bounds.IsHovered(x, y, this.Camera));
             if (divOver) {
                 this.StartLine = msrOver.GetLineHovered(y, divOver.Staff).num;
             }
@@ -218,7 +218,7 @@ class App {
             this.EndLine = -1;
             return;
         }
-        const divOver = msrOver.Divisions.find((d) => d.Bounds.IsHovered(x, y, this.Camera));
+        const divOver = msrOver.Voices[msrOver.ActiveVoice].Divisions.find((d) => d.Bounds.IsHovered(x, y, this.Camera));
         if (divOver) {
             this.EndLine = msrOver.GetLineHovered(y, divOver.Staff).num;
         }
@@ -527,6 +527,14 @@ class App {
                 msr.Dynamics.push(new Dynamic(dynString, n.Staff, n.Beat));
             });
         }
+    }
+    CycleActiveVoice() {
+        this.Sheet.Measures.forEach((m) => {
+            m.ActiveVoice += 1;
+            if (m.ActiveVoice > 3) {
+                m.ActiveVoice = 0;
+            }
+        });
     }
 }
 export { App };

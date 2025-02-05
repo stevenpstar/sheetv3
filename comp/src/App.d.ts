@@ -88,6 +88,7 @@ declare class App {
     ChangeBarline(): void;
     ChangeTimeSig(): void;
     AddDynamic(dynString: string): void;
+    CycleActiveVoice(): void;
 }
 export { App };
 //# sourceMappingURL=App.d.ts.map

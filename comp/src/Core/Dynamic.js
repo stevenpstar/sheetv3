@@ -33,7 +33,7 @@ function RenderDynamic(renderProps, measure, dynamic, theme) {
         console.error("(RenderDynamic): Staff out of bounds of measure");
         return;
     }
-    let findDiv = measure.Divisions.filter((d) => d.Beat === dynamic.Beat);
+    let findDiv = measure.Voices[measure.ActiveVoice].Divisions.filter((d) => d.Beat === dynamic.Beat);
     if (findDiv.length === 0) {
         console.error("(RenderDynamic): Division Beat not matching with dynamic");
         return;

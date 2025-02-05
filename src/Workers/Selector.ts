@@ -42,7 +42,7 @@ class Selector {
     UpdateNoteBounds(msr, 0);
     elements.push(...msr.Voices[msr.ActiveVoice].Notes);
     elements.push(...msr.Clefs);
-    msr.DivisionGroups.forEach((g: DivGroup) => {
+    msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g: DivGroup) => {
       elements.push(...g.Stems);
       elements.push(...g.Beams);
     });
@@ -194,7 +194,7 @@ class Selector {
     shiftKey: boolean,
   ): boolean {
     let noteHit = false;
-    msr.Divisions.forEach((div: Division) => {
+    msr.Voices[msr.ActiveVoice].Divisions.forEach((div: Division) => {
       const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
         (note: Note) => note.Beat === div.Beat,
       );

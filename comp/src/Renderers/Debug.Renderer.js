@@ -9,11 +9,11 @@ function RenderPanel(props) {
 }
 function RenderDebugOld(measure, renderProps, index, mousePos) {
     const { canvas, context, camera } = renderProps;
-    if (measure.Divisions.length === 0) {
+    if (measure.Voices[measure.ActiveVoice].Divisions.length === 0) {
         console.error("measure has no divisions");
         return;
     }
-    const fDiv = measure.Divisions[0];
+    const fDiv = measure.Voices[measure.ActiveVoice].Divisions[0];
     const renderDurations = false;
     const mousePositionString = `x: ${mousePos.x}, y: ${mousePos.y}`;
     context.fillStyle = "black";
@@ -27,7 +27,7 @@ function RenderDebugOld(measure, renderProps, index, mousePos) {
     //    context.strokeStyle = "green";
     //    context.strokeRect(measure.Bounds.x + measure.Camera.x, measure.Bounds.y + measure.Camera.y, measure.Bounds.width,
     //                       measure.Bounds.height);
-    measure.Divisions.forEach((div, i) => {
+    measure.Voices[measure.ActiveVoice].Divisions.forEach((div, i) => {
         if (renderDurations) {
             const x = div.Bounds.x + camera.x + 2;
             const y = div.Bounds.y + div.Bounds.height + camera.y;
@@ -86,8 +86,8 @@ function RenderDebugOld(measure, renderProps, index, mousePos) {
     let lineNum = line.num;
     context.fillText("Line Hovered: " + lineNum.toString(), 130, 10);
     context.fillStyle = "rgba(0, 0, 50, 0.2)";
-    const div1 = measure.Divisions.filter((d) => d.Staff === 0)[0];
-    const div2 = measure.Divisions.filter((d) => d.Staff === 1)[0];
+    const div1 = measure.Voices[measure.ActiveVoice].Divisions.filter((d) => d.Staff === 0)[0];
+    const div2 = measure.Voices[measure.ActiveVoice].Divisions.filter((d) => d.Staff === 1)[0];
     //    context.fillRect(div1.Bounds.x + camera.x,
     //                     div1.Bounds.y + camera.y,
     //                     div1.Bounds.width,

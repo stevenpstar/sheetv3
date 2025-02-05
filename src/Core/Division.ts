@@ -394,7 +394,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
   // started creating a div group or not
   let startFlag = false;
 
-  const mDivs = msr.Divisions.filter(
+  const mDivs = msr.Voices[msr.ActiveVoice].Divisions.filter(
     (d) => d.Staff === staff || d.StaffGroup === staff,
   ).sort((a: Division, b: Division) => {
     return a.Beat - b.Beat;
@@ -470,7 +470,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
           startFlag = true;
           if (
             i ===
-            msr.Divisions.filter(
+            msr.Voices[msr.ActiveVoice].Divisions.filter(
               (d) => d.Staff === staff || d.StaffGroup === staff,
             ).length -
               1
@@ -532,7 +532,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
           notes.push(divNotes);
           if (
             i ===
-            msr.Divisions.filter(
+            msr.Voices[msr.ActiveVoice].Divisions.filter(
               (d) => d.Staff === staff || d.StaffGroup === staff,
             ).length -
               1

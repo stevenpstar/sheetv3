@@ -19,7 +19,7 @@ function RenderMeasureRev(measure, renderProps, theme) {
     measure.Dynamics.forEach((d) => RenderDynamic(renderProps, measure, d, theme));
     const debug = false;
     if (debug) {
-        measure.Divisions.forEach((d) => {
+        measure.Voices[measure.ActiveVoice].Divisions.forEach((d) => {
             renderProps.context.strokeStyle = "blue";
             renderProps.context.strokeRect(d.Bounds.x + renderProps.camera.x, d.Bounds.y + renderProps.camera.y, d.Bounds.width, d.Bounds.height);
             d.Subdivisions.forEach((sd, i) => {

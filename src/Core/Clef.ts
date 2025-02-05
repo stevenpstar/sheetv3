@@ -60,7 +60,7 @@ class Clef implements ISelectable {
   SetBounds(msr: Measure, staff: number): void {
     // There is a difference between position and bounds
     // Position is for visually positioning the clef glyph, bounds is for selection
-    const div = msr.Divisions.find(
+    const div = msr.Voices[msr.ActiveVoice].Divisions.find(
       (d) => d.Beat === this.Beat && d.Staff === staff,
     );
     const xPosition: number = this.Beat === 1 ? msr.Bounds.x : div.Bounds.x;

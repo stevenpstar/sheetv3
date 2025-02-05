@@ -17,7 +17,7 @@ function AddNoteOnMeasure(msr, noteValue, line, beat, rest, grace) {
 }
 function InputOnMeasure(msr, noteValue, x, y, cam, rest, grace) {
     let inputtingNote = true;
-    const beatOver = msr.Divisions.find((b) => b.Bounds.IsHovered(x, y, cam));
+    const beatOver = msr.Voices[msr.ActiveVoice].Divisions.find((b) => b.Bounds.IsHovered(x, y, cam));
     if (!beatOver) {
         console.error("Beat Over Not Found");
         return;
@@ -71,7 +71,7 @@ function InputNote(msr, noteValue, division, line, rest, grace, tupleCount = 1) 
     RecreateStemAndBeams(msr);
 }
 function RecreateStemAndBeams(msr) {
-    msr.DivisionGroups.forEach((g) => {
+    msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g) => {
         g.Stems = [];
         g.Beams = [];
         g.Stems.push(...CreateStems(g.Notes, g.Divisions, g.Staff, msr));
@@ -84,13 +84,13 @@ function RecreateDivisionGroups(msr) {
         const group = GetDivisionGroups(msr, staff.Num);
         groups.push(...group);
     });
-    msr.DivisionGroups = groups;
+    msr.Voices[msr.ActiveVoice].DivisionGroups = groups;
 }
 function UpdateNoteBounds(msr, staff) {
     // Maybe should go somewhere else
     // Maybe should be more optimised
     // For now seems to update bounds of notes properly
-    msr.DivisionGroups.forEach((g) => {
+    msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g) => {
         const { Divisions, Notes } = g;
         const stemDir = DetermineStemDirection(Notes, Divisions);
         Divisions.forEach((div) => {
@@ -155,7 +155,7 @@ function AddToDivision(msr, noteProps, staff) {
     let tying = false;
     let tStart = -1;
     let tEnd = -1;
-    msr.Divisions.filter((d) => d.Staff === staff).forEach((div, i) => {
+    msr.Voices[msr.ActiveVoice].Divisions.filter((d) => d.Staff === staff).forEach((div, i) => {
         if (tying && noteProps.Rest) {
             tying = false;
         }
@@ -167,13 +167,13 @@ function AddToDivision(msr, noteProps, staff) {
             let remVal = remainingValue;
             let room = false;
             let lastIndex = 0;
-            for (let j = i; j < msr.Divisions.length; j++) {
+            for (let j = i; j < msr.Voices[msr.ActiveVoice].Divisions.length; j++) {
                 if (remVal <= 0 && !room) {
                     continue;
                 }
-                const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat == msr.Divisions[j].Beat);
+                const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat == msr.Voices[msr.ActiveVoice].Divisions[j].Beat);
                 if (notesOnBeat.length > 0 && notesOnBeat[0].Rest) {
-                    remVal -= msr.Divisions[j].Duration;
+                    remVal -= msr.Voices[msr.ActiveVoice].Divisions[j].Duration;
                     if (remVal <= 0) {
                         room = true;
                         lastIndex = j;
@@ -184,7 +184,7 @@ function AddToDivision(msr, noteProps, staff) {
             if (room) {
                 // Clear all rest notes
                 for (let j = i; j <= lastIndex; j++) {
-                    msr.ClearRestNotes(msr.Divisions[j].Beat, noteProps.Staff);
+                    msr.ClearRestNotes(msr.Voices[msr.ActiveVoice].Divisions[j].Beat, noteProps.Staff);
                 }
                 const newNoteProps = {
                     Beat: div.Beat,
@@ -202,14 +202,11 @@ function AddToDivision(msr, noteProps, staff) {
                 remainingValue = 0;
                 return;
             }
-            if (remainingValue > div.Duration &&
-                tying === false &&
-                !noteProps.Rest) {
+            if (remainingValue > div.Duration && tying === false && !noteProps.Rest) {
                 tying = true;
                 tStart = div.Beat;
                 tEnd =
-                    div.Beat +
-                        (remainingValue - div.Duration) * msr.TimeSignature.bottom;
+                    div.Beat + (remainingValue - div.Duration) * msr.TimeSignature.bottom;
             }
             const newNoteProps = {
                 Beat: div.Beat,

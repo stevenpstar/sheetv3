@@ -1,6 +1,5 @@
 import { Beam } from "../Core/Beam.js";
 import { IsRestOnBeat } from "../Core/Division.js";
-import { Dynamic } from "../Core/Dynamic.js";
 import { StaffType } from "../Core/Instrument.js";
 import { KeySignatures } from "../Core/KeySignatures.js";
 import { Note } from "../Core/Note.js";
@@ -22,8 +21,8 @@ function RenderMeasure(measure, renderProps, mousePos, lastMeasure, noteInput, i
     measure.Staves.forEach((s) => {
         RenderNotes(measure, renderProps, s.Num, config.Theme);
         // TODO: Temporary for testing dynamics rendering
-        measure.Divisions.filter((div) => div.Staff === s.Num && div.Beat === 1).forEach((div) => {
-            const tempDyn = new Dynamic("ppppp", div.Staff, div.Beat);
+        measure.Voices[measure.ActiveVoice].Divisions.filter((div) => div.Staff === s.Num && div.Beat === 1).forEach((div) => {
+            //      const tempDyn: Dynamic = new Dynamic("ppppp", div.Staff, div.Beat);
             //RenderDynamic(renderProps, measure, tempDyn, config.Theme);
             measure.Articulations.filter((a) => a.Beat == div.Beat && a.Staff == div.Staff).forEach((a) => {
                 a.Render(renderProps, measure.Voices[measure.ActiveVoice].Notes.filter((n) => n.Beat == div.Beat && n.Staff == div.Staff), measure.Staves, div, config.Theme);
@@ -55,7 +54,7 @@ function RenderHovered(measure, renderProps, mousePos, noteInput, restInput, not
         // context.fillRect(line.bounds.x + camera.x, lineY + camera.y, line.bounds.width, line.bounds.height);
     }
     // now we are going to test "Sections" as they were in v2
-    const divisions = measure.Divisions;
+    const divisions = measure.Voices[measure.ActiveVoice].Divisions;
     divisions.forEach((s) => {
         if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
             let line = measure.GetLineHovered(mousePos.y, s.Staff);
@@ -155,7 +154,7 @@ function RenderMeasureClef(renderProps, msr, theme) {
             clef.render(renderProps, theme);
         }
         else {
-            const div = msr.Divisions.find((d) => d.Beat === clef.Beat);
+            const div = msr.Voices[msr.ActiveVoice].Divisions.find((d) => d.Beat === clef.Beat);
             if (clef.Type === "treble") {
                 // const clefPath = RenderTrebleClef(
                 //     div.Bounds.x + camera.x,
@@ -172,7 +171,7 @@ function RenderTimeSig(renderProps, msr, top, bottom, xOffset, theme) {
 }
 function RenderNotes(msr, renderProps, staff, theme) {
     const { canvas, context, camera } = renderProps;
-    const mDivs = msr.Divisions.filter((d) => d.Staff === staff);
+    const mDivs = msr.Voices[msr.ActiveVoice].Divisions.filter((d) => d.Staff === staff);
     mDivs.forEach((div) => {
         const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter((note) => note.Beat === div.Beat && note.Staff === div.Staff);
         divNotes.sort((a, b) => {
@@ -184,7 +183,7 @@ function RenderNotes(msr, renderProps, staff, theme) {
         }
         renderLedgerLines(msr.Voices[msr.ActiveVoice].Notes, div, renderProps, staff, msr, theme);
     });
-    msr.DivisionGroups.forEach((group, i) => {
+    msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((group) => {
         if (group.Divisions.length > 0) {
             const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
             if (!group.StemDir) {
@@ -243,11 +242,11 @@ function RenderNotes(msr, renderProps, staff, theme) {
         }
     });
     RenderGraceNotes(renderProps, msr, theme);
-    RenderTies(renderProps, msr.Divisions, msr.Voices[msr.ActiveVoice].Notes, StaffType.Single, msr);
-    RenderTuplets(renderProps, msr.Divisions, msr.Voices[msr.ActiveVoice].Notes, StaffType.Single, msr, theme);
+    RenderTies(renderProps, msr.Voices[msr.ActiveVoice].Divisions, msr.Voices[msr.ActiveVoice].Notes, StaffType.Single, msr);
+    RenderTuplets(renderProps, msr.Voices[msr.ActiveVoice].Divisions, msr.Voices[msr.ActiveVoice].Notes, StaffType.Single, msr, theme);
     if (msr.Instrument.Staff === StaffType.Grand) {
-        RenderTies(renderProps, msr.Divisions, msr.Voices[msr.ActiveVoice].Notes, StaffType.Grand, msr);
-        RenderTuplets(renderProps, msr.Divisions, msr.Voices[msr.ActiveVoice].Notes, StaffType.Grand, msr, theme);
+        RenderTies(renderProps, msr.Voices[msr.ActiveVoice].Divisions, msr.Voices[msr.ActiveVoice].Notes, StaffType.Grand, msr);
+        RenderTuplets(renderProps, msr.Voices[msr.ActiveVoice].Divisions, msr.Voices[msr.ActiveVoice].Notes, StaffType.Grand, msr, theme);
     }
 }
 function RenderGraceNotes(renderProps, msr, theme) {

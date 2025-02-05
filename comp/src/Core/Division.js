@@ -292,7 +292,7 @@ function GetDivisionGroups(msr, staff) {
     let crossStaff = false;
     // started creating a div group or not
     let startFlag = false;
-    const mDivs = msr.Divisions.filter((d) => d.Staff === staff || d.StaffGroup === staff).sort((a, b) => {
+    const mDivs = msr.Voices[msr.ActiveVoice].Divisions.filter((d) => d.Staff === staff || d.StaffGroup === staff).sort((a, b) => {
         return a.Beat - b.Beat;
     });
     // only looking for grace notes, eventually refactor below and only need one
@@ -357,7 +357,7 @@ function GetDivisionGroups(msr, staff) {
                 else {
                     startFlag = true;
                     if (i ===
-                        msr.Divisions.filter((d) => d.Staff === staff || d.StaffGroup === staff).length -
+                        msr.Voices[msr.ActiveVoice].Divisions.filter((d) => d.Staff === staff || d.StaffGroup === staff).length -
                             1) {
                         // end of measure
                         divGroups.DivGroups.push({
@@ -416,7 +416,7 @@ function GetDivisionGroups(msr, staff) {
                     divs.push(div);
                     notes.push(divNotes);
                     if (i ===
-                        msr.Divisions.filter((d) => d.Staff === staff || d.StaffGroup === staff).length -
+                        msr.Voices[msr.ActiveVoice].Divisions.filter((d) => d.Staff === staff || d.StaffGroup === staff).length -
                             1) {
                         divGroups.DivGroups.push({
                             Divisions: divs,

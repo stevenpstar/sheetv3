@@ -37,7 +37,7 @@ function RenderMeasureRev(
   );
   const debug = false;
   if (debug) {
-    measure.Divisions.forEach((d: Division) => {
+    measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division) => {
       renderProps.context.strokeStyle = "blue";
       renderProps.context.strokeRect(
         d.Bounds.x + renderProps.camera.x,

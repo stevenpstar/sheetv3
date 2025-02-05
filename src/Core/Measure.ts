@@ -62,13 +62,11 @@ class Measure implements ISelectable {
 
   Voices: Voice[];
   ActiveVoice: number = 0;
-  Divisions: Division[];
   Clefs: Clef[] = [];
   Staves: Staff[];
   Barlines: Barline[];
   Articulations: Articulation[];
   Dynamics: Dynamic[];
-  DivisionGroups: DivGroup[];
 
   XOffset: number; // not sure if this is what we want to go with
 
@@ -93,7 +91,6 @@ class Measure implements ISelectable {
     this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
     this.KeySignature = properties.KeySignature;
     this.Voices[this.ActiveVoice].Notes = properties.Notes;
-    this.Divisions = [];
     this.Articulations = [];
     this.Dynamics = [];
     this.RenderClef = properties.RenderClef;
@@ -109,7 +106,6 @@ class Measure implements ISelectable {
     this.SetXOffset();
 
     this.Barlines = properties.Barlines;
-    this.DivisionGroups = [];
 
     this.CreateDivisions(this.Camera);
 
@@ -169,9 +165,9 @@ class Measure implements ISelectable {
   }
 
   CreateDivisions(cam: Camera, afterInput: boolean = false) {
-    this.Divisions = [];
+    this.Voices[this.ActiveVoice].Divisions = [];
     this.Staves.forEach((s: Staff) => {
-      this.Divisions.push(
+      this.Voices[this.ActiveVoice].Divisions.push(
         ...CreateDivisions(
           this,
           this.Voices[this.ActiveVoice].Notes,
@@ -179,7 +175,7 @@ class Measure implements ISelectable {
           cam,
         ),
       );
-      ResizeDivisions(this, this.Divisions, s.Num);
+      ResizeDivisions(this, this.Voices[this.ActiveVoice].Divisions, s.Num);
       UpdateNoteBounds(this, s.Num);
     });
   }

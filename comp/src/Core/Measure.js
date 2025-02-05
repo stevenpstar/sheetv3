@@ -30,7 +30,6 @@ class Measure {
         this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
         this.KeySignature = properties.KeySignature;
         this.Voices[this.ActiveVoice].Notes = properties.Notes;
-        this.Divisions = [];
         this.Articulations = [];
         this.Dynamics = [];
         this.RenderClef = properties.RenderClef;
@@ -44,7 +43,6 @@ class Measure {
         this.PageLine = properties.Page.PageLines[0].Number;
         this.SetXOffset();
         this.Barlines = properties.Barlines;
-        this.DivisionGroups = [];
         this.CreateDivisions(this.Camera);
         this.Staves.forEach((s, i) => {
             const clef = new Clef(0, properties.Clefs[i].Type, 1, s.Num);
@@ -87,10 +85,10 @@ class Measure {
         this.TimeSignature.SetBounds(this);
     }
     CreateDivisions(cam, afterInput = false) {
-        this.Divisions = [];
+        this.Voices[this.ActiveVoice].Divisions = [];
         this.Staves.forEach((s) => {
-            this.Divisions.push(...CreateDivisions(this, this.Voices[this.ActiveVoice].Notes, s.Num, cam));
-            ResizeDivisions(this, this.Divisions, s.Num);
+            this.Voices[this.ActiveVoice].Divisions.push(...CreateDivisions(this, this.Voices[this.ActiveVoice].Notes, s.Num, cam));
+            ResizeDivisions(this, this.Voices[this.ActiveVoice].Divisions, s.Num);
             UpdateNoteBounds(this, s.Num);
         });
     }

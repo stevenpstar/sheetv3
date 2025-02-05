@@ -21,12 +21,12 @@ function RenderDebugOld(
 ) {
   const { canvas, context, camera } = renderProps;
 
-  if (measure.Divisions.length === 0) {
+  if (measure.Voices[measure.ActiveVoice].Divisions.length === 0) {
     console.error("measure has no divisions");
     return;
   }
 
-  const fDiv = measure.Divisions[0];
+  const fDiv = measure.Voices[measure.ActiveVoice].Divisions[0];
 
   const renderDurations = false;
   const mousePositionString = `x: ${mousePos.x}, y: ${mousePos.y}`;
@@ -44,20 +44,22 @@ function RenderDebugOld(
   //    context.strokeRect(measure.Bounds.x + measure.Camera.x, measure.Bounds.y + measure.Camera.y, measure.Bounds.width,
   //                       measure.Bounds.height);
 
-  measure.Divisions.forEach((div: Division, i: number) => {
-    if (renderDurations) {
-      const x = div.Bounds.x + camera.x + 2;
-      const y = div.Bounds.y + div.Bounds.height + camera.y;
-      context.fillStyle = debugGetDurationName(div.Duration).colour;
-      context.fillRect(x, y + 10, div.Bounds.width - 4, 5);
-      context.fillStyle = "black";
-      context.font = "8px serif";
-      context.fillText(debugGetDurationName(div.Duration).name, x, y + 25);
+  measure.Voices[measure.ActiveVoice].Divisions.forEach(
+    (div: Division, i: number) => {
+      if (renderDurations) {
+        const x = div.Bounds.x + camera.x + 2;
+        const y = div.Bounds.y + div.Bounds.height + camera.y;
+        context.fillStyle = debugGetDurationName(div.Duration).colour;
+        context.fillRect(x, y + 10, div.Bounds.width - 4, 5);
+        context.fillStyle = "black";
+        context.font = "8px serif";
+        context.fillText(debugGetDurationName(div.Duration).name, x, y + 25);
 
-      context.fillStyle = "black";
-      context.fillText(div.Beat.toString(), x, y + 40);
-    }
-  });
+        context.fillStyle = "black";
+        context.fillText(div.Beat.toString(), x, y + 40);
+      }
+    },
+  );
   if (index === 0) {
     if (renderDurations) {
       context.fillStyle = "black";
@@ -125,8 +127,12 @@ function RenderDebugOld(
   context.fillText("Line Hovered: " + lineNum.toString(), 130, 10);
 
   context.fillStyle = "rgba(0, 0, 50, 0.2)";
-  const div1 = measure.Divisions.filter((d) => d.Staff === 0)[0];
-  const div2 = measure.Divisions.filter((d) => d.Staff === 1)[0];
+  const div1 = measure.Voices[measure.ActiveVoice].Divisions.filter(
+    (d) => d.Staff === 0,
+  )[0];
+  const div2 = measure.Voices[measure.ActiveVoice].Divisions.filter(
+    (d) => d.Staff === 1,
+  )[0];
   //    context.fillRect(div1.Bounds.x + camera.x,
   //                     div1.Bounds.y + camera.y,
   //                     div1.Bounds.width,

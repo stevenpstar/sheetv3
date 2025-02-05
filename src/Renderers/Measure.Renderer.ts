@@ -56,7 +56,7 @@ function RenderMeasure(
   measure.Staves.forEach((s: Staff) => {
     RenderNotes(measure, renderProps, s.Num, config.Theme);
     // TODO: Temporary for testing dynamics rendering
-    measure.Divisions.filter(
+    measure.Voices[measure.ActiveVoice].Divisions.filter(
       (div: Division) => div.Staff === s.Num && div.Beat === 1,
     ).forEach((div: Division) => {
       //      const tempDyn: Dynamic = new Dynamic("ppppp", div.Staff, div.Beat);
@@ -122,7 +122,7 @@ function RenderHovered(
     // context.fillRect(line.bounds.x + camera.x, lineY + camera.y, line.bounds.width, line.bounds.height);
   }
   // now we are going to test "Sections" as they were in v2
-  const divisions = measure.Divisions;
+  const divisions = measure.Voices[measure.ActiveVoice].Divisions;
   divisions.forEach((s) => {
     if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
       let line = measure.GetLineHovered(mousePos.y, s.Staff);
@@ -272,7 +272,9 @@ function RenderMeasureClef(
     if (clef.Beat === 1) {
       clef.render(renderProps, theme);
     } else {
-      const div = msr.Divisions.find((d) => d.Beat === clef.Beat);
+      const div = msr.Voices[msr.ActiveVoice].Divisions.find(
+        (d) => d.Beat === clef.Beat,
+      );
       if (clef.Type === "treble") {
         // const clefPath = RenderTrebleClef(
         //     div.Bounds.x + camera.x,
@@ -302,7 +304,9 @@ function RenderNotes(
   theme: Theme,
 ) {
   const { canvas, context, camera } = renderProps;
-  const mDivs = msr.Divisions.filter((d) => d.Staff === staff);
+  const mDivs = msr.Voices[msr.ActiveVoice].Divisions.filter(
+    (d) => d.Staff === staff,
+  );
   mDivs.forEach((div: Division) => {
     const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
       (note: Note) => note.Beat === div.Beat && note.Staff === div.Staff,
@@ -325,7 +329,7 @@ function RenderNotes(
     );
   });
 
-  msr.DivisionGroups.forEach((group: DivGroup, i: number) => {
+  msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((group: DivGroup) => {
     if (group.Divisions.length > 0) {
       const stemDir = DetermineStemDirection(group.Notes, group.Divisions);
 
@@ -412,14 +416,14 @@ function RenderNotes(
   RenderGraceNotes(renderProps, msr, theme);
   RenderTies(
     renderProps,
-    msr.Divisions,
+    msr.Voices[msr.ActiveVoice].Divisions,
     msr.Voices[msr.ActiveVoice].Notes,
     StaffType.Single,
     msr,
   );
   RenderTuplets(
     renderProps,
-    msr.Divisions,
+    msr.Voices[msr.ActiveVoice].Divisions,
     msr.Voices[msr.ActiveVoice].Notes,
     StaffType.Single,
     msr,
@@ -429,14 +433,14 @@ function RenderNotes(
   if (msr.Instrument.Staff === StaffType.Grand) {
     RenderTies(
       renderProps,
-      msr.Divisions,
+      msr.Voices[msr.ActiveVoice].Divisions,
       msr.Voices[msr.ActiveVoice].Notes,
       StaffType.Grand,
       msr,
     );
     RenderTuplets(
       renderProps,
-      msr.Divisions,
+      msr.Voices[msr.ActiveVoice].Divisions,
       msr.Voices[msr.ActiveVoice].Notes,
       StaffType.Grand,
       msr,

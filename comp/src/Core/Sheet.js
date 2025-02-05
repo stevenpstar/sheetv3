@@ -11,7 +11,7 @@ class Sheet {
     InputHover(x, y, camera) {
         this.Measures.forEach((m) => {
             if (m.GetBoundsWithOffset().IsHovered(x, y, camera)) {
-                m.Divisions.forEach((d) => {
+                m.Voices[m.ActiveVoice].Divisions.forEach((d) => {
                     if (d.Bounds.IsHovered(x, y, camera)) {
                         m.Staves.forEach((s) => {
                             UpdateNoteBounds(m, s.Num);

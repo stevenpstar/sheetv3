@@ -24,6 +24,7 @@ interface KeyMapping {
   grace: string;
   change_timesig: string; // TEST KEYMAP
   add_dynamic: string;
+  cycle_voice: string;
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -94,6 +95,8 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
     case keyMaps.add_dynamic:
       app.AddDynamic("f");
       break;
+    case keyMaps.cycle_voice:
+      app.CycleActiveVoice();
     default:
   }
 }

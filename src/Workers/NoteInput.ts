@@ -53,7 +53,9 @@ function InputOnMeasure(
   grace: boolean,
 ): void {
   let inputtingNote = true;
-  const beatOver = msr.Divisions.find((b) => b.Bounds.IsHovered(x, y, cam));
+  const beatOver = msr.Voices[msr.ActiveVoice].Divisions.find((b) =>
+    b.Bounds.IsHovered(x, y, cam),
+  );
   if (!beatOver) {
     console.error("Beat Over Not Found");
     return;
@@ -119,7 +121,7 @@ function InputNote(
 }
 
 function RecreateStemAndBeams(msr: Measure): void {
-  msr.DivisionGroups.forEach((g: DivGroup) => {
+  msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g: DivGroup) => {
     g.Stems = [];
     g.Beams = [];
     g.Stems.push(...CreateStems(g.Notes, g.Divisions, g.Staff, msr));
@@ -134,14 +136,14 @@ function RecreateDivisionGroups(msr: Measure): void {
     groups.push(...group);
   });
 
-  msr.DivisionGroups = groups;
+  msr.Voices[msr.ActiveVoice].DivisionGroups = groups;
 }
 
 function UpdateNoteBounds(msr: Measure, staff: number): void {
   // Maybe should go somewhere else
   // Maybe should be more optimised
   // For now seems to update bounds of notes properly
-  msr.DivisionGroups.forEach((g: DivGroup) => {
+  msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g: DivGroup) => {
     const { Divisions, Notes } = g;
     const stemDir = DetermineStemDirection(Notes, Divisions);
     Divisions.forEach((div: Division) => {
@@ -233,76 +235,113 @@ function AddToDivision(
   let tying = false;
   let tStart = -1;
   let tEnd = -1;
-  msr.Divisions.filter((d) => d.Staff === staff).forEach(
-    (div: Division, i: number) => {
-      if (tying && noteProps.Rest) {
-        tying = false;
+  msr.Voices[msr.ActiveVoice].Divisions.filter(
+    (d) => d.Staff === staff,
+  ).forEach((div: Division, i: number) => {
+    if (tying && noteProps.Rest) {
+      tying = false;
+    }
+
+    if (remainingValue >= div.Duration && beat === div.Beat) {
+      // clear rests on beat regardless of what we are inputting
+      msr.ClearRestNotes(beat, noteProps.Staff);
+
+      // TODO: Add a method here to check if there's room for
+      // Entire duration in oncoming divs (i.e. are they rests)
+      let remVal = remainingValue;
+      let room: boolean = false;
+      let lastIndex: number = 0;
+      for (let j = i; j < msr.Voices[msr.ActiveVoice].Divisions.length; j++) {
+        if (remVal <= 0 && !room) {
+          continue;
+        }
+        const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter(
+          (n: Note) => n.Beat == msr.Voices[msr.ActiveVoice].Divisions[j].Beat,
+        );
+        if (notesOnBeat.length > 0 && notesOnBeat[0].Rest) {
+          remVal -= msr.Voices[msr.ActiveVoice].Divisions[j].Duration;
+          if (remVal <= 0) {
+            room = true;
+            lastIndex = j;
+          }
+        }
       }
 
-      if (remainingValue >= div.Duration && beat === div.Beat) {
-        // clear rests on beat regardless of what we are inputting
-        msr.ClearRestNotes(beat, noteProps.Staff);
-
-        // TODO: Add a method here to check if there's room for
-        // Entire duration in oncoming divs (i.e. are they rests)
-        let remVal = remainingValue;
-        let room: boolean = false;
-        let lastIndex: number = 0;
-        for (let j = i; j < msr.Divisions.length; j++) {
-          if (remVal <= 0 && !room) {
-            continue;
-          }
-          const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter(
-            (n: Note) => n.Beat == msr.Divisions[j].Beat,
+      // TODO: Probably separate this out somewhere else for readability
+      if (room) {
+        // Clear all rest notes
+        for (let j = i; j <= lastIndex; j++) {
+          msr.ClearRestNotes(
+            msr.Voices[msr.ActiveVoice].Divisions[j].Beat,
+            noteProps.Staff,
           );
-          if (notesOnBeat.length > 0 && notesOnBeat[0].Rest) {
-            remVal -= msr.Divisions[j].Duration;
-            if (remVal <= 0) {
-              room = true;
-              lastIndex = j;
-            }
-          }
         }
-
-        // TODO: Probably separate this out somewhere else for readability
-        if (room) {
-          // Clear all rest notes
-          for (let j = i; j <= lastIndex; j++) {
-            msr.ClearRestNotes(msr.Divisions[j].Beat, noteProps.Staff);
-          }
-          const newNoteProps: NoteProps = {
-            Beat: div.Beat,
-            Duration: remainingValue,
-            Line: noteProps.Line,
-            Rest: noteProps.Rest,
-            Tied: false,
-            Staff: div.Staff,
-            Tuple: false,
-            Clef: GetNoteClefType(msr, div.Beat, div.Staff),
-            Grace: noteProps.Grace,
-          };
-
-          const newNote = new Note(newNoteProps);
-          msr.AddNote(newNote, true);
-          remainingValue = 0;
-          return;
-        }
-
-        if (
-          remainingValue > div.Duration &&
-          tying === false &&
-          !noteProps.Rest
-        ) {
-          tying = true;
-          tStart = div.Beat;
-          tEnd =
-            div.Beat +
-            (remainingValue - div.Duration) * msr.TimeSignature.bottom;
-        }
-
         const newNoteProps: NoteProps = {
           Beat: div.Beat,
-          Duration: div.Duration,
+          Duration: remainingValue,
+          Line: noteProps.Line,
+          Rest: noteProps.Rest,
+          Tied: false,
+          Staff: div.Staff,
+          Tuple: false,
+          Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+          Grace: noteProps.Grace,
+        };
+
+        const newNote = new Note(newNoteProps);
+        msr.AddNote(newNote, true);
+        remainingValue = 0;
+        return;
+      }
+
+      if (remainingValue > div.Duration && tying === false && !noteProps.Rest) {
+        tying = true;
+        tStart = div.Beat;
+        tEnd =
+          div.Beat + (remainingValue - div.Duration) * msr.TimeSignature.bottom;
+      }
+
+      const newNoteProps: NoteProps = {
+        Beat: div.Beat,
+        Duration: div.Duration,
+        Line: noteProps.Line,
+        Rest: noteProps.Rest,
+        Tied: tying,
+        Staff: div.Staff,
+        Tuple: false,
+        Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+        Grace: noteProps.Grace,
+      };
+
+      const newNote = new Note(newNoteProps);
+
+      if (tying) {
+        newNote.SetTiedStartEnd(tStart, tEnd);
+        if (remainingValue - div.Duration <= 0) {
+          tying = false;
+        }
+      }
+
+      remainingValue -= div.Duration;
+      beat += div.Duration * msr.TimeSignature.bottom;
+      msr.AddNote(newNote, true);
+    } else if (
+      remainingValue < div.Duration &&
+      beat === div.Beat &&
+      remainingValue > 0
+    ) {
+      // Get other notes that will be effected
+      const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter(
+        (note: Note) => {
+          return note.Beat === div.Beat && note.Staff === div.Staff;
+        },
+      );
+      if (IsRestOnBeat(msr, beat, notesOnBeat, div.Staff)) {
+        // If it does not effect any other notes (only rests in div)
+        // We can just add a note of our desired Duration.
+        const newNoteProps: NoteProps = {
+          Beat: div.Beat,
+          Duration: remainingValue,
           Line: noteProps.Line,
           Rest: noteProps.Rest,
           Tied: tying,
@@ -311,7 +350,6 @@ function AddToDivision(
           Clef: GetNoteClefType(msr, div.Beat, div.Staff),
           Grace: noteProps.Grace,
         };
-
         const newNote = new Note(newNoteProps);
 
         if (tying) {
@@ -321,101 +359,63 @@ function AddToDivision(
           }
         }
 
-        remainingValue -= div.Duration;
-        beat += div.Duration * msr.TimeSignature.bottom;
+        remainingValue = 0;
         msr.AddNote(newNote, true);
-      } else if (
-        remainingValue < div.Duration &&
-        beat === div.Beat &&
-        remainingValue > 0
-      ) {
-        // Get other notes that will be effected
-        const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter(
-          (note: Note) => {
-            return note.Beat === div.Beat && note.Staff === div.Staff;
-          },
-        );
-        if (IsRestOnBeat(msr, beat, notesOnBeat, div.Staff)) {
-          // If it does not effect any other notes (only rests in div)
-          // We can just add a note of our desired Duration.
-          const newNoteProps: NoteProps = {
-            Beat: div.Beat,
-            Duration: remainingValue,
-            Line: noteProps.Line,
-            Rest: noteProps.Rest,
-            Tied: tying,
-            Staff: div.Staff,
-            Tuple: false,
-            Clef: GetNoteClefType(msr, div.Beat, div.Staff),
-            Grace: noteProps.Grace,
-          };
-          const newNote = new Note(newNoteProps);
-
-          if (tying) {
-            newNote.SetTiedStartEnd(tStart, tEnd);
-            if (remainingValue - div.Duration <= 0) {
-              tying = false;
-            }
-          }
-
-          remainingValue = 0;
-          msr.AddNote(newNote, true);
-          return;
-        }
-
-        // This note is not tying, but existing notes will
-        // need to be tied together
-        const newNoteProps: NoteProps = {
-          Beat: div.Beat,
-          Duration: remainingValue,
-          Line: noteProps.Line,
-          Rest: noteProps.Rest,
-          Tied: false,
-          Staff: div.Staff,
-          Tuple: noteProps.Tuple,
-          TupleDetails: noteProps.TupleDetails,
-          Clef: GetNoteClefType(msr, div.Beat, div.Staff),
-          Grace: noteProps.Grace,
-        };
-
-        const remValue = div.Duration - remainingValue;
-        const tiedNoteValues = GetLargestValues(remValue).sort(
-          (a: number, b: number) => {
-            return a - b;
-          },
-        );
-        const tiedStart = div.Beat;
-        const tiedEnd = div.Beat + remValue * msr.TimeSignature.bottom;
-
-        notesOnBeat.forEach((n) => {
-          n.Duration = remainingValue;
-          n.Tied = true;
-          n.SetTiedStartEnd(tiedStart, tiedEnd);
-          let nextBeat = div.Beat + remainingValue * msr.TimeSignature.bottom;
-          tiedNoteValues.forEach((dur: number, i: number) => {
-            const shouldTie = i < tiedNoteValues.length - 1;
-            const tiedNote: NoteProps = {
-              Beat: nextBeat,
-              Duration: dur,
-              Line: n.Line,
-              Rest: false,
-              Tied: true,
-              Staff: n.Staff,
-              Tuple: n.Tuple,
-              TupleDetails: n.TupleDetails,
-              Clef: GetNoteClefType(msr, div.Beat, div.Staff),
-              Grace: n.Grace,
-            };
-            const noteObj = new Note(tiedNote);
-            noteObj.SetTiedStartEnd(tiedStart, tiedEnd);
-            msr.AddNote(noteObj, true);
-            nextBeat = nextBeat + dur * msr.TimeSignature.bottom;
-          });
-        });
-        msr.AddNote(new Note(newNoteProps), true);
+        return;
       }
-    },
-  );
+
+      // This note is not tying, but existing notes will
+      // need to be tied together
+      const newNoteProps: NoteProps = {
+        Beat: div.Beat,
+        Duration: remainingValue,
+        Line: noteProps.Line,
+        Rest: noteProps.Rest,
+        Tied: false,
+        Staff: div.Staff,
+        Tuple: noteProps.Tuple,
+        TupleDetails: noteProps.TupleDetails,
+        Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+        Grace: noteProps.Grace,
+      };
+
+      const remValue = div.Duration - remainingValue;
+      const tiedNoteValues = GetLargestValues(remValue).sort(
+        (a: number, b: number) => {
+          return a - b;
+        },
+      );
+      const tiedStart = div.Beat;
+      const tiedEnd = div.Beat + remValue * msr.TimeSignature.bottom;
+
+      notesOnBeat.forEach((n) => {
+        n.Duration = remainingValue;
+        n.Tied = true;
+        n.SetTiedStartEnd(tiedStart, tiedEnd);
+        let nextBeat = div.Beat + remainingValue * msr.TimeSignature.bottom;
+        tiedNoteValues.forEach((dur: number, i: number) => {
+          const shouldTie = i < tiedNoteValues.length - 1;
+          const tiedNote: NoteProps = {
+            Beat: nextBeat,
+            Duration: dur,
+            Line: n.Line,
+            Rest: false,
+            Tied: true,
+            Staff: n.Staff,
+            Tuple: n.Tuple,
+            TupleDetails: n.TupleDetails,
+            Clef: GetNoteClefType(msr, div.Beat, div.Staff),
+            Grace: n.Grace,
+          };
+          const noteObj = new Note(tiedNote);
+          noteObj.SetTiedStartEnd(tiedStart, tiedEnd);
+          msr.AddNote(noteObj, true);
+          nextBeat = nextBeat + dur * msr.TimeSignature.bottom;
+        });
+      });
+      msr.AddNote(new Note(newNoteProps), true);
+    }
+  });
 }
 
 function CreateTuplet(

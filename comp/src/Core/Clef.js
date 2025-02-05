@@ -35,7 +35,7 @@ class Clef {
     SetBounds(msr, staff) {
         // There is a difference between position and bounds
         // Position is for visually positioning the clef glyph, bounds is for selection
-        const div = msr.Divisions.find((d) => d.Beat === this.Beat && d.Staff === staff);
+        const div = msr.Voices[msr.ActiveVoice].Divisions.find((d) => d.Beat === this.Beat && d.Staff === staff);
         const xPosition = this.Beat === 1 ? msr.Bounds.x : div.Bounds.x;
         const xBuffer = 3;
         let lineBuffer = 2;

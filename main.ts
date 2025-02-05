@@ -26,6 +26,7 @@ const keymaps = {
   grace: "g",
   change_timesig: "z",
   add_dynamic: "f",
+  cycle_voice: "p",
 };
 
 interface CanText {

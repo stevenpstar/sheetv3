@@ -2,11 +2,6 @@ import { RenderSymbol, TimeSigNumbers, } from "../Renderers/MusicFont.Renderer.j
 import { Bounds } from "../Types/Bounds.js";
 import { SelectableTypes } from "../Types/ISelectable.js";
 import { GetStaffMiddleLine } from "./Staff.js";
-//const Key: Map<string, string[]> = new Map<string, string[]>([
-//  ["amin", ""],
-//  ["
-//])
-//
 // Returns beats that should separate note groupings etc.
 function ReturnBreakPoints(timeSig) {
     const bPoints = [];
@@ -50,7 +45,7 @@ class TimeSignature {
             this.Bounds.push(new Bounds(0, 0, 0, 0));
             this.TopPosition.push({ x: 0, y: 0 });
             this.BotPosition.push({ x: 0, y: 0 });
-            const div = msr.Divisions.find((div) => div.Staff === s.Num);
+            const div = msr.Voices[msr.ActiveVoice].Divisions.find((div) => div.Staff === s.Num);
             if (!div) {
                 return;
             }
