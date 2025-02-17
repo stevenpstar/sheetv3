@@ -58,9 +58,9 @@ declare class App {
     AddMeasure(): void;
     ChangeInputMode(): void;
     SelectLiner(x: number, y: number): Bounds | undefined;
-    DragLiner(x: number, y: number): void;
+    DragLiner(_: number, y: number): void;
     DragNote(x: number, y: number): void;
-    StopNoteDrag(x: number, y: number): void;
+    StopNoteDrag(): void;
     SetCameraDragging(dragging: boolean, x: number, y: number): void;
     AlterZoom(num: number, mx: number, my: number): void;
     SetCameraZoom(num: number): void;

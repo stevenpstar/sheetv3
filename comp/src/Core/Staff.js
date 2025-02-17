@@ -70,7 +70,7 @@ function GetStaffActualMidLine(staves, staffNum) {
 // TODO: Probably move this render function once it is working.
 function RenderStaffLines(renderProps, msr, staff) {
     // These should be defined somewhere else
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     const line_space = 10;
     const line_width = 1;
     const endsWidth = 2;

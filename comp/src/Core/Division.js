@@ -13,7 +13,7 @@ var SubdivisionType;
 })(SubdivisionType || (SubdivisionType = {}));
 const DivisionMinWidth = 30;
 const DivisionMaxWidth = 40;
-function CreateDivisions(msr, notes, staff, cam) {
+function CreateDivisions(msr, notes, staff) {
     const divisions = [];
     let nextBeat = 0;
     let runningValue = 0;
@@ -93,9 +93,14 @@ function CreateSubdivisions(div, notes) {
             !div.Subdivisions.find((sd) => sd.Type === SubdivisionType.GRACE_NOTE)) {
             const graceSubdiv = {
                 Type: SubdivisionType.GRACE_NOTE,
-                Bounds: new Bounds(div.Bounds.x, div.Bounds.y, 30, div.Bounds.height),
+                Bounds: new Bounds(div.Bounds.x, div.Bounds.y, 15, div.Bounds.height),
+            };
+            const graceSubdiv2 = {
+                Type: SubdivisionType.GRACE_NOTE,
+                Bounds: new Bounds(div.Bounds.x + 15, div.Bounds.y, 15, div.Bounds.height),
             };
             div.Subdivisions.push(graceSubdiv);
+            div.Subdivisions.push(graceSubdiv2);
         }
     });
     var xBuffer = 0;
@@ -121,25 +126,8 @@ function CreateBeatBounds(msr, beat, duration, staff) {
     const y = msr.Bounds.y + GetStaffHeightUntil(msr.Staves, staff);
     return new Bounds(x, y, width, height);
 }
-function PositionDivByBeat(msr, divisions) {
-    const s0divs = divisions.filter((d) => d.Staff === 0);
-    const s1divs = divisions.filter((d) => d.Staff === 1);
-    if (s1divs.length > s0divs.length) {
-        divisions.forEach((div) => {
-            div.Bounds.x = 0;
-        });
-    }
-    else {
-    }
-}
 function ResizeDivisions(msr, divisions, staff) {
     const divs = divisions.filter((d) => d.Staff === staff);
-    const s0divs = divisions.filter((d) => d.Staff === 0);
-    const s1divs = divisions.filter((d) => d.Staff === 1);
-    let divCount = s1divs.length > s0divs.length ? s1divs.length : s0divs.length;
-    const minWidth = DivisionMinWidth * divCount;
-    const space = msr.Bounds.width - minWidth;
-    const xBuffer = space / divCount;
     divs.sort((a, b) => {
         return a.Beat - b.Beat;
     });
@@ -164,7 +152,7 @@ function GenerateMissingBeatDivisions(msr, divisions, staff) {
     const divisionsToAdd = [];
     sortedDivs
         .filter((d) => d.Staff === staff)
-        .forEach((div, i) => {
+        .forEach((div) => {
         const notesOnDiv = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat === div.Beat);
         if (div.Beat === startingBeat) {
             // there is a div for this beat, set the startingBeat to the next
@@ -297,7 +285,7 @@ function GetDivisionGroups(msr, staff) {
     });
     // only looking for grace notes, eventually refactor below and only need one
     // loop with functions/branching
-    mDivs.forEach((div, i) => {
+    mDivs.forEach((div) => {
         const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Beat === div.Beat &&
             (n.Staff === staff || n.StaffGroup === staff) &&
             n.Grace);

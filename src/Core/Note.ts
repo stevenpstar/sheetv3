@@ -48,7 +48,7 @@ class Note implements ISelectable {
 
   Staff: number;
   // Staff Group will be if notes need to interact between staffs (beaming
-  // across staffs for example
+  // across staffs for example)
   StaffGroup: number;
 
   Tuple: boolean;
@@ -64,7 +64,8 @@ class Note implements ISelectable {
     this.Staff = props.Staff;
     this.Clef = props.Clef;
     this.Grace = props.Grace;
-    this.OutOfBounds = false; // Out of bounds may happen when changing time signatures (4th beat in a 3/4 bar for example)
+    // Out of bounds may happen when changing time signatures (4th beat in a 3/4 bar for example)
+    this.OutOfBounds = false;
 
     this.Selected = false;
     this.SelType = SelectableTypes.Note;

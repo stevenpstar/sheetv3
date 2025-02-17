@@ -85,6 +85,7 @@ class App {
             msr.DeleteSelected();
             msr.CreateDivisions(this.Camera);
         }
+        this.ResizeMeasures(this.Sheet.Measures);
     }
     Input(x, y, shiftKey) {
         // will move this code elsewhere, testing note input
@@ -149,7 +150,6 @@ class App {
         }
     }
     AddMeasure() {
-        const newMeasureID = this.Sheet.Measures.length;
         const prevMsr = this.Sheet.Measures[this.Sheet.Measures.length - 1];
         let x = 0;
         this.Sheet.Instruments.forEach((i) => {
@@ -193,7 +193,7 @@ class App {
         });
         return liner;
     }
-    DragLiner(x, y) {
+    DragLiner(_, y) {
         if (this.LinerBounds) {
             this.LinerBounds.y = this.LinerBounds.y + (y - this.StartDragY);
             const page = this.Sheet.Pages[0];
@@ -251,8 +251,9 @@ class App {
             });
         }
         this.StartLine = this.EndLine;
+        this.ResizeMeasures(this.Sheet.Measures);
     }
-    StopNoteDrag(x, y) {
+    StopNoteDrag() {
         if (this.DraggingNote) {
             this.StartLine = -1;
             this.EndLine = -1;
@@ -316,7 +317,7 @@ class App {
         this.NoteValue = val;
     }
     SetAccidental(acc) {
-        for (let [msr, elem] of this.Selector.Elements) {
+        for (let [_, elem] of this.Selector.Elements) {
             elem.forEach((n) => {
                 if (n.SelType === SelectableTypes.Note) {
                     const note = n;
@@ -340,7 +341,7 @@ class App {
         this.Update(0, 0);
     }
     Sharpen() {
-        for (let [msr, elem] of this.Selector.Elements) {
+        for (let [_, elem] of this.Selector.Elements) {
             elem.forEach((n) => {
                 if (n.SelType === SelectableTypes.Note) {
                     const note = n;
@@ -354,7 +355,7 @@ class App {
         this.Update(0, 0);
     }
     Flatten() {
-        for (let [msr, elem] of this.Selector.Elements) {
+        for (let [_, elem] of this.Selector.Elements) {
             elem.forEach((e) => {
                 if (e.SelType === SelectableTypes.Note) {
                     const n = e;
@@ -413,7 +414,7 @@ class App {
         this.Update(0, 0);
     }
     ChangeTimeSignature(top, bottom, transpose = false) {
-        for (let [msr, elem] of this.Selector.Elements) {
+        for (let [msr, _] of this.Selector.Elements) {
             msr.ChangeTimeSignature(top, bottom, transpose);
         }
     }

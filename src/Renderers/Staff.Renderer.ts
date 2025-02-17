@@ -12,7 +12,7 @@ function RenderStaff(
   staff: Staff,
 ): void {
   // These should be defined somewhere else
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   const line_space = 10;
   const line_width = 1;
   const endsWidth = 2;

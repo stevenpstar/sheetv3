@@ -146,6 +146,7 @@ class App {
       msr.DeleteSelected();
       msr.CreateDivisions(this.Camera);
     }
+    this.ResizeMeasures(this.Sheet.Measures);
   }
 
   Input(x: number, y: number, shiftKey: boolean): void {
@@ -263,7 +264,6 @@ class App {
   }
 
   AddMeasure(): void {
-    const newMeasureID = this.Sheet.Measures.length;
     const prevMsr = this.Sheet.Measures[this.Sheet.Measures.length - 1];
     let x = 0;
     this.Sheet.Instruments.forEach((i) => {
@@ -331,7 +331,7 @@ class App {
     return liner;
   }
 
-  DragLiner(x: number, y: number): void {
+  DragLiner(_: number, y: number): void {
     if (this.LinerBounds) {
       this.LinerBounds.y = this.LinerBounds.y + (y - this.StartDragY);
       const page = this.Sheet.Pages[0];
@@ -396,9 +396,10 @@ class App {
         });
     }
     this.StartLine = this.EndLine;
+    this.ResizeMeasures(this.Sheet.Measures);
   }
 
-  StopNoteDrag(x: number, y: number): void {
+  StopNoteDrag(): void {
     if (this.DraggingNote) {
       this.StartLine = -1;
       this.EndLine = -1;
@@ -471,7 +472,6 @@ class App {
       });
       m.RecalculateBarlines();
     });
-
     this.Update(0, 0);
   }
 
@@ -480,7 +480,7 @@ class App {
   }
 
   SetAccidental(acc: number): void {
-    for (let [msr, elem] of this.Selector.Elements) {
+    for (let [_, elem] of this.Selector.Elements) {
       elem.forEach((n) => {
         if (n.SelType === SelectableTypes.Note) {
           const note = n as Note;
@@ -505,7 +505,7 @@ class App {
   }
 
   Sharpen(): void {
-    for (let [msr, elem] of this.Selector.Elements) {
+    for (let [_, elem] of this.Selector.Elements) {
       elem.forEach((n) => {
         if (n.SelType === SelectableTypes.Note) {
           const note = n as Note;
@@ -519,7 +519,7 @@ class App {
     this.Update(0, 0);
   }
   Flatten(): void {
-    for (let [msr, elem] of this.Selector.Elements) {
+    for (let [_, elem] of this.Selector.Elements) {
       elem.forEach((e) => {
         if (e.SelType === SelectableTypes.Note) {
           const n = e as Note;
@@ -597,7 +597,7 @@ class App {
     bottom: number,
     transpose: boolean = false,
   ): void {
-    for (let [msr, elem] of this.Selector.Elements) {
+    for (let [msr, _] of this.Selector.Elements) {
       msr.ChangeTimeSignature(top, bottom, transpose);
     }
   }

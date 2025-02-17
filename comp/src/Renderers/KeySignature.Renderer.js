@@ -1,8 +1,7 @@
 import { KeySignatures } from "../Core/KeySignatures.js";
 import { RenderSymbol, StdAccidentals } from "./MusicFont.Renderer.js";
 function RenderKeySignature(renderProps, msr, keyString, clefString, xOff, theme, staff) {
-    const { canvas, context, camera } = renderProps;
-    context.fillStyle = "black";
+    renderProps.context.fillStyle = "black";
     const staffClefs = msr.Clefs.filter((c) => c.Staff === staff);
     if (!staffClefs) {
         console.error("(RenderKeySignature): Something went very wrong here");

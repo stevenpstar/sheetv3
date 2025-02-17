@@ -90,7 +90,7 @@ function mouseUp(app: App, canvas: HTMLCanvasElement, e: MouseEvent): void {
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
   app.SetCameraDragging(false, 0, 0);
-  app.StopNoteDrag(x, y);
+  app.StopNoteDrag();
 }
 
 function keyDown(app: App, keymaps: any, e: KeyboardEvent): void {

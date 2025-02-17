@@ -1,7 +1,6 @@
 import { Articulation } from "../Core/Articulation.js";
 import { Beam } from "../Core/Beam.js";
 import { DivGroup, IsRestOnBeat } from "../Core/Division.js";
-import { Dynamic } from "../Core/Dynamic.js";
 
 import { StaffType } from "../Core/Instrument.js";
 import { KeySignatures } from "../Core/KeySignatures.js";
@@ -114,7 +113,7 @@ function RenderHovered(
   noteValue: number,
   theme: Theme,
 ) {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
 
   if (noteInput) {
     // context.fillStyle = "rgb(0, 0, 255, 0.1)";
@@ -204,7 +203,7 @@ function RenderMeasureBase(
   lastMeasure: boolean,
   theme: Theme,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
 
   // prob move elsewhere I don't know
   if (msr.Selected) {
@@ -255,7 +254,7 @@ function RenderMeasureBase(
     if (msr.RenderKey && msr.KeySignature !== "CMaj/Amin") {
       xOff += KeySignatures.get(msr.KeySignature).length * 10;
     }
-    RenderTimeSig(renderProps, msr, "4", "4", xOff, theme);
+    RenderTimeSig(renderProps, msr, theme);
   }
 }
 
@@ -265,8 +264,6 @@ function RenderMeasureClef(
   theme: Theme,
 ): void {
   // TODO: Rewrite clef rendering code
-
-  const { canvas, context, camera } = renderProps;
 
   msr.Clefs.forEach((clef: Clef) => {
     if (clef.Beat === 1) {
@@ -289,9 +286,6 @@ function RenderMeasureClef(
 function RenderTimeSig(
   renderProps: RenderProperties,
   msr: Measure,
-  top: string,
-  bottom: string,
-  xOffset: number,
   theme: Theme,
 ): void {
   msr.TimeSignature.render(renderProps, msr, theme);
@@ -303,7 +297,7 @@ function RenderNotes(
   staff: number,
   theme: Theme,
 ) {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   const mDivs = msr.Voices[msr.ActiveVoice].Divisions.filter(
     (d) => d.Staff === staff,
   );

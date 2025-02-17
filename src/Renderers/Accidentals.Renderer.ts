@@ -19,7 +19,7 @@ function RenderAccidental(
   offset: number,
   theme: Theme,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   let posString = "";
   let dflatString = ""; // posString for second flat
   switch (type) {

@@ -1,4 +1,3 @@
-import { RenderPanel } from "../Renderers/Debug.Renderer.js";
 import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
 import { RenderPage } from "../Renderers/Page.Renderer.js";
 import { ConfigSettings } from "../Types/Config.js";

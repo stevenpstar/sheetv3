@@ -73,7 +73,7 @@ declare class Measure implements ISelectable {
     GetNotePositionOnLine(line: number, staff: number): number;
     GetBoundsWithOffset(): Bounds;
     SetXOffset(): void;
-    CreateDivisions(cam: Camera, afterInput?: boolean): void;
+    CreateDivisions(cam: Camera): void;
     Reposition(prevMsr: Measure): void;
     GetMeasureHeight(): number;
     AddNote(note: Note, fromInput?: boolean): void;

@@ -3,14 +3,13 @@ import { Measure } from "../Core/Measure.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 
 function RenderPanel(props: RenderProperties): void {
-  const { canvas, context, camera } = props;
   const panelWidth = 200;
   const panelHeight = window.innerHeight;
   const xPos = window.innerWidth - panelWidth;
   const yPos = 0;
 
-  context.fillStyle = "black";
-  context.fillRect(xPos, yPos, panelWidth, panelHeight);
+  props.context.fillStyle = "black";
+  props.context.fillRect(xPos, yPos, panelWidth, panelHeight);
 }
 
 function RenderDebugOld(
@@ -19,7 +18,7 @@ function RenderDebugOld(
   index: number,
   mousePos: { x: number; y: number },
 ) {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
 
   if (measure.Voices[measure.ActiveVoice].Divisions.length === 0) {
     console.error("measure has no divisions");

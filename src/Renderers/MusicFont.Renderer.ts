@@ -87,7 +87,7 @@ function RenderSymbol(
   theme: Theme,
   selected: boolean,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
   context.font = `${stdFontSize}px Bravura`;
   context.fillText(symbol, x + camera.x, y + camera.y);
@@ -102,7 +102,7 @@ function RenderScaledSymbol(
   selected: boolean,
   fontSize: number,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   var colour = selected ? theme.SelectColour : theme.NoteElements;
   context.fillStyle = selected ? theme.SelectColour : theme.NoteElements;
   context.font = `${fontSize}px Bravura`;
@@ -119,7 +119,7 @@ function RenderScaledNote(
   selected: boolean,
   fontSize: number,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   var colour = selected ? theme.SelectColour : theme.NoteElements;
   if (note.OutOfBounds) {
     colour = "red";

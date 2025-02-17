@@ -12,7 +12,6 @@ import {
   type Division,
   ResizeDivisions,
   DivisionMinWidth,
-  DivGroup,
 } from "./Division.js";
 import { Dynamic } from "./Dynamic.js";
 import { Instrument, StaffType } from "./Instrument.js";
@@ -164,16 +163,11 @@ class Measure implements ISelectable {
     this.TimeSignature.SetBounds(this);
   }
 
-  CreateDivisions(cam: Camera, afterInput: boolean = false) {
+  CreateDivisions(cam: Camera) {
     this.Voices[this.ActiveVoice].Divisions = [];
     this.Staves.forEach((s: Staff) => {
       this.Voices[this.ActiveVoice].Divisions.push(
-        ...CreateDivisions(
-          this,
-          this.Voices[this.ActiveVoice].Notes,
-          s.Num,
-          cam,
-        ),
+        ...CreateDivisions(this, this.Voices[this.ActiveVoice].Notes, s.Num),
       );
       ResizeDivisions(this, this.Voices[this.ActiveVoice].Divisions, s.Num);
       UpdateNoteBounds(this, s.Num);

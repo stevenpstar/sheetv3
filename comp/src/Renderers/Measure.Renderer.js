@@ -47,7 +47,7 @@ function MiddleLineBounds(measure) {
     return b;
 }
 function RenderHovered(measure, renderProps, mousePos, noteInput, restInput, noteValue, theme) {
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     if (noteInput) {
         // context.fillStyle = "rgb(0, 0, 255, 0.1)";
         // const lineY = measure.Bounds.y + (line.num * (line_space / 2) - (line_space / 4));
@@ -106,7 +106,7 @@ function RenderHovered(measure, renderProps, mousePos, noteInput, restInput, not
 // Renders the basic lines and bar endings of the measure, no notes or clefs or time
 // time signatures
 function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure, theme) {
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     // prob move elsewhere I don't know
     if (msr.Selected) {
         context.fillStyle = theme.SelectColour;
@@ -143,12 +143,11 @@ function RenderMeasureBase(msr, renderProps, mousePos, lastMeasure, theme) {
         if (msr.RenderKey && msr.KeySignature !== "CMaj/Amin") {
             xOff += KeySignatures.get(msr.KeySignature).length * 10;
         }
-        RenderTimeSig(renderProps, msr, "4", "4", xOff, theme);
+        RenderTimeSig(renderProps, msr, theme);
     }
 }
 function RenderMeasureClef(renderProps, msr, theme) {
     // TODO: Rewrite clef rendering code
-    const { canvas, context, camera } = renderProps;
     msr.Clefs.forEach((clef) => {
         if (clef.Beat === 1) {
             clef.render(renderProps, theme);
@@ -166,11 +165,11 @@ function RenderMeasureClef(renderProps, msr, theme) {
         }
     });
 }
-function RenderTimeSig(renderProps, msr, top, bottom, xOffset, theme) {
+function RenderTimeSig(renderProps, msr, theme) {
     msr.TimeSignature.render(renderProps, msr, theme);
 }
 function RenderNotes(msr, renderProps, staff, theme) {
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     const mDivs = msr.Voices[msr.ActiveVoice].Divisions.filter((d) => d.Staff === staff);
     mDivs.forEach((div) => {
         const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter((note) => note.Beat === div.Beat && note.Staff === div.Staff);

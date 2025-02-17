@@ -2,7 +2,6 @@ import { KeySignatures } from "../Core/KeySignatures.js";
 import { Clef, Measure } from "../Core/Measure.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
-import { flatPath, sharpPath } from "./Accidentals.Renderer.js";
 import { RenderSymbol, StdAccidentals } from "./MusicFont.Renderer.js";
 
 interface keyProps {
@@ -19,8 +18,7 @@ function RenderKeySignature(
   theme: Theme,
   staff: number,
 ): void {
-  const { canvas, context, camera } = renderProps;
-  context.fillStyle = "black";
+  renderProps.context.fillStyle = "black";
   const staffClefs = msr.Clefs.filter((c: Clef) => c.Staff === staff);
   if (!staffClefs) {
     console.error("(RenderKeySignature): Something went very wrong here");

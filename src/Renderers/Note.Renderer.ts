@@ -51,7 +51,7 @@ function RenderNote(
   //   RenderAccidental(renderProps, note, note.Accidental, theme);
   // }
   let { x, y, width, height } = Bounds;
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   // TODO: Move this offset somewhere else to be constant
   y = y + 3;
   //
@@ -130,7 +130,7 @@ function RenderDots(
   note: Note,
   dotXStart: number,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
 
   let dotCount = 0;
   //doing two separate switches for now
@@ -225,7 +225,7 @@ function RenderTupletAnnotation(
   count: string,
   theme: Theme,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
 
   const width = coords.x2 - coords.x1;
 
@@ -297,7 +297,7 @@ function RenderTuplets(
   msr: Measure,
   theme: Theme,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   const divs = divisions.filter((d) => d.Staff === staff);
   divs.sort((a: Division, b: Division) => {
     return a.Beat - b.Beat;
@@ -349,7 +349,7 @@ function RenderTies(
   staff: number,
   msr: Measure,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   const divs = divisions.filter((d) => d.Staff === staff);
   divs.sort((a: Division, b: Division) => {
     return a.Beat - b.Beat;
@@ -472,7 +472,7 @@ function renderLedgerLines(
   theme: Theme,
   colour?: string,
 ): void {
-  const { canvas, context, camera } = renderProps;
+  const { context, camera } = renderProps;
   // TODO: This code is repeated (search for dynNoteXBuffer)
   // Could be a good idea to make it a function
   let dynNoteXBuffer = noteXBuffer;

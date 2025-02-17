@@ -79,7 +79,7 @@ function mouseUp(app, canvas, e) {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     app.SetCameraDragging(false, 0, 0);
-    app.StopNoteDrag(x, y);
+    app.StopNoteDrag();
 }
 function keyDown(app, keymaps, e) {
     const key = e.key;

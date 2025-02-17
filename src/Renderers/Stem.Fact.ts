@@ -1,5 +1,4 @@
 import { Division } from "../Core/Division.js";
-import { RenderProperties } from "../Types/RenderProperties.js";
 import {
   BeamDirection,
   DetermineStemDirection,
@@ -7,15 +6,10 @@ import {
 } from "./Note.Renderer.js";
 import { Note } from "../Core/Note.js";
 import { Measure } from "../Core/Measure.js";
-import { Theme } from "../Types/Config.js";
 import { Stem } from "../Core/Stem.js";
 import { Bounds } from "../Types/Bounds.js";
 import { DetermineBeamDirection } from "../Core/Beam.js";
-import {
-  GetStaffActualMidLine,
-  GetStaffHeightUntil,
-  GetStaffMiddleLine,
-} from "../Core/Staff.js";
+import { GetStaffHeightUntil, GetStaffMiddleLine } from "../Core/Staff.js";
 import { IsFlippedNote } from "./Measure.Renderer.js";
 
 function AlterHeightForBeam(
@@ -42,7 +36,6 @@ function StemToCenter(
   stemDir: StemDirection,
   lowestLine: number,
   highestLine: number,
-  midLine: number,
 ): boolean {
   const lineDist = 7;
   if (stemDir === StemDirection.Up) {
@@ -84,7 +77,6 @@ function CreateStems(
   const staffMidLinePos =
     GetStaffHeightUntil(measure.Staves, staff) +
     GetStaffMiddleLine(measure.Staves, staff) * 5;
-  const xBuffer = stemDir === StemDirection.Up ? 11.5 : 0.25;
   const beamDir = DetermineBeamDirection(
     measure,
     {
@@ -99,7 +91,7 @@ function CreateStems(
   );
   const shouldBeam = divisions.length > 1 && divisions[0].Duration <= 0.25;
 
-  divisions.forEach((div: Division, i: number) => {
+  divisions.forEach((_: Division, i: number) => {
     const beamAlt = i * (10 / divisions.length - 1);
     const divNotes = notes[i];
     const isGraceStem = divNotes[0].Grace ? true : false;
@@ -128,13 +120,7 @@ function CreateStems(
       stem.Bounds.height = lNote.Bounds.y - divNotes[0].Bounds.y + 35;
     }
 
-    const diff =
-      measure.Staves[staff].TopLine < 0
-        ? Math.abs(measure.Staves[staff].TopLine)
-        : measure.Staves[staff].TopLine;
-    const staffRelativeMid =
-      GetStaffActualMidLine(measure.Staves, staff) + diff;
-    if (StemToCenter(stemDir, lowestLine, highestLine, staffRelativeMid)) {
+    if (StemToCenter(stemDir, lowestLine, highestLine)) {
       stem.Bounds.height = staffMidLinePos - stem.Bounds.y + measure.Bounds.y;
     }
     if (shouldBeam) {
@@ -148,39 +134,12 @@ function CreateStems(
     // scale
     if (notes.length > 0 && notes[0][0].Grace) {
       stem.Bounds.height *= 0.6;
+      stem.Bounds.width *= 0.6;
     }
     stem.Staff = staff;
     stems.push(stem);
   });
   return stems;
-}
-
-// v3 of this bloody function
-function RenderStem(
-  renderProps: RenderProperties,
-  notes: Array<Note[]>,
-  divisions: Division[],
-  staff: number,
-  msr: Measure,
-  beamDir: BeamDirection,
-  theme: Theme,
-) {
-  const { canvas, context, camera } = renderProps;
-  let dynNoteXBuffer = 9;
-
-  const stemDir: StemDirection = DetermineStemDirection(notes, divisions);
-
-  const xBuffer = stemDir === StemDirection.Up ? 11.5 : 0.25;
-
-  divisions.forEach((div: Division, i: number) => {
-    const divNotes = notes[i];
-    divNotes.sort((a: Note, b: Note) => a.Line - b.Line);
-    let lowestNote: Note = divNotes[divNotes.length - 1];
-    let highestNote: Note = divNotes[0];
-    const stemX = Math.floor(
-      div.Bounds.x + xBuffer + camera.x + dynNoteXBuffer,
-    );
-  });
 }
 
 export { CreateStems };

@@ -1,14 +1,13 @@
 function RenderPanel(props) {
-    const { canvas, context, camera } = props;
     const panelWidth = 200;
     const panelHeight = window.innerHeight;
     const xPos = window.innerWidth - panelWidth;
     const yPos = 0;
-    context.fillStyle = "black";
-    context.fillRect(xPos, yPos, panelWidth, panelHeight);
+    props.context.fillStyle = "black";
+    props.context.fillRect(xPos, yPos, panelWidth, panelHeight);
 }
 function RenderDebugOld(measure, renderProps, index, mousePos) {
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     if (measure.Voices[measure.ActiveVoice].Divisions.length === 0) {
         console.error("measure has no divisions");
         return;

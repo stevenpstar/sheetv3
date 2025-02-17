@@ -24,12 +24,14 @@ function RenderMeasureRev(measure, renderProps, theme) {
             renderProps.context.strokeRect(d.Bounds.x + renderProps.camera.x, d.Bounds.y + renderProps.camera.y, d.Bounds.width, d.Bounds.height);
             d.Subdivisions.forEach((sd, i) => {
                 if (i % 2 == 0) {
-                    renderProps.context.fillStyle = "rgba(0, 255, 0, 0.2)";
+                    renderProps.context.fillStyle = "rgba(0, 155, 0, 0.2)";
                 }
                 else {
-                    renderProps.context.fillStyle = "rgba(0, 255, 255, 0.2)";
+                    renderProps.context.fillStyle = "rgba(255, 0, 0, 0.2)";
                 }
                 renderProps.context.fillRect(sd.Bounds.x + renderProps.camera.x, sd.Bounds.y + renderProps.camera.y, sd.Bounds.width, sd.Bounds.height);
+                renderProps.context.strokeStyle = "blue";
+                renderProps.context.strokeRect(sd.Bounds.x + renderProps.camera.x, sd.Bounds.y + renderProps.camera.y, sd.Bounds.width, sd.Bounds.height);
             });
         });
     }

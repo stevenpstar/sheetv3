@@ -294,6 +294,19 @@ declare class Clef implements ISelectable {
     IsHovered(x: number, y: number, cam: Camera): boolean;
 }
 
+declare class Dynamic implements ISelectable {
+    Symbol: string;
+    Staff: number;
+    Beat: number;
+    Selected: boolean;
+    Editable: boolean;
+    Bounds: Bounds;
+    SelType: SelectableTypes;
+    ID: number;
+    constructor(symbol: string, staff: number, beat: number);
+    IsHovered(x: number, y: number, cam: Camera): boolean;
+}
+
 interface Margins {
     left: number;
     right: number;
@@ -345,6 +358,7 @@ declare class TimeSignature implements ISelectable {
 declare class Voice {
     Notes: Note[];
     Divisions: Division[];
+    DivisionGroups: DivGroup[];
     constructor();
 }
 
@@ -387,12 +401,11 @@ declare class Measure implements ISelectable {
     KeySignature: string;
     Voices: Voice[];
     ActiveVoice: number;
-    Divisions: Division[];
     Clefs: Clef[];
     Staves: Staff[];
     Barlines: Barline[];
     Articulations: Articulation[];
-    DivisionGroups: DivGroup[];
+    Dynamics: Dynamic[];
     XOffset: number;
     Line: number;
     RunningID: {
@@ -506,6 +519,8 @@ interface KeyMapping {
     beam: string;
     grace: string;
     change_timesig: string;
+    add_dynamic: string;
+    cycle_voice: string;
 }
 declare function KeyPress(app: App, key: string, keyMaps: KeyMapping): void;
 
@@ -603,6 +618,8 @@ declare class App {
     FromPitchMap(midiNote: number, clef: string): MappedMidi;
     ChangeBarline(): void;
     ChangeTimeSig(): void;
+    AddDynamic(dynString: string): void;
+    CycleActiveVoice(): void;
 }
 
 interface lNote {

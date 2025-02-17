@@ -84,10 +84,10 @@ class Measure {
         }
         this.TimeSignature.SetBounds(this);
     }
-    CreateDivisions(cam, afterInput = false) {
+    CreateDivisions(cam) {
         this.Voices[this.ActiveVoice].Divisions = [];
         this.Staves.forEach((s) => {
-            this.Voices[this.ActiveVoice].Divisions.push(...CreateDivisions(this, this.Voices[this.ActiveVoice].Notes, s.Num, cam));
+            this.Voices[this.ActiveVoice].Divisions.push(...CreateDivisions(this, this.Voices[this.ActiveVoice].Notes, s.Num));
             ResizeDivisions(this, this.Voices[this.ActiveVoice].Divisions, s.Num);
             UpdateNoteBounds(this, s.Num);
         });

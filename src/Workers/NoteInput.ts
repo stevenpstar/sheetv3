@@ -107,7 +107,7 @@ function InputNote(
   };
   const newNote: Note = new Note(noteProps);
 
-  if (division.Duration === noteValue) {
+  if (division.Duration === noteValue || grace) {
     msr.ClearRestNotes(division.Beat, division.Staff);
     msr.AddNote(newNote, true);
   } else {
@@ -116,7 +116,7 @@ function InputNote(
     }
   }
   RecreateDivisionGroups(msr);
-  msr.CreateDivisions(msr.Camera, true);
+  msr.CreateDivisions(msr.Camera);
   RecreateStemAndBeams(msr);
 }
 
@@ -245,9 +245,6 @@ function AddToDivision(
     if (remainingValue >= div.Duration && beat === div.Beat) {
       // clear rests on beat regardless of what we are inputting
       msr.ClearRestNotes(beat, noteProps.Staff);
-
-      // TODO: Add a method here to check if there's room for
-      // Entire duration in oncoming divs (i.e. are they rests)
       let remVal = remainingValue;
       let room: boolean = false;
       let lastIndex: number = 0;

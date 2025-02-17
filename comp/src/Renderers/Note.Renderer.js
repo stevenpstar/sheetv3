@@ -24,7 +24,7 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, them
     //   RenderAccidental(renderProps, note, note.Accidental, theme);
     // }
     let { x, y, width, height } = Bounds;
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     // TODO: Move this offset somewhere else to be constant
     y = y + 3;
     //
@@ -61,7 +61,7 @@ function RenderNote(note, renderProps, Bounds, selected, flipNote, stemDir, them
     }
 }
 function RenderDots(renderProps, note, dotXStart) {
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     let dotCount = 0;
     //doing two separate switches for now
     switch (note.Duration) {
@@ -143,7 +143,7 @@ function RenderRest(ctx, div, cam, note, msr, theme) {
     }
 }
 function RenderTupletAnnotation(renderProps, coords, count, theme) {
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     const width = coords.x2 - coords.x1;
     // TODO: Add this to theme maybe
     context.fillStyle = "#75757";
@@ -180,7 +180,7 @@ function GetTupletGlyph(count) {
     }
 }
 function RenderTuplets(renderProps, divisions, notes, staff, msr, theme) {
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     const divs = divisions.filter((d) => d.Staff === staff);
     divs.sort((a, b) => {
         return a.Beat - b.Beat;
@@ -218,7 +218,7 @@ function RenderTuplets(renderProps, divisions, notes, staff, msr, theme) {
     });
 }
 function RenderTies(renderProps, divisions, notes, staff, msr) {
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     const divs = divisions.filter((d) => d.Staff === staff);
     divs.sort((a, b) => {
         return a.Beat - b.Beat;
@@ -314,7 +314,7 @@ function DetermineStemDirection(notes, divisions) {
     return dir;
 }
 function renderLedgerLines(notes, division, renderProps, staff, msr, theme, colour) {
-    const { canvas, context, camera } = renderProps;
+    const { context, camera } = renderProps;
     // TODO: This code is repeated (search for dynNoteXBuffer)
     // Could be a good idea to make it a function
     let dynNoteXBuffer = noteXBuffer;
