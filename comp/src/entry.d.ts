@@ -1,4 +1,5 @@
 import { App } from "./App.js";
+import { ArticulationType } from "./Core/Articulation.js";
 import { Division, Measure } from "./Core/Measure.js";
 import { ConfigSettings } from "./Types/Config.js";
 import { ISelectable } from "./Types/ISelectable.js";
@@ -11,6 +12,7 @@ export declare namespace sheet {
     function Flatten(): void;
     function SetNoteValue(value: number): void;
     function AddMeasure(): void;
+    function AddArticulation(type: ArticulationType): void;
     function AddStaff(instrIndex: number, clefString: string): void;
     function AddNoteOnMeasure(msr: Measure, noteVal: number, line: number, div: Division, rest: boolean): void;
     function Delete(): void;

@@ -171,6 +171,10 @@ export var sheet;
         gSheet.AddMeasure();
     }
     sheet.AddMeasure = AddMeasure;
+    function AddArticulation(type) {
+        gSheet.AddArticulation(type);
+    }
+    sheet.AddArticulation = AddArticulation;
     function AddStaff(instrIndex, clefString) {
         gSheet.AddStaff(instrIndex, clefString);
     }

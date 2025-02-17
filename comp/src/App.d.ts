@@ -9,6 +9,7 @@ import { saveFile } from "./testsaves.js";
 import { Message } from "./Types/Message.js";
 import { MappedMidi } from "./Workers/Pitcher.js";
 import { ConfigSettings } from "./Types/Config.js";
+import { ArticulationType } from "./Core/Articulation.js";
 declare class App {
     Config: ConfigSettings;
     Message: Message;
@@ -88,6 +89,7 @@ declare class App {
     ChangeBarline(): void;
     ChangeTimeSig(): void;
     AddDynamic(dynString: string): void;
+    AddArticulation(type: ArticulationType): void;
     CycleActiveVoice(): void;
 }
 export { App };

@@ -163,7 +163,6 @@ declare class Note implements ISelectable {
 }
 
 interface RenderProperties {
-    canvas: HTMLCanvasElement;
     context: CanvasRenderingContext2D;
     camera: Camera;
 }
@@ -421,7 +420,7 @@ declare class Measure implements ISelectable {
     GetNotePositionOnLine(line: number, staff: number): number;
     GetBoundsWithOffset(): Bounds;
     SetXOffset(): void;
-    CreateDivisions(cam: Camera, afterInput?: boolean): void;
+    CreateDivisions(cam: Camera): void;
     Reposition(prevMsr: Measure): void;
     GetMeasureHeight(): number;
     AddNote(note: Note, fromInput?: boolean): void;
@@ -589,9 +588,9 @@ declare class App {
     AddMeasure(): void;
     ChangeInputMode(): void;
     SelectLiner(x: number, y: number): Bounds | undefined;
-    DragLiner(x: number, y: number): void;
+    DragLiner(_: number, y: number): void;
     DragNote(x: number, y: number): void;
-    StopNoteDrag(x: number, y: number): void;
+    StopNoteDrag(): void;
     SetCameraDragging(dragging: boolean, x: number, y: number): void;
     AlterZoom(num: number, mx: number, my: number): void;
     SetCameraZoom(num: number): void;
@@ -619,6 +618,7 @@ declare class App {
     ChangeBarline(): void;
     ChangeTimeSig(): void;
     AddDynamic(dynString: string): void;
+    AddArticulation(type: ArticulationType): void;
     CycleActiveVoice(): void;
 }
 
@@ -661,6 +661,7 @@ declare namespace sheet {
     function Flatten(): void;
     function SetNoteValue(value: number): void;
     function AddMeasure(): void;
+    function AddArticulation(type: ArticulationType): void;
     function AddStaff(instrIndex: number, clefString: string): void;
     function AddNoteOnMeasure(msr: Measure, noteVal: number, line: number, div: Division, rest: boolean): void;
     function Delete(): void;

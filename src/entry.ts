@@ -1,4 +1,5 @@
 import { App } from "./App.js";
+import { ArticulationType } from "./Core/Articulation.js";
 import { Division, Measure } from "./Core/Measure.js";
 import { ConfigSettings, Theme } from "./Types/Config.js";
 import { ISelectable } from "./Types/ISelectable.js";
@@ -198,6 +199,10 @@ export module sheet {
 
   export function AddMeasure(): void {
     gSheet.AddMeasure();
+  }
+
+  export function AddArticulation(type: ArticulationType): void {
+    gSheet.AddArticulation(type);
   }
 
   export function AddStaff(instrIndex: number, clefString: string): void {

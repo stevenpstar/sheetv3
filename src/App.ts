@@ -29,6 +29,7 @@ import { ConfigSettings } from "./Types/Config.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
 import { Barline, BarlinePos, BarlineType } from "./Core/Barline.js";
 import { Dynamic } from "./Core/Dynamic.js";
+import { Articulation, ArticulationType } from "./Core/Articulation.js";
 
 class App {
   Config: ConfigSettings;
@@ -727,6 +728,16 @@ class App {
         .filter((e: ISelectable) => e.SelType === SelectableTypes.Note)
         .forEach((n: Note) => {
           msr.Dynamics.push(new Dynamic(dynString, n.Staff, n.Beat));
+        });
+    }
+  }
+
+  AddArticulation(type: ArticulationType): void {
+    for (let [msr, elem] of this.Selector.Elements) {
+      elem
+        .filter((e: ISelectable) => e.SelType === SelectableTypes.Note)
+        .forEach((n: Note) => {
+          msr.Articulations.push(new Articulation(type, n.Beat, n.Staff));
         });
     }
   }

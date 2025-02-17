@@ -17,6 +17,7 @@ import { FromPitchMap, GeneratePitchMap, } from "./Workers/Pitcher.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
 import { BarlinePos, BarlineType } from "./Core/Barline.js";
 import { Dynamic } from "./Core/Dynamic.js";
+import { Articulation } from "./Core/Articulation.js";
 class App {
     constructor(canvas, container, context, notifyCallback, config, load = false) {
         var _a, _b;
@@ -526,6 +527,15 @@ class App {
                 .filter((e) => e.SelType === SelectableTypes.Note)
                 .forEach((n) => {
                 msr.Dynamics.push(new Dynamic(dynString, n.Staff, n.Beat));
+            });
+        }
+    }
+    AddArticulation(type) {
+        for (let [msr, elem] of this.Selector.Elements) {
+            elem
+                .filter((e) => e.SelType === SelectableTypes.Note)
+                .forEach((n) => {
+                msr.Articulations.push(new Articulation(type, n.Beat, n.Staff));
             });
         }
     }
