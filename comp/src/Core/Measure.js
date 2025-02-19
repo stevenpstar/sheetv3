@@ -14,6 +14,8 @@ class Measure {
     constructor(properties, runningId) {
         this.ActiveVoice = 0;
         this.Clefs = [];
+        this.PrevMeasure = properties.PrevMeasure;
+        this.NextMeasure = properties.NextMeasure;
         this.Voices = [new Voice(), new Voice(), new Voice(), new Voice()];
         this.Num = 1;
         this.Staves = properties.Staves;
@@ -40,7 +42,8 @@ class Measure {
         this.Camera = properties.Camera;
         this.RenderTimeSig = properties.RenderTimeSig;
         this.Page = properties.Page;
-        this.PageLine = properties.Page.PageLines[0].Number;
+        this.PageLine =
+            properties.Page.PageLines[properties.Page.PageLines.length - 1].Number;
         this.SetXOffset();
         this.Barlines = properties.Barlines;
         this.CreateDivisions(this.Camera);

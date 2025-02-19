@@ -72,6 +72,8 @@ const LoadSheet = (
     });
     const msr = CreateMeasure(
       instr,
+      null, // Prev Measure
+      null, // Next Measure, these will need to be fixed when coming back to save/load
       m.Bounds,
       m.TimeSignature,
       m.KeySignature,

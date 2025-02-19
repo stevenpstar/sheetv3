@@ -29,7 +29,9 @@ const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
             const newNote = new Note(noteProps);
             notes.push(newNote);
         });
-        const msr = CreateMeasure(instr, m.Bounds, m.TimeSignature, m.KeySignature, m.Clefs, m.Staves, cam, runningId, page, m.ShowClef, callback);
+        const msr = CreateMeasure(instr, null, // Prev Measure
+        null, // Next Measure, these will need to be fixed when coming back to save/load
+        m.Bounds, m.TimeSignature, m.KeySignature, m.Clefs, m.Staves, cam, runningId, page, m.ShowClef, callback);
         msr.Voices[msr.ActiveVoice].Notes = notes;
         sheet.Measures.push(msr);
         msr.CreateDivisions(cam);

@@ -74,6 +74,7 @@ function CreateDefaultSheet(
       config.MeasureSettings,
     ),
   );
+
   return new Sheet(sProps);
 }
 

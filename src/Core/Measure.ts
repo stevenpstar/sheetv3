@@ -24,6 +24,8 @@ import { Voice } from "./Voice.js";
 
 interface MeasureProps {
   Instrument: Instrument;
+  PrevMeasure: Measure;
+  NextMeasure: Measure;
   Bounds: Bounds;
   TimeSignature: { top: number; bottom: number };
   KeySignature: string;
@@ -41,6 +43,8 @@ interface MeasureProps {
 }
 
 class Measure implements ISelectable {
+  PrevMeasure: Measure;
+  NextMeasure: Measure;
   ID: number;
   Num: number;
   Selected: boolean;
@@ -74,6 +78,8 @@ class Measure implements ISelectable {
   RunningID: { count: number };
 
   constructor(properties: MeasureProps, runningId: { count: number }) {
+    this.PrevMeasure = properties.PrevMeasure;
+    this.NextMeasure = properties.NextMeasure;
     this.Voices = [new Voice(), new Voice(), new Voice(), new Voice()];
     this.Num = 1;
     this.Staves = properties.Staves;
@@ -100,7 +106,8 @@ class Measure implements ISelectable {
     this.Camera = properties.Camera;
     this.RenderTimeSig = properties.RenderTimeSig;
     this.Page = properties.Page;
-    this.PageLine = properties.Page.PageLines[0].Number;
+    this.PageLine =
+      properties.Page.PageLines[properties.Page.PageLines.length - 1].Number;
 
     this.SetXOffset();
 

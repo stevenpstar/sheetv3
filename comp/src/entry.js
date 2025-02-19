@@ -119,7 +119,7 @@ export var sheet;
         doc.addEventListener("keydown", (e) => keyDown(app, keyMap, e));
         window.addEventListener("resize", () => resize(app, app.Context, canvas, container));
         canvas.addEventListener("wheel", (e) => zoom(app, canvas, e));
-        screen.orientation.addEventListener("change", (e) => resize(app, app.Context, canvas, container));
+        screen.orientation.addEventListener("change", (_) => resize(app, app.Context, canvas, container));
         gSheet = app;
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
@@ -139,7 +139,7 @@ export var sheet;
                 app.SetCameraZoom(cameraData.Zoom);
                 app.Camera.x = cameraData.X;
                 app.Camera.y = cameraData.Y;
-                app.ResizeMeasures(app.Sheet.Measures);
+                app.ResizeMeasures(app.Sheet);
             }
             //
         }

@@ -1,15 +1,10 @@
 import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
 import { RenderPage } from "../Renderers/Page.Renderer.js";
 import { ConfigSettings } from "../Types/Config.js";
-import { Selector } from "../Workers/Selector.js";
 import { RenderBarline } from "./Barline.js";
 import { Camera } from "./Camera.js";
 import { Measure } from "./Measure.js";
 import { Page } from "./Page.js";
-import { Sheet } from "./Sheet.js";
-
-const renderDebug = false;
-const scaleV = 1;
 
 const Renderer = (
   c: HTMLCanvasElement,
@@ -24,8 +19,7 @@ const Renderer = (
   config: ConfigSettings,
   noteValue: number,
 ) => {
-  // reset
-  ctx.fillStyle = config.Theme.BackgroundColour; //"grey";252c38 16191f
+  ctx.fillStyle = config.Theme.BackgroundColour;
 
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -65,27 +59,14 @@ const Renderer = (
       config,
     );
     if (i > 0) {
-      RenderBarline(renderProps, measures[i - 1], m, cam);
+      const instrMsrs = measures.filter(
+        (msr: Measure) => m.Instrument === msr.Instrument,
+      );
+      RenderBarline(renderProps, instrMsrs[instrMsrs.length - 1], m, cam);
     }
     RenderBarline(renderProps, null, m, cam);
     RenderBarline(renderProps, m, null, cam);
   });
 };
 
-const RenderDebug = (
-  c: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D,
-  sheet: Sheet,
-  mousePos: { x: number; y: number },
-  cam: Camera,
-  selector: Selector,
-): void => {
-  const renderProps = {
-    canvas: c,
-    context: ctx,
-    camera: cam,
-  };
-  //                 RenderPanel(renderProps);
-};
-
-export { Renderer, RenderDebug };
+export { Renderer };

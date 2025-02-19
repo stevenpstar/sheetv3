@@ -146,7 +146,7 @@ export module sheet {
       resize(app, app.Context, canvas, container),
     );
     canvas.addEventListener("wheel", (e) => zoom(app, canvas, e));
-    screen.orientation.addEventListener("change", (e) =>
+    screen.orientation.addEventListener("change", (_) =>
       resize(app, app.Context, canvas, container),
     );
     gSheet = app;
@@ -168,7 +168,7 @@ export module sheet {
         app.SetCameraZoom(cameraData.Zoom);
         app.Camera.x = cameraData.X;
         app.Camera.y = cameraData.Y;
-        app.ResizeMeasures(app.Sheet.Measures);
+        app.ResizeMeasures(app.Sheet);
       }
       //
     }

@@ -1,5 +1,5 @@
 import { CreateDefaultSheet, Sheet } from "./Core/Sheet.js";
-import { RenderDebug, Renderer } from "./Core/Renderer.js";
+import { Renderer } from "./Core/Renderer.js";
 import { CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Clef, Division, Measure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
@@ -13,7 +13,7 @@ import {
   UpdateNoteBounds,
 } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
-import { StaffType } from "./Core/Instrument.js";
+import { Instrument, StaffType } from "./Core/Instrument.js";
 import { KeyMapping, KeyPress } from "./Workers/Mappings.js";
 import { ISelectable, SelectableTypes } from "./Types/ISelectable.js";
 import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
@@ -110,12 +110,12 @@ class App {
     }
     this.NoteInput = false;
     this.RestInput = false;
-    this.Formatting = false;
+    this.Formatting = true;
 
     if (this.Config.CameraSettings?.Zoom) {
       this.Camera.Zoom = this.Config.CameraSettings.Zoom;
       this.SetCameraZoom(this.Camera.Zoom);
-      this.ResizeMeasures(this.Sheet.Measures);
+      this.ResizeMeasures(this.Sheet);
     }
 
     this.Update(0, 0);
@@ -147,7 +147,7 @@ class App {
       msr.DeleteSelected();
       msr.CreateDivisions(this.Camera);
     }
-    this.ResizeMeasures(this.Sheet.Measures);
+    this.ResizeMeasures(this.Sheet);
   }
 
   Input(x: number, y: number, shiftKey: boolean): void {
@@ -218,9 +218,7 @@ class App {
         this.RestInput,
         this.GraceInput,
       );
-      this.ResizeMeasures(
-        this.Sheet.Measures.filter((m) => m.Instrument === msrOver.Instrument),
-      );
+      this.ResizeMeasures(this.Sheet);
     }
     //  this.NotifyCallback(this.Message);
     const persist = SaveSheet(this.Sheet);
@@ -252,22 +250,16 @@ class App {
       this.Config,
       this.NoteValue,
     );
-    if (this.Debug) {
-      RenderDebug(
-        this.Canvas,
-        this.Context,
-        this.Sheet,
-        mousePos,
-        this.Camera,
-        this.Selector,
-      );
-    }
   }
 
   AddMeasure(): void {
     const prevMsr = this.Sheet.Measures[this.Sheet.Measures.length - 1];
     let x = 0;
     this.Sheet.Instruments.forEach((i) => {
+      const instrMeasures = this.Sheet.Measures.filter(
+        (m: Measure) => m.Instrument === i,
+      );
+      const previousMeasure = instrMeasures[instrMeasures.length - 1];
       let latestLine =
         this.Sheet.Pages[0].PageLines[this.Sheet.Pages[0].PageLines.length - 1];
       const newMeasureBounds = new Bounds(
@@ -278,6 +270,8 @@ class App {
       );
       const newMsr = CreateMeasure(
         i,
+        previousMeasure,
+        null,
         newMeasureBounds,
         prevMsr.TimeSignature,
         prevMsr.KeySignature,
@@ -290,18 +284,22 @@ class App {
         this.NotifyCallback,
         this.Config.MeasureSettings,
       );
-      // add measure number
-      newMsr.Num = this.Sheet.Measures.length + 1;
+      // add measure number and barlines, will need to be reworked when
+      // inserting measures is added
+      newMsr.Num =
+        this.Sheet.Measures.filter((m: Measure) => m.Instrument === i).length +
+        1;
+      newMsr.Barlines[1].Type = BarlineType.END;
       this.Sheet.Measures.push(newMsr);
-      this.ResizeMeasures(
-        this.Sheet.Measures.filter((m) => m.Instrument === i),
-      );
+      previousMeasure.NextMeasure = newMsr;
+      this.ResizeMeasures(this.Sheet);
     });
     // Update previous measure end bar line
     if (prevMsr.Barlines[1].Type == BarlineType.END) {
       prevMsr.Barlines[1].Type = BarlineType.SINGLE;
     }
-    this.ResizeMeasures(this.Sheet.Measures);
+    this.ResizeMeasures(this.Sheet);
+    console.log(this.Sheet);
   }
 
   ChangeInputMode(): void {
@@ -346,7 +344,7 @@ class App {
           m.Bounds.y = this.LinerBounds.y;
         }
       });
-      this.ResizeMeasures(this.Sheet.Measures);
+      this.ResizeMeasures(this.Sheet);
     }
   }
 
@@ -397,7 +395,7 @@ class App {
         });
     }
     this.StartLine = this.EndLine;
-    this.ResizeMeasures(this.Sheet.Measures);
+    this.ResizeMeasures(this.Sheet);
   }
 
   StopNoteDrag(): void {
@@ -446,32 +444,37 @@ class App {
     this.Update(0, 0);
   }
 
-  ResizeMeasures(measures: Measure[]): void {
-    const lineHeight =
-      measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
-    SetPagesAndLines(
-      measures,
-      this.Sheet.Pages[0],
-      this.Config.PageSettings?.UsePages,
-      lineHeight,
-    );
-    ResizeMeasuresOnPage(
-      measures,
-      this.Sheet.Pages[0],
-      this.Camera,
-      this.Config,
-    );
-    if (this.Config.CameraSettings?.CenterMeasures) {
-      this.CenterMeasures();
-    } else if (this.Config.CameraSettings?.CenterPage) {
-      this.CenterPage();
-    }
-    measures.forEach((m: Measure) => {
-      RecreateDivisionGroups(m);
-      m.Staves.forEach((s: Staff) => {
-        UpdateNoteBounds(m, s.Num);
+  ResizeMeasures(sheet: Sheet): void {
+    sheet.Instruments.forEach((i: Instrument) => {
+      const measures = sheet.Measures.filter(
+        (m: Measure) => m.Instrument === i,
+      );
+      const lineHeight =
+        measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
+      SetPagesAndLines(
+        measures,
+        this.Sheet.Pages[0],
+        this.Config.PageSettings?.UsePages,
+        lineHeight,
+      );
+      ResizeMeasuresOnPage(
+        this.Sheet,
+        this.Sheet.Pages[0],
+        this.Camera,
+        this.Config,
+      );
+      if (this.Config.CameraSettings?.CenterMeasures) {
+        this.CenterMeasures();
+      } else if (this.Config.CameraSettings?.CenterPage) {
+        this.CenterPage();
+      }
+      measures.forEach((m: Measure) => {
+        RecreateDivisionGroups(m);
+        m.Staves.forEach((s: Staff) => {
+          UpdateNoteBounds(m, s.Num);
+        });
+        m.RecalculateBarlines();
       });
-      m.RecalculateBarlines();
     });
     this.Update(0, 0);
   }
@@ -578,7 +581,7 @@ class App {
       sheet,
       this.NotifyCallback,
     );
-    this.ResizeMeasures(this.Sheet.Measures);
+    this.ResizeMeasures(this.Sheet);
     this.Update(0, 0);
   }
 
@@ -589,7 +592,7 @@ class App {
   // TODO: Prototype code
   CreateTriplet(): void {
     this.NoteValue = CreateTuplet(this.Selector.Elements, 3);
-    this.ResizeMeasures(this.Sheet.Measures);
+    this.ResizeMeasures(this.Sheet);
     this.Update(0, 0);
   }
 
@@ -674,7 +677,7 @@ class App {
           }
         });
     }
-    this.ResizeMeasures(this.Sheet.Measures);
+    this.ResizeMeasures(this.Sheet);
   }
 
   AddStaff(instrNum: number, clef: string): void {

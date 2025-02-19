@@ -1,5 +1,5 @@
 import { CreateDefaultSheet } from "./Core/Sheet.js";
-import { RenderDebug, Renderer } from "./Core/Renderer.js";
+import { Renderer } from "./Core/Renderer.js";
 import { CreateMeasure } from "./Factory/Instrument.Factory.js";
 import { Clef } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
@@ -53,11 +53,11 @@ class App {
         }
         this.NoteInput = false;
         this.RestInput = false;
-        this.Formatting = false;
+        this.Formatting = true;
         if ((_b = this.Config.CameraSettings) === null || _b === void 0 ? void 0 : _b.Zoom) {
             this.Camera.Zoom = this.Config.CameraSettings.Zoom;
             this.SetCameraZoom(this.Camera.Zoom);
-            this.ResizeMeasures(this.Sheet.Measures);
+            this.ResizeMeasures(this.Sheet);
         }
         this.Update(0, 0);
     }
@@ -86,7 +86,7 @@ class App {
             msr.DeleteSelected();
             msr.CreateDivisions(this.Camera);
         }
-        this.ResizeMeasures(this.Sheet.Measures);
+        this.ResizeMeasures(this.Sheet);
     }
     Input(x, y, shiftKey) {
         // will move this code elsewhere, testing note input
@@ -129,7 +129,7 @@ class App {
         }
         else if (this.NoteInput) {
             InputOnMeasure(msrOver, this.NoteValue, x, y, this.Camera, this.RestInput, this.GraceInput);
-            this.ResizeMeasures(this.Sheet.Measures.filter((m) => m.Instrument === msrOver.Instrument));
+            this.ResizeMeasures(this.Sheet);
         }
         //  this.NotifyCallback(this.Message);
         const persist = SaveSheet(this.Sheet);
@@ -146,28 +146,33 @@ class App {
     }
     Render(mousePos) {
         Renderer(this.Canvas, this.Context, this.Sheet.Measures, this.Sheet.Pages, mousePos, this.Camera, this.NoteInput, this.RestInput, this.Formatting, this.Config, this.NoteValue);
-        if (this.Debug) {
-            RenderDebug(this.Canvas, this.Context, this.Sheet, mousePos, this.Camera, this.Selector);
-        }
     }
     AddMeasure() {
         const prevMsr = this.Sheet.Measures[this.Sheet.Measures.length - 1];
         let x = 0;
         this.Sheet.Instruments.forEach((i) => {
+            const instrMeasures = this.Sheet.Measures.filter((m) => m.Instrument === i);
+            const previousMeasure = instrMeasures[instrMeasures.length - 1];
             let latestLine = this.Sheet.Pages[0].PageLines[this.Sheet.Pages[0].PageLines.length - 1];
             const newMeasureBounds = new Bounds(x, latestLine.LineBounds.y, 150, prevMsr.Bounds.height);
-            const newMsr = CreateMeasure(i, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, prevMsr.Clefs, prevMsr.Staves, this.Camera, this.RunningID, this.Sheet.Pages[0], // Page will need to be determined
+            const newMsr = CreateMeasure(i, previousMeasure, null, newMeasureBounds, prevMsr.TimeSignature, prevMsr.KeySignature, prevMsr.Clefs, prevMsr.Staves, this.Camera, this.RunningID, this.Sheet.Pages[0], // Page will need to be determined
             false, this.NotifyCallback, this.Config.MeasureSettings);
-            // add measure number
-            newMsr.Num = this.Sheet.Measures.length + 1;
+            // add measure number and barlines, will need to be reworked when
+            // inserting measures is added
+            newMsr.Num =
+                this.Sheet.Measures.filter((m) => m.Instrument === i).length +
+                    1;
+            newMsr.Barlines[1].Type = BarlineType.END;
             this.Sheet.Measures.push(newMsr);
-            this.ResizeMeasures(this.Sheet.Measures.filter((m) => m.Instrument === i));
+            previousMeasure.NextMeasure = newMsr;
+            this.ResizeMeasures(this.Sheet);
         });
         // Update previous measure end bar line
         if (prevMsr.Barlines[1].Type == BarlineType.END) {
             prevMsr.Barlines[1].Type = BarlineType.SINGLE;
         }
-        this.ResizeMeasures(this.Sheet.Measures);
+        this.ResizeMeasures(this.Sheet);
+        console.log(this.Sheet);
     }
     ChangeInputMode() {
         this.NoteInput = !this.NoteInput;
@@ -208,7 +213,7 @@ class App {
                     m.Bounds.y = this.LinerBounds.y;
                 }
             });
-            this.ResizeMeasures(this.Sheet.Measures);
+            this.ResizeMeasures(this.Sheet);
         }
     }
     DragNote(x, y) {
@@ -252,7 +257,7 @@ class App {
             });
         }
         this.StartLine = this.EndLine;
-        this.ResizeMeasures(this.Sheet.Measures);
+        this.ResizeMeasures(this.Sheet);
     }
     StopNoteDrag() {
         if (this.DraggingNote) {
@@ -294,23 +299,26 @@ class App {
         }
         this.Update(0, 0);
     }
-    ResizeMeasures(measures) {
-        var _a, _b, _c;
-        const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
-        SetPagesAndLines(measures, this.Sheet.Pages[0], (_a = this.Config.PageSettings) === null || _a === void 0 ? void 0 : _a.UsePages, lineHeight);
-        ResizeMeasuresOnPage(measures, this.Sheet.Pages[0], this.Camera, this.Config);
-        if ((_b = this.Config.CameraSettings) === null || _b === void 0 ? void 0 : _b.CenterMeasures) {
-            this.CenterMeasures();
-        }
-        else if ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.CenterPage) {
-            this.CenterPage();
-        }
-        measures.forEach((m) => {
-            RecreateDivisionGroups(m);
-            m.Staves.forEach((s) => {
-                UpdateNoteBounds(m, s.Num);
+    ResizeMeasures(sheet) {
+        sheet.Instruments.forEach((i) => {
+            var _a, _b, _c;
+            const measures = sheet.Measures.filter((m) => m.Instrument === i);
+            const lineHeight = measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
+            SetPagesAndLines(measures, this.Sheet.Pages[0], (_a = this.Config.PageSettings) === null || _a === void 0 ? void 0 : _a.UsePages, lineHeight);
+            ResizeMeasuresOnPage(this.Sheet, this.Sheet.Pages[0], this.Camera, this.Config);
+            if ((_b = this.Config.CameraSettings) === null || _b === void 0 ? void 0 : _b.CenterMeasures) {
+                this.CenterMeasures();
+            }
+            else if ((_c = this.Config.CameraSettings) === null || _c === void 0 ? void 0 : _c.CenterPage) {
+                this.CenterPage();
+            }
+            measures.forEach((m) => {
+                RecreateDivisionGroups(m);
+                m.Staves.forEach((s) => {
+                    UpdateNoteBounds(m, s.Num);
+                });
+                m.RecalculateBarlines();
             });
-            m.RecalculateBarlines();
         });
         this.Update(0, 0);
     }
@@ -402,7 +410,7 @@ class App {
         //Clear measures
         this.Sheet.Measures = [];
         LoadSheet(this.Sheet, this.Sheet.Pages[0], this.Camera, this.Sheet.Instruments[0], sheet, this.NotifyCallback);
-        this.ResizeMeasures(this.Sheet.Measures);
+        this.ResizeMeasures(this.Sheet);
         this.Update(0, 0);
     }
     GetSaveFiles() {
@@ -411,7 +419,7 @@ class App {
     // TODO: Prototype code
     CreateTriplet() {
         this.NoteValue = CreateTuplet(this.Selector.Elements, 3);
-        this.ResizeMeasures(this.Sheet.Measures);
+        this.ResizeMeasures(this.Sheet);
         this.Update(0, 0);
     }
     ChangeTimeSignature(top, bottom, transpose = false) {
@@ -481,7 +489,7 @@ class App {
                 }
             });
         }
-        this.ResizeMeasures(this.Sheet.Measures);
+        this.ResizeMeasures(this.Sheet);
     }
     AddStaff(instrNum, clef) {
         const instr = this.Sheet.Instruments[instrNum];

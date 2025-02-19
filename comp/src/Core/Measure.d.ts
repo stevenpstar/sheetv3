@@ -16,6 +16,8 @@ import { TimeSignature } from "./TimeSignatures.js";
 import { Voice } from "./Voice.js";
 interface MeasureProps {
     Instrument: Instrument;
+    PrevMeasure: Measure;
+    NextMeasure: Measure;
     Bounds: Bounds;
     TimeSignature: {
         top: number;
@@ -35,6 +37,8 @@ interface MeasureProps {
     Barlines: Barline[];
 }
 declare class Measure implements ISelectable {
+    PrevMeasure: Measure;
+    NextMeasure: Measure;
     ID: number;
     Num: number;
     Selected: boolean;

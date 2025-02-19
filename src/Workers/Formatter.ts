@@ -1,7 +1,8 @@
 import { Camera } from "../Core/Camera.js";
-import { StaffType } from "../Core/Instrument.js";
+import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Measure } from "../Core/Measure.js";
 import { MarginAdjuster, Page } from "../Core/Page.js";
+import { Sheet } from "../Core/Sheet.js";
 import { ConfigSettings } from "../Types/Config.js";
 
 // TODO: Add pages when necessary but for now we do just lines
@@ -9,7 +10,7 @@ function SetPagesAndLines(
   measures: Measure[],
   pages: Page,
   usePage: boolean | null,
-  defaultLineHeight: number = 650,
+  defaultLineHeight: number = 1050,
 ): void {
   let page: Page = pages;
   if (!page) {
@@ -37,6 +38,7 @@ function SetPagesAndLines(
       msrsOnLine = 1;
       if (pages.PageLines.length < currentLine) {
         pages.AddLine(defaultLineHeight);
+        console.log("pages: ", pages);
       }
       runningWidth = 0;
     }
@@ -46,7 +48,7 @@ function SetPagesAndLines(
   });
 }
 
-function GetMaxWidth(page: Page, config: ConfigSettings, cam: Camera): number {
+function GetMaxWidth(page: Page, config: ConfigSettings): number {
   let maxWidth = 0;
   if (config.FormatSettings?.MeasureFormatSettings?.MaxWidth) {
     maxWidth = config.FormatSettings.MeasureFormatSettings.MaxWidth;
@@ -57,63 +59,67 @@ function GetMaxWidth(page: Page, config: ConfigSettings, cam: Camera): number {
 }
 
 function ResizeMeasuresOnPage(
-  measures: Measure[],
+  sheet: Sheet,
   page: Page,
   cam: Camera,
   config: ConfigSettings,
 ): void {
   const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
   page.PageLines.forEach((line) => {
-    const msrs = measures.filter((m) => m.PageLine === line.Number);
-    let msrsLineWidth = 0;
-    msrs.forEach((m: Measure, i: number) => {
-      msrsLineWidth += m.GetMinimumWidth() + m.XOffset;
-    });
-    const fillWidth = pageSize - msrsLineWidth;
-    msrs.forEach((m: Measure, i: number) => {
-      m.Bounds.y = line.LineBounds.y;
-      // TODO: We have removed prefboundsY, will likely have to reimplement
-      //     m.PrefBoundsY = m.Bounds.y;
-      if (i === 0) {
-        m.Bounds.x = page.Bounds.x + page.Margins.left;
-        m.RenderClef = m.Instrument.Staff === StaffType.Rhythm ? false : true;
-        m.RenderTimeSig = true;
-        // TODO: When we work on keys
-        m.RenderKey = true;
-        m.SetXOffset();
-        // the calculated new width of the measure, may need to be overwritten
-        // by config settings if they are set (maxWidth in
-        // measureformatsettings)
-        const maxWidth = GetMaxWidth(page, config, cam);
-        const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
-        let mWidth = 0;
-        if (calculatedWidth < maxWidth) {
-          mWidth = calculatedWidth;
-        } else {
-          mWidth = maxWidth;
-        }
-        m.Bounds.width = mWidth;
-        m.CreateDivisions(cam);
-      } else {
-        m.RenderClef = false;
-        m.RenderTimeSig = false;
-        m.RenderKey = false;
-        m.SetXOffset();
-        const maxWidth = GetMaxWidth(page, config, cam);
-        const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
-        var msrWidth = calculatedWidth;
-        // Limit the width if the calculated width exceeds the maximum
-        if (calculatedWidth > maxWidth) {
-          msrWidth = maxWidth;
-        }
-        m.Bounds.width = msrWidth;
-        msrs[i].Reposition(msrs[i - 1]);
-        m.CreateDivisions(cam);
-      }
-      m.Clefs.forEach((c) => {
-        c.SetBounds(m, c.Staff);
+    sheet.Instruments.forEach((instr: Instrument) => {
+      const msrs = sheet.Measures.filter(
+        (m) => m.PageLine === line.Number && m.Instrument === instr,
+      );
+      let msrsLineWidth = 0;
+      msrs.forEach((m: Measure) => {
+        msrsLineWidth += m.GetMinimumWidth() + m.XOffset;
       });
-      m.TimeSignature.SetBounds(m);
+      const fillWidth = pageSize - msrsLineWidth;
+      msrs.forEach((m: Measure, i: number) => {
+        m.Bounds.y = line.LineBounds.y + m.Instrument.Position.y;
+        // TODO: We have removed prefboundsY, will likely have to reimplement
+        //     m.PrefBoundsY = m.Bounds.y;
+        if (i === 0) {
+          m.Bounds.x = page.Bounds.x + page.Margins.left;
+          m.RenderClef = m.Instrument.Staff === StaffType.Rhythm ? false : true;
+          m.RenderTimeSig = true;
+          // TODO: When we work on keys
+          m.RenderKey = true;
+          m.SetXOffset();
+          // the calculated new width of the measure, may need to be overwritten
+          // by config settings if they are set (maxWidth in
+          // measureformatsettings)
+          const maxWidth = GetMaxWidth(page, config);
+          const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
+          let mWidth = 0;
+          if (calculatedWidth < maxWidth) {
+            mWidth = calculatedWidth;
+          } else {
+            mWidth = maxWidth;
+          }
+          m.Bounds.width = mWidth;
+          m.CreateDivisions(cam);
+        } else {
+          m.RenderClef = false;
+          m.RenderTimeSig = false;
+          m.RenderKey = false;
+          m.SetXOffset();
+          const maxWidth = GetMaxWidth(page, config);
+          const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
+          var msrWidth = calculatedWidth;
+          // Limit the width if the calculated width exceeds the maximum
+          if (calculatedWidth > maxWidth) {
+            msrWidth = maxWidth;
+          }
+          m.Bounds.width = msrWidth;
+          msrs[i].Reposition(msrs[i - 1]);
+          m.CreateDivisions(cam);
+        }
+        m.Clefs.forEach((c) => {
+          c.SetBounds(m, c.Staff);
+        });
+        m.TimeSignature.SetBounds(m);
+      });
     });
   });
 }

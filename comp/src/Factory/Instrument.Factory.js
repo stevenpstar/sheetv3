@@ -42,7 +42,9 @@ const CreateDefaultMeasure = (id, instr, page, cam, callback, settings) => {
     const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
     const props = {
         Instrument: instr,
-        Bounds: new Bounds(instr.Position.x, page.PageLines[0].LineBounds.y, 150, msrHeight),
+        PrevMeasure: null,
+        NextMeasure: null,
+        Bounds: new Bounds(instr.Position.x, page.PageLines[page.PageLines.length - 1].LineBounds.y, 150, msrHeight),
         TimeSignature: { top: 4, bottom: 4 },
         KeySignature: "DMaj/Bmin",
         Notes: [],
@@ -62,9 +64,11 @@ const CreateDefaultMeasure = (id, instr, page, cam, callback, settings) => {
     };
     return new Measure(props, id);
 };
-const CreateMeasure = (instr, bounds, timeSignature, keySignature, clef, staves, cam, runningId, page, renderClef = false, callback, settings) => {
+const CreateMeasure = (instr, prevMsr, nextMsr, bounds, timeSignature, keySignature, clef, staves, cam, runningId, page, renderClef = false, callback, settings) => {
     const props = {
         Instrument: instr,
+        PrevMeasure: prevMsr,
+        NextMeasure: nextMsr,
         Bounds: bounds,
         TimeSignature: timeSignature,
         KeySignature: keySignature,

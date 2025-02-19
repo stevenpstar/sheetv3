@@ -66,7 +66,7 @@ declare class App {
     AlterZoom(num: number, mx: number, my: number): void;
     SetCameraZoom(num: number): void;
     ResizeFirstMeasure(): void;
-    ResizeMeasures(measures: Measure[]): void;
+    ResizeMeasures(sheet: Sheet): void;
     SetNoteValue(val: number): void;
     SetAccidental(acc: number): void;
     Sharpen(): void;

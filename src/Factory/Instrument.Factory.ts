@@ -60,9 +60,11 @@ const CreateDefaultMeasure = (
   const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
   const props: MeasureProps = {
     Instrument: instr,
+    PrevMeasure: null,
+    NextMeasure: null,
     Bounds: new Bounds(
       instr.Position.x,
-      page.PageLines[0].LineBounds.y,
+      page.PageLines[page.PageLines.length - 1].LineBounds.y,
       150,
       msrHeight,
     ),
@@ -88,6 +90,8 @@ const CreateDefaultMeasure = (
 
 const CreateMeasure = (
   instr: Instrument,
+  prevMsr: Measure,
+  nextMsr: Measure,
   bounds: Bounds,
   timeSignature: { top: number; bottom: number },
   keySignature: string,
@@ -102,6 +106,8 @@ const CreateMeasure = (
 ): Measure => {
   const props: MeasureProps = {
     Instrument: instr,
+    PrevMeasure: prevMsr,
+    NextMeasure: nextMsr,
     Bounds: bounds,
     TimeSignature: timeSignature,
     KeySignature: keySignature,

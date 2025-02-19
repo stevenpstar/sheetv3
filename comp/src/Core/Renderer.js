@@ -1,12 +1,9 @@
 import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
 import { RenderPage } from "../Renderers/Page.Renderer.js";
 import { RenderBarline } from "./Barline.js";
-const renderDebug = false;
-const scaleV = 1;
 const Renderer = (c, ctx, measures, pages, mousePos, cam, noteInput, restInput, formatting, config, noteValue) => {
     var _a, _b;
-    // reset
-    ctx.fillStyle = config.Theme.BackgroundColour; //"grey";252c38 16191f
+    ctx.fillStyle = config.Theme.BackgroundColour;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, c.width, c.height);
@@ -32,18 +29,11 @@ const Renderer = (c, ctx, measures, pages, mousePos, cam, noteInput, restInput, 
                 1;
         RenderMeasure(m, renderProps, mousePos, lastMeasure, noteInput, i, restInput, noteValue, config);
         if (i > 0) {
-            RenderBarline(renderProps, measures[i - 1], m, cam);
+            const instrMsrs = measures.filter((msr) => m.Instrument === msr.Instrument);
+            RenderBarline(renderProps, instrMsrs[instrMsrs.length - 1], m, cam);
         }
         RenderBarline(renderProps, null, m, cam);
         RenderBarline(renderProps, m, null, cam);
     });
 };
-const RenderDebug = (c, ctx, sheet, mousePos, cam, selector) => {
-    const renderProps = {
-        canvas: c,
-        context: ctx,
-        camera: cam,
-    };
-    //                 RenderPanel(renderProps);
-};
-export { Renderer, RenderDebug };
+export { Renderer };

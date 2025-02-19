@@ -11,7 +11,7 @@ declare function CreateInstrument(y: number, config: ConfigSettings): Instrument
 declare const CreateDefaultMeasure: (id: {
     count: number;
 }, instr: Instrument, page: Page, cam: Camera, callback: (msg: Message) => void, settings?: MeasureSettings) => Measure;
-declare const CreateMeasure: (instr: Instrument, bounds: Bounds, timeSignature: {
+declare const CreateMeasure: (instr: Instrument, prevMsr: Measure, nextMsr: Measure, bounds: Bounds, timeSignature: {
     top: number;
     bottom: number;
 }, keySignature: string, clef: Clef[], staves: Staff[], cam: Camera, runningId: {
