@@ -21,12 +21,11 @@ function RenderMeasure(measure, renderProps, mousePos, lastMeasure, noteInput, i
     measure.Staves.forEach((s) => {
         measure.Voices.forEach((v) => {
             RenderNotes(measure, renderProps, s.Num, config.Theme, v);
-            // TODO: Temporary for testing dynamics rendering
             v.Divisions.filter((div) => div.Staff === s.Num && div.Beat === 1).forEach((div) => {
-                //      const tempDyn: Dynamic = new Dynamic("ppppp", div.Staff, div.Beat);
-                //RenderDynamic(renderProps, measure, tempDyn, config.Theme);
                 measure.Articulations.filter((a) => a.Beat == div.Beat && a.Staff == div.Staff).forEach((a) => {
-                    a.Render(renderProps, v.Notes.filter((n) => n.Beat == div.Beat && n.Staff == div.Staff), measure.Staves, div, config.Theme);
+                    if (a.Voice === v) {
+                        a.Render(renderProps, v.Notes.filter((n) => n.Beat == div.Beat && n.Staff == div.Staff), measure.Staves, div, config.Theme);
+                    }
                 });
             });
             renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
@@ -178,7 +177,9 @@ function RenderNotes(msr, renderProps, staff, theme, voice) {
         divNotes.sort((a, b) => {
             return a.Line - b.Line;
         });
-        if (IsRestOnBeat(div.Beat, divNotes, div.Staff)) {
+        // TODO: Rests for now are only rendered on the active voice
+        if (IsRestOnBeat(div.Beat, divNotes, div.Staff) &&
+            msr.Voices[msr.ActiveVoice] === voice) {
             RenderRest(context, div, camera, divNotes[0], msr, theme);
             return;
         }

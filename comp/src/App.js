@@ -544,7 +544,7 @@ class App {
             elem
                 .filter((e) => e.SelType === SelectableTypes.Note)
                 .forEach((n) => {
-                msr.Articulations.push(new Articulation(type, n.Beat, n.Staff));
+                msr.Articulations.push(new Articulation(type, n.Beat, n.Staff, msr.Voices[msr.ActiveVoice]));
             });
         }
     }

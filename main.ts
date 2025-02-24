@@ -28,6 +28,7 @@ const keymaps = {
   add_dynamic: "f",
   cycle_voice: "p",
   add_barline: ";",
+  add_accent: "]",
 };
 
 interface CanText {

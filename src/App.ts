@@ -746,7 +746,14 @@ class App {
       elem
         .filter((e: ISelectable) => e.SelType === SelectableTypes.Note)
         .forEach((n: Note) => {
-          msr.Articulations.push(new Articulation(type, n.Beat, n.Staff));
+          msr.Articulations.push(
+            new Articulation(
+              type,
+              n.Beat,
+              n.Staff,
+              msr.Voices[msr.ActiveVoice],
+            ),
+          );
         });
     }
   }

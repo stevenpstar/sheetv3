@@ -1,3 +1,4 @@
+import { ArticulationType } from "../Core/Articulation.js";
 import { BarlineType } from "../Core/Barline.js";
 import { NoteValues } from "../Core/Values.js";
 import { allSaves } from "../testsaves.js";
@@ -76,6 +77,9 @@ function KeyPress(app, key, keyMaps) {
             // TODO: This will be selected in some way through UI and not hard coded
             const barlineType = BarlineType.REPEAT_END;
             app.ChangeBarline(barlineType);
+            break;
+        case keyMaps.add_accent:
+            app.AddArticulation(ArticulationType.ACCENT);
             break;
         default:
     }

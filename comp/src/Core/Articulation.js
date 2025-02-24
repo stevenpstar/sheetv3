@@ -7,10 +7,11 @@ var ArticulationType;
     ArticulationType[ArticulationType["ACCENT"] = 1] = "ACCENT";
 })(ArticulationType || (ArticulationType = {}));
 class Articulation {
-    constructor(type, beat, staff) {
+    constructor(type, beat, staff, voice) {
         this.Type = type;
         this.Beat = beat;
         this.Staff = staff;
+        this.Voice = voice;
     }
     Render(renderProps, notes, staves, div, theme) {
         RenderArticulation(renderProps, this.Type, div, staves, notes, theme);

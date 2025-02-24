@@ -1,4 +1,5 @@
 import { App } from "../App.js";
+import { ArticulationType } from "../Core/Articulation.js";
 import { BarlineType } from "../Core/Barline.js";
 import { NoteValues } from "../Core/Values.js";
 import { allSaves } from "../testsaves.js";
@@ -27,6 +28,7 @@ interface KeyMapping {
   add_dynamic: string;
   cycle_voice: string;
   add_barline: string;
+  add_accent: string;
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -104,6 +106,9 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       // TODO: This will be selected in some way through UI and not hard coded
       const barlineType: BarlineType = BarlineType.REPEAT_END;
       app.ChangeBarline(barlineType);
+      break;
+    case keyMaps.add_accent:
+      app.AddArticulation(ArticulationType.ACCENT);
       break;
     default:
   }

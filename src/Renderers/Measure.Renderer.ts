@@ -62,15 +62,17 @@ function RenderMeasure(
         measure.Articulations.filter(
           (a: Articulation) => a.Beat == div.Beat && a.Staff == div.Staff,
         ).forEach((a: Articulation) => {
-          a.Render(
-            renderProps,
-            v.Notes.filter(
-              (n: Note) => n.Beat == div.Beat && n.Staff == div.Staff,
-            ),
-            measure.Staves,
-            div,
-            config.Theme,
-          );
+          if (a.Voice === v) {
+            a.Render(
+              renderProps,
+              v.Notes.filter(
+                (n: Note) => n.Beat == div.Beat && n.Staff == div.Staff,
+              ),
+              measure.Staves,
+              div,
+              config.Theme,
+            );
+          }
         });
       });
       renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
@@ -307,7 +309,11 @@ function RenderNotes(
       return a.Line - b.Line;
     });
 
-    if (IsRestOnBeat(div.Beat, divNotes, div.Staff)) {
+    // TODO: Rests for now are only rendered on the active voice
+    if (
+      IsRestOnBeat(div.Beat, divNotes, div.Staff) &&
+      msr.Voices[msr.ActiveVoice] === voice
+    ) {
       RenderRest(context, div, camera, divNotes[0], msr, theme);
       return;
     }

@@ -7,6 +7,7 @@ import {
 import { Note, Theme } from "../entry.js";
 import { StemDirection } from "../Renderers/Note.Renderer.js";
 import { GetStaffMiddleLine, Staff } from "./Staff.js";
+import { Voice } from "./Voice.js";
 
 enum ArticulationType {
   NONE,
@@ -17,10 +18,17 @@ class Articulation {
   Type: ArticulationType;
   Beat: number;
   Staff: number;
-  constructor(type: ArticulationType, beat: number, staff: number) {
+  Voice: Voice;
+  constructor(
+    type: ArticulationType,
+    beat: number,
+    staff: number,
+    voice: Voice,
+  ) {
     this.Type = type;
     this.Beat = beat;
     this.Staff = staff;
+    this.Voice = voice;
   }
   Render(
     renderProps: RenderProperties,
