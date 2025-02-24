@@ -21,10 +21,10 @@ enum Flags {
   QuaverUp = "\u{E241}",
   SemiQuaverDown = "\u{E242}",
   SemiQuaverUp = "\u{E243}",
-  DemiSemiQuaverUp = "\u{E244}",
-  DemiSemiQuaverDown = "\u{E245}",
-  HemiDemiSemiQuaverUp = "\u{E246}",
-  HemiDemiSemiQuaverDown = "\u{E247}",
+  DemiSemiQuaverDown = "\u{E244}",
+  DemiSemiQuaverUp = "\u{E245}",
+  HemiDemiSemiQuaverDown = "\u{E246}",
+  HemiDemiSemiQuaverUp = "\u{E247}",
 }
 
 enum TimeSigNumbers {

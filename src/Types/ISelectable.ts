@@ -9,6 +9,7 @@ enum SelectableTypes {
   KeySig,
   Beam,
   Stem,
+  Flag,
   Barline,
 }
 interface ISelectable {

@@ -3,22 +3,25 @@ import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
-import { Division } from "./Division.js";
-declare class Stem implements ISelectable {
+import { DivGroup } from "./Division.js";
+declare enum FlagDirection {
+    UP = 0,
+    DOWN = 1
+}
+declare class Flag implements ISelectable {
     ID: number;
     Selected: boolean;
-    Bounds: Bounds;
-    SelType: SelectableTypes.Stem;
     Editable: boolean;
-    Direction: string;
-    StartPoint: number;
-    EndPoint: number;
-    Staff: number;
-    Division: Division;
-    constructor(bounds: Bounds, div: Division);
+    SelType: SelectableTypes;
+    Bounds: Bounds;
+    Direction: FlagDirection;
+    Duration: number;
+    constructor(bounds: Bounds, flagDir: FlagDirection, duration: number);
     IsHovered(x: number, y: number, cam: Camera): boolean;
+    SetBounds(bounds: Bounds): Bounds;
     Render(renderProps: RenderProperties, theme: Theme): void;
     RenderBounds(context: CanvasRenderingContext2D, cam: Camera): void;
 }
-export { Stem };
-//# sourceMappingURL=Stem.d.ts.map
+declare function CreateFlags(group: DivGroup): Flag[];
+export { Flag, CreateFlags };
+//# sourceMappingURL=Flag.d.ts.map

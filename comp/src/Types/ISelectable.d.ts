@@ -8,7 +8,8 @@ declare enum SelectableTypes {
     KeySig = 4,
     Beam = 5,
     Stem = 6,
-    Barline = 7
+    Flag = 7,
+    Barline = 8
 }
 interface ISelectable {
     ID: number;

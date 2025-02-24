@@ -23,6 +23,7 @@ class Selector {
         msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g) => {
             elements.push(...g.Stems);
             elements.push(...g.Beams);
+            elements.push(...g.Flags);
         });
         elements.push(...msr.Barlines);
         elements.push(...msr.Dynamics);

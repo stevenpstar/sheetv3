@@ -6,6 +6,7 @@ import {
   Subdivision,
   SubdivisionType,
 } from "../Core/Division.js";
+import { CreateFlags } from "../Core/Flag.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note, NoteProps, TupleDetails } from "../Core/Note.js";
@@ -124,8 +125,12 @@ function RecreateStemAndBeams(msr: Measure): void {
   msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g: DivGroup) => {
     g.Stems = [];
     g.Beams = [];
+    g.Flags = [];
     g.Stems.push(...CreateStems(g.Notes, g.Divisions, g.Staff, msr));
     g.Beams.push(...CreateBeamsRevise(g, g.Stems, false));
+    if (g.Beams.length === 0) {
+      g.Flags.push(...CreateFlags(g));
+    }
   });
 }
 

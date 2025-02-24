@@ -195,11 +195,14 @@ function RenderNotes(msr, renderProps, staff, theme, voice) {
             let tuplet = group.Notes[0][0].Tuple;
             const isBeamed = group.Beams.length > 0;
             group.Stems.forEach((s) => {
-                s.Render(renderProps, theme, isBeamed, group.StemDir ? group.StemDir : StemDirection.Up);
+                s.Render(renderProps, theme);
                 //        s.RenderBounds(context, camera);
             });
             group.Beams.forEach((b) => {
                 b.Render(context, camera, Beam.BeamCount(group.Divisions[0].Duration, tuplet), group.StemDir, theme);
+            });
+            group.Flags.forEach((f) => {
+                f.Render(renderProps, theme);
             });
             group.Divisions.forEach((div) => {
                 let hasFlipped = false;

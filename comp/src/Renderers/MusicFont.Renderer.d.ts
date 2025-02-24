@@ -18,10 +18,10 @@ declare enum Flags {
     QuaverUp = "\uE241",
     SemiQuaverDown = "\uE242",
     SemiQuaverUp = "\uE243",
-    DemiSemiQuaverUp = "\uE244",
-    DemiSemiQuaverDown = "\uE245",
-    HemiDemiSemiQuaverUp = "\uE246",
-    HemiDemiSemiQuaverDown = "\uE247"
+    DemiSemiQuaverDown = "\uE244",
+    DemiSemiQuaverUp = "\uE245",
+    HemiDemiSemiQuaverDown = "\uE246",
+    HemiDemiSemiQuaverUp = "\uE247"
 }
 declare enum TimeSigNumbers {
     Zero = "\uE080",

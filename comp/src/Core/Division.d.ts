@@ -1,6 +1,7 @@
 import { StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Beam } from "./Beam.js";
+import { Flag } from "./Flag.js";
 import { Measure } from "./Measure.js";
 import { Note } from "./Note.js";
 import { Stem } from "./Stem.js";
@@ -31,7 +32,8 @@ interface DivGroup {
     Staff: number;
     Beams: Beam[];
     Stems: Stem[];
-    StemDir?: StemDirection;
+    Flags: Flag[];
+    StemDir: StemDirection;
 }
 interface DivGroups {
     DivGroups: DivGroup[];

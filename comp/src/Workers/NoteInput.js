@@ -1,5 +1,6 @@
 import { GetNoteClefType } from "../Core/Clef.js";
 import { GetDivisionGroups, SubdivisionType, } from "../Core/Division.js";
+import { CreateFlags } from "../Core/Flag.js";
 import { StaffType } from "../Core/Instrument.js";
 import { Note } from "../Core/Note.js";
 import { GetStaffMiddleLine } from "../Core/Staff.js";
@@ -74,8 +75,12 @@ function RecreateStemAndBeams(msr) {
     msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g) => {
         g.Stems = [];
         g.Beams = [];
+        g.Flags = [];
         g.Stems.push(...CreateStems(g.Notes, g.Divisions, g.Staff, msr));
         g.Beams.push(...CreateBeamsRevise(g, g.Stems, false));
+        if (g.Beams.length === 0) {
+            g.Flags.push(...CreateFlags(g));
+        }
     });
 }
 function RecreateDivisionGroups(msr) {

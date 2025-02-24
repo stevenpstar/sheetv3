@@ -85,13 +85,15 @@ function CreateStems(
       CrossStaff: false,
       Staff: staff,
       Stems: [],
+      Flags: [],
       Beams: [],
+      StemDir: stemDir,
     },
     stemDir,
   );
   const shouldBeam = divisions.length > 1 && divisions[0].Duration <= 0.25;
 
-  divisions.forEach((_: Division, i: number) => {
+  divisions.forEach((div: Division, i: number) => {
     const beamAlt = i * (10 / divisions.length - 1);
     const divNotes = notes[i];
     const isGraceStem = divNotes[0].Grace ? true : false;
@@ -109,7 +111,7 @@ function CreateStems(
       stemX = divNotes[0].Bounds.x + 0.0;
     }
     // stem Y set to 0 for now, is updated later.
-    const stem: Stem = new Stem(new Bounds(stemX, 0, 1.5, 0));
+    const stem: Stem = new Stem(new Bounds(stemX, 0, 1.5, 0), div);
 
     if (stemDir === StemDirection.Up) {
       stem.Bounds.y = divNotes[divNotes.length - 1].Bounds.y + 2.0;

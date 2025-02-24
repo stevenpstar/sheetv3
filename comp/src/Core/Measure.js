@@ -47,7 +47,6 @@ class Measure {
         this.SetXOffset();
         this.Barlines = properties.Barlines;
         this.CreateDivisions();
-        console.log(this.Voices);
         this.Staves.forEach((s, i) => {
             const clef = new Clef(0, properties.Clefs[i].Type, 1, s.Num);
             clef.SetBounds(this, s.Num);

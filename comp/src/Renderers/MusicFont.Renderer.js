@@ -19,10 +19,10 @@ var Flags;
     Flags["QuaverUp"] = "\uE241";
     Flags["SemiQuaverDown"] = "\uE242";
     Flags["SemiQuaverUp"] = "\uE243";
-    Flags["DemiSemiQuaverUp"] = "\uE244";
-    Flags["DemiSemiQuaverDown"] = "\uE245";
-    Flags["HemiDemiSemiQuaverUp"] = "\uE246";
-    Flags["HemiDemiSemiQuaverDown"] = "\uE247";
+    Flags["DemiSemiQuaverDown"] = "\uE244";
+    Flags["DemiSemiQuaverUp"] = "\uE245";
+    Flags["HemiDemiSemiQuaverDown"] = "\uE246";
+    Flags["HemiDemiSemiQuaverUp"] = "\uE247";
 })(Flags || (Flags = {}));
 var TimeSigNumbers;
 (function (TimeSigNumbers) {

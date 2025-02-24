@@ -7,6 +7,7 @@ var SelectableTypes;
     SelectableTypes[SelectableTypes["KeySig"] = 4] = "KeySig";
     SelectableTypes[SelectableTypes["Beam"] = 5] = "Beam";
     SelectableTypes[SelectableTypes["Stem"] = 6] = "Stem";
-    SelectableTypes[SelectableTypes["Barline"] = 7] = "Barline";
+    SelectableTypes[SelectableTypes["Flag"] = 7] = "Flag";
+    SelectableTypes[SelectableTypes["Barline"] = 8] = "Barline";
 })(SelectableTypes || (SelectableTypes = {}));
 export { SelectableTypes };

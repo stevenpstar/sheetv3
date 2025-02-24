@@ -114,7 +114,6 @@ class Measure implements ISelectable {
     this.Barlines = properties.Barlines;
 
     this.CreateDivisions();
-    console.log(this.Voices);
 
     this.Staves.forEach((s: Staff, i: number) => {
       const clef = new Clef(0, properties.Clefs[i].Type, 1, s.Num);
