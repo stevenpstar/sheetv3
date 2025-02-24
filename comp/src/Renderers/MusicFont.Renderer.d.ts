@@ -13,6 +13,16 @@ declare enum NoteHeads {
     minim = "\uE0A3",
     crotchet = "\uE0A4"
 }
+declare enum Flags {
+    QuaverDown = "\uE240",
+    QuaverUp = "\uE241",
+    SemiQuaverDown = "\uE242",
+    SemiQuaverUp = "\uE243",
+    DemiSemiQuaverUp = "\uE244",
+    DemiSemiQuaverDown = "\uE245",
+    HemiDemiSemiQuaverUp = "\uE246",
+    HemiDemiSemiQuaverDown = "\uE247"
+}
 declare enum TimeSigNumbers {
     Zero = "\uE080",
     One = "\uE081",
@@ -75,5 +85,5 @@ declare function RenderSymbol(renderProps: RenderProperties, symbol: string, x: 
 declare function RenderScaledSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, selected: boolean, fontSize: number): void;
 declare function RenderScaledNote(note: Note, renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, selected: boolean, fontSize: number): void;
 declare function RenderAnimatedSymbol(renderProps: RenderProperties, symbol: string, x: number, y: number, theme: Theme, opacity: number): void;
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderScaledSymbol, RenderScaledNote, RenderAnimatedSymbol, stdFontSize, };
+export { Clefs, NoteHeads, Flags, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderScaledSymbol, RenderScaledNote, RenderAnimatedSymbol, stdFontSize, };
 //# sourceMappingURL=MusicFont.Renderer.d.ts.map

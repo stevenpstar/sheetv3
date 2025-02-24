@@ -1,5 +1,8 @@
+import { Flags, RenderSymbol } from "../Renderers/MusicFont.Renderer.js";
+import { StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 
@@ -21,20 +24,36 @@ class Stem implements ISelectable {
     return this.Bounds.IsHovered(x, y, cam);
   }
 
-  // TODO: Note: Camera is currently baked into actual position
-  // This will change when we separate the creation logic from
-  // the Note renderer
-  Render(context: CanvasRenderingContext2D, cam: Camera, theme: Theme): void {
-    context.fillStyle = theme.NoteElements;
+  Render(
+    renderProps: RenderProperties,
+    theme: Theme,
+    isBeamed: boolean,
+    dir: StemDirection,
+  ): void {
+    renderProps.context.fillStyle = theme.NoteElements;
     if (this.Selected) {
-      context.fillStyle = theme.SelectColour;
+      renderProps.context.fillStyle = theme.SelectColour;
     }
-    context.fillRect(
-      this.Bounds.x + cam.x,
-      this.Bounds.y + cam.y,
+    renderProps.context.fillRect(
+      this.Bounds.x + renderProps.camera.x,
+      this.Bounds.y + renderProps.camera.y,
       this.Bounds.width,
       this.Bounds.height,
     );
+    // This will eventually be moved, so every non-beam stem will have flags for
+    // now lmao
+    if (!isBeamed) {
+      const flag = dir === StemDirection.Up ? Flags.QuaverDown : Flags.QuaverUp;
+      const yBuffer = dir ? 0 : 10;
+      RenderSymbol(
+        renderProps,
+        flag,
+        this.Bounds.x,
+        this.Bounds.y + this.Bounds.height,
+        theme,
+        this.Selected,
+      );
+    }
   }
   RenderBounds(context: CanvasRenderingContext2D, cam: Camera): void {
     context.fillStyle = "rgba(255, 0, 0, 255)";

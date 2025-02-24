@@ -13,6 +13,17 @@ var NoteHeads;
     NoteHeads["minim"] = "\uE0A3";
     NoteHeads["crotchet"] = "\uE0A4";
 })(NoteHeads || (NoteHeads = {}));
+var Flags;
+(function (Flags) {
+    Flags["QuaverDown"] = "\uE240";
+    Flags["QuaverUp"] = "\uE241";
+    Flags["SemiQuaverDown"] = "\uE242";
+    Flags["SemiQuaverUp"] = "\uE243";
+    Flags["DemiSemiQuaverUp"] = "\uE244";
+    Flags["DemiSemiQuaverDown"] = "\uE245";
+    Flags["HemiDemiSemiQuaverUp"] = "\uE246";
+    Flags["HemiDemiSemiQuaverDown"] = "\uE247";
+})(Flags || (Flags = {}));
 var TimeSigNumbers;
 (function (TimeSigNumbers) {
     TimeSigNumbers["Zero"] = "\uE080";
@@ -105,4 +116,4 @@ function RenderAnimatedSymbol(renderProps, symbol, x, y, theme, opacity) {
     renderProps.context.font = `${stdFontSize}px Bravura`;
     renderProps.context.fillText(symbol, x + renderProps.camera.x, y + renderProps.camera.y);
 }
-export { Clefs, NoteHeads, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderScaledSymbol, RenderScaledNote, RenderAnimatedSymbol, stdFontSize, };
+export { Clefs, NoteHeads, Flags, StdAccidentals, TimeSigNumbers, TupletNumbers, DynamicSymbol, ArticulationSymbol, RenderSymbol, RenderScaledSymbol, RenderScaledNote, RenderAnimatedSymbol, stdFontSize, };

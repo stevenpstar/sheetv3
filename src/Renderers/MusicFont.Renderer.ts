@@ -16,6 +16,17 @@ enum NoteHeads {
   crotchet = "\u{E0A4}",
 }
 
+enum Flags {
+  QuaverDown = "\u{E240}",
+  QuaverUp = "\u{E241}",
+  SemiQuaverDown = "\u{E242}",
+  SemiQuaverUp = "\u{E243}",
+  DemiSemiQuaverUp = "\u{E244}",
+  DemiSemiQuaverDown = "\u{E245}",
+  HemiDemiSemiQuaverUp = "\u{E246}",
+  HemiDemiSemiQuaverDown = "\u{E247}",
+}
+
 enum TimeSigNumbers {
   Zero = "\u{E080}",
   One = "\u{E081}",
@@ -150,6 +161,7 @@ function RenderAnimatedSymbol(
 export {
   Clefs,
   NoteHeads,
+  Flags,
   StdAccidentals,
   TimeSigNumbers,
   TupletNumbers,

@@ -193,8 +193,9 @@ function RenderNotes(msr, renderProps, staff, theme, voice) {
                 group.StemDir = stemDir;
             }
             let tuplet = group.Notes[0][0].Tuple;
+            const isBeamed = group.Beams.length > 0;
             group.Stems.forEach((s) => {
-                s.Render(context, camera, theme);
+                s.Render(renderProps, theme, isBeamed, group.StemDir ? group.StemDir : StemDirection.Up);
                 //        s.RenderBounds(context, camera);
             });
             group.Beams.forEach((b) => {

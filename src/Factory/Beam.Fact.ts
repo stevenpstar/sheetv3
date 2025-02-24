@@ -46,6 +46,9 @@ function CreateBeamsRevise(
   tuplet: boolean,
 ): Array<Beam> {
   const beams: Array<Beam> = [];
+  if (divGroup.Divisions.length <= 1) {
+    return beams;
+  }
   let newBeam = true;
   let tempBeam: Beam = null;
   const stemDir = DetermineStemDirection(divGroup.Notes, divGroup.Divisions);
