@@ -16,7 +16,7 @@ class Measure {
         this.Clefs = [];
         this.PrevMeasure = properties.PrevMeasure;
         this.NextMeasure = properties.NextMeasure;
-        this.Voices = [new Voice(), new Voice(), new Voice(), new Voice()];
+        this.Voices = [new Voice(0), new Voice(1), new Voice(2), new Voice(3)];
         this.Num = 1;
         this.Staves = properties.Staves;
         this.Message = properties.Message;
@@ -46,7 +46,8 @@ class Measure {
             properties.Page.PageLines[properties.Page.PageLines.length - 1].Number;
         this.SetXOffset();
         this.Barlines = properties.Barlines;
-        this.CreateDivisions(this.Camera);
+        this.CreateDivisions();
+        console.log(this.Voices);
         this.Staves.forEach((s, i) => {
             const clef = new Clef(0, properties.Clefs[i].Type, 1, s.Num);
             clef.SetBounds(this, s.Num);
@@ -87,22 +88,24 @@ class Measure {
         }
         this.TimeSignature.SetBounds(this);
     }
-    CreateDivisions(cam) {
-        this.Voices[this.ActiveVoice].Divisions = [];
-        this.Staves.forEach((s) => {
-            this.Voices[this.ActiveVoice].Divisions.push(...CreateDivisions(this, this.Voices[this.ActiveVoice].Notes, s.Num));
-            ResizeDivisions(this, this.Voices[this.ActiveVoice].Divisions, s.Num);
-            UpdateNoteBounds(this, s.Num);
+    CreateDivisions() {
+        this.Voices.forEach((v) => {
+            v.Divisions = [];
+            this.Staves.forEach((s) => {
+                v.Divisions.push(...CreateDivisions(this, v.Notes, s.Num, v));
+                ResizeDivisions(this, v.Divisions, s.Num);
+                UpdateNoteBounds(this, s.Num);
+            });
         });
     }
     Reposition(prevMsr) {
         this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
-        this.CreateDivisions(this.Camera);
+        this.CreateDivisions();
     }
     GetMeasureHeight() {
         return GetStaffHeightUntil(this.Staves);
     }
-    AddNote(note, fromInput = false) {
+    AddNote(note, fromInput = false, voice = this.Voices[this.ActiveVoice]) {
         if (note.Rest) {
             this.ClearNonRestNotes(note.Beat, note.Staff);
         }
@@ -111,7 +114,7 @@ class Measure {
         }
         note.SetID(this.RunningID.count);
         this.RunningID.count++;
-        this.Voices[this.ActiveVoice].Notes.push(note);
+        voice.Notes.push(note);
         if (fromInput) {
             const msg = {
                 messageString: "AddNote",

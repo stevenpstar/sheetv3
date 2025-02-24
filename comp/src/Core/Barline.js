@@ -160,4 +160,22 @@ function RenderRepeatEnd(renderProps, measure, cam) {
         renderProps.context.fill(new Path2D(cPath2));
     });
 }
-export { Barline, BarlineType, BarlinePos, RenderBarline };
+function PositionMatch(pos, type) {
+    let match = true;
+    switch (type) {
+        case BarlineType.SINGLE:
+        case BarlineType.DOUBLE:
+            break;
+        case BarlineType.END:
+        case BarlineType.REPEAT_END:
+            match = pos === BarlinePos.END;
+            break;
+        case BarlineType.REPEAT_BEGIN:
+            match = pos === BarlinePos.START;
+            break;
+        default:
+            break;
+    }
+    return match;
+}
+export { Barline, BarlineType, BarlinePos, RenderBarline, PositionMatch };

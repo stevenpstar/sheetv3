@@ -9,6 +9,7 @@ import { saveFile } from "./testsaves.js";
 import { Message } from "./Types/Message.js";
 import { MappedMidi } from "./Workers/Pitcher.js";
 import { ConfigSettings } from "./Types/Config.js";
+import { BarlineType } from "./Core/Barline.js";
 import { ArticulationType } from "./Core/Articulation.js";
 declare class App {
     Config: ConfigSettings;
@@ -86,7 +87,7 @@ declare class App {
     BeamSelectedNotes(): void;
     AddStaff(instrNum: number, clef: string): void;
     FromPitchMap(midiNote: number, clef: string): MappedMidi;
-    ChangeBarline(): void;
+    ChangeBarline(type: BarlineType): void;
     ChangeTimeSig(): void;
     AddDynamic(dynString: string): void;
     AddArticulation(type: ArticulationType): void;

@@ -5,8 +5,9 @@ import { RenderStaff } from "./Staff.Renderer.js";
 function RenderMeasureRev(measure, renderProps, theme) {
     // Render Barlines here
     measure.Staves.forEach((s) => RenderStaff(renderProps, measure, s));
-    if (measure.RenderClef)
+    if (measure.RenderClef) {
         measure.Clefs.forEach((c) => RenderClef(renderProps, c, theme));
+    }
     if (measure.RenderKey) {
         measure.Staves.forEach((s) => {
             // This needs work

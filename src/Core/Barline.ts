@@ -263,4 +263,23 @@ function RenderRepeatEnd(
   });
 }
 
-export { Barline, BarlineType, BarlinePos, RenderBarline };
+function PositionMatch(pos: BarlinePos, type: BarlineType): boolean {
+  let match: boolean = true;
+  switch (type) {
+    case BarlineType.SINGLE:
+    case BarlineType.DOUBLE:
+      break;
+    case BarlineType.END:
+    case BarlineType.REPEAT_END:
+      match = pos === BarlinePos.END;
+      break;
+    case BarlineType.REPEAT_BEGIN:
+      match = pos === BarlinePos.START;
+      break;
+    default:
+      break;
+  }
+  return match;
+}
+
+export { Barline, BarlineType, BarlinePos, RenderBarline, PositionMatch };

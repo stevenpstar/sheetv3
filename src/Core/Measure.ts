@@ -80,7 +80,7 @@ class Measure implements ISelectable {
   constructor(properties: MeasureProps, runningId: { count: number }) {
     this.PrevMeasure = properties.PrevMeasure;
     this.NextMeasure = properties.NextMeasure;
-    this.Voices = [new Voice(), new Voice(), new Voice(), new Voice()];
+    this.Voices = [new Voice(0), new Voice(1), new Voice(2), new Voice(3)];
     this.Num = 1;
     this.Staves = properties.Staves;
     this.Message = properties.Message;
@@ -113,7 +113,8 @@ class Measure implements ISelectable {
 
     this.Barlines = properties.Barlines;
 
-    this.CreateDivisions(this.Camera);
+    this.CreateDivisions();
+    console.log(this.Voices);
 
     this.Staves.forEach((s: Staff, i: number) => {
       const clef = new Clef(0, properties.Clefs[i].Type, 1, s.Num);
@@ -170,27 +171,31 @@ class Measure implements ISelectable {
     this.TimeSignature.SetBounds(this);
   }
 
-  CreateDivisions(cam: Camera) {
-    this.Voices[this.ActiveVoice].Divisions = [];
-    this.Staves.forEach((s: Staff) => {
-      this.Voices[this.ActiveVoice].Divisions.push(
-        ...CreateDivisions(this, this.Voices[this.ActiveVoice].Notes, s.Num),
-      );
-      ResizeDivisions(this, this.Voices[this.ActiveVoice].Divisions, s.Num);
-      UpdateNoteBounds(this, s.Num);
+  CreateDivisions() {
+    this.Voices.forEach((v: Voice) => {
+      v.Divisions = [];
+      this.Staves.forEach((s: Staff) => {
+        v.Divisions.push(...CreateDivisions(this, v.Notes, s.Num, v));
+        ResizeDivisions(this, v.Divisions, s.Num);
+        UpdateNoteBounds(this, s.Num);
+      });
     });
   }
 
   Reposition(prevMsr: Measure): void {
     this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
-    this.CreateDivisions(this.Camera);
+    this.CreateDivisions();
   }
 
   GetMeasureHeight(): number {
     return GetStaffHeightUntil(this.Staves);
   }
 
-  AddNote(note: Note, fromInput: boolean = false): void {
+  AddNote(
+    note: Note,
+    fromInput: boolean = false,
+    voice: Voice = this.Voices[this.ActiveVoice],
+  ): void {
     if (note.Rest) {
       this.ClearNonRestNotes(note.Beat, note.Staff);
     } else {
@@ -198,7 +203,7 @@ class Measure implements ISelectable {
     }
     note.SetID(this.RunningID.count);
     this.RunningID.count++;
-    this.Voices[this.ActiveVoice].Notes.push(note);
+    voice.Notes.push(note);
 
     if (fromInput) {
       const msg: Message = {

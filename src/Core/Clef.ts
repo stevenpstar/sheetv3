@@ -63,6 +63,7 @@ class Clef implements ISelectable {
     const div = msr.Voices[msr.ActiveVoice].Divisions.find(
       (d) => d.Beat === this.Beat && d.Staff === staff,
     );
+    console.log("div: ", msr.Voices[msr.ActiveVoice].Divisions);
     const xPosition: number = this.Beat === 1 ? msr.Bounds.x : div.Bounds.x;
     const xBuffer = 3;
     let lineBuffer = 2;

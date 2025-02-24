@@ -15,7 +15,7 @@ import { allSaves } from "./testsaves.js";
 import { ClearMessage, MessageType } from "./Types/Message.js";
 import { FromPitchMap, GeneratePitchMap, } from "./Workers/Pitcher.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
-import { BarlinePos, BarlineType } from "./Core/Barline.js";
+import { BarlineType, PositionMatch, } from "./Core/Barline.js";
 import { Dynamic } from "./Core/Dynamic.js";
 import { Articulation } from "./Core/Articulation.js";
 class App {
@@ -84,7 +84,7 @@ class App {
     Delete() {
         for (let [msr, _] of this.Selector.Elements) {
             msr.DeleteSelected();
-            msr.CreateDivisions(this.Camera);
+            msr.CreateDivisions();
         }
         this.ResizeMeasures(this.Sheet);
     }
@@ -163,16 +163,14 @@ class App {
                 this.Sheet.Measures.filter((m) => m.Instrument === i).length +
                     1;
             newMsr.Barlines[1].Type = BarlineType.END;
+            if (newMsr.PrevMeasure.Barlines[1].Type === BarlineType.END) {
+                newMsr.PrevMeasure.Barlines[1].Type = BarlineType.SINGLE;
+            }
             this.Sheet.Measures.push(newMsr);
             previousMeasure.NextMeasure = newMsr;
             this.ResizeMeasures(this.Sheet);
         });
-        // Update previous measure end bar line
-        if (prevMsr.Barlines[1].Type == BarlineType.END) {
-            prevMsr.Barlines[1].Type = BarlineType.SINGLE;
-        }
         this.ResizeMeasures(this.Sheet);
-        console.log(this.Sheet);
     }
     ChangeInputMode() {
         this.NoteInput = !this.NoteInput;
@@ -293,7 +291,7 @@ class App {
     // TEST FUNCTION
     ResizeFirstMeasure() {
         //    this.Sheet.Measures[0].Bounds.width += 50;
-        this.Sheet.Measures[0].CreateDivisions(this.Camera);
+        this.Sheet.Measures[0].CreateDivisions();
         for (let i = 1; i < this.Sheet.Measures.length; i++) {
             this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i - 1]);
         }
@@ -512,16 +510,19 @@ class App {
         return midiMapped;
     }
     // These are test/temp functions (kinda)
-    ChangeBarline() {
+    ChangeBarline(type) {
         for (let [_, elem] of this.Selector.Elements) {
             elem
                 .filter((e) => e.SelType === SelectableTypes.Barline)
                 .forEach((bl) => {
-                if (bl.Position == BarlinePos.END) {
-                    bl.Type = BarlineType.REPEAT_END;
+                let positionMatch = PositionMatch(bl.Position, type);
+                if (!positionMatch) {
+                    return;
                 }
+                bl.Type = type;
             });
         }
+        this.ResizeMeasures(this.Sheet);
     }
     ChangeTimeSig() {
         const msr1 = this.Sheet.Measures[0];

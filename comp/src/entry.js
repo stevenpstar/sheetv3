@@ -24,6 +24,7 @@ const keymaps = {
     change_timesig: "z",
     add_dynamic: "f",
     cycle_voice: "p",
+    add_barline: ";",
 };
 const defaultTheme = {
     NoteElements: "black",

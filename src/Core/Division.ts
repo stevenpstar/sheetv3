@@ -1,6 +1,7 @@
 import { StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
+import { BarlinePos, BarlineType } from "./Barline.js";
 import { Beam } from "./Beam.js";
 import { GetNoteClefType } from "./Clef.js";
 import { Measure } from "./Measure.js";
@@ -12,6 +13,7 @@ import {
 } from "./Staff.js";
 import { Stem } from "./Stem.js";
 import { GetLargestValues } from "./Values.js";
+import { Voice } from "./Voice.js";
 
 enum SubdivisionType {
   CLEF,
@@ -56,6 +58,7 @@ function CreateDivisions(
   msr: Measure,
   notes: Note[],
   staff: number,
+  voice: Voice,
 ): Division[] {
   const divisions: Division[] = [];
   let nextBeat = 0;
@@ -78,7 +81,7 @@ function CreateDivisions(
       Grace: false,
     };
     // TODO: Clef should not be determined by staff that makes no sense
-    msr.AddNote(new Note(restProps));
+    msr.AddNote(new Note(restProps), false, voice);
   }
   notes
     .filter((n) => n.Staff === staff)
@@ -104,9 +107,9 @@ function CreateDivisions(
       }
     });
   if (runningValue > 0 && nextBeat - 1 < msr.TimeSignature.bottom) {
-    GenerateMissingBeatDivisions(msr, divisions, staff);
+    GenerateMissingBeatDivisions(msr, divisions, staff, voice);
   }
-  GenerateMissingBeatDivisions(msr, divisions, staff);
+  GenerateMissingBeatDivisions(msr, divisions, staff, voice);
   divisions
     .filter((div: Division) => div.Staff === staff)
     .forEach((div: Division) => {
@@ -235,6 +238,7 @@ function GenerateMissingBeatDivisions(
   msr: Measure,
   divisions: Division[],
   staff: number,
+  voice: Voice,
 ): void {
   const sortedDivs = divisions.sort((divA: Division, divB: Division) => {
     return divA.Beat - divB.Beat;
@@ -244,16 +248,14 @@ function GenerateMissingBeatDivisions(
   sortedDivs
     .filter((d) => d.Staff === staff)
     .forEach((div: Division) => {
-      const notesOnDiv = msr.Voices[msr.ActiveVoice].Notes.filter(
-        (n) => n.Beat === div.Beat,
-      );
+      const notesOnDiv = voice.Notes.filter((n) => n.Beat === div.Beat);
       if (div.Beat === startingBeat) {
         // there is a div for this beat, set the startingBeat to the next
         // expected division
         startingBeat = div.Beat + div.Duration * msr.TimeSignature.bottom;
         if (notesOnDiv[0].Tuple) {
           // TODO: This is not finished, currently skipping tuplet divisions
-          // But there may be cases where we need to generate missiong divisions
+          // But there may be cases where we need to generate missing divisions
           // within a tuplet group (maybe), and this will need to be revisited
           startingBeat = notesOnDiv[0].TupleDetails.EndBeat;
         }
@@ -283,9 +285,7 @@ function GenerateMissingBeatDivisions(
   divisions.push(...divisionsToAdd);
   // add RESTS to division gaps
   divisionsToAdd.forEach((div) => {
-    const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.find(
-      (n) => n.Beat === div.Beat,
-    );
+    const notesOnBeat = voice.Notes.find((n) => n.Beat === div.Beat);
     if (notesOnBeat !== undefined) {
       console.error("Note found in division gap");
     }
@@ -301,7 +301,7 @@ function GenerateMissingBeatDivisions(
       Clef: clefType,
       Grace: false,
     };
-    msr.AddNote(new Note(restProps));
+    msr.AddNote(new Note(restProps), false, voice);
   });
 
   // check remaining measure for empty divisions

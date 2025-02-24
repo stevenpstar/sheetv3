@@ -1,3 +1,4 @@
+import { BarlineType } from "../Core/Barline.js";
 import { NoteValues } from "../Core/Values.js";
 import { allSaves } from "../testsaves.js";
 function KeyPress(app, key, keyMaps) {
@@ -70,6 +71,12 @@ function KeyPress(app, key, keyMaps) {
             break;
         case keyMaps.cycle_voice:
             app.CycleActiveVoice();
+            break;
+        case keyMaps.add_barline:
+            // TODO: This will be selected in some way through UI and not hard coded
+            const barlineType = BarlineType.REPEAT_END;
+            app.ChangeBarline(barlineType);
+            break;
         default:
     }
 }

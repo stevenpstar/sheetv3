@@ -1,4 +1,5 @@
 import { App } from "../App.js";
+import { BarlineType } from "../Core/Barline.js";
 import { NoteValues } from "../Core/Values.js";
 import { allSaves } from "../testsaves.js";
 
@@ -25,6 +26,7 @@ interface KeyMapping {
   change_timesig: string; // TEST KEYMAP
   add_dynamic: string;
   cycle_voice: string;
+  add_barline: string;
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -97,6 +99,12 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       break;
     case keyMaps.cycle_voice:
       app.CycleActiveVoice();
+      break;
+    case keyMaps.add_barline:
+      // TODO: This will be selected in some way through UI and not hard coded
+      const barlineType: BarlineType = BarlineType.REPEAT_END;
+      app.ChangeBarline(barlineType);
+      break;
     default:
   }
 }

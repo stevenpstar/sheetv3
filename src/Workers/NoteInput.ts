@@ -116,7 +116,7 @@ function InputNote(
     }
   }
   RecreateDivisionGroups(msr);
-  msr.CreateDivisions(msr.Camera);
+  msr.CreateDivisions();
   RecreateStemAndBeams(msr);
 }
 

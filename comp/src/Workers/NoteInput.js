@@ -67,7 +67,7 @@ function InputNote(msr, noteValue, division, line, rest, grace, tupleCount = 1) 
         }
     }
     RecreateDivisionGroups(msr);
-    msr.CreateDivisions(msr.Camera);
+    msr.CreateDivisions();
     RecreateStemAndBeams(msr);
 }
 function RecreateStemAndBeams(msr) {

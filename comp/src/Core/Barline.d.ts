@@ -26,5 +26,6 @@ declare class Barline implements ISelectable {
     IsHovered(x: number, y: number, cam: Camera): boolean;
 }
 declare function RenderBarline(renderProps: RenderProperties, endMeasure: Measure, beginMeasure: Measure, cam: Camera): void;
-export { Barline, BarlineType, BarlinePos, RenderBarline };
+declare function PositionMatch(pos: BarlinePos, type: BarlineType): boolean;
+export { Barline, BarlineType, BarlinePos, RenderBarline, PositionMatch };
 //# sourceMappingURL=Barline.d.ts.map

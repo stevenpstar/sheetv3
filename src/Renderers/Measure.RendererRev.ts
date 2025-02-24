@@ -14,8 +14,9 @@ function RenderMeasureRev(
 ): void {
   // Render Barlines here
   measure.Staves.forEach((s: Staff) => RenderStaff(renderProps, measure, s));
-  if (measure.RenderClef)
+  if (measure.RenderClef) {
     measure.Clefs.forEach((c: Clef) => RenderClef(renderProps, c, theme));
+  }
   if (measure.RenderKey) {
     measure.Staves.forEach((s: Staff) => {
       // This needs work

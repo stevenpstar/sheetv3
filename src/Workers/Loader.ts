@@ -87,7 +87,7 @@ const LoadSheet = (
     );
     msr.Voices[msr.ActiveVoice].Notes = notes;
     sheet.Measures.push(msr);
-    msr.CreateDivisions(cam);
+    msr.CreateDivisions();
   });
 };
 

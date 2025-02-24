@@ -34,7 +34,7 @@ const LoadSheet = (sheet, page, cam, instr, savedJson, callback) => {
         m.Bounds, m.TimeSignature, m.KeySignature, m.Clefs, m.Staves, cam, runningId, page, m.ShowClef, callback);
         msr.Voices[msr.ActiveVoice].Notes = notes;
         sheet.Measures.push(msr);
-        msr.CreateDivisions(cam);
+        msr.CreateDivisions();
     });
 };
 const SaveSheet = (sheet) => {

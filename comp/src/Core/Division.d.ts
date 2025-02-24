@@ -4,6 +4,7 @@ import { Beam } from "./Beam.js";
 import { Measure } from "./Measure.js";
 import { Note } from "./Note.js";
 import { Stem } from "./Stem.js";
+import { Voice } from "./Voice.js";
 declare enum SubdivisionType {
     CLEF = 0,
     GRACE_NOTE = 1,
@@ -37,7 +38,7 @@ interface DivGroups {
 }
 declare const DivisionMinWidth = 30;
 declare const DivisionMaxWidth = 40;
-declare function CreateDivisions(msr: Measure, notes: Note[], staff: number): Division[];
+declare function CreateDivisions(msr: Measure, notes: Note[], staff: number, voice: Voice): Division[];
 declare function ResizeDivisions(msr: Measure, divisions: Division[], staff: number): void;
 declare function GetDivisionTotalWidth(divisions: Division[]): number;
 declare function GetDivisionGroups(msr: Measure, staff: number): DivGroup[];

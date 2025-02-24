@@ -22,6 +22,7 @@ interface KeyMapping {
     change_timesig: string;
     add_dynamic: string;
     cycle_voice: string;
+    add_barline: string;
 }
 declare function KeyPress(app: App, key: string, keyMaps: KeyMapping): void;
 export { KeyMapping, KeyPress };

@@ -98,7 +98,7 @@ function ResizeMeasuresOnPage(
             mWidth = maxWidth;
           }
           m.Bounds.width = mWidth;
-          m.CreateDivisions(cam);
+          m.CreateDivisions();
         } else {
           m.RenderClef = false;
           m.RenderTimeSig = false;
@@ -113,7 +113,7 @@ function ResizeMeasuresOnPage(
           }
           m.Bounds.width = msrWidth;
           msrs[i].Reposition(msrs[i - 1]);
-          m.CreateDivisions(cam);
+          m.CreateDivisions();
         }
         m.Clefs.forEach((c) => {
           c.SetBounds(m, c.Staff);
