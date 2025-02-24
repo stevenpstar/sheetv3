@@ -14,19 +14,23 @@ class Flag {
         this.SelType = SelectableTypes.Flag;
         this.Selected = false;
         this.Editable = false;
-        this.Bounds = this.SetBounds(bounds);
         this.Direction = flagDir;
         this.Duration = duration;
+        this.Bounds = this.SetBounds(bounds);
     }
     IsHovered(x, y, cam) {
         return this.Bounds.IsHovered(x, y, cam);
     }
     SetBounds(bounds) {
-        return new Bounds(bounds.x, bounds.y + bounds.height, 10, 10);
+        let yBuffer = bounds.height;
+        if (this.Duration <= NoteValues.n32) {
+            yBuffer = this.Direction === FlagDirection.UP ? yBuffer - 6 : yBuffer + 6;
+        }
+        return new Bounds(bounds.x + 1, bounds.y + yBuffer, 10, 30);
     }
     Render(renderProps, theme) {
         RenderSymbol(renderProps, GetFlagSymbol(this.Duration, this.Direction), this.Bounds.x, this.Bounds.y, theme, this.Selected);
-        this.RenderBounds(renderProps.context, renderProps.camera);
+        //    this.RenderBounds(renderProps.context, renderProps.camera);
     }
     RenderBounds(context, cam) {
         context.strokeStyle = "rgba(255, 0, 0, 255)";
