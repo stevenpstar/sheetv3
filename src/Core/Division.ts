@@ -23,6 +23,7 @@ enum SubdivisionType {
   CLEF,
   GRACE_NOTE,
   NOTE,
+  POST_CLEF, // Special subdivision for clef change in the following measure
 }
 
 type Subdivision = {

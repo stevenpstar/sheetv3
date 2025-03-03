@@ -18,7 +18,7 @@ function RenderKeySignature(
   theme: Theme,
   staff: number,
 ): void {
-  renderProps.context.fillStyle = "black";
+  renderProps.context.fillStyle = renderProps.theme.NoteElements;
   const staffClefs = msr.Clefs.filter((c: Clef) => c.Staff === staff);
   if (!staffClefs) {
     console.error("(RenderKeySignature): Something went very wrong here");

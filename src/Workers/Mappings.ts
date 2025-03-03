@@ -2,6 +2,7 @@ import { App } from "../App.js";
 import { ArticulationType } from "../Core/Articulation.js";
 import { BarlineType } from "../Core/Barline.js";
 import { NoteValues } from "../Core/Values.js";
+import { Clefs } from "../Renderers/MusicFont.Renderer.js";
 import { allSaves } from "../testsaves.js";
 
 interface KeyMapping {
@@ -73,6 +74,7 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       break;
     case keyMaps.scaleToggle:
       //app.ScaleToggle();
+      app.AddClef(Clefs.G);
       break;
     case keyMaps.save:
       app.Save();

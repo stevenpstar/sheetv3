@@ -79,7 +79,6 @@ class Note implements ISelectable {
     if (props.TupleDetails) {
       this.TupleDetails = props.TupleDetails;
     }
-    // note position is not based on bounds property
     this.Opacity = 1.0;
   }
 

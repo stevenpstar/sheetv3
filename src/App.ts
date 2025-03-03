@@ -35,6 +35,7 @@ import {
 } from "./Core/Barline.js";
 import { Dynamic } from "./Core/Dynamic.js";
 import { Articulation, ArticulationType } from "./Core/Articulation.js";
+import { Clefs } from "./Renderers/MusicFont.Renderer.js";
 
 class App {
   Config: ConfigSettings;
@@ -115,7 +116,7 @@ class App {
     }
     this.NoteInput = false;
     this.RestInput = false;
-    this.Formatting = true;
+    this.Formatting = false;
 
     if (this.Config.CameraSettings?.Zoom) {
       this.Camera.Zoom = this.Config.CameraSettings.Zoom;
@@ -722,6 +723,16 @@ class App {
         });
     }
     this.ResizeMeasures(this.Sheet);
+  }
+
+  AddClef(clef: Clefs): void {
+    for (let [msr, elem] of this.Selector.Elements) {
+      elem
+        .filter((e: ISelectable) => e.SelType === SelectableTypes.Note)
+        .forEach((n: Note) => {
+          msr.Clefs.push(new Clef(0, "treble", n.Beat, n.Staff));
+        });
+    }
   }
 
   ChangeTimeSig(): void {

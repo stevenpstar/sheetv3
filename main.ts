@@ -47,13 +47,13 @@ const defaultTheme: Theme = {
 };
 
 const _darkTheme: Theme = {
-  NoteElements: "black",
+  NoteElements: "#e5e5e5",
   SelectColour: "#f08080",
   UneditableColour: "#303745",
-  LineColour: "#465063",
-  BackgroundColour: "black",
-  PageColour: "#262b36",
-  PageShadowColour: "#15191f",
+  LineColour: "#c4693d",
+  BackgroundColour: "#111111",
+  PageColour: "#191919",
+  PageShadowColour: "#111111",
 };
 
 const test_CONFIG: ConfigSettings = {
@@ -79,7 +79,7 @@ const test_CONFIG: ConfigSettings = {
     AutoSize: false,
   },
   DefaultStaffType: "single",
-  Theme: defaultTheme,
+  Theme: _darkTheme,
 };
 
 function returnCanvas(id: string): CanText {

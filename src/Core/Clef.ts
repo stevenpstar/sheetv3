@@ -4,9 +4,10 @@ import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
+import { Subdivision, SubdivisionType } from "./Division.js";
 import { StaffType } from "./Instrument.js";
 import { Measure } from "./Measure.js";
-import { GetStaffActualMidLine, GetStaffMiddleLine } from "./Staff.js";
+import { GetStaffMiddleLine } from "./Staff.js";
 
 // TODO: Move this somewhere central
 const lineSpace = 10;
@@ -63,13 +64,29 @@ class Clef implements ISelectable {
     const div = msr.Voices[msr.ActiveVoice].Divisions.find(
       (d) => d.Beat === this.Beat && d.Staff === staff,
     );
-    const xPosition: number = this.Beat === 1 ? msr.Bounds.x : div.Bounds.x;
+    let xPosition: number = msr.Bounds.x;
+    if (this.Beat !== 1) {
+      if (div) {
+        xPosition = div.Bounds.x;
+      }
+    }
+    //    this.Beat === 1
+    //      ? msr.Bounds.x
+    //      : div.Subdivisions.find(
+    //          (sd: Subdivision) => sd.Type === SubdivisionType.CLEF,
+    //        ).Bounds.x;
+    // If not first measure, and not first on line we need to check/compare
+    // clefs. Clef may need to be rendered on previous measures last POST_CLEF
+    // subdivision
+    if (msr.PrevMeasure) {
+      if (msr.PrevMeasure.PageLine !== msr.PageLine) {
+        // do stuff
+      }
+    }
     const xBuffer = 3;
     let lineBuffer = 2;
     let yBuffer = 0;
-    // TODO: Replace with relative mid line function (i think it might exist
-    // already)
-    const msrMidLine = GetStaffMiddleLine(msr.Staves, staff); //GetStaffActualMidLine(msr.Staves, staff);
+    const msrMidLine = GetStaffMiddleLine(msr.Staves, staff);
     this.Position.x = xPosition + xBuffer;
     this.Bounds.x = xPosition + xBuffer;
     switch (this.Type) {

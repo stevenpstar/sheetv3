@@ -53,7 +53,6 @@ function InputOnMeasure(
   rest: boolean,
   grace: boolean,
 ): void {
-  let inputtingNote = true;
   const beatOver = msr.Voices[msr.ActiveVoice].Divisions.find((b) =>
     b.Bounds.IsHovered(x, y, cam),
   );
@@ -65,9 +64,7 @@ function InputOnMeasure(
   if (msr.Instrument.Staff === StaffType.Rhythm) {
     line.num = 15;
   }
-  if (inputtingNote) {
-    InputNote(msr, noteValue, beatOver, line, rest, grace);
-  }
+  InputNote(msr, noteValue, beatOver, line, rest, grace);
 }
 
 function InputNote(
@@ -128,7 +125,7 @@ function RecreateStemAndBeams(msr: Measure): void {
     g.Flags = [];
     g.Stems.push(...CreateStems(g.Notes, g.Divisions, g.Staff, msr));
     g.Beams.push(...CreateBeamsRevise(g, g.Stems, false));
-    if (g.Beams.length === 0) {
+    if (g.Beams.length === 0 && g.Divisions[0].Duration < 0.25) {
       g.Flags.push(...CreateFlags(g));
     }
   });

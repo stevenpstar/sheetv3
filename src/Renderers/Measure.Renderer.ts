@@ -75,7 +75,7 @@ function RenderMeasure(
           }
         });
       });
-      renderProps.context.fillStyle = `rgba(0, 0, 0, ${1.0})`;
+      renderProps.context.fillStyle = renderProps.theme.NoteElements;
       renderProps.context.font = `${12}px Bravura`;
       renderProps.context.fillText(
         measure.Num.toString(),

@@ -343,6 +343,21 @@ class Measure implements ISelectable {
       this.GetMeasureHeight(),
     );
   }
+
+  GetLastClef(staff: number): Clef {
+    const staffClefs = this.Clefs.filter((c: Clef) => c.Staff === staff).sort(
+      (a: Clef, b: Clef) => {
+        return b.Beat - a.Beat;
+      },
+    );
+    if (staffClefs.length === 0) {
+      console.error(
+        "A clef should exist on this staff, in this measure. Returning default Clef",
+      );
+      return new Clef(0, "treble", 1, 0);
+    }
+    return staffClefs[0];
+  }
 }
 
 export { Measure, MeasureProps, Division, Clef };

@@ -59,7 +59,6 @@ function RenderAccidental(
     default:
       break;
   }
-  context.fillStyle = "black";
   //  context.fill(new Path2D(posString));
   //  if (type === -2) {
   //    context.fill(new Path2D(dflatString));

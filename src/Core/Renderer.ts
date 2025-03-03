@@ -37,9 +37,9 @@ const Renderer = (
 
   measures.forEach((m: Measure, i: number) => {
     const renderProps = {
-      canvas: c,
       context: ctx,
       camera: cam,
+      theme: config.Theme,
     };
     const lastMeasure =
       i ===

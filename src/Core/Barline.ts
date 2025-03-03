@@ -59,9 +59,10 @@ function RenderBarline(
   beginMeasure: Measure,
   cam: Camera,
 ): void {
+  renderProps.context.fillStyle = renderProps.theme.LineColour;
   if (!endMeasure) {
     if (beginMeasure.Barlines[0].Selected) {
-      renderProps.context.fillStyle = "blue";
+      renderProps.context.fillStyle = renderProps.theme.SelectColour;
     }
     switch (beginMeasure.Barlines[0].Type) {
       case BarlineType.SINGLE:
@@ -85,10 +86,6 @@ function RenderBarline(
     }
     return;
   } else if (!beginMeasure) {
-    if (endMeasure.Barlines[1].Selected) {
-      renderProps.context.fillStyle = "blue";
-    }
-
     switch (endMeasure.Barlines[1].Type) {
       case BarlineType.SINGLE:
         RenderStandardBarline(
@@ -113,18 +110,12 @@ function RenderBarline(
         );
     }
 
-    renderProps.context.fillStyle = "black";
     return;
   }
   if (
     endMeasure.Barlines[1].Type == BarlineType.SINGLE &&
     beginMeasure.Barlines[0].Type == BarlineType.SINGLE
   ) {
-    if (endMeasure.Barlines[1].Selected || beginMeasure.Barlines[0].Selected) {
-      renderProps.context.fillStyle = "blue";
-    } else {
-      renderProps.context.fillStyle = "black";
-    }
     RenderStandardBarline(
       renderProps,
       beginMeasure,

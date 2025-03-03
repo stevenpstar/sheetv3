@@ -32,7 +32,6 @@ function RenderMeasureLines(
   const staves = measure.Staves;
   let staffHeight = GetStaffHeightUntil(staves, staves.length - 1) + 41;
   const yStart = measure.Bounds.y + (GetStaffMiddleLine(staves, 0) - 4) * 5;
-  context.fillStyle = theme.LineColour;
   const measureBegin = `M${measure.Bounds.x + camera.x} 
         ${yStart + camera.y} h 
         ${startWidth} v ${staffHeight} h -${startWidth} Z`;
@@ -45,6 +44,8 @@ function RenderMeasureLines(
         ${yStart + camera.y} h 
         ${startWidth} v ${staffHeight} h -${startWidth} Z`;
 
+  context.fillStyle = theme.LineColour;
+  context.strokeStyle = theme.LineColour;
   context.fill(new Path2D(measureBegin));
   context.fill(new Path2D(measureEnd));
   if (lastMeasure) {
@@ -99,7 +100,7 @@ function RenderStaffLines(
   staff: Staff,
 ): void {
   // These should be defined somewhere else
-  const { context, camera } = renderProps;
+  const { context, camera, theme } = renderProps;
   const line_space = 10;
   const line_width = 1;
   const endsWidth = 2;
@@ -110,13 +111,14 @@ function RenderStaffLines(
   const staffHeight =
     GetStaffHeightUntil(staves, staves.length - 2) +
     (GetStaffMiddleLine(staves, staves.length - 1) - 2) * 5;
-
   // Render Staff Lines
   for (let l = 0; l < 5; l++) {
     const lineString = `M${msr.Bounds.x + camera.x} 
     ${yStart + 5 * staffMidLine - line_space * 2 + line_space * l + camera.y} h 
     ${msr.Bounds.width + msr.XOffset} v ${line_width} h -${msr.Bounds.width + msr.XOffset} Z`;
 
+    context.fillStyle = theme.LineColour;
+    context.strokeStyle = theme.LineColour;
     const linePath = new Path2D(lineString);
     context.fill(linePath);
   }
