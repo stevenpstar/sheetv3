@@ -27,6 +27,7 @@ enum SubdivisionType {
 }
 
 type Subdivision = {
+  Order: number;
   Type: SubdivisionType;
   Bounds: Bounds;
 };
@@ -161,11 +162,13 @@ function CreateSubdivisions(div: Division, notes: Note[]): void {
       )
     ) {
       const graceSubdiv: Subdivision = {
+        Order: 1,
         Type: SubdivisionType.GRACE_NOTE,
         Bounds: new Bounds(div.Bounds.x, div.Bounds.y, 15, div.Bounds.height),
       };
 
       const graceSubdiv2: Subdivision = {
+        Order: 2,
         Type: SubdivisionType.GRACE_NOTE,
         Bounds: new Bounds(
           div.Bounds.x + 15,
@@ -184,6 +187,7 @@ function CreateSubdivisions(div: Division, notes: Note[]): void {
     xBuffer += sd.Bounds.width;
   });
   const noteSubdiv: Subdivision = {
+    Order: 3,
     Type: SubdivisionType.NOTE,
     Bounds: new Bounds(
       div.Bounds.x + xBuffer,

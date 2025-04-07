@@ -25,6 +25,8 @@ interface NoteProps {
 
 class Note implements ISelectable {
   Beat: number;
+  // Order is always the same as Beat, unless the note is a Grace note.
+  Order: number;
   Duration: number;
   Line: number;
   Rest: boolean;
@@ -56,6 +58,10 @@ class Note implements ISelectable {
 
   constructor(props: NoteProps) {
     this.Beat = props.Beat;
+    this.Order = 0;
+    if (!props.Grace) {
+      this.Order = this.Beat;
+    }
     this.Duration = props.Duration;
     this.Line = props.Line;
     this.Rest = props.Rest;

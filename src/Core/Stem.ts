@@ -1,5 +1,3 @@
-import { Flags, RenderSymbol } from "../Renderers/MusicFont.Renderer.js";
-import { StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";

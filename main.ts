@@ -79,7 +79,7 @@ const test_CONFIG: ConfigSettings = {
     AutoSize: false,
   },
   DefaultStaffType: "single",
-  Theme: _darkTheme,
+  Theme: defaultTheme,
 };
 
 function returnCanvas(id: string): CanText {

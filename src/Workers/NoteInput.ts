@@ -34,10 +34,14 @@ function AddNoteOnMeasure(
   rest: boolean,
   grace: boolean,
 ): void {
+  const subDivision: Subdivision = beat.Subdivisions.find(
+    (sd: Subdivision) => sd.Type === SubdivisionType.NOTE,
+  );
   InputNote(
     msr,
     noteValue,
     beat,
+    subDivision,
     { num: line, bounds: new Bounds(0, 0, 0, 0) },
     rest,
     grace,
@@ -60,17 +64,27 @@ function InputOnMeasure(
     console.error("Beat Over Not Found");
     return;
   }
+  const subDivision = beatOver.Subdivisions.find((sd: Subdivision) => {
+    return sd.Bounds.IsHovered(x, y, cam);
+  });
+  if (!subDivision) {
+    console.error("Subdivision on beat not found");
+    return;
+  }
+  console.log("subDivision: ");
+  console.log(subDivision);
   let line = msr.GetLineHovered(y, beatOver.Staff);
   if (msr.Instrument.Staff === StaffType.Rhythm) {
     line.num = 15;
   }
-  InputNote(msr, noteValue, beatOver, line, rest, grace);
+  InputNote(msr, noteValue, beatOver, subDivision, line, rest, grace);
 }
 
 function InputNote(
   msr: Measure,
   noteValue: number,
   division: Division,
+  subDivision: Subdivision,
   line: { num: number; bounds: Bounds },
   rest: boolean,
   grace: boolean,
@@ -104,6 +118,10 @@ function InputNote(
     Grace: grace,
   };
   const newNote: Note = new Note(noteProps);
+
+  if (grace) {
+    newNote.Order = subDivision.Order;
+  }
 
   if (division.Duration === noteValue || grace) {
     msr.ClearRestNotes(division.Beat, division.Staff);
@@ -187,7 +205,9 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
           );
           // This is really stupid, don't do this for final
           if (n.Grace) {
-            n.Bounds.x -= subDivBuffer;
+            n.Bounds.x = div.Subdivisions.find(
+              (sd: Subdivision) => sd.Order === n.Order,
+            ).Bounds.x;
           }
           n.Bounds.y = msr.GetNotePositionOnLine(n.Line, n.Staff);
         }
