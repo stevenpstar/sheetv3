@@ -154,6 +154,7 @@ function RecreateDivisionGroups(msr: Measure): void {
   msr.Staves.forEach((staff: Staff) => {
     const group = GetDivisionGroups(msr, staff.Num);
     groups.push(...group);
+    console.log("groups are: ", group);
   });
 
   msr.Voices[msr.ActiveVoice].DivisionGroups = groups;
@@ -166,6 +167,8 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
   msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g: DivGroup) => {
     const { Divisions, Notes } = g;
     const stemDir = DetermineStemDirection(Notes, Divisions);
+    console.log("Divisions: ");
+    console.log(Divisions);
     Divisions.forEach((div: Division) => {
       // Set Division values for stem direction and X Buffer here
       // TODO: This may need to be a function in the division file
@@ -203,11 +206,24 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
           n.Bounds.x = Math.floor(
             div.Bounds.x + dynNoteXBuffer + subDivBuffer + flipNoteOffset,
           );
-          // This is really stupid, don't do this for final
           if (n.Grace) {
-            n.Bounds.x = div.Subdivisions.find(
-              (sd: Subdivision) => sd.Order === n.Order,
-            ).Bounds.x;
+            let graceDiv = div.Subdivisions.find(
+              (sd: Subdivision) =>
+                sd.Order === n.Order && sd.Type === SubdivisionType.GRACE_NOTE,
+            );
+            if (!graceDiv) {
+              graceDiv = div.Subdivisions.find(
+                (sd: Subdivision) =>
+                  sd.Order === 1 && sd.Type === SubdivisionType.GRACE_NOTE,
+              );
+            }
+            if (!graceDiv) {
+              console.log("div sub");
+              console.log(div.Subdivisions);
+              console.log("No subdivision on grace note input");
+            } else {
+              n.Bounds.x = graceDiv.Bounds.x;
+            }
           }
           n.Bounds.y = msr.GetNotePositionOnLine(n.Line, n.Staff);
         }
