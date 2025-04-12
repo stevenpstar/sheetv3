@@ -71,8 +71,6 @@ function InputOnMeasure(
     console.error("Subdivision on beat not found");
     return;
   }
-  console.log("subDivision: ");
-  console.log(subDivision);
   let line = msr.GetLineHovered(y, beatOver.Staff);
   if (msr.Instrument.Staff === StaffType.Rhythm) {
     line.num = 15;
@@ -120,7 +118,11 @@ function InputNote(
   const newNote: Note = new Note(noteProps);
 
   if (grace) {
-    newNote.Order = subDivision.Order;
+    let order = subDivision.Order;
+    if (subDivision.Type !== SubdivisionType.GRACE_NOTE) {
+      order = 1;
+    }
+    newNote.Order = order;
   }
 
   if (division.Duration === noteValue || grace) {
@@ -154,7 +156,6 @@ function RecreateDivisionGroups(msr: Measure): void {
   msr.Staves.forEach((staff: Staff) => {
     const group = GetDivisionGroups(msr, staff.Num);
     groups.push(...group);
-    console.log("groups are: ", group);
   });
 
   msr.Voices[msr.ActiveVoice].DivisionGroups = groups;
@@ -167,8 +168,6 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
   msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g: DivGroup) => {
     const { Divisions, Notes } = g;
     const stemDir = DetermineStemDirection(Notes, Divisions);
-    console.log("Divisions: ");
-    console.log(Divisions);
     Divisions.forEach((div: Division) => {
       // Set Division values for stem direction and X Buffer here
       // TODO: This may need to be a function in the division file
@@ -218,9 +217,10 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
               );
             }
             if (!graceDiv) {
-              console.log("div sub");
-              console.log(div.Subdivisions);
-              console.log("No subdivision on grace note input");
+              // TODO:
+              // Note bounds get updated multiple times, sometimes it is before
+              // the subdivisions have been generated. This is probably a minor
+              // issue / can be optimised. For now, we have a guard.
             } else {
               n.Bounds.x = graceDiv.Bounds.x;
             }

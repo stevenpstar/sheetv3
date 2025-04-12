@@ -203,8 +203,6 @@ class Measure implements ISelectable {
     note.SetID(this.RunningID.count);
     this.RunningID.count++;
     voice.Notes.push(note);
-    console.log("voice noteslmao");
-    console.log(voice.Notes);
 
     if (fromInput) {
       const msg: Message = {

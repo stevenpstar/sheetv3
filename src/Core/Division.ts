@@ -75,7 +75,10 @@ function CreateDivisions(
     return a.Beat - b.Beat;
   });
 
-  if (notes.filter((n: Note) => n.Staff === staff).length === 0) {
+  if (
+    notes.filter((n: Note) => n.Staff === staff && n.Grace === false).length ===
+    0
+  ) {
     const restProps: NoteProps = {
       Beat: 1,
       Duration: 1,
@@ -91,7 +94,7 @@ function CreateDivisions(
     msr.AddNote(new Note(restProps), false, voice);
   }
   notes
-    .filter((n) => n.Staff === staff)
+    .filter((n) => n.Staff === staff && n.Grace === false)
     .forEach((n) => {
       // TODO: This should be somewhere else but testing
       if (n.Beat >= msr.TimeSignature.top + 1) {
