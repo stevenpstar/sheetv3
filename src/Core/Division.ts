@@ -81,7 +81,7 @@ function CreateDivisions(
   ) {
     const restProps: NoteProps = {
       Beat: 1,
-      Duration: 1,
+      Duration: 1 * (msr.TimeSignature.top / msr.TimeSignature.bottom),
       Line: GetStaffMiddleLine(msr.Staves, staff),
       Rest: true,
       Tied: false,
@@ -407,6 +407,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
 
   // only looking for grace notes, eventually refactor below and only need one
   // loop with functions/branching
+  // TODO: Grace note stems/divgroups not being generated properly. Revisit.
   mDivs.forEach((div: Division) => {
     const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
       (n: Note) =>
@@ -418,6 +419,8 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
       divGroups.DivGroups.push(
         CreateDivisionGroup(divs, notes, staff, crossStaff),
       );
+//      console.log("Creating a division group with grace notes");
+//      console.log(divGroups);
     }
   });
 

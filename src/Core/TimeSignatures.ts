@@ -92,7 +92,7 @@ class TimeSignature implements ISelectable {
       const msrMidLine = GetStaffMiddleLine(msr.Staves, s.Num);
       this.Bounds[s.Num].x = msr.Bounds.x + msr.XOffset - 25;
       this.Bounds[s.Num].y = divY + (msrMidLine - 4) * 5;
-      this.Bounds[s.Num].width = 30;
+      this.Bounds[s.Num].width = 20;
       this.Bounds[s.Num].height = 50;
       this.TopPosition[s.Num].x = this.Bounds[s.Num].x;
       this.TopPosition[s.Num].y = divY + (msrMidLine - 2) * 5;

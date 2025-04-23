@@ -114,7 +114,7 @@ function CreateStems(
     beamDir: beamDir,
     stemDir: stemDir,
   };
-  divisions.forEach((_: Division, i: number) => {
+  divisions.forEach((div: Division, i: number) => {
     CreateNoteStem(
       measure,
       divGroupMetaData,
@@ -125,6 +125,22 @@ function CreateStems(
       staffMidLinePos,
       staff,
     );
+
+    div.Subdivisions.filter(
+      (d: Subdivision) => d.Type === SubdivisionType.GRACE_NOTE,
+    ).forEach((sDiv: Subdivision) => {
+      CreateGraceNoteStems(
+        measure,
+        divGroupMetaData,
+        stems,
+        notes[i].filter((n: Note) => n.Grace && n.Order === sDiv.Order),
+        i,
+        sDiv,
+        divisions,
+        staffMidLinePos,
+        staff,
+      );
+    });
   });
   return stems;
 }
@@ -139,6 +155,9 @@ function CreateNoteStem(
   staffMidLinePos: number,
   staff: number,
 ): void {
+  if (notes.length === 0) {
+    return;
+  }
   let dynNoteXBuffer = 9;
   let { highestLine, lowestLine, hNote, lNote, shouldBeam, beamDir, stemDir } =
     metaData;
@@ -184,6 +203,68 @@ function CreateNoteStem(
   stem.Staff = staff;
   stems.push(stem);
 }
-//function CreateGraceNoteStems(): void;
+
+function CreateGraceNoteStems(
+  measure: Measure,
+  metaData: DivGroupMetaData,
+  stems: Stem[],
+  notes: Note[],
+  i: number,
+  subdivision: Subdivision,
+  divisions: Division[],
+  staffMidLinePos: number,
+  staff: number,
+): void {
+
+  if (notes.length === 0) {
+    return;
+  }
+
+  let dynNoteXBuffer = 9;
+  let { highestLine, lowestLine, hNote, lNote, shouldBeam, beamDir, stemDir } =
+    metaData;
+  const beamAlt = i * (10 / divisions.length - 1);
+  const isGraceStem = true; //subDiv.Type === SubdivisionType.GRACE_NOTE;
+  const scale = isGraceStem ? 0.6 : 1.0;
+  let divNotes = notes;
+
+  const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
+  if (numOfAcc > 0) {
+    dynNoteXBuffer += dynNoteXBuffer * numOfAcc - 1;
+  }
+  divNotes.sort((a: Note, b: Note) => a.Line - b.Line);
+  let stemX =
+    stemDir === StemDirection.Up
+      ? subdivision.Bounds.x + 10.25 * scale
+      : subdivision.Bounds.x + 0.0 * scale;
+  if (IsFlippedNote(divNotes, 0, stemDir)) {
+    stemX = subdivision.Bounds.x + 0.0;
+  }
+  // stem Y set to 0 for now, is updated later.
+  const stem: Stem = new Stem(new Bounds(stemX, 0, 1.5, 0), divisions[i]);
+
+  if (stemDir === StemDirection.Up) {
+    stem.Bounds.y = divNotes[divNotes.length - 1].Bounds.y + 2.0;
+    stem.Bounds.height =
+      hNote.Bounds.y - divNotes[divNotes.length - 1].Bounds.y - 35;
+  } else {
+    stem.Bounds.y = divNotes[0].Bounds.y + 4.0;
+    stem.Bounds.height = lNote.Bounds.y - divNotes[0].Bounds.y + 35;
+  }
+
+  if (StemToCenter(stemDir, lowestLine, highestLine)) {
+    stem.Bounds.height = staffMidLinePos - stem.Bounds.y + measure.Bounds.y;
+  }
+  if (shouldBeam) {
+    stem.Bounds.height = AlterHeightForBeam(
+      stemDir,
+      beamDir,
+      stem.Bounds.height,
+      beamAlt,
+    );
+  }
+  stem.Staff = staff;
+  stems.push(stem);
+}
 
 export { CreateStems };

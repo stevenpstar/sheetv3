@@ -14,11 +14,13 @@ function DetermineBeamDirection(
   divGroup: DivGroup,
   stemDir: StemDirection,
 ): BeamDirection {
+
   const divisions = divGroup.Divisions.sort((a: Division, b: Division) => {
     return a.Beat - b.Beat;
   });
 
   if (stemDir === StemDirection.Up) {
+    if (divGroup.Notes.length === 0) { return BeamDirection.Flat; }
     const firstDivTopLine = divGroup.Notes[0].sort((a: Note, b: Note) => {
       return a.Line - b.Line;
     })[0].Line;
@@ -36,6 +38,8 @@ function DetermineBeamDirection(
       return BeamDirection.UpMax;
     }
   } else {
+
+    if (divGroup.Notes.length === 0) { return BeamDirection.Flat; }
     const firstDivBotLine = divGroup.Notes[0].sort((a: Note, b: Note) => {
       return a.Line - b.Line;
     })[divGroup.Notes[0].length - 1].Line;

@@ -36,7 +36,7 @@ function RenderMeasureRev(
   measure.Dynamics.forEach((d: Dynamic) =>
     RenderDynamic(renderProps, measure, d, theme),
   );
-  const debug = true;
+  const debug = false;
   if (debug) {
     measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division) => {
       renderProps.context.strokeStyle = "blue";
