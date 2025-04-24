@@ -170,19 +170,20 @@ function CreateSubdivisions(div: Division, notes: Note[]): void {
         Bounds: new Bounds(div.Bounds.x, div.Bounds.y, 15, div.Bounds.height),
       };
 
-      const graceSubdiv2: Subdivision = {
-        Order: 2,
-        Type: SubdivisionType.GRACE_NOTE,
-        Bounds: new Bounds(
-          div.Bounds.x + 15,
-          div.Bounds.y,
-          15,
-          div.Bounds.height,
-        ),
-      };
+      // TODO: Add multiple/infinite(?) grace note subdivisions
+//      const graceSubdiv2: Subdivision = {
+//        Order: 2,
+//        Type: SubdivisionType.GRACE_NOTE,
+//        Bounds: new Bounds(
+//          div.Bounds.x + 15,
+//          div.Bounds.y,
+//          15,
+//          div.Bounds.height,
+//        ),
+//      };
 
       div.Subdivisions.push(graceSubdiv);
-      div.Subdivisions.push(graceSubdiv2);
+//      div.Subdivisions.push(graceSubdiv2);
     }
   });
   var xBuffer = 0;
@@ -213,7 +214,9 @@ function CreateBeatBounds(
   staff: number,
 ): Bounds {
   // single height
-  const width = msr.Bounds.width * duration; // value will max at 1 (entire measure)
+  const maxDuration = msr.TimeSignature.GetMaxDuration();
+  const durationPercentage = duration / maxDuration;
+  const width = msr.Bounds.width * durationPercentage;
   const height = GetStaffHeight(msr.Staves, staff);
   const x =
     msr.Bounds.x +
@@ -417,10 +420,8 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
     );
     if (divNotes.length > 0) {
       divGroups.DivGroups.push(
-        CreateDivisionGroup(divs, notes, staff, crossStaff),
+        CreateDivisionGroup([div], [divNotes], staff, crossStaff),
       );
-//      console.log("Creating a division group with grace notes");
-//      console.log(divGroups);
     }
   });
 
@@ -493,8 +494,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
           divs = [];
           notes = [];
         } else {
-          // breakpoint check TODO: Actually implement this is prototype code
-          if (div.Beat === 3) {
+          if (msr.TimeSignature.Breakpoints.includes(div.Beat)) {
             divGroups.DivGroups.push(
               CreateDivisionGroup(divs, notes, staff, crossStaff),
             );

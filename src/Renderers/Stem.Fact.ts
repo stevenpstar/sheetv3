@@ -74,8 +74,11 @@ function CreateStems(
   let hNote: Note;
   let lNote: Note;
 
+  let graceNote = false;
+
   notes.forEach((na: Note[]) => {
     na.forEach((n: Note) => {
+      if (n.Grace) { graceNote = true; }
       if (n.Line < highestLine) {
         highestLine = n.Line;
         hNote = n;
@@ -114,7 +117,7 @@ function CreateStems(
     beamDir: beamDir,
     stemDir: stemDir,
   };
-  divisions.forEach((div: Division, i: number) => {
+  divisions.forEach((_: Division, i: number) => {
     CreateNoteStem(
       measure,
       divGroupMetaData,
@@ -124,23 +127,24 @@ function CreateStems(
       divisions,
       staffMidLinePos,
       staff,
+      graceNote,
     );
 
-    div.Subdivisions.filter(
-      (d: Subdivision) => d.Type === SubdivisionType.GRACE_NOTE,
-    ).forEach((sDiv: Subdivision) => {
-      CreateGraceNoteStems(
-        measure,
-        divGroupMetaData,
-        stems,
-        notes[i].filter((n: Note) => n.Grace && n.Order === sDiv.Order),
-        i,
-        sDiv,
-        divisions,
-        staffMidLinePos,
-        staff,
-      );
-    });
+   // div.Subdivisions.filter(
+   //   (d: Subdivision) => d.Type === SubdivisionType.GRACE_NOTE,
+   // ).forEach((sDiv: Subdivision) => {
+   //   CreateGraceNoteStems(
+   //     measure,
+   //     divGroupMetaData,
+   //     stems,
+   //     notes[i].filter((n: Note) => n.Grace && n.Order === sDiv.Order),
+   //     i,
+   //     sDiv,
+   //     divisions,
+   //     staffMidLinePos,
+   //     staff,
+   //   );
+   // });
   });
   return stems;
 }
@@ -154,6 +158,7 @@ function CreateNoteStem(
   divisions: Division[],
   staffMidLinePos: number,
   staff: number,
+  grace: boolean,
 ): void {
   if (notes.length === 0) {
     return;
@@ -163,7 +168,7 @@ function CreateNoteStem(
     metaData;
   const beamAlt = i * (10 / divisions.length - 1);
   const divNotes = notes; //[i];
-  const isGraceStem = false; //subDiv.Type === SubdivisionType.GRACE_NOTE;
+  const isGraceStem = grace; //subDiv.Type === SubdivisionType.GRACE_NOTE;
   const scale = isGraceStem ? 0.6 : 1.0;
   const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
   if (numOfAcc > 0) {
@@ -183,10 +188,10 @@ function CreateNoteStem(
   if (stemDir === StemDirection.Up) {
     stem.Bounds.y = divNotes[divNotes.length - 1].Bounds.y + 2.0;
     stem.Bounds.height =
-      hNote.Bounds.y - divNotes[divNotes.length - 1].Bounds.y - 35;
+      hNote.Bounds.y - divNotes[divNotes.length - 1].Bounds.y - 35 * scale;
   } else {
     stem.Bounds.y = divNotes[0].Bounds.y + 4.0;
-    stem.Bounds.height = lNote.Bounds.y - divNotes[0].Bounds.y + 35;
+    stem.Bounds.height = lNote.Bounds.y - divNotes[0].Bounds.y + 35 * scale;
   }
 
   if (StemToCenter(stemDir, lowestLine, highestLine)) {

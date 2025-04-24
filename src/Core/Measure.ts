@@ -308,7 +308,7 @@ class Measure implements ISelectable {
         return a.Duration - b.Duration;
       },
     )[0];
-    const count = 1 / lowestVal.Duration;
+    const count = (1 * (this.TimeSignature.top / this.TimeSignature.bottom)) / lowestVal.Duration;
     return count * DivisionMinWidth;
   }
 

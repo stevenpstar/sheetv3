@@ -16,6 +16,10 @@ function ReturnBreakPoints(timeSig: { top: number; bottom: number }): number[] {
   const timeSigString =
     timeSig.top.toString() + "/" + timeSig.bottom.toString();
   switch (timeSigString) {
+    case "9/8":
+      bPoints.push(2.5);
+      bPoints.push(4);
+      break;
     case "4/4":
     default:
       bPoints.push(3);
@@ -34,6 +38,7 @@ class TimeSignature implements ISelectable {
 
   TopPosition: { x: number; y: number }[];
   BotPosition: { x: number; y: number }[];
+  Breakpoints: number[];
 
   constructor(top: number, bottom: number, useSymbol: boolean = false) {
     this.Selected = false;
@@ -44,6 +49,7 @@ class TimeSignature implements ISelectable {
     this.TopPosition = [{ x: 0, y: 0 }];
     this.BotPosition = [{ x: 0, y: 0 }];
     this.Bounds = [new Bounds(0, 0, 0, 0)];
+    this.Breakpoints = ReturnBreakPoints({ top: top, bottom: bottom });
     // use symbol? (bad name) for things like common and cut common
   }
 
@@ -69,6 +75,11 @@ class TimeSignature implements ISelectable {
         this.Selected,
       );
     });
+  }
+
+  GetMaxDuration(): number {
+    const val = 1 / this.bottom;
+    return this.top * val;
   }
 
   SetBounds(msr: Measure): void {

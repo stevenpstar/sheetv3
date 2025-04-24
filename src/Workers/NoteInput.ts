@@ -14,6 +14,7 @@ import { GetStaffMiddleLine, Staff } from "../Core/Staff.js";
 import { GetLargestValues } from "../Core/Values.js";
 import { CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
+import { NoteHeads } from "../Renderers/MusicFont.Renderer.js";
 import {
   DetermineStemDirection,
   StemDirection,
@@ -223,7 +224,7 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
               // the subdivisions have been generated. This is probably a minor
               // issue / can be optimised. For now, we have a guard.
             } else {
-              n.Bounds.x = graceDiv.Bounds.x;
+              n.Bounds.x = graceDiv.Bounds.x + 4;
             }
           }
           n.Bounds.y = msr.GetNotePositionOnLine(n.Line, n.Staff);

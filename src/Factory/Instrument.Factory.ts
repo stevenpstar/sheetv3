@@ -68,7 +68,7 @@ const CreateDefaultMeasure = (
       150,
       msrHeight,
     ),
-    TimeSignature: { top: 9, bottom: 8 },
+    TimeSignature: { top: 4, bottom: 4 },
     KeySignature: "DMaj/Bmin",
     Notes: [],
     Clefs: [new Clef(0, "treble", 1, 0), new Clef(1, "bass", 1, 1)],
