@@ -1,4 +1,4 @@
-import { Flags, RenderSymbol } from "../Renderers/MusicFont.Renderer.js";
+import { Flags, RenderScaledSymbol, RenderSymbol } from "../Renderers/MusicFont.Renderer.js";
 import { StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
@@ -22,13 +22,15 @@ class Flag implements ISelectable {
   Bounds: Bounds;
   Direction: FlagDirection;
   Duration: number;
+  Scale: number;
 
-  constructor(bounds: Bounds, flagDir: FlagDirection, duration: number) {
+  constructor(bounds: Bounds, flagDir: FlagDirection, duration: number, scale: number = 1.0) {
     this.Selected = false;
     this.Editable = false;
     this.Direction = flagDir;
     this.Duration = duration;
     this.Bounds = this.SetBounds(bounds);
+    this.Scale = scale;
   }
 
   IsHovered(x: number, y: number, cam: Camera): boolean {
@@ -46,13 +48,14 @@ class Flag implements ISelectable {
   }
 
   Render(renderProps: RenderProperties, theme: Theme): void {
-    RenderSymbol(
+    RenderScaledSymbol(
       renderProps,
       GetFlagSymbol(this.Duration, this.Direction),
       this.Bounds.x,
       this.Bounds.y,
       theme,
       this.Selected,
+      Math.floor(40 * this.Scale),
     );
 
     //    this.RenderBounds(renderProps.context, renderProps.camera);
@@ -89,14 +92,39 @@ function GetFlagSymbol(value: number, flagDir: FlagDirection): Flags {
 }
 
 function CreateFlags(group: DivGroup): Flag[] {
+  // TODO: This will likely need to be reworked at some point
   const flags: Flag[] = [];
+  let graceDivGroup = false;
+  let flagDuration = 0;
+  let scale = 1.0;
+  if (group.Notes.length === 0) {
+    return [];
+  }
+  if (group.Notes[0].length === 0) {
+    return [];
+  }
+  if (group.Notes[0][0].Grace) {
+    graceDivGroup = true;
+    scale = 0.6;
+    if (group.Notes[0][0].Duration >= 0.25) {
+      return [];
+    }
+  }
+  if (group.Divisions[0].Duration >= 0.25 && !graceDivGroup) {
+    return [];
+  }
   group.Stems.forEach((s: Stem) => {
+    if (!graceDivGroup) {
+      flagDuration = s.Division.Duration;
+    } else {
+      flagDuration = group.Notes[0][0].Duration;
+    }
     let flagDir: FlagDirection = FlagDirection.DOWN;
     flagDir =
       group.StemDir === StemDirection.Up
         ? FlagDirection.DOWN
         : FlagDirection.UP;
-    flags.push(new Flag(s.Bounds, flagDir, s.Division.Duration));
+    flags.push(new Flag(s.Bounds, flagDir, flagDuration, scale));
   });
   return flags;
 }
