@@ -6,7 +6,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { BarlinePos, BarlineType } from "./Barline.js";
 import { Beam } from "./Beam.js";
-import { GetNoteClefType } from "./Clef.js";
+import { Clef, GetNoteClefType } from "./Clef.js";
 import { Flag } from "./Flag.js";
 import { Measure } from "./Measure.js";
 import { Note, NoteProps } from "./Note.js";
@@ -120,12 +120,20 @@ function CreateDivisions(
     GenerateMissingBeatDivisions(msr, divisions, staff, voice);
   }
   GenerateMissingBeatDivisions(msr, divisions, staff, voice);
+
+// CREATING SUBDIVISIONS FOR DIVISION //
+  
   divisions
     .filter((div: Division) => div.Staff === staff)
     .forEach((div: Division) => {
+      const ClefInDivision: boolean = msr
+        .Clefs
+        .find((c: Clef) => c.Staff === div.Staff &&
+              c.Beat === div.Beat) !== undefined;
       CreateSubdivisions(
         div,
         notes.filter((n: Note) => n.Beat === div.Beat),
+        ClefInDivision,
       );
     });
   UpdateNoteBounds(msr, staff);
@@ -155,8 +163,25 @@ function CreateDivision(
   return div;
 }
 
-function CreateSubdivisions(div: Division, notes: Note[]): void {
+function CreateSubdivisions(div: Division, notes: Note[], clefInDivision: boolean): void {
   div.Subdivisions = [];
+
+  // Add Clef subdivision, set width to 0 if no clef detected for now.
+  console.log("ClefInDivision: ", clefInDivision);
+  let clefSubDivWidth = clefInDivision ? 15 : 0;
+  if (div.Beat === 1)
+  {
+    // Clefs on beat 1 are not rendered in the subdivision
+    clefSubDivWidth = 0;
+  }
+  const clefSubDiv: Subdivision = {
+    Order: 1,
+    Type: SubdivisionType.CLEF,
+    Bounds: new Bounds(div.Bounds.x, div.Bounds.y, clefSubDivWidth, div.Bounds.height),
+  };
+
+  div.Subdivisions.push(clefSubDiv);
+
   notes.forEach((note) => {
     if (
       note.Grace &&
@@ -165,9 +190,9 @@ function CreateSubdivisions(div: Division, notes: Note[]): void {
       )
     ) {
       const graceSubdiv: Subdivision = {
-        Order: 1,
+        Order: 2,
         Type: SubdivisionType.GRACE_NOTE,
-        Bounds: new Bounds(div.Bounds.x, div.Bounds.y, 15, div.Bounds.height),
+        Bounds: new Bounds(div.Bounds.x + clefSubDivWidth, div.Bounds.y, 15, div.Bounds.height),
       };
 
       // TODO: Add multiple/infinite(?) grace note subdivisions
@@ -462,14 +487,12 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
           notes = [];
         } else {
           startFlag = true;
-          if (
-            i ===
-            msr.Voices[msr.ActiveVoice].Divisions.filter(
+
+          if ( i === msr.Voices[msr.ActiveVoice].Divisions.filter(
               (d) => d.Staff === staff || d.StaffGroup === staff,
-            ).length -
-              1
-          ) {
+            ).length - 1) {
             // end of measure
+
             divGroups.DivGroups.push(
               CreateDivisionGroup(divs, notes, staff, crossStaff),
             );
