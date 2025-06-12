@@ -1,6 +1,7 @@
 import { Camera } from "../Core/Camera.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
+import { GetStaffMiddleLine } from "../Core/Staff.js";
 import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
@@ -9,6 +10,7 @@ import {
   NoteHeads,
   RenderScaledNote,
   RenderSymbol,
+  Rests,
   TupletNumbers,
   stdFontSize,
 } from "./MusicFont.Renderer.js";
@@ -176,6 +178,7 @@ function RenderDots(
 }
 
 function RenderRest(
+  renderProps: RenderProperties,
   ctx: CanvasRenderingContext2D,
   div: Division,
   cam: Camera,
@@ -188,35 +191,114 @@ function RenderRest(
   }
   ctx.fillStyle = theme.NoteElements;
 
-  let x = div.Bounds.x + cam.x + noteXBuffer;
+  let x = div.Bounds.x + noteXBuffer;
   //    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
-  let y = msr.GetNotePositionOnLine(note.Line + 2.5, note.Staff) + cam.y;
+  let y = msr.GetNotePositionOnLine(note.Line + 3.5, note.Staff);
   let path = `m${x} ${y}`;
   ctx.fillStyle = note.Selected ? theme.SelectColour : theme.NoteElements;
+  console.log("div duration: ", div.Duration);
+  if (div.Duration === 0.015625) {
 
-  if (div.Duration === 0.3125) {
-    y += 7;
-    path = `m ${x} ${y}` + demiSemiQuaverRest;
-    ctx.fill(new Path2D(path));
-  } else if (div.Duration === 0.0625) {
-    y += 9;
-    path = `m ${x} ${y}` + semiQuaverRest;
-    ctx.fill(new Path2D(path));
-  } else if (div.Duration > 0.0625 && div.Duration <= 0.125) {
-    y = y + 10;
-    path = `m${x} ${y}` + quaverRest;
-    ctx.fill(new Path2D(path));
-  } else if (div.Duration === 0.25) {
-    path = path + crotchetRest;
-    ctx.fill(new Path2D(path));
-  } else if (div.Duration === 0.5) {
-    y = msr.GetNotePositionOnLine(note.Line + 4.5, note.Staff) + cam.y;
-    ctx.fillRect(x, y, 14, 6);
-  } else if (div.Duration === 1) {
-    y = msr.GetNotePositionOnLine(note.Line + 3.6, note.Staff) + cam.y;
-    x = div.Bounds.x + cam.x + div.Bounds.width / 2 - 7;
-    ctx.fillRect(x, y, 14, 6);
+  let y = msr.GetNotePositionOnLine(note.Line + 3.5, note.Staff);
+    RenderScaledNote(
+      note,
+      renderProps,
+      Rests.HemiDemiSemiQuaver,
+      x,
+      y + 1,
+      theme,
+      note.Selected,
+      stdFontSize
+    );
   }
+
+  if (div.Duration === 0.03125) {
+
+    let y = msr.GetNotePositionOnLine(note.Line + 5, note.Staff);
+    RenderScaledNote(
+      note,
+      renderProps,
+      Rests.DemiSemiQuaver,
+      x,
+      y + 1,
+      theme,
+      note.Selected,
+      stdFontSize
+    );
+
+//    y += 7;
+//    path = `m ${x} ${y}` + demiSemiQuaverRest;
+//    ctx.fill(new Path2D(path));
+  } else if (div.Duration === 0.0625) {
+
+    let y = msr.GetNotePositionOnLine(note.Line + 5, note.Staff);
+    RenderScaledNote(
+      note,
+      renderProps,
+      Rests.SemiQuaver,
+      x,
+      y + 1,
+      theme,
+      note.Selected,
+      stdFontSize
+    );
+
+//    y += 9;
+//    path = `m ${x} ${y}` + semiQuaverRest;
+//    ctx.fill(new Path2D(path));
+  } else if (div.Duration > 0.0625 && div.Duration <= 0.125) {
+
+    let y = msr.GetNotePositionOnLine(note.Line + 5, note.Staff);
+    RenderScaledNote(
+      note,
+      renderProps,
+      Rests.Quaver,
+      x,
+      y + 1,
+      theme,
+      note.Selected,
+      stdFontSize
+    );
+  //  y = y + 10;
+  //  path = `m${x} ${y}` + quaverRest;
+  //  ctx.fill(new Path2D(path));
+  } else if (div.Duration === 0.25) {
+    let y = msr.GetNotePositionOnLine(note.Line + 5.5, note.Staff);
+    RenderScaledNote(
+      note,
+      renderProps,
+      Rests.Crotchet,
+      x,
+      y + 1,
+      theme,
+      note.Selected,
+      stdFontSize,
+    );
+  } else if (div.Duration === 0.5) {
+    let y = msr.GetNotePositionOnLine(note.Line + 4.5, note.Staff);
+    RenderScaledNote(
+      note,
+      renderProps,
+      Rests.Minim,
+      x,
+      y + 1,
+      theme,
+      note.Selected,
+      stdFontSize
+    );
+  } else if (div.Duration >= 1) {
+    x = div.Bounds.x + div.Bounds.width / 2;
+    RenderScaledNote(
+      note,
+      renderProps,
+      Rests.Whole,
+      x,
+      y + 1,
+      theme,
+      note.Selected, // This will not be a constant
+      stdFontSize,
+    );
+ }
 }
 
 function RenderTupletAnnotation(

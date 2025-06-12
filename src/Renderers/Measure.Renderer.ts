@@ -182,6 +182,7 @@ function RenderHovered(
           );
         } else {
           RenderRest(
+            renderProps,
             renderProps.context,
             s,
             renderProps.camera,
@@ -314,7 +315,7 @@ function RenderNotes(
       IsRestOnBeat(div.Beat, divNotes, div.Staff) &&
       msr.Voices[msr.ActiveVoice] === voice
     ) {
-      RenderRest(context, div, camera, divNotes[0], msr, theme);
+      RenderRest(renderProps, context, div, camera, divNotes[0], msr, theme);
       return;
     }
     renderLedgerLines(voice.Notes, div, renderProps, staff, msr, theme);
@@ -370,7 +371,7 @@ function RenderNotes(
             : 0;
 
           if (n.Rest) {
-            RenderRest(context, div, camera, n, msr, theme);
+            RenderRest(renderProps, context, div, camera, n, msr, theme);
           } else {
             RenderNote(
               n,
