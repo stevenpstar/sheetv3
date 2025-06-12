@@ -34,7 +34,6 @@ import {
 } from "./Core/Barline.js";
 import { Dynamic } from "./Core/Dynamic.js";
 import { Articulation, ArticulationType } from "./Core/Articulation.js";
-import { Clefs } from "./Renderers/MusicFont.Renderer.js";
 
 class App {
   Config: ConfigSettings;

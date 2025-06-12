@@ -429,7 +429,7 @@ function GetDivisionTotalWidth(divisions: Division[]): number {
   return width;
 }
 
-function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
+function GetDivisionGroups(msr: Measure, staff: number, voice: number): DivGroup[] {
   const divGroups: DivGroups = { DivGroups: [] };
   let divs: Division[] = [];
   let notes: Array<Note[]> = [];
@@ -437,7 +437,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
   // started creating a div group or not
   let startFlag = false;
 
-  const mDivs = msr.Voices[msr.ActiveVoice].Divisions.filter(
+  const mDivs = msr.Voices[voice].Divisions.filter(
     (d) => d.Staff === staff || d.StaffGroup === staff,
   ).sort((a: Division, b: Division) => {
     return a.Beat - b.Beat;
@@ -447,7 +447,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
   // loop with functions/branching
   // TODO: Grace note stems/divgroups not being generated properly. Revisit.
   mDivs.forEach((div: Division) => {
-    const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
+    const divNotes = msr.Voices[voice].Notes.filter(
       (n: Note) =>
         n.Beat === div.Beat &&
         (n.Staff === staff || n.StaffGroup === staff) &&
@@ -464,7 +464,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
     if (div.Staff !== staff) {
       crossStaff = true;
     }
-    const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
+    const divNotes = msr.Voices[voice].Notes.filter(
       (n) =>
         n.Beat === div.Beat &&
         (n.Staff === staff || n.StaffGroup === staff) &&
@@ -498,7 +498,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
         } else {
           startFlag = true;
 
-          if ( i === msr.Voices[msr.ActiveVoice].Divisions.filter(
+          if ( i === msr.Voices[voice].Divisions.filter(
               (d) => d.Staff === staff || d.StaffGroup === staff,
             ).length - 1) {
             // end of measure
@@ -538,7 +538,7 @@ function GetDivisionGroups(msr: Measure, staff: number): DivGroup[] {
           notes.push(divNotes);
           if (
             i ===
-            msr.Voices[msr.ActiveVoice].Divisions.filter(
+            msr.Voices[voice].Divisions.filter(
               (d) => d.Staff === staff || d.StaffGroup === staff,
             ).length -
               1

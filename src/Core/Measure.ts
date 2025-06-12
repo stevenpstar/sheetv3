@@ -12,6 +12,7 @@ import {
   type Division,
   ResizeDivisions,
   DivisionMinWidth,
+  DivisionMaxWidth,
 } from "./Division.js";
 import { Dynamic } from "./Dynamic.js";
 import { Instrument, StaffType } from "./Instrument.js";
@@ -312,13 +313,15 @@ class Measure implements ISelectable {
     ) {
       return DivisionMinWidth * 4;
     }
-    const lowestVal = this.Voices[this.ActiveVoice].Notes.sort(
-      (a: Note, b: Note) => {
-        return a.Duration - b.Duration;
-      },
-    )[0];
-    const count = (1 * (this.TimeSignature.top / this.TimeSignature.bottom)) / lowestVal.Duration;
-    return count * DivisionMinWidth;
+    const count = 1;
+//    const lowestVal = this.Voices[this.ActiveVoice].Notes.sort(
+//      (a: Note, b: Note) => {
+//        return a.Duration - b.Duration;
+//      },
+//    )[0];
+//    const count = (1 * (this.TimeSignature.top / this.TimeSignature.bottom)) / lowestVal.Duration;
+ //   return count * DivisionMinWidth;
+    return this.Voices[this.ActiveVoice].Divisions.length * DivisionMaxWidth;
   }
 
   ReturnSelectableElements(): ISelectable[] {

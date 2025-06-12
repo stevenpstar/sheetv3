@@ -12,6 +12,7 @@ import { Division, Measure } from "../Core/Measure.js";
 import { Note, NoteProps, TupleDetails } from "../Core/Note.js";
 import { GetStaffMiddleLine, Staff } from "../Core/Staff.js";
 import { GetLargestValues } from "../Core/Values.js";
+import { Voice } from "../Core/Voice.js";
 import { CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
 import { NoteHeads } from "../Renderers/MusicFont.Renderer.js";
@@ -140,95 +141,101 @@ function InputNote(
 }
 
 function RecreateStemAndBeams(msr: Measure): void {
-  msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g: DivGroup) => {
-    g.Stems = [];
-    g.Beams = [];
-    g.Flags = [];
-    g.Stems.push(...CreateStems(g.Notes, g.Divisions, g.Staff, msr));
-    g.Beams.push(...CreateBeamsRevise(g, g.Stems, false));
-    if (g.Divisions.length === 0) { return; }
-    if (g.Beams.length === 0) {
-      g.Flags.push(...CreateFlags(g));
-    }
+  msr.Voices.forEach((voice: Voice) => {
+    voice.DivisionGroups.forEach((g: DivGroup) => {
+      g.Stems = [];
+      g.Beams = [];
+      g.Flags = [];
+      g.Stems.push(...CreateStems(g.Notes, g.Divisions, g.Staff, msr));
+      g.Beams.push(...CreateBeamsRevise(g, g.Stems, false));
+      if (g.Divisions.length === 0) { return; }
+      if (g.Beams.length === 0) {
+        g.Flags.push(...CreateFlags(g));
+      }
+    });
   });
 }
 
 function RecreateDivisionGroups(msr: Measure): void {
-  var groups = [];
-  msr.Staves.forEach((staff: Staff) => {
-    const group = GetDivisionGroups(msr, staff.Num);
-    groups.push(...group);
-  });
+  msr.Voices.forEach((_: Voice, voice_index: number) => {
+    var groups = [];
+    msr.Staves.forEach((staff: Staff) => {
+      const group = GetDivisionGroups(msr, staff.Num, voice_index);
+      groups.push(...group);
+    });
 
-  msr.Voices[msr.ActiveVoice].DivisionGroups = groups;
+    msr.Voices[voice_index].DivisionGroups = groups;
+  });
 }
 
 function UpdateNoteBounds(msr: Measure, staff: number): void {
   // Maybe should go somewhere else
   // Maybe should be more optimised
   // For now seems to update bounds of notes properly
-  msr.Voices[msr.ActiveVoice].DivisionGroups.forEach((g: DivGroup) => {
-    const { Divisions, Notes } = g;
-    const stemDir = DetermineStemDirection(Notes, Divisions);
-    Divisions.forEach((div: Division) => {
-      // Set Division values for stem direction and X Buffer here
-      // TODO: This may need to be a function in the division file
-      div.Direction = stemDir;
+  msr.Voices.forEach((voice: Voice) => {
+    voice.DivisionGroups.forEach((g: DivGroup) => {
+      const { Divisions, Notes } = g;
+      const stemDir = DetermineStemDirection(Notes, Divisions);
+      Divisions.forEach((div: Division) => {
+        // Set Division values for stem direction and X Buffer here
+        // TODO: This may need to be a function in the division file
+        div.Direction = stemDir;
 
-      const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
-        (n) => n.Beat === div.Beat && n.Staff === staff,
-      );
-      divNotes.sort((a: Note, b: Note) => {
-        return a.Line - b.Line;
-      });
-      let dynNoteXBuffer = noteXBuffer;
-      const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
-      if (numOfAcc > 0) {
-        dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
-      }
-      const noteSubDiv = div.Subdivisions.find(
-        (sd: Subdivision) => sd.Type === SubdivisionType.NOTE,
-      );
-      var subDivBuffer = 0;
-      if (noteSubDiv) {
-        subDivBuffer = noteSubDiv.Bounds.x - div.Bounds.x;
-      }
-      div.NoteXBuffer = dynNoteXBuffer + subDivBuffer;
-
-      divNotes.forEach((n: Note, i: number) => {
-        const isFlipped = IsFlippedNote(divNotes, i, stemDir);
-        let flipNoteOffset = isFlipped
-          ? stemDir === StemDirection.Up
-            ? 11
-            : -11
-          : 0;
-
-        if (!n.Rest) {
-          n.Bounds.x = Math.floor(
-            div.Bounds.x + dynNoteXBuffer + subDivBuffer + flipNoteOffset,
-          );
-          if (n.Grace) {
-            let graceDiv = div.Subdivisions.find(
-              (sd: Subdivision) =>
-                sd.Order === n.Order && sd.Type === SubdivisionType.GRACE_NOTE,
-            );
-            if (!graceDiv) {
-              graceDiv = div.Subdivisions.find(
-                (sd: Subdivision) =>
-                  sd.Order === 1 && sd.Type === SubdivisionType.GRACE_NOTE,
-              );
-            }
-            if (!graceDiv) {
-              // TODO:
-              // Note bounds get updated multiple times, sometimes it is before
-              // the subdivisions have been generated. This is probably a minor
-              // issue / can be optimised. For now, we have a guard.
-            } else {
-              n.Bounds.x = graceDiv.Bounds.x + 4;
-            }
-          }
-          n.Bounds.y = msr.GetNotePositionOnLine(n.Line, n.Staff);
+        const divNotes = voice.Notes.filter(
+          (n) => n.Beat === div.Beat && n.Staff === staff,
+        );
+        divNotes.sort((a: Note, b: Note) => {
+          return a.Line - b.Line;
+        });
+        let dynNoteXBuffer = noteXBuffer;
+        const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
+        if (numOfAcc > 0) {
+          dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
         }
+        const noteSubDiv = div.Subdivisions.find(
+          (sd: Subdivision) => sd.Type === SubdivisionType.NOTE,
+        );
+        var subDivBuffer = 0;
+        if (noteSubDiv) {
+          subDivBuffer = noteSubDiv.Bounds.x - div.Bounds.x;
+        }
+        div.NoteXBuffer = dynNoteXBuffer + subDivBuffer;
+
+        divNotes.forEach((n: Note, i: number) => {
+          const isFlipped = IsFlippedNote(divNotes, i, stemDir);
+          let flipNoteOffset = isFlipped
+            ? stemDir === StemDirection.Up
+              ? 11
+              : -11
+            : 0;
+
+          if (!n.Rest) {
+            n.Bounds.x = Math.floor(
+              div.Bounds.x + dynNoteXBuffer + subDivBuffer + flipNoteOffset,
+            );
+            if (n.Grace) {
+              let graceDiv = div.Subdivisions.find(
+                (sd: Subdivision) =>
+                  sd.Order === n.Order && sd.Type === SubdivisionType.GRACE_NOTE,
+              );
+              if (!graceDiv) {
+                graceDiv = div.Subdivisions.find(
+                  (sd: Subdivision) =>
+                    sd.Order === 1 && sd.Type === SubdivisionType.GRACE_NOTE,
+                );
+              }
+              if (!graceDiv) {
+                // TODO:
+                // Note bounds get updated multiple times, sometimes it is before
+                // the subdivisions have been generated. This is probably a minor
+                // issue / can be optimised. For now, we have a guard.
+              } else {
+                n.Bounds.x = graceDiv.Bounds.x + 4;
+              }
+            }
+            n.Bounds.y = msr.GetNotePositionOnLine(n.Line, n.Staff);
+          }
+        });
       });
     });
   });

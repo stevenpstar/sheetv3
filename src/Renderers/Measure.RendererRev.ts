@@ -25,7 +25,10 @@ function RenderMeasureRev(
   });
   if (measure.RenderKey) {
     measure.Staves.forEach((s: Staff) => {
-      // This needs work
+      if (measure.Clefs.length === 0) {
+        console.error("Measure has no clefs, returning early from Rendering Key Signature");
+        return;
+      }
       RenderKeySignature(
         renderProps,
         measure,
