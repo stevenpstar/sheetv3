@@ -30,6 +30,7 @@ interface KeyMapping {
   cycle_voice: string;
   add_barline: string;
   add_accent: string;
+  add_clef: string;
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -74,7 +75,7 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       break;
     case keyMaps.scaleToggle:
       //app.ScaleToggle();
-      app.AddClef(Clefs.G);
+      app.AddClef();
       break;
     case keyMaps.save:
       app.Save();
@@ -112,6 +113,8 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
     case keyMaps.add_accent:
       app.AddArticulation(ArticulationType.ACCENT);
       break;
+    case keyMaps.add_clef:
+      app.AddClef();
     default:
   }
 }

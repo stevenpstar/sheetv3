@@ -4,7 +4,6 @@ import {
 } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
-import { BarlinePos, BarlineType } from "./Barline.js";
 import { Beam } from "./Beam.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
 import { Flag } from "./Flag.js";
@@ -126,14 +125,14 @@ function CreateDivisions(
   divisions
     .filter((div: Division) => div.Staff === staff)
     .forEach((div: Division) => {
-      const ClefInDivision: boolean = msr
+      const clef: Clef = msr
         .Clefs
         .find((c: Clef) => c.Staff === div.Staff &&
-              c.Beat === div.Beat) !== undefined;
+              c.Beat === div.Beat);
       CreateSubdivisions(
         div,
         notes.filter((n: Note) => n.Beat === div.Beat),
-        ClefInDivision,
+        clef,
       );
     });
   UpdateNoteBounds(msr, staff);
@@ -163,18 +162,19 @@ function CreateDivision(
   return div;
 }
 
-function CreateSubdivisions(div: Division, notes: Note[], clefInDivision: boolean): void {
+function CreateSubdivisions(div: Division, notes: Note[], clef: Clef): void {
   div.Subdivisions = [];
 
   // Add Clef subdivision, set width to 0 if no clef detected for now.
-  console.log("ClefInDivision: ", clefInDivision);
-  let clefSubDivWidth = clefInDivision ? 15 : 0;
+  const clefInDivision = clef !== undefined;
+  let clefSubDivWidth = clefInDivision && clef.PostClef === false ? 30 : 0;
+  let postClefSubDivWidth = clefInDivision && clef.PostClef === true ? 30 : 0;
   if (div.Beat === 1)
   {
     // Clefs on beat 1 are not rendered in the subdivision
     clefSubDivWidth = 0;
   }
-  const clefSubDiv: Subdivision = {
+  let clefSubDiv: Subdivision = {
     Order: 1,
     Type: SubdivisionType.CLEF,
     Bounds: new Bounds(div.Bounds.x, div.Bounds.y, clefSubDivWidth, div.Bounds.height),
@@ -221,14 +221,24 @@ function CreateSubdivisions(div: Division, notes: Note[], clefInDivision: boolea
     Bounds: new Bounds(
       div.Bounds.x + xBuffer,
       div.Bounds.y,
-      div.Bounds.width - xBuffer,
+      div.Bounds.width - xBuffer - postClefSubDivWidth,
       div.Bounds.height,
     ),
   };
 
   div.Subdivisions.push(noteSubdiv);
+
+  let postClefSubDiv: Subdivision = {
+    Order: 4,
+    Type: SubdivisionType.POST_CLEF,
+    Bounds: new Bounds(div.Bounds.x + div.Bounds.width - postClefSubDivWidth, 
+                       div.Bounds.y, postClefSubDivWidth, div.Bounds.height),
+  };
+
+  div.Subdivisions.push(postClefSubDiv);
+
   div.Subdivisions.sort((a: Subdivision, b: Subdivision) => {
-    return b.Type - a.Type;
+    return b.Order - a.Order;
   });
 }
 

@@ -1,4 +1,4 @@
-import { Clefs, RenderSymbol } from "../Renderers/MusicFont.Renderer.js";
+import { Clefs, RenderScaledSymbol, stdFontSize } from "../Renderers/MusicFont.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
@@ -22,7 +22,9 @@ class Clef implements ISelectable {
   Type: string;
   Beat: number;
   Editable: boolean;
-  constructor(id: number, type: string, beat: number, staff: number) {
+  // This clef will effect notes after this beat (rendered after note on beat)
+  PostClef: boolean;
+  constructor(id: number, type: string, beat: number, staff: number, postClef: boolean = false) {
     this.ID = id;
     this.Position = { x: 0, y: 0 };
     this.Staff = staff;
@@ -33,6 +35,7 @@ class Clef implements ISelectable {
     this.Selected = false;
     // TODO: shouldn't only be true
     this.Editable = true;
+    this.PostClef = postClef;
   }
 
   render(renderProps: RenderProperties, theme: Theme): void {
@@ -48,13 +51,16 @@ class Clef implements ISelectable {
         clefSymbol = Clefs.G;
     }
 
-    RenderSymbol(
+    const scale = this.Beat == 1 ? stdFontSize * 1.0 : stdFontSize * 0.65;
+
+    RenderScaledSymbol(
       renderProps,
       clefSymbol,
       this.Position.x,
       this.Position.y,
       theme,
       this.Selected,
+      scale
     );
   }
 
@@ -67,7 +73,24 @@ class Clef implements ISelectable {
     let xPosition: number = msr.Bounds.x;
     if (this.Beat !== 1) {
       if (div) {
-        xPosition = div.Bounds.x;
+        if (this.PostClef) {
+          const POST_clefSubDiv = div.Subdivisions
+            .find((sd: Subdivision) => sd.Type === SubdivisionType.POST_CLEF);
+          if (POST_clefSubDiv) {
+            xPosition = POST_clefSubDiv.Bounds.x;
+          } else {
+            xPosition = div.Bounds.x;
+          }
+        }
+        else {
+          const clefSubDiv = div.Subdivisions
+            .find((sd: Subdivision) => sd.Type === SubdivisionType.CLEF);
+          if (clefSubDiv) {
+            xPosition = clefSubDiv.Bounds.x;
+          } else {
+            xPosition = div.Bounds.x;
+          }
+        }
       }
     }
     //    this.Beat === 1

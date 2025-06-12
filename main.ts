@@ -29,6 +29,7 @@ const keymaps = {
   cycle_voice: "p",
   add_barline: ";",
   add_accent: "]",
+  add_clef: "k",
 };
 
 interface CanText {

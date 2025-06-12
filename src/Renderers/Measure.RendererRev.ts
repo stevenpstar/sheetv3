@@ -14,9 +14,15 @@ function RenderMeasureRev(
 ): void {
   // Render Barlines here
   measure.Staves.forEach((s: Staff) => RenderStaff(renderProps, measure, s));
-  if (measure.RenderClef) {
-    measure.Clefs.forEach((c: Clef) => RenderClef(renderProps, c, theme));
-  }
+  measure.Clefs.forEach((c: Clef) => {
+    if (c.Beat === 1 && measure.PrevMeasure === null) {
+      RenderClef(renderProps, c, theme)
+    } else if (c.Beat === 1 && measure.PrevMeasure !== null && measure.PrevMeasure.PageLine !== measure.PageLine) {
+      RenderClef(renderProps, c, theme)
+    } else if (c.Beat > 1) {
+      RenderClef(renderProps, c, theme);
+    }
+  });
   if (measure.RenderKey) {
     measure.Staves.forEach((s: Staff) => {
       // This needs work

@@ -34,6 +34,7 @@ const keymaps: KeyMapping = {
   cycle_voice: "p",
   add_barline: ";",
   add_accent: "]",
+  add_clef: "k",
 };
 
 const defaultTheme: Theme = {

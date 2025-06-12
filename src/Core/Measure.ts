@@ -43,39 +43,48 @@ interface MeasureProps {
 }
 
 class Measure implements ISelectable {
+
+  Instrument: Instrument;
+
+  // Measure References
   PrevMeasure: Measure;
   NextMeasure: Measure;
+
+  // NUMBER
   ID: number;
   Num: number;
+  XOffset: number; // not sure if this is what we want to go with
+  PageLine: number;
+  Line: number;
+  ActiveVoice: number = 0;
+  RunningID: { count: number };
+
+  // BOOLEAN
   Selected: boolean;
-  SelType: SelectableTypes;
-  Instrument: Instrument;
-  Bounds: Bounds;
   Editable: boolean;
   RenderClef: boolean;
   RenderKey: boolean;
   RenderTimeSig: boolean;
+
+  SelType: SelectableTypes;
+
+  Bounds: Bounds;
+
   Camera: Camera;
+
   Page: Page;
-  PageLine: Number;
-  Message: (msg: Message) => void;
 
   TimeSignature: TimeSignature;
   KeySignature: string;
 
   Voices: Voice[];
-  ActiveVoice: number = 0;
   Clefs: Clef[] = [];
   Staves: Staff[];
   Barlines: Barline[];
   Articulations: Articulation[];
   Dynamics: Dynamic[];
 
-  XOffset: number; // not sure if this is what we want to go with
-
-  // Grouping of measures on a line/for formatting
-  Line: number;
-  RunningID: { count: number };
+  Message: (msg: Message) => void;
 
   constructor(properties: MeasureProps, runningId: { count: number }) {
     this.PrevMeasure = properties.PrevMeasure;

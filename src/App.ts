@@ -29,7 +29,6 @@ import { ConfigSettings } from "./Types/Config.js";
 import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
 import {
   Barline,
-  BarlinePos,
   BarlineType,
   PositionMatch,
 } from "./Core/Barline.js";
@@ -196,13 +195,8 @@ class App {
         this.NotifyCallback,
         this.Selector.Elements,
       );
-      if (
-        (elem === undefined &&
-          this.Config.FormatSettings.MeasureFormatSettings.Selectable ===
-            true) ||
-        this.Config.FormatSettings.MeasureFormatSettings.Selectable ===
-          undefined
-      ) {
+      if ( (elem === undefined && this.Config.FormatSettings.MeasureFormatSettings.Selectable === true) ||
+        this.Config.FormatSettings.MeasureFormatSettings.Selectable === undefined) {
         this.Selector.SelectMeasure(msrOver);
       }
       if (!this.DraggingNote) {
@@ -725,12 +719,14 @@ class App {
     this.ResizeMeasures(this.Sheet);
   }
 
-  AddClef(clef: Clefs): void {
+  AddClef(): void {
+    // TODO: Get selected clef here, for now default to treble
+    const clef = "treble";
     for (let [msr, elem] of this.Selector.Elements) {
       elem
         .filter((e: ISelectable) => e.SelType === SelectableTypes.Note)
         .forEach((n: Note) => {
-          msr.Clefs.push(new Clef(0, "treble", n.Beat, n.Staff));
+          msr.Clefs.push(new Clef(0, clef, n.Beat, n.Staff));
         });
     }
   }
