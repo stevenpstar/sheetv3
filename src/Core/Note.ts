@@ -21,6 +21,7 @@ interface NoteProps {
   Clef: string;
   Editable?: boolean;
   Grace: boolean;
+  Voice: number;
 }
 
 class Note implements ISelectable {
@@ -29,6 +30,8 @@ class Note implements ISelectable {
   Order: number;
   Duration: number;
   Line: number;
+  Voice: number;
+
   Rest: boolean;
   Tied: boolean;
   Accidental: number;
@@ -57,6 +60,7 @@ class Note implements ISelectable {
   TupleDetails?: TupleDetails;
 
   constructor(props: NoteProps) {
+    this.Voice = props.Voice;
     this.Beat = props.Beat;
     this.Order = 0;
     if (!props.Grace) {

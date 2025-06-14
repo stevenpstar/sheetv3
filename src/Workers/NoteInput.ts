@@ -116,6 +116,7 @@ function InputNote(
     TupleDetails: notesInDiv[0].TupleDetails,
     Clef: clefType,
     Grace: grace,
+    Voice: msr.ActiveVoice,
   };
   const newNote: Note = new Note(noteProps);
 
@@ -128,7 +129,7 @@ function InputNote(
   }
 
   if (division.Duration === noteValue || grace) {
-    msr.ClearRestNotes(division.Beat, division.Staff);
+    msr.ClearRestNotes(division.Beat, division.Staff, msr.ActiveVoice);
     msr.AddNote(newNote, true);
   } else {
     if (MeasureHasRoom(noteProps.Beat, noteProps.Duration, msr)) {
@@ -264,7 +265,7 @@ function IsRestOnBeat(
   if (restFound && notesOnBeat.length > 1) {
     console.error("Rest found on beat with multiple notes, beat: ", beat);
   } else if (restFound && notesOnBeat.length === 1) {
-    msr.ClearRestNotes(beat, notesOnBeat[0].Staff);
+    msr.ClearRestNotes(beat, notesOnBeat[0].Staff, msr.ActiveVoice);
   }
   return restFound !== undefined;
 }
@@ -291,7 +292,7 @@ function AddToDivision(
 
     if (remainingValue >= div.Duration && beat === div.Beat) {
       // clear rests on beat regardless of what we are inputting
-      msr.ClearRestNotes(beat, noteProps.Staff);
+      msr.ClearRestNotes(beat, noteProps.Staff, msr.ActiveVoice);
       let remVal = remainingValue;
       let room: boolean = false;
       let lastIndex: number = 0;
@@ -318,6 +319,7 @@ function AddToDivision(
           msr.ClearRestNotes(
             msr.Voices[msr.ActiveVoice].Divisions[j].Beat,
             noteProps.Staff,
+            msr.ActiveVoice,
           );
         }
         const newNoteProps: NoteProps = {
@@ -330,6 +332,7 @@ function AddToDivision(
           Tuple: false,
           Clef: GetNoteClefType(msr, div.Beat, div.Staff),
           Grace: noteProps.Grace,
+          Voice: msr.ActiveVoice,
         };
 
         const newNote = new Note(newNoteProps);
@@ -355,6 +358,7 @@ function AddToDivision(
         Tuple: false,
         Clef: GetNoteClefType(msr, div.Beat, div.Staff),
         Grace: noteProps.Grace,
+        Voice: msr.ActiveVoice,
       };
 
       const newNote = new Note(newNoteProps);
@@ -393,6 +397,7 @@ function AddToDivision(
           Tuple: false,
           Clef: GetNoteClefType(msr, div.Beat, div.Staff),
           Grace: noteProps.Grace,
+          Voice: msr.ActiveVoice,
         };
         const newNote = new Note(newNoteProps);
 
@@ -421,6 +426,7 @@ function AddToDivision(
         TupleDetails: noteProps.TupleDetails,
         Clef: GetNoteClefType(msr, div.Beat, div.Staff),
         Grace: noteProps.Grace,
+        Voice: msr.ActiveVoice,
       };
 
       const remValue = div.Duration - remainingValue;
@@ -450,6 +456,7 @@ function AddToDivision(
             TupleDetails: n.TupleDetails,
             Clef: GetNoteClefType(msr, div.Beat, div.Staff),
             Grace: n.Grace,
+            Voice: msr.ActiveVoice,
           };
           const noteObj = new Note(tiedNote);
           noteObj.SetTiedStartEnd(tiedStart, tiedEnd);
@@ -503,6 +510,7 @@ function CreateTuplet(
             n.Staff,
           ),
           Grace: n.Grace,
+          Voice: measure.ActiveVoice,
         });
         lastBeat = newNote.Beat;
         measure.AddNote(newNote, true);

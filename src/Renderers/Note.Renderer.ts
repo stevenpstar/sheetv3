@@ -196,7 +196,6 @@ function RenderRest(
   let y = msr.GetNotePositionOnLine(note.Line + 3.5, note.Staff);
   let path = `m${x} ${y}`;
   ctx.fillStyle = note.Selected ? theme.SelectColour : theme.NoteElements;
-  console.log("div duration: ", div.Duration);
   if (div.Duration === 0.015625) {
 
   let y = msr.GetNotePositionOnLine(note.Line + 3.5, note.Staff);
@@ -212,7 +211,7 @@ function RenderRest(
     );
   }
 
-  if (div.Duration === 0.03125) {
+  if (div.Duration > 0.015625 && div.Duration <= 0.03125) {
 
     let y = msr.GetNotePositionOnLine(note.Line + 5, note.Staff);
     RenderScaledNote(
@@ -229,7 +228,7 @@ function RenderRest(
 //    y += 7;
 //    path = `m ${x} ${y}` + demiSemiQuaverRest;
 //    ctx.fill(new Path2D(path));
-  } else if (div.Duration === 0.0625) {
+  } else if (div.Duration > 0.03125 && div.Duration <= 0.0625) {
 
     let y = msr.GetNotePositionOnLine(note.Line + 5, note.Staff);
     RenderScaledNote(
@@ -465,8 +464,6 @@ function RenderTies(
       );
       if (tiedTo === undefined) {
         console.error("No tied note found: ", note);
-        console.log("note: ", note);
-        console.log(nextDivNotes);
         return;
       }
       const nextNote = tiedTo;

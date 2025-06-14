@@ -20,16 +20,18 @@ const keymaps = {
   scaleToggle: "'",
   save: "s",
   load: "l",
-  test_triplet: "t",
+  test_tuplet: "t",
   debug_clear: "c",
   beam: "b",
   grace: "g",
-  change_timesig: "z",
+  change_timesig: "+",
   add_dynamic: "f",
   cycle_voice: "p",
   add_barline: ";",
   add_accent: "]",
   add_clef: "k",
+  undo: "ctrl z",
+  redo: "ctrl y"
 };
 
 interface CanText {

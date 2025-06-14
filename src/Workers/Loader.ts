@@ -5,6 +5,7 @@ import { Note, NoteProps } from "../Core/Note.js";
 import { Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { Staff } from "../Core/Staff.js";
+import { Voice } from "../Core/Voice.js";
 import { CreateMeasure } from "../Factory/Instrument.Factory.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
@@ -20,7 +21,13 @@ interface lNote {
   Clef: string;
   Editable?: boolean;
   Grace: boolean;
+  Voice: number;
 }
+
+type LVoice = {
+  notes: Note[];
+};
+
 interface lMeasure {
   Clefs: Clef[];
   Staves: Staff[];
@@ -66,7 +73,9 @@ const LoadSheet = (
         Clef: n.Clef,
         Editable: true,
         Grace: n.Grace,
+        Voice: n.Voice,
       };
+
       const newNote = new Note(noteProps);
       notes.push(newNote);
     });
@@ -84,8 +93,14 @@ const LoadSheet = (
       page,
       m.ShowClef,
       callback,
+      true,
+      notes,
     );
-    msr.Voices[msr.ActiveVoice].Notes = notes;
+
+    if (sheet.Measures.length > 0) {
+      msr.PrevMeasure = sheet.Measures[sheet.Measures.length - 1];
+      sheet.Measures[sheet.Measures.length - 1].NextMeasure = msr;
+    }
     sheet.Measures.push(msr);
     msr.CreateDivisions();
   });
@@ -95,23 +110,26 @@ const SaveSheet = (sheet: Sheet): string => {
   let saved: LoadStructure = {
     Measures: [],
   };
-  sheet.Measures.forEach((m: Measure, i: number) => {
+  sheet.Measures.forEach((m: Measure) => {
     let notes: lNote[] = [];
-    m.Voices[m.ActiveVoice].Notes.forEach((n: Note, i: number) => {
-      if (n.Rest) {
-        return;
-      }
-      notes.push({
-        ID: n.ID,
-        Beat: n.Beat,
-        Duration: n.Duration,
-        Line: n.Line,
-        Rest: n.Rest,
-        Tied: n.Tied,
-        Staff: n.Staff,
-        Clef: n.Clef,
-        Editable: true,
-        Grace: n.Grace,
+    m.Voices.forEach((v: Voice, i: number) => {
+      v.Notes.forEach((n: Note) => {
+        if (n.Rest) {
+          return;
+        }
+        notes.push({
+          ID: n.ID,
+          Beat: n.Beat,
+          Duration: n.Duration,
+          Line: n.Line,
+          Rest: n.Rest,
+          Tied: n.Tied,
+          Staff: n.Staff,
+          Clef: n.Clef,
+          Editable: true,
+          Grace: n.Grace,
+          Voice: i,
+        });
       });
     });
     saved.Measures.push({
@@ -126,7 +144,8 @@ const SaveSheet = (sheet: Sheet): string => {
     });
   });
 
-  //  console.log(JSON.stringify(saved));
+  console.log(JSON.stringify(saved));
+  console.log("--- Saved! ---");
   return JSON.stringify(saved);
 };
 

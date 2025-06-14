@@ -54,6 +54,15 @@ function RenderMeasureLines(
 }
 
 function GetStaffHeightUntil(staves: Staff[], staffNum: number = -1): number {
+  if (!staves) {
+    // Likely to do with initial loading of a sheet
+    console.log("Staves does not exist? Early return");
+    return
+  }
+  if (staves.length === 0) {
+    console.log("No staves found, early return");
+    return 0;
+  }
   let height = 0;
   staves.forEach((s: Staff, i: number) => {
     if (i < staffNum || staffNum === -1) {

@@ -34,6 +34,7 @@ import {
 } from "./Core/Barline.js";
 import { Dynamic } from "./Core/Dynamic.js";
 import { Articulation, ArticulationType } from "./Core/Articulation.js";
+import { AddToUndoStack, LoadNextState, LoadPreviousState } from "./Workers/UndoRedo.js";
 
 class App {
   Config: ConfigSettings;
@@ -69,6 +70,9 @@ class App {
   LineNumber: Number;
 
   Debug: boolean;
+
+  StateStack: string[] = [];
+  StateIndex: { index: number } = { index: 0 };
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -123,6 +127,7 @@ class App {
     }
 
     this.Update(0, 0);
+    this.SaveToUndoStack();
   }
 
   Hover(x: number, y: number): void {
@@ -218,6 +223,7 @@ class App {
         this.GraceInput,
       );
       this.ResizeMeasures(this.Sheet);
+      this.SaveToUndoStack();
     }
     //  this.NotifyCallback(this.Message);
     const persist = SaveSheet(this.Sheet);
@@ -281,6 +287,8 @@ class App {
         this.Sheet.Pages[0], // Page will need to be determined
         false,
         this.NotifyCallback,
+        false,
+        [], // not loading so empty note array
         this.Config.MeasureSettings,
       );
       // add measure number and barlines, will need to be reworked when
@@ -297,6 +305,7 @@ class App {
       this.ResizeMeasures(this.Sheet);
     });
     this.ResizeMeasures(this.Sheet);
+    this.SaveToUndoStack();
   }
 
   ChangeInputMode(): void {
@@ -404,6 +413,8 @@ class App {
     if (this.DragLining) {
       this.DragLining = false;
     }
+    // TODO: Only set undo/redo state when a note is moved, this will 
+    // currently trigger when camera is moved
   }
 
   SetCameraDragging(dragging: boolean, x: number, y: number): void {
@@ -503,6 +514,7 @@ class App {
       });
     }
     this.Update(0, 0);
+    this.SaveToUndoStack();
   }
 
   Sharpen(): void {
@@ -518,6 +530,7 @@ class App {
       });
     }
     this.Update(0, 0);
+    this.SaveToUndoStack();
   }
   Flatten(): void {
     for (let [_, elem] of this.Selector.Elements) {
@@ -532,6 +545,7 @@ class App {
       });
     }
     this.Update(0, 0);
+    this.SaveToUndoStack();
   }
 
   //TODO: Remove this test function
@@ -544,7 +558,18 @@ class App {
     return this.Camera.Zoom;
   }
 
-  KeyInput(key: string, keymaps: KeyMapping): void {
+  KeyInput(keyEvent: KeyboardEvent, keymaps: KeyMapping): void {
+    let prefix = '';
+    if (keyEvent.ctrlKey) {
+      prefix += "ctrl ";
+    } 
+    if (keyEvent.altKey) {
+      prefix += "alt ";
+    }
+    if (keyEvent.shiftKey) {
+      prefix += "shift ";
+    }
+    let key = prefix + keyEvent.key;
     KeyPress(this, key, keymaps);
     //    this.NotifyCallback(this.Message);
   }
@@ -563,13 +588,28 @@ class App {
     }
   }
 
-  Save(): void {
-    SaveSheet(this.Sheet);
+  SaveToUndoStack(): void {
+    AddToUndoStack(this.StateStack, this.Save(), this.StateIndex);
+  }
+
+  Undo(): void {
+    LoadPreviousState(this);
+    this.ResizeMeasures(this.Sheet);
+
+  }
+  Redo(): void {
+    LoadNextState(this);
+    this.ResizeMeasures(this.Sheet);
+  }
+
+  Save(): string {
+    return SaveSheet(this.Sheet);
   }
 
   LoadSheet(sheet: string): void {
     //Clear measures
     this.Sheet.Measures = [];
+
     LoadSheet(
       this.Sheet,
       this.Sheet.Pages[0],
@@ -586,9 +626,8 @@ class App {
     return allSaves;
   }
 
-  // TODO: Prototype code
-  CreateTriplet(): void {
-    this.NoteValue = CreateTuplet(this.Selector.Elements, 3);
+  CreateTuplet(count: number): void {
+    this.NoteValue = CreateTuplet(this.Selector.Elements, count);
     this.ResizeMeasures(this.Sheet);
     this.Update(0, 0);
   }
@@ -601,6 +640,8 @@ class App {
     for (let [msr, _] of this.Selector.Elements) {
       msr.ChangeTimeSignature(top, bottom, transpose);
     }
+
+    this.SaveToUndoStack();
   }
 
   CenterMeasures(): void {
@@ -653,6 +694,8 @@ class App {
     rest: boolean,
   ): void {
     AddNoteOnMeasure(msr, noteValue, line, beat, rest, this.GraceInput);
+
+    this.SaveToUndoStack();
   }
 
   BeamSelectedNotes(): void {
@@ -716,6 +759,8 @@ class App {
         });
     }
     this.ResizeMeasures(this.Sheet);
+
+    this.SaveToUndoStack();
   }
 
   AddClef(): void {
@@ -728,6 +773,8 @@ class App {
           msr.Clefs.push(new Clef(0, clef, n.Beat, n.Staff));
         });
     }
+
+    this.SaveToUndoStack();
   }
 
   ChangeTimeSig(): void {
@@ -735,6 +782,8 @@ class App {
     if (msr1) {
       msr1.ChangeTimeSignature(3, 4, false);
     }
+
+    this.SaveToUndoStack();
   }
 
   AddDynamic(dynString: string): void {
@@ -745,6 +794,8 @@ class App {
           msr.Dynamics.push(new Dynamic(dynString, n.Staff, n.Beat));
         });
     }
+
+    this.SaveToUndoStack();
   }
 
   AddArticulation(type: ArticulationType): void {
@@ -762,6 +813,8 @@ class App {
           );
         });
     }
+
+    this.SaveToUndoStack();
   }
 
   CycleActiveVoice(): void {

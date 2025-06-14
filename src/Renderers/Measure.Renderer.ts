@@ -151,6 +151,7 @@ function RenderHovered(
           TupleCount: 1,
           Clef: "treble",
           Grace: false,
+          Voice: measure.ActiveVoice,
         };
         const tempNote = new Note(tempNoteProps);
         if (!restInput) {

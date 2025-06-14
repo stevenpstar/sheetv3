@@ -3,6 +3,7 @@ import { Camera } from "../Core/Camera.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Clef, Measure, MeasureProps } from "../Core/Measure.js";
 import { Page } from "../Core/Page.js";
+import { Note } from "../Core/Note.js";
 import { Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
@@ -102,6 +103,8 @@ const CreateMeasure = (
   page: Page,
   renderClef: boolean = false,
   callback: (msg: Message) => void,
+  loading: boolean = false,
+  notes: Note[] = [],
   settings?: MeasureSettings,
 ): Measure => {
   const props: MeasureProps = {
@@ -111,7 +114,7 @@ const CreateMeasure = (
     Bounds: bounds,
     TimeSignature: timeSignature,
     KeySignature: keySignature,
-    Notes: [],
+    Notes: notes,
     Clefs: clef,
     Staves: staves,
     RenderClef: renderClef,
@@ -126,7 +129,7 @@ const CreateMeasure = (
       new Barline(BarlinePos.END, BarlineType.SINGLE),
     ],
   };
-  return new Measure(props, runningId);
+  return new Measure(props, runningId, loading);
 };
 
 export {

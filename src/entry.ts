@@ -25,7 +25,7 @@ const keymaps: KeyMapping = {
   scaleToggle: "'",
   save: "s",
   load: "l",
-  test_triplet: "t",
+  test_tuplet: "t",
   debug_clear: "c",
   beam: "b",
   grace: "g",
@@ -35,6 +35,8 @@ const keymaps: KeyMapping = {
   add_barline: ";",
   add_accent: "]",
   add_clef: "k",
+  undo: "ctrl-z",
+  redo: "ctrl-y"
 };
 
 const defaultTheme: Theme = {
@@ -99,7 +101,7 @@ function mouseUp(app: App, canvas: HTMLCanvasElement, e: MouseEvent): void {
 
 function keyDown(app: App, keymaps: any, e: KeyboardEvent): void {
   const key = e.key;
-  app.KeyInput(key, keymaps);
+  app.KeyInput(e, keymaps);
 }
 
 function zoom(app: App, canvas: HTMLCanvasElement, e: WheelEvent): void {

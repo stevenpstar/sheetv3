@@ -65,6 +65,7 @@ function CreateDivisions(
   notes: Note[],
   staff: number,
   voice: Voice,
+  voiceIndex: number,
 ): Division[] {
   const divisions: Division[] = [];
   let nextBeat = 0;
@@ -88,12 +89,13 @@ function CreateDivisions(
       Tuple: false,
       Clef: staff === 0 ? "treble" : "bass",
       Grace: false,
+      Voice: voiceIndex,
     };
     // TODO: Clef should not be determined by staff that makes no sense
     msr.AddNote(new Note(restProps), false, voice);
   }
   notes
-    .filter((n) => n.Staff === staff && n.Grace === false)
+    .filter((n) => n.Staff === staff && n.Grace === false && n.Voice === voiceIndex)
     .forEach((n) => {
       // TODO: This should be somewhere else but testing
       if (n.Beat >= msr.TimeSignature.top + 1) {
@@ -115,10 +117,7 @@ function CreateDivisions(
         runningValue += n.Duration;
       }
     });
-  if (runningValue > 0 && nextBeat - 1 < msr.TimeSignature.bottom) {
-    GenerateMissingBeatDivisions(msr, divisions, staff, voice);
-  }
-  GenerateMissingBeatDivisions(msr, divisions, staff, voice);
+    GenerateMissingBeatDivisions(msr, divisions, staff, voice, voiceIndex);
 
 // CREATING SUBDIVISIONS FOR DIVISION //
   
@@ -290,6 +289,7 @@ function GenerateMissingBeatDivisions(
   divisions: Division[],
   staff: number,
   voice: Voice,
+  voiceIndex: number,
 ): void {
   const sortedDivs = divisions.sort((divA: Division, divB: Division) => {
     return divA.Beat - divB.Beat;
@@ -336,7 +336,7 @@ function GenerateMissingBeatDivisions(
   divisions.push(...divisionsToAdd);
   // add RESTS to division gaps
   divisionsToAdd.forEach((div) => {
-    const notesOnBeat = voice.Notes.find((n) => n.Beat === div.Beat);
+    const notesOnBeat = voice.Notes.find((n) => n.Beat === div.Beat && n.Staff === div.Staff);
     if (notesOnBeat !== undefined) {
       console.error("Note found in division gap");
     }
@@ -351,6 +351,7 @@ function GenerateMissingBeatDivisions(
       Tuple: false,
       Clef: clefType,
       Grace: false,
+      Voice: voiceIndex,
     };
     msr.AddNote(new Note(restProps), false, voice);
   });
@@ -404,6 +405,7 @@ function GenerateMissingBeatDivisions(
       Tuple: false,
       Clef: clefType,
       Grace: false,
+      Voice: msr.ActiveVoice,
     };
     msr.AddNote(new Note(restProps));
   });

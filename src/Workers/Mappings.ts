@@ -21,7 +21,7 @@ interface KeyMapping {
   scaleToggle: string;
   save: string;
   load: string;
-  test_triplet: string;
+  test_tuplet: string;
   debug_clear: string;
   beam: string;
   grace: string;
@@ -31,6 +31,8 @@ interface KeyMapping {
   add_barline: string;
   add_accent: string;
   add_clef: string;
+  undo: string;
+  redo: string;
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
@@ -83,8 +85,8 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
     case keyMaps.load:
       app.LoadSheet(allSaves[0].file);
       break;
-    case keyMaps.test_triplet:
-      app.CreateTriplet();
+    case keyMaps.test_tuplet:
+      app.CreateTuplet(5);
       break;
     case keyMaps.debug_clear:
       localStorage.removeItem("persist");
@@ -115,6 +117,12 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       break;
     case keyMaps.add_clef:
       app.AddClef();
+    case keyMaps.undo:
+      app.Undo();
+      break;
+    case keyMaps.redo:
+      app.Redo();
+      break;
     default:
   }
 }

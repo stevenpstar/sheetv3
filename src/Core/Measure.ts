@@ -87,15 +87,26 @@ class Measure implements ISelectable {
 
   Message: (msg: Message) => void;
 
-  constructor(properties: MeasureProps, runningId: { count: number }) {
+  constructor(properties: MeasureProps, runningId: { count: number }, loading: boolean = false) {
+
+    this.Staves = properties.Staves;
     this.PrevMeasure = properties.PrevMeasure;
     this.NextMeasure = properties.NextMeasure;
-    this.Voices = [new Voice(0), new Voice(1), new Voice(2), new Voice(3)];
-    this.Num = 1;
-    this.Staves = properties.Staves;
-    this.Message = properties.Message;
     this.RunningID = runningId;
     this.ID = 0;
+    this.Num = 1;
+    this.Voices = [new Voice(0), new Voice(1), new Voice(2), new Voice(3)];
+    if (loading && properties.Notes.length > 0) {
+      // Add notes to assigned voices before division creation
+      properties.Notes.forEach((n: Note) => {
+        if (this.Voices[n.Voice] !== undefined || this.Voices[n.Voice] !== null) {
+          // Add notes to voices from load
+          this.AddNote(n, false, this.Voices[n.Voice]);
+        }
+      });
+
+    }
+    this.Message = properties.Message;
     this.Selected = false;
     this.Editable = true;
     this.SelType = SelectableTypes.Measure;
@@ -105,7 +116,7 @@ class Measure implements ISelectable {
     this.Bounds.height = GetStaffHeightUntil(this.Staves);
     this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
     this.KeySignature = properties.KeySignature;
-    this.Voices[this.ActiveVoice].Notes = properties.Notes;
+   // this.Voices[this.ActiveVoice].Notes = properties.Notes;
     this.Articulations = [];
     this.Dynamics = [];
     this.RenderClef = properties.RenderClef;
@@ -181,10 +192,10 @@ class Measure implements ISelectable {
   }
 
   CreateDivisions() {
-    this.Voices.forEach((v: Voice) => {
+    this.Voices.forEach((v: Voice, i: number) => {
       v.Divisions = [];
       this.Staves.forEach((s: Staff) => {
-        v.Divisions.push(...CreateDivisions(this, v.Notes, s.Num, v));
+        v.Divisions.push(...CreateDivisions(this, v.Notes, s.Num, v, i));
         ResizeDivisions(this, v.Divisions, s.Num);
         UpdateNoteBounds(this, s.Num);
       });
@@ -200,15 +211,33 @@ class Measure implements ISelectable {
     return GetStaffHeightUntil(this.Staves);
   }
 
+  GetVoiceIndex(voice: Voice): number {
+    let index = 0;
+    let found = false;
+    this.Voices.forEach((v: Voice, i: number) => {
+      if (v === voice) {
+        index = i;
+        found = true;
+        return;
+      }
+    });
+
+    if (!found) {
+      console.error("Voice not found in measure!");
+    }
+    return index;
+  }
+
   AddNote(
     note: Note,
     fromInput: boolean = false,
     voice: Voice = this.Voices[this.ActiveVoice],
   ): void {
+      const voiceIndex = this.GetVoiceIndex(voice);
     if (note.Rest) {
-      this.ClearNonRestNotes(note.Beat, note.Staff);
+      this.ClearNonRestNotes(note.Beat, note.Staff, voiceIndex);
     } else {
-      this.ClearRestNotes(note.Beat, note.Staff);
+      this.ClearRestNotes(note.Beat, note.Staff, voiceIndex);
     }
     note.SetID(this.RunningID.count);
     this.RunningID.count++;
@@ -229,26 +258,26 @@ class Measure implements ISelectable {
     }
   }
 
-  ClearNonRestNotes(beat: number, staff: number): void {
-    for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+  ClearNonRestNotes(beat: number, staff: number, voiceIndex: number): void {
+    for (let n = this.Voices[voiceIndex].Notes.length - 1; n >= 0; n--) {
       if (
-        this.Voices[this.ActiveVoice].Notes[n].Beat === beat &&
-        this.Voices[this.ActiveVoice].Notes[n].Rest === false &&
-        this.Voices[this.ActiveVoice].Notes[n].Staff === staff
+        this.Voices[voiceIndex].Notes[n].Beat === beat &&
+        this.Voices[voiceIndex].Notes[n].Rest === false &&
+        this.Voices[voiceIndex].Notes[n].Staff === staff
       ) {
-        this.Voices[this.ActiveVoice].Notes.splice(n, 1);
+        this.Voices[voiceIndex].Notes.splice(n, 1);
       }
     }
   }
 
-  ClearRestNotes(beat: number, staff: number): void {
-    for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+  ClearRestNotes(beat: number, staff: number, voiceIndex: number): void {
+    for (let n = this.Voices[voiceIndex].Notes.length - 1; n >= 0; n--) {
       if (
-        this.Voices[this.ActiveVoice].Notes[n].Beat === beat &&
-        this.Voices[this.ActiveVoice].Notes[n].Rest === true &&
-        this.Voices[this.ActiveVoice].Notes[n].Staff === staff
+        this.Voices[voiceIndex].Notes[n].Beat === beat &&
+        this.Voices[voiceIndex].Notes[n].Rest === true &&
+        this.Voices[voiceIndex].Notes[n].Staff === staff
       ) {
-        this.Voices[this.ActiveVoice].Notes.splice(n, 1);
+        this.Voices[voiceIndex].Notes.splice(n, 1);
       }
     }
   }
@@ -293,6 +322,7 @@ class Measure implements ISelectable {
             TupleDetails: tupleDetails,
             Clef: clefType,
             Grace: false,
+            Voice: this.ActiveVoice,
           };
 
           this.AddNote(new Note(restProps));
