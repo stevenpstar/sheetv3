@@ -689,16 +689,10 @@ class App {
     this.Sheet.Measures = [];
     let loadStruct = LoadFromMXML(score);
     this.LoadSheet(JSON.stringify(loadStruct));
-   // LoadSheet(
-   //   this.Sheet,
-   //   this.Sheet.Pages[0],
-   //   this.Camera,
-   //   this.Sheet.Instruments[0],
-   //   JSON.stringify(loadStruct),
-   //   this.NotifyCallback);
-
     this.ResizeMeasures(this.Sheet);
     this.Update(0, 0);
+
+    this.SaveToUndoStack();
   }
 
   GetSaveFiles(): saveFile[] {
