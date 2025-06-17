@@ -24,10 +24,6 @@ interface lNote {
   Voice: number;
 }
 
-type LVoice = {
-  notes: Note[];
-};
-
 interface lMeasure {
   Clefs: Clef[];
   Staves: Staff[];
@@ -144,8 +140,6 @@ const SaveSheet = (sheet: Sheet): string => {
     });
   });
 
-  console.log(JSON.stringify(saved));
-  console.log("--- Saved! ---");
   return JSON.stringify(saved);
 };
 

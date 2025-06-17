@@ -39,7 +39,8 @@ function GetLargestValues(duration: number): number[] {
   let values: number[] = [];
   const divByStdVal = duration % NoteValues.n32 === 0;
   if (!divByStdVal) {
-    console.error("Not divisible by standard value, not implemented");
+    console.error("Not divisible by standard value, not implemented. Value: ", duration);
+    return;
   }
   // check if the duration matches a standard value perfectly
   if (ValueMap.has(duration)) {

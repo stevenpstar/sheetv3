@@ -118,6 +118,7 @@ function main(): void {
     notify,
     test_CONFIG,
   );
+  let smooth_zoom = true;
 }
 
 main();

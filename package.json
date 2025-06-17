@@ -17,7 +17,8 @@
     "bundle": "tsup --format esm --minify --dts && rm -rf ../debugSheetV3/debugsheetv3/sheetsrc && cp -r dist ../debugSheetV3/debugsheetv3/sheetsrc",
     "8ve": "tsup --format esm --minify --dts && rm -rf ../8veSvelte/8ve/src/lib/sheet && cp -r dist ../8veSvelte/8ve/src/lib/sheet",
     "mtrain": "tsup --format esm --minify --dts && rm -rf ../MusicTrainer/musictrainer/src/lib/sheet && cp -r dist ../MusicTrainer/musictrainer/src/lib/sheet",
-    "mtrainfe": "tsup --format esm --minify --dts && rm -rf ../MusicTrainerFrontEnd/musictrainer/src/lib/sheet && cp -r dist ../MusicTrainerFrontEnd/musictrainer/src/lib/sheet"
+    "mtrainfe": "tsup --format esm --minify --dts && rm -rf ../MusicTrainerFrontEnd/musictrainer/src/lib/sheet && cp -r dist ../MusicTrainerFrontEnd/musictrainer/src/lib/sheet",
+    "mxmlbundle": "tsup --format esm --minify --dts && rm -rf ../DebugSheetV2/modules/sheet && cp -r dist ../DebugSheetV2/modules/sheet"
   },
   "dependencies": {
     "eslint": "^9.3.0"

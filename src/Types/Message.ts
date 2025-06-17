@@ -4,6 +4,9 @@ enum MessageType {
   Deletion,
   InputChange,
   AddNote,
+  Undo,
+  Redo,
+  StateChange,
 }
 type MessageData = {
   MessageType: MessageType;

@@ -112,7 +112,7 @@ function zoom(app: App, canvas: HTMLCanvasElement, e: WheelEvent): void {
 
     e.preventDefault();
     const scale = e.deltaY * -0.01;
-    scale > 0 ? app.AlterZoom(0.075, x, y) : app.AlterZoom(-0.075, x, y);
+    scale > 0 ? app.AlterZoom(0.075, x, y, true) : app.AlterZoom(-0.075, x, y, true);
   }
 }
 
@@ -256,3 +256,4 @@ export * from "./Core/Note.js";
 export * from "./Workers/Pitcher.js";
 export * from "./Types/Message.js";
 export * from "./Types/Config.js";
+export * from "./Workers/Loader.js";

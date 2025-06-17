@@ -35,6 +35,7 @@ import {
 import { Dynamic } from "./Core/Dynamic.js";
 import { Articulation, ArticulationType } from "./Core/Articulation.js";
 import { AddToUndoStack, LoadNextState, LoadPreviousState } from "./Workers/UndoRedo.js";
+import { LoadFromMXML, type XMLScore } from "./Workers/MXML.js";
 
 class App {
   Config: ConfigSettings;
@@ -73,6 +74,10 @@ class App {
 
   StateStack: string[] = [];
   StateIndex: { index: number } = { index: 0 };
+
+  MouseX: number;
+  MouseY: number;
+  CanDragCamera: boolean = true;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -128,14 +133,19 @@ class App {
 
     this.Update(0, 0);
     this.SaveToUndoStack();
+    this.RealtimeUpdate(this);
   }
 
   Hover(x: number, y: number): void {
+    this.MouseX = x;
+    this.MouseY = y;
     x = x / this.Camera.Zoom;
     y = y / this.Camera.Zoom;
-    if (this.Camera.DragCamera(x, y)) {
-      this.Update(x, y);
-      return;
+    if (this.CanDragCamera && this.Camera) {
+      if (this.Camera.DragCamera(x, y)) {
+        this.Update(x, y);
+        return;
+      }
     }
     if (this.DraggingNote) {
       this.DragNote(x, y);
@@ -255,6 +265,34 @@ class App {
       this.Config,
       this.NoteValue,
     );
+  }
+
+  RealtimeUpdate(app: App): void {
+
+    if (app.Camera) {
+      const zoomThreshold = 0.02;
+      if (app.Camera.Zoom < app.Camera.ZoomTarget - zoomThreshold || app.Camera.Zoom > app.Camera.ZoomTarget + zoomThreshold) {
+        app.CanDragCamera = false;
+        const nextZoom = app.Camera.Zoom + (app.Camera.ZoomTarget - app.Camera.Zoom) * 0.05;
+        const originalX = app.MouseX / app.Camera.Zoom;
+        const ogY = app.MouseY / app.Camera.Zoom;
+        app.Camera.SetZoom(nextZoom);
+        app.Context.setTransform(app.Camera.Zoom, 0, 0, app.Camera.Zoom, 0, 0);
+        const newX = app.MouseX / app.Camera.Zoom;
+        const newY = app.MouseY / app.Camera.Zoom;
+        app.Camera.x += newX - originalX;
+        app.Camera.y += newY - ogY;
+        app.Camera.oldX = app.Camera.x;
+        app.Camera.oldY = app.Camera.y;
+        app.Update(0, 0);
+      } else {
+        app.CanDragCamera = true;
+      }
+    }
+
+    requestAnimationFrame(() => {
+      app.RealtimeUpdate(this);
+    });
   }
 
   AddMeasure(): void {
@@ -418,28 +456,38 @@ class App {
   }
 
   SetCameraDragging(dragging: boolean, x: number, y: number): void {
+    if (!this.CanDragCamera) { return; }
     this.Camera.SetDragging(dragging, x, y, this.Config, this.Camera);
   }
 
-  AlterZoom(num: number, mx: number, my: number): void {
-    const originalX = mx / this.Camera.Zoom;
-    const ogY = my / this.Camera.Zoom;
-    this.Camera.SetZoom(this.Camera.Zoom + num);
-    this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
-    const newX = mx / this.Camera.Zoom;
-    const newY = my / this.Camera.Zoom;
-    this.Camera.x += newX - originalX;
-    this.Camera.y += newY - ogY;
-    this.Camera.oldX = this.Camera.x;
-    this.Camera.oldY = this.Camera.y;
+  AlterZoom(num: number, mx: number, my: number, smooth: boolean = false): void {
+    if (!smooth) {
+      const originalX = mx / this.Camera.Zoom;
+      const ogY = my / this.Camera.Zoom;
+      this.Camera.SetZoom(this.Camera.Zoom + num);
+      this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
+      const newX = mx / this.Camera.Zoom;
+      const newY = my / this.Camera.Zoom;
+      this.Camera.x += newX - originalX;
+      this.Camera.y += newY - ogY;
+      this.Camera.oldX = this.Camera.x;
+      this.Camera.oldY = this.Camera.y;
+    } else {
+      this.Camera.ZoomTarget = this.Camera.Zoom + num;
+    }
 
     this.Update(0, 0);
   }
 
   SetCameraZoom(num: number): void {
     this.Camera.SetZoom(num);
+    this.Camera.ZoomTarget = this.Camera.Zoom;
     this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
     this.Update(0, 0);
+  }
+
+  SetSmoothCameraZoom(num: number): void {
+    this.Camera.ZoomTarget = num;
   }
 
   // TEST FUNCTION
@@ -590,6 +638,20 @@ class App {
 
   SaveToUndoStack(): void {
     AddToUndoStack(this.StateStack, this.Save(), this.StateIndex);
+    this.Message = ClearMessage();
+    const m: Message = {
+      messageData: {
+        MessageType: MessageType.StateChange,
+        Message: {
+          msg: "statechanged",
+          obj: this.StateStack[this.StateIndex.index],
+        },
+      },
+      messageString: "Latest State",
+    };
+    this.Message = m;
+    this.NotifyCallback(m);
+
   }
 
   Undo(): void {
@@ -618,6 +680,23 @@ class App {
       sheet,
       this.NotifyCallback,
     );
+    this.ResizeMeasures(this.Sheet);
+    this.Update(0, 0);
+  }
+
+  LoadFromMXML(score: XMLScore): void {
+
+    this.Sheet.Measures = [];
+    let loadStruct = LoadFromMXML(score);
+    this.LoadSheet(JSON.stringify(loadStruct));
+   // LoadSheet(
+   //   this.Sheet,
+   //   this.Sheet.Pages[0],
+   //   this.Camera,
+   //   this.Sheet.Instruments[0],
+   //   JSON.stringify(loadStruct),
+   //   this.NotifyCallback);
+
     this.ResizeMeasures(this.Sheet);
     this.Update(0, 0);
   }

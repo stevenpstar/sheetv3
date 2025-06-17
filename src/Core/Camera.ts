@@ -9,6 +9,8 @@ class Camera {
   oldX: number;
   oldY: number;
   Zoom: number;
+  // Experimental smooth zoom
+  ZoomTarget: number;
   constructor(x: number, y: number) {
     this.Dragging = false;
     this.x = x;
@@ -16,6 +18,7 @@ class Camera {
     this.oldX = x;
     this.oldY = y;
     this.Zoom = 1;
+    this.ZoomTarget = this.Zoom;
   }
 
   SetDragging(

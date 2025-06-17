@@ -213,6 +213,7 @@ function GeneratePitchMap(): Map<number, MappedMidi> {
       lineCounter++;
     }
   }
+  console.log("midiMap: ", midiMap);
 
   return midiMap;
 }
