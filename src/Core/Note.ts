@@ -22,6 +22,7 @@ interface NoteProps {
   Editable?: boolean;
   Grace: boolean;
   Voice: number;
+  Accidental: number;
 }
 
 class Note implements ISelectable {
@@ -70,7 +71,7 @@ class Note implements ISelectable {
     this.Line = props.Line;
     this.Rest = props.Rest;
     this.Tied = props.Tied;
-    this.Accidental = 0;
+    this.Accidental = props.Accidental;
     this.Staff = props.Staff;
     this.Clef = props.Clef;
     this.Grace = props.Grace;

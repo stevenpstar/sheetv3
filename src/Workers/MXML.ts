@@ -3,11 +3,16 @@
 //  Temporarily redefining data structures, these should be separate or exported
 //  as types from Music XML parser.
 
-export enum XMLClef {
-  G,
+export type XMLClef = {
+  Type: string;
+  Staff: number;
 }
 
-type XMLNote = {
+export type XMLStaff = {
+  Number: number;
+}
+
+export type XMLNote = {
    ID: number;
    Beat: number;
    Duration: number; // should be divided by 4 from XML value
@@ -16,11 +21,13 @@ type XMLNote = {
    Staff: number;
    Grace: boolean;
    Voice: number;
+   Alter: number;
 }
 
-type XMLMeasure = {
+export type XMLMeasure = {
   ID: number,
-  Clef: XMLClef,
+  Clefs: XMLClef[],
+  Staves: XMLStaff[],
   Key: string,
   TimeSignature: { top: number, bottom: number },
   Notes: XMLNote[],
@@ -29,7 +36,6 @@ type XMLMeasure = {
 export type XMLScore = {
   Measures: XMLMeasure[]
 }
-
 import { Clef } from "../Core/Clef.js";
 import { Staff } from "../Core/Staff.js";
 import { TimeSignature } from "../Core/TimeSignatures.js";
@@ -44,11 +50,31 @@ function LoadFromMXML(score: XMLScore): LoadStructure {
   let pitchMap = GeneratePitchMap();
   let currentTimeSignature: { top: number, bottom: number} = { top: 4, bottom: 3 };
   let currentKeySig: string = "CMaj/Amin";
+  let currentClefs: XMLClef[] = [];
+  let currentStaves: XMLStaff[] = [];
 
   score.Measures.forEach((m: XMLMeasure, i: number) => {
     // Temporary while we are only supporting one staff/clef
-    let staff: Staff = new Staff(0);
-    let clef: Clef = new Clef(0, "treble", 1, 0);
+    let staves = [];
+    let clefs = [];
+    m.Staves.forEach((s: XMLStaff) => {
+      staves.push(new Staff(s.Number));
+    });
+    m.Clefs.forEach((c: XMLClef, i: number) => {
+      clefs.push(new Clef(i, c.Type, 1, c.Staff));
+    })
+
+    if (i === 0) {
+      currentClefs = clefs;
+      currentStaves = staves;
+    }
+    if (clefs.length === 0) {
+      clefs = currentClefs;
+    }
+    if (staves.length !== currentStaves.length) {
+      // Staves should not change between measures
+      staves = currentStaves;
+    }
     let notes: lNote[] = [];
     if (m.TimeSignature.top !== 0 && m.TimeSignature.bottom !== 0) {
       currentTimeSignature = m.TimeSignature;
@@ -57,6 +83,11 @@ function LoadFromMXML(score: XMLScore): LoadStructure {
       currentKeySig = m.Key;
     }
     m.Notes.forEach((n: XMLNote) => {
+      let clef_string = "treble";
+      let clef = clefs.find((c: XMLClef) => c.Staff === n.Staff);
+      if (clef) {
+        clef_string = clef.Type;
+      }
       // THIS IS BAD FOR NOW ITS OK
       let line = 0;
       pitchMap.forEach((value: MappedMidi) => {
@@ -65,6 +96,10 @@ function LoadFromMXML(score: XMLScore): LoadStructure {
           return;
         }
       }); 
+      if (clef_string === "bass") {
+        // This will be rewritten
+        line -= 12;
+      }
       notes.push(
         {
           ID: n.ID,
@@ -73,17 +108,18 @@ function LoadFromMXML(score: XMLScore): LoadStructure {
           Line: line,
           Rest: false,
           Tied: false,
-          Staff: 0,
-          Clef: "treble",
+          Staff: n.Staff,
+          Clef: clef_string,
           Editable: true,
           Grace: false,
           Voice: 0,
+          Accidental: n.Alter,
         }
       );
     });
     let lmsr: lMeasure = {
-      Clefs: [clef],
-      Staves: [staff],
+      Clefs: clefs,
+      Staves: staves,
       TimeSignature: currentTimeSignature,
       KeySignature: currentKeySig,
       Notes: notes,

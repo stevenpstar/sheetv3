@@ -152,6 +152,7 @@ function RenderHovered(
           Clef: "treble",
           Grace: false,
           Voice: measure.ActiveVoice,
+          Accidental: 0,
         };
         const tempNote = new Note(tempNoteProps);
         if (!restInput) {
@@ -401,11 +402,13 @@ function RenderNotes(
               ? 11
               : 0
             : 0;
-          RenderDots(
-            renderProps,
-            n,
-            div.Bounds.x + noteXBuffer + flipNoteOffset,
-          );
+            // TODO: Rendering strange dots when importing Music XML with
+            // measure rests, need to revisit.
+        //  RenderDots(
+        //    renderProps,
+        //    n,
+        //    div.Bounds.x + noteXBuffer + flipNoteOffset,
+        //  );
         });
       });
     }

@@ -15,7 +15,6 @@ import { GetLargestValues } from "../Core/Values.js";
 import { Voice } from "../Core/Voice.js";
 import { CreateBeamsRevise } from "../Factory/Beam.Fact.js";
 import { IsFlippedNote } from "../Renderers/Measure.Renderer.js";
-import { NoteHeads } from "../Renderers/MusicFont.Renderer.js";
 import {
   DetermineStemDirection,
   StemDirection,
@@ -117,6 +116,7 @@ function InputNote(
     Clef: clefType,
     Grace: grace,
     Voice: msr.ActiveVoice,
+    Accidental: 0,
   };
   const newNote: Note = new Note(noteProps);
 
@@ -333,6 +333,7 @@ function AddToDivision(
           Clef: GetNoteClefType(msr, div.Beat, div.Staff),
           Grace: noteProps.Grace,
           Voice: msr.ActiveVoice,
+          Accidental: 0,
         };
 
         const newNote = new Note(newNoteProps);
@@ -359,6 +360,7 @@ function AddToDivision(
         Clef: GetNoteClefType(msr, div.Beat, div.Staff),
         Grace: noteProps.Grace,
         Voice: msr.ActiveVoice,
+        Accidental: 0,
       };
 
       const newNote = new Note(newNoteProps);
@@ -398,6 +400,7 @@ function AddToDivision(
           Clef: GetNoteClefType(msr, div.Beat, div.Staff),
           Grace: noteProps.Grace,
           Voice: msr.ActiveVoice,
+          Accidental: 0,
         };
         const newNote = new Note(newNoteProps);
 
@@ -427,6 +430,7 @@ function AddToDivision(
         Clef: GetNoteClefType(msr, div.Beat, div.Staff),
         Grace: noteProps.Grace,
         Voice: msr.ActiveVoice,
+        Accidental: 0,
       };
 
       const remValue = div.Duration - remainingValue;
@@ -457,6 +461,7 @@ function AddToDivision(
             Clef: GetNoteClefType(msr, div.Beat, div.Staff),
             Grace: n.Grace,
             Voice: msr.ActiveVoice,
+            Accidental: 0,
           };
           const noteObj = new Note(tiedNote);
           noteObj.SetTiedStartEnd(tiedStart, tiedEnd);
@@ -511,6 +516,7 @@ function CreateTuplet(
           ),
           Grace: n.Grace,
           Voice: measure.ActiveVoice,
+          Accidental: 0,
         });
         lastBeat = newNote.Beat;
         measure.AddNote(newNote, true);

@@ -22,6 +22,7 @@ interface lNote {
   Editable?: boolean;
   Grace: boolean;
   Voice: number;
+  Accidental: number;
 }
 
 interface lMeasure {
@@ -70,6 +71,7 @@ const LoadSheet = (
         Editable: true,
         Grace: n.Grace,
         Voice: n.Voice,
+        Accidental: n.Accidental,
       };
 
       const newNote = new Note(noteProps);
@@ -125,6 +127,7 @@ const SaveSheet = (sheet: Sheet): string => {
           Editable: true,
           Grace: n.Grace,
           Voice: i,
+          Accidental: n.Accidental,
         });
       });
     });

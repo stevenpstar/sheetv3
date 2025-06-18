@@ -90,6 +90,7 @@ function CreateDivisions(
       Clef: staff === 0 ? "treble" : "bass",
       Grace: false,
       Voice: voiceIndex,
+      Accidental: 0,
     };
     // TODO: Clef should not be determined by staff that makes no sense
     msr.AddNote(new Note(restProps), false, voice);
@@ -352,6 +353,7 @@ function GenerateMissingBeatDivisions(
       Clef: clefType,
       Grace: false,
       Voice: voiceIndex,
+      Accidental: 0,
     };
     msr.AddNote(new Note(restProps), false, voice);
   });
@@ -406,6 +408,7 @@ function GenerateMissingBeatDivisions(
       Clef: clefType,
       Grace: false,
       Voice: msr.ActiveVoice,
+      Accidental: 0,
     };
     msr.AddNote(new Note(restProps));
   });

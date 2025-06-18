@@ -1,4 +1,5 @@
 const MIDI_START = 21;
+const MIDI_C_START = 24;
 const MIDI_END = 127;
 
 const A4Midi: number = 69;
@@ -33,6 +34,22 @@ const NoteNames = [
   "G",
   "G#",
 ];
+
+const NoteNamesC = [
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#",
+  "A",
+  "A#",
+  "B",
+];
+
 
 // Clef type to line number of A4 (440hz)
 const ClefPitchRef: Map<string, number> = new Map<string, number>([
@@ -183,12 +200,12 @@ function GeneratePitchMap(): Map<number, MappedMidi> {
   let map = new Map<string, number>();
   let midiMap = new Map<number, MappedMidi>();
   let noteNameCount = 0;
-  let noteNumberCount = 0;
-  let lineNum = 16 + 30 - 1;
+  let noteNumberCount = 1;
+  let lineNum = 16 + 30 - 3;
   let lineCounter = 0;
   let lineMax = 11;
-  for (let n = MIDI_START; n <= MIDI_END; n++) {
-    if (noteNameCount >= NoteNames.length) {
+  for (let n = MIDI_C_START; n <= MIDI_END; n++) {
+    if (noteNameCount >= NoteNamesC.length) {
       noteNameCount = 0;
       noteNumberCount++;
     }
@@ -196,14 +213,14 @@ function GeneratePitchMap(): Map<number, MappedMidi> {
       ? lineNum - 1
       : lineNum;
     map.set(
-      (NoteNames[noteNameCount] + noteNumberCount).toString(),
+      (NoteNamesC[noteNameCount] + noteNumberCount).toString(),
       calcPitch(n),
     );
     midiMap.set(n, {
-      NoteString: (NoteNames[noteNameCount] + noteNumberCount).toString(),
+      NoteString: (NoteNamesC[noteNameCount] + noteNumberCount).toString(),
       Frequency: calcPitch(n),
       Line: lineNum,
-      Accidental: NoteNames[noteNameCount].includes("#") ? 1 : 0,
+      Accidental: NoteNamesC[noteNameCount].includes("#") ? 1 : 0,
     });
     noteNameCount++;
 

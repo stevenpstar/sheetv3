@@ -323,6 +323,7 @@ class Measure implements ISelectable {
             Clef: clefType,
             Grace: false,
             Voice: this.ActiveVoice,
+            Accidental: 0,
           };
 
           this.AddNote(new Note(restProps));

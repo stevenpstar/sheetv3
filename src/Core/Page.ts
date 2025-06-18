@@ -8,10 +8,10 @@ interface Margins {
 }
 
 const defaultMargins: Margins = {
-  left: 40,
-  right: 40,
-  top: 40,
-  bottom: 40,
+  left: 80,
+  right: 80,
+  top: 80,
+  bottom: 80,
 };
 
 interface PageLine {
@@ -26,7 +26,7 @@ interface MarginAdjuster {
   Bounds: Bounds;
 }
 
-const scale = 6;
+const scale = 7;
 const a4w = 210 * scale;
 const a4h = 297 * scale;
 

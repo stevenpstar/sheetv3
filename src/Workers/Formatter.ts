@@ -8,11 +8,17 @@ import { ConfigSettings } from "../Types/Config.js";
 // TODO: Add pages when necessary but for now we do just lines
 function SetPagesAndLines(
   measures: Measure[],
-  pages: Page,
+  pages: Page[],
   usePage: boolean | null,
   defaultLineHeight: number = 1050,
 ): void {
-  let page: Page = pages;
+  // temp constant here
+  const linesPerPage = 5;
+  if (pages.length === 0) {
+    return;
+  }
+  // empty pages and create new array each time (temporary)
+  let page: Page = pages[0];
   if (!page) {
     console.error("No page found!");
     return;
@@ -30,21 +36,39 @@ function SetPagesAndLines(
     });
     return;
   }
-  measures.forEach((msr: Measure) => {
+  console.log("Setting pages for measures ----");
+  measures.forEach((msr: Measure, i: number) => {
     msrsOnLine++;
     const msrWidth = msr.GetMinimumWidth() + msr.XOffset;
     if (runningWidth + msrWidth > pageWidth || msrsOnLine > 4) {
       currentLine++;
       msrsOnLine = 1;
-      if (pages.PageLines.length < currentLine) {
-        pages.AddLine(defaultLineHeight);
-        console.log("pages: ", pages);
+      if (page.PageLines.length < currentLine && currentLine <= linesPerPage) {
+        page.AddLine(defaultLineHeight);
+      } else if (currentLine > linesPerPage) {
+        console.log("Considering adding a page because current line is: ", currentLine);
+        // If we are at the last page, we need to add a new one
+        if (pages[pages.length-1] === page) {
+          pages.push(new Page(0, pages.length * ((297 * 7) + 100), pages.length + 1));
+          console.log("Adding a page!");
+        }
+        page = pages[pages.length-1];
+        currentPage = pages.length-1;
+        currentLine = 1;
+        msrsOnLine = 1;
+       // page.AddLine(defaultLineHeight);
+
       }
       runningWidth = 0;
     }
     runningWidth += msrWidth;
     msr.Page = pages[currentPage];
     msr.PageLine = currentLine;
+    if (i > 19) {
+     // console.log("current page: ", currentPage);
+     // console.log(msr);
+    }
+
   });
 }
 
@@ -68,7 +92,7 @@ function ResizeMeasuresOnPage(
   page.PageLines.forEach((line) => {
     sheet.Instruments.forEach((instr: Instrument) => {
       const msrs = sheet.Measures.filter(
-        (m) => m.PageLine === line.Number && m.Instrument === instr,
+        (m) => m.PageLine === line.Number && m.Instrument === instr && m.Page === page,
       );
       let msrsLineWidth = 0;
       msrs.forEach((m: Measure) => {
@@ -76,6 +100,9 @@ function ResizeMeasuresOnPage(
       });
       const fillWidth = pageSize - msrsLineWidth;
       msrs.forEach((m: Measure, i: number) => {
+     //   console.log("page: ", page.Number);
+     //   console.log("line number: ", line.Number);
+     //   console.log("line bounds y: ", line.LineBounds.y);
         m.Bounds.y = line.LineBounds.y + m.Instrument.Position.y;
         // TODO: We have removed prefboundsY, will likely have to reimplement
         //     m.PrefBoundsY = m.Bounds.y;

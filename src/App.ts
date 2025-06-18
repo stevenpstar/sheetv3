@@ -36,6 +36,7 @@ import { Dynamic } from "./Core/Dynamic.js";
 import { Articulation, ArticulationType } from "./Core/Articulation.js";
 import { AddToUndoStack, LoadNextState, LoadPreviousState } from "./Workers/UndoRedo.js";
 import { LoadFromMXML, type XMLScore } from "./Workers/MXML.js";
+import { Page } from "./Core/Page.js";
 
 class App {
   Config: ConfigSettings;
@@ -58,6 +59,11 @@ class App {
   NotifyCallback: (msg: Message) => void;
   RunningID: { count: number };
   PitchMap: Map<number, MappedMidi>;
+  PlaybackTimer: number = 0.0;
+  Playing: boolean = false;
+  PlaybackTempo: number = 120;
+  PlaybackMeasureIndex: number = 0;
+  AudioContext: AudioContext = null;
 
   DraggingNote: boolean;
   StartLine: number;
@@ -265,6 +271,7 @@ class App {
       this.Config,
       this.NoteValue,
     );
+
   }
 
   RealtimeUpdate(app: App): void {
@@ -288,7 +295,69 @@ class App {
       } else {
         app.CanDragCamera = true;
       }
+
     }
+
+    if (this.Playing) {
+      console.log("Playback!");
+      this.Update(0, 0);
+      // render code should not be in this class
+      if (this.PlaybackMeasureIndex >= this.Sheet.Measures.length) {
+        console.log("playback index out of range");
+        this.Playing = false;
+        return;
+      }
+      let msr = this.Sheet.Measures[this.PlaybackMeasureIndex];
+      let time_diff = this.AudioContext.currentTime - this.PlaybackTimer;
+      let measureTime = msr.TimeSignature.top / msr.TimeSignature.bottom * this.PlaybackTempo / 60.0;
+      if (time_diff > measureTime) {
+        this.PlaybackTimer += measureTime;
+        if (this.PlaybackMeasureIndex < this.Sheet.Measures.length) {
+          this.PlaybackMeasureIndex += 1;
+          msr = this.Sheet.Measures[this.PlaybackMeasureIndex];
+          if (!msr) {
+            console.log("msr is null");
+            this.Playing = false;
+            this.PlaybackMeasureIndex = 0;
+            this.AudioContext = null;
+            this.PlaybackTimer = 0;
+          } else {
+          time_diff = this.AudioContext.currentTime - this.PlaybackTimer;
+          measureTime = msr.TimeSignature.top * this.PlaybackTempo / 60.0;
+          }
+        } else {
+          console.log("playback measure would go out of range here, stopping");
+          this.Playing = false;
+          this.PlaybackMeasureIndex = 0;
+          this.PlaybackTimer = 0;
+        }
+      }
+
+      if (msr) {
+
+        let tracker_x = this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.x;
+        let msr_width = this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.width;
+        let percentage_traveled = time_diff / measureTime * 100;
+        let percentage_across = (percentage_traveled / 100) * msr_width;
+        tracker_x = msr.Bounds.x + msr.XOffset + percentage_across + this.Camera.x;
+        this.Context.fillStyle = "rgba(0, 0, 255, 0.4)";
+        this.Context.fillRect(
+          tracker_x,
+          this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.y + this.Camera.y,
+          5,
+          this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.height
+        );
+        this.Context.fillStyle = "black";
+
+        // move camera to playback
+        let target = -(msr.Bounds.y - 300);
+        let nextY = this.Camera.y + (target - this.Camera.y) * 0.02;
+        this.Camera.y = Math.round(nextY);
+        this.Camera.oldY = this.Camera.y;
+      }
+      
+    }
+
 
     requestAnimationFrame(() => {
       app.RealtimeUpdate(this);
@@ -304,7 +373,7 @@ class App {
       );
       const previousMeasure = instrMeasures[instrMeasures.length - 1];
       let latestLine =
-        this.Sheet.Pages[0].PageLines[this.Sheet.Pages[0].PageLines.length - 1];
+        this.Sheet.Pages[this.Sheet.Pages.length-1].PageLines[this.Sheet.Pages[this.Sheet.Pages.length-1].PageLines.length - 1];
       const newMeasureBounds = new Bounds(
         x,
         latestLine.LineBounds.y,
@@ -322,7 +391,7 @@ class App {
         prevMsr.Staves,
         this.Camera,
         this.RunningID,
-        this.Sheet.Pages[0], // Page will need to be determined
+        this.Sheet.Pages[this.Sheet.Pages.length - 1], // Page will need to be determined
         false,
         this.NotifyCallback,
         false,
@@ -351,7 +420,6 @@ class App {
   }
 
   //TODO: Prototype page line formatting nonsense
-
   SelectLiner(x: number, y: number): Bounds | undefined {
     // get liner here
     let liner: Bounds;
@@ -505,20 +573,24 @@ class App {
       const measures = sheet.Measures.filter(
         (m: Measure) => m.Instrument === i,
       );
+        this.Sheet.Pages = [];
+        this.Sheet.Pages.push(new Page(0, 0, 1));
       const lineHeight =
         measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
       SetPagesAndLines(
         measures,
-        this.Sheet.Pages[0],
+        this.Sheet.Pages,
         this.Config.PageSettings?.UsePages,
         lineHeight,
       );
-      ResizeMeasuresOnPage(
-        this.Sheet,
-        this.Sheet.Pages[0],
-        this.Camera,
-        this.Config,
-      );
+      this.Sheet.Pages.forEach((page: Page) => {
+        ResizeMeasuresOnPage(
+          this.Sheet,
+          page,
+          this.Camera,
+          this.Config,
+        );
+      });
       if (this.Config.CameraSettings?.CenterMeasures) {
         this.CenterMeasures();
       } else if (this.Config.CameraSettings?.CenterPage) {
@@ -897,6 +969,15 @@ class App {
         m.ActiveVoice = 0;
       }
     });
+  }
+
+  // TODO: Move this to a class to handle playback separately.
+  SetPlaying(playing: boolean, tempo: number, aContext: AudioContext): void {
+    console.log("Trying to play here!");
+    this.Playing = true;
+    this.PlaybackTempo = tempo;
+    this.AudioContext = aContext;
+    this.PlaybackTimer = aContext.currentTime;
   }
 }
 

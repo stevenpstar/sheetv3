@@ -252,6 +252,7 @@ export module sheet {
 export * from "./Workers/Mappings.js";
 export * from "./App.js";
 export * from "./Workers/Loader.js";
+export * from "./Core/Measure.js";
 export * from "./Core/Note.js";
 export * from "./Workers/Pitcher.js";
 export * from "./Types/Message.js";
