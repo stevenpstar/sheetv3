@@ -84,6 +84,8 @@ class App {
   MouseX: number;
   MouseY: number;
   CanDragCamera: boolean = true;
+  RenderBounds: Bounds = new Bounds(400, 400, 800, 800);
+  Optimise: boolean = true;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -255,6 +257,11 @@ class App {
     this.Update(x, y);
   }
   Update(x: number, y: number): void {
+    // Update render bounds
+    this.RenderBounds.x = -this.Camera.x;
+    this.RenderBounds.y = -this.Camera.y;
+    this.RenderBounds.width = this.Canvas.clientWidth / this.Camera.Zoom;
+    this.RenderBounds.height = this.Canvas.clientHeight / this.Camera.Zoom;
     this.Render({ x: x, y: y });
   }
   Render(mousePos: { x: number; y: number }): void {
@@ -270,6 +277,8 @@ class App {
       this.Formatting,
       this.Config,
       this.NoteValue,
+      this.RenderBounds,
+      this.Optimise,
     );
 
   }
@@ -295,15 +304,12 @@ class App {
       } else {
         app.CanDragCamera = true;
       }
-
     }
 
     if (this.Playing) {
-      console.log("Playback!");
       this.Update(0, 0);
       // render code should not be in this class
       if (this.PlaybackMeasureIndex >= this.Sheet.Measures.length) {
-        console.log("playback index out of range");
         this.Playing = false;
         return;
       }
@@ -316,7 +322,6 @@ class App {
           this.PlaybackMeasureIndex += 1;
           msr = this.Sheet.Measures[this.PlaybackMeasureIndex];
           if (!msr) {
-            console.log("msr is null");
             this.Playing = false;
             this.PlaybackMeasureIndex = 0;
             this.AudioContext = null;
@@ -326,7 +331,6 @@ class App {
           measureTime = msr.TimeSignature.top * this.PlaybackTempo / 60.0;
           }
         } else {
-          console.log("playback measure would go out of range here, stopping");
           this.Playing = false;
           this.PlaybackMeasureIndex = 0;
           this.PlaybackTimer = 0;
@@ -357,7 +361,6 @@ class App {
       }
       
     }
-
 
     requestAnimationFrame(() => {
       app.RealtimeUpdate(this);
@@ -973,11 +976,15 @@ class App {
 
   // TODO: Move this to a class to handle playback separately.
   SetPlaying(playing: boolean, tempo: number, aContext: AudioContext): void {
-    console.log("Trying to play here!");
-    this.Playing = true;
+    this.Playing = playing;
     this.PlaybackTempo = tempo;
     this.AudioContext = aContext;
     this.PlaybackTimer = aContext.currentTime;
+    this.PlaybackMeasureIndex = 0;
+  }
+
+  ToggleOpt(): void {
+    this.Optimise = !this.Optimise;
   }
 }
 

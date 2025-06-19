@@ -81,7 +81,7 @@ const LoadSheet = (
       instr,
       null, // Prev Measure
       null, // Next Measure, these will need to be fixed when coming back to save/load
-      m.Bounds,
+      new Bounds(m.Bounds.x, m.Bounds.y, m.Bounds.width, m.Bounds.height),
       m.TimeSignature,
       m.KeySignature,
       m.Clefs,

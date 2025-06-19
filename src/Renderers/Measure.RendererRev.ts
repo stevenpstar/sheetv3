@@ -76,6 +76,15 @@ function RenderMeasureRev(
         );
       });
     });
+
+    renderProps.context.strokeStyle = "purple";
+    renderProps.context.strokeRect(
+      measure.Bounds.x + renderProps.camera.x,
+      measure.Bounds.y + renderProps.camera.y,
+      measure.Bounds.width,
+      measure.Bounds.height
+    );
+    renderProps.context.strokeStyle = "black";
   }
 }
 

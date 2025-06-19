@@ -36,7 +36,6 @@ function SetPagesAndLines(
     });
     return;
   }
-  console.log("Setting pages for measures ----");
   measures.forEach((msr: Measure, i: number) => {
     msrsOnLine++;
     const msrWidth = msr.GetMinimumWidth() + msr.XOffset;
@@ -46,17 +45,14 @@ function SetPagesAndLines(
       if (page.PageLines.length < currentLine && currentLine <= linesPerPage) {
         page.AddLine(defaultLineHeight);
       } else if (currentLine > linesPerPage) {
-        console.log("Considering adding a page because current line is: ", currentLine);
         // If we are at the last page, we need to add a new one
         if (pages[pages.length-1] === page) {
           pages.push(new Page(0, pages.length * ((297 * 7) + 100), pages.length + 1));
-          console.log("Adding a page!");
         }
         page = pages[pages.length-1];
         currentPage = pages.length-1;
         currentLine = 1;
         msrsOnLine = 1;
-       // page.AddLine(defaultLineHeight);
 
       }
       runningWidth = 0;
@@ -64,10 +60,6 @@ function SetPagesAndLines(
     runningWidth += msrWidth;
     msr.Page = pages[currentPage];
     msr.PageLine = currentLine;
-    if (i > 19) {
-     // console.log("current page: ", currentPage);
-     // console.log(msr);
-    }
 
   });
 }

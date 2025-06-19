@@ -1,5 +1,6 @@
 import { RenderMeasure } from "../Renderers/Measure.Renderer.js";
 import { RenderPage } from "../Renderers/Page.Renderer.js";
+import { Bounds } from "../Types/Bounds.js";
 import { ConfigSettings } from "../Types/Config.js";
 import { RenderBarline } from "./Barline.js";
 import { Camera } from "./Camera.js";
@@ -18,6 +19,8 @@ const Renderer = (
   formatting: boolean,
   config: ConfigSettings,
   noteValue: number,
+  renderBounds: Bounds,
+  optimise: boolean,
 ) => {
   ctx.fillStyle = config.Theme.BackgroundColour;
 
@@ -36,7 +39,12 @@ const Renderer = (
   ctx.fillStyle = config.Theme.NoteElements;
 
   measures.forEach((m: Measure, i: number) => {
-    const renderProps = {
+    if (optimise) {
+      if (m.GetBoundsWithOffset().Intersects(renderBounds) === false) {
+        return;
+      }
+    }
+      const renderProps = {
       context: ctx,
       camera: cam,
       theme: config.Theme,
@@ -67,6 +75,15 @@ const Renderer = (
     RenderBarline(renderProps, null, m, cam);
     RenderBarline(renderProps, m, null, cam);
   });
+
+  if (optimise) {
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(renderBounds.x + cam.x,
+                   renderBounds.y + cam.y,
+                   renderBounds.width, renderBounds.height);
+  }
+  ctx.strokeStyle = "black";
 };
 
 export { Renderer };
