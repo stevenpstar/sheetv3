@@ -1,4 +1,4 @@
-import { Division, Subdivision, SubdivisionType } from "../Core/Division.js";
+import { Division, Subdivision } from "../Core/Division.js";
 import {
   BeamDirection,
   DetermineStemDirection,
@@ -170,7 +170,7 @@ function CreateNoteStem(
   const divNotes = notes; //[i];
   const isGraceStem = grace; //subDiv.Type === SubdivisionType.GRACE_NOTE;
   const scale = isGraceStem ? 0.6 : 1.0;
-  const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
+  const numOfAcc = divNotes.filter((n) => n.Alter !== 0).length;
   if (numOfAcc > 0) {
     dynNoteXBuffer += dynNoteXBuffer * numOfAcc - 1;
   }
@@ -233,7 +233,7 @@ function CreateGraceNoteStems(
   const scale = isGraceStem ? 0.6 : 1.0;
   let divNotes = notes;
 
-  const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
+  const numOfAcc = divNotes.filter((n) => n.Alter !== 0 || n.Accidental !== "").length;
   if (numOfAcc > 0) {
     dynNoteXBuffer += dynNoteXBuffer * numOfAcc - 1;
   }

@@ -2,7 +2,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Camera } from "./Camera.js";
-import { Measure } from "./Measure.js";
+import { GetBoundsWithOffset, Measure } from "./Measure.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
 
 enum BarlineType {
@@ -150,7 +150,7 @@ function RenderStandardBarline(
 
   var xStart = measure.Bounds.x;
   if (pos == BarlinePos.END) {
-    xStart += measure.GetBoundsWithOffset().width;
+    xStart += GetBoundsWithOffset(measure).width;
   }
 
   xStart = Math.floor(xStart);
@@ -184,7 +184,7 @@ function RenderFinalBarline(
 
   const barlineHeight = yEnd - yStart;
 
-  var xStart = measure.Bounds.x + measure.GetBoundsWithOffset().width;
+  var xStart = measure.Bounds.x + GetBoundsWithOffset(measure).width;
 
   const line = `M${xStart + cam.x - 9}
       ${yStart + cam.y} h
@@ -220,7 +220,7 @@ function RenderRepeatEnd(
 
   const barlineHeight = yEnd - yStart;
 
-  var xStart = measure.Bounds.x + measure.GetBoundsWithOffset().width;
+  var xStart = measure.Bounds.x + GetBoundsWithOffset(measure).width;
 
   const line = `M${xStart + cam.x - 9}
       ${yStart + cam.y} h

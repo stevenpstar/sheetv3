@@ -1,13 +1,13 @@
 import { Note } from '../Core/Note.js';
 
-const ACC_OFFSET = 12;
+const ACC_OFFSET = 10;
 
 // TODO: Pass in measure/key signature to determine if
 // the notes need to display accidentals
 // This will solve for accidental === 0
 function ReturnAccidentalOffset(notes: Note[]): number[] {
   let offset = [];
-  const nA = notes.filter(n => n.Accidental !== 0);
+  const nA = notes.filter(n => n.Alter !== 0 || n.Accidental !== "");
   nA.sort((a: Note, b: Note) => {
     return a.Line - b.Line;
   });

@@ -4,7 +4,7 @@ import { Bounds } from "../Types/Bounds.js";
 import { ConfigSettings } from "../Types/Config.js";
 import { RenderBarline } from "./Barline.js";
 import { Camera } from "./Camera.js";
-import { Measure } from "./Measure.js";
+import { GetBoundsWithOffset, Measure } from "./Measure.js";
 import { Page } from "./Page.js";
 
 const Renderer = (
@@ -21,6 +21,7 @@ const Renderer = (
   noteValue: number,
   renderBounds: Bounds,
   optimise: boolean,
+  debug: boolean
 ) => {
   ctx.fillStyle = config.Theme.BackgroundColour;
 
@@ -33,14 +34,14 @@ const Renderer = (
   ctx.restore();
   if (config.PageSettings?.RenderPage) {
     pages.forEach((page) => {
-      RenderPage(page, c, ctx, cam, formatting, config, measures);
+      RenderPage(page, c, ctx, cam, true, config, measures);
     });
   }
   ctx.fillStyle = config.Theme.NoteElements;
 
   measures.forEach((m: Measure, i: number) => {
     if (optimise) {
-      if (m.GetBoundsWithOffset().Intersects(renderBounds) === false) {
+      if (GetBoundsWithOffset(m).Intersects(renderBounds) === false) {
         return;
       }
     }
@@ -51,7 +52,7 @@ const Renderer = (
     };
     const lastMeasure =
       i ===
-      measures.filter((msr: Measure) => m.Instrument === msr.Instrument)
+      measures.filter((msr: Measure) => m.InstrumentID === msr.InstrumentID)
         .length -
         1;
 
@@ -65,10 +66,11 @@ const Renderer = (
       restInput,
       noteValue,
       config,
+      debug
     );
     if (i > 0) {
       const instrMsrs = measures.filter(
-        (msr: Measure) => m.Instrument === msr.Instrument,
+        (msr: Measure) => m.InstrumentID === msr.InstrumentID,
       );
       RenderBarline(renderProps, instrMsrs[instrMsrs.length - 1], m, cam);
     }
@@ -76,7 +78,7 @@ const Renderer = (
     RenderBarline(renderProps, m, null, cam);
   });
 
-  if (optimise) {
+  if (optimise && debug) {
     ctx.strokeStyle = "red";
     ctx.lineWidth = 4;
     ctx.strokeRect(renderBounds.x + cam.x,

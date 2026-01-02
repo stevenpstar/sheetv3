@@ -10,8 +10,9 @@ import { GetStaffMiddleLine, Staff } from "./Staff.js";
 import { Voice } from "./Voice.js";
 
 enum ArticulationType {
-  NONE,
-  ACCENT,
+  NONE = 0,
+  ACCENT = 1,
+  STACCATO = 2,
 }
 
 class Articulation {
@@ -64,7 +65,9 @@ function RenderArticulation(
     accentYPos = notes[0].Bounds.y - 6;
   }
 
-  // Articulations need to be rendered above or below the stave
+  // Some Articulations need to be rendered above or below the stave
+  // TODO: Some articulations (staccato) need to be rendered inbetween nearest
+  // lines - in gaps. Above/Below staff may be fine on lines.
   const lineHeight = 5;
   // the 4 in this equation is number of lines from middle to top of stave
   const staveTop =
@@ -92,6 +95,14 @@ function RenderArticulation(
       } else {
         symbol = ArticulationSymbol.AccentAbove;
       }
+      break;
+    case ArticulationType.STACCATO:
+      if (div.Direction == StemDirection.Up) {
+        symbol = ArticulationSymbol.StaccatoBelow;
+      } else {
+        symbol = ArticulationSymbol.StaccatoAbove;
+      }
+      break;
     default:
       symbol = ArticulationSymbol.AccentAbove;
   }

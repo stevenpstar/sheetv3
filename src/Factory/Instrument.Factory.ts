@@ -7,7 +7,7 @@ import { Note } from "../Core/Note.js";
 import { Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
-import { ConfigSettings, MeasureSettings } from "../entry.js";
+import { ConfigSettings, CreateNewMeasure, MeasureSettings } from "../entry.js";
 
 // Defaults, these will be moved somewhere else but fine here for now
 const sTopLine = 5;
@@ -16,8 +16,9 @@ const lineHeight = 5;
 
 const mh = (sBotLine - sTopLine) * lineHeight;
 
-const CreateDefaultPiano = (): Instrument => {
+const CreateDefaultPiano = (id: number): Instrument => {
   const defaultPiano: Instrument = {
+    ID: id,
     Position: { x: 0, y: 5 },
     Staff: StaffType.Grand,
     Staves: [new Staff(0), new Staff(1)],
@@ -26,7 +27,7 @@ const CreateDefaultPiano = (): Instrument => {
   return defaultPiano;
 };
 
-function CreateInstrument(y: number, config: ConfigSettings): Instrument {
+function CreateInstrument(y: number, config: ConfigSettings, id: number): Instrument {
   let staff: StaffType = StaffType.Single;
   if (config.DefaultStaffType) {
     switch (config.DefaultStaffType) {
@@ -42,6 +43,7 @@ function CreateInstrument(y: number, config: ConfigSettings): Instrument {
     }
   }
   const instr: Instrument = {
+    ID: id,
     Position: { x: 0, y: y },
     Staff: staff,
     Staves: [new Staff(0)],
@@ -60,7 +62,7 @@ const CreateDefaultMeasure = (
 ): Measure => {
   const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
   const props: MeasureProps = {
-    Instrument: instr,
+    InstrumentID: instr.ID,
     PrevMeasure: null,
     NextMeasure: null,
     Bounds: new Bounds(
@@ -69,7 +71,7 @@ const CreateDefaultMeasure = (
       150,
       msrHeight,
     ),
-    TimeSignature: { top: 4, bottom: 4 },
+    TimeSignature: { top: 3, bottom: 4 },
     KeySignature: "DMaj/Bmin",
     Notes: [],
     Clefs: [new Clef(0, "treble", 1, 0), new Clef(1, "bass", 1, 1)],
@@ -86,11 +88,12 @@ const CreateDefaultMeasure = (
       new Barline(BarlinePos.END, BarlineType.END),
     ],
   };
-  return new Measure(props, id);
+  return CreateNewMeasure(props, id);
 };
 
+// TODO: Maybe change name to CreateMeasureProps
 const CreateMeasure = (
-  instr: Instrument,
+  instrID: number,
   prevMsr: Measure,
   nextMsr: Measure,
   bounds: Bounds,
@@ -108,7 +111,7 @@ const CreateMeasure = (
   settings?: MeasureSettings,
 ): Measure => {
   const props: MeasureProps = {
-    Instrument: instr,
+    InstrumentID: instrID,
     PrevMeasure: prevMsr,
     NextMeasure: nextMsr,
     Bounds: bounds,
@@ -129,7 +132,7 @@ const CreateMeasure = (
       new Barline(BarlinePos.END, BarlineType.SINGLE),
     ],
   };
-  return new Measure(props, runningId, loading);
+  return CreateNewMeasure(props, runningId, loading);
 };
 
 export {

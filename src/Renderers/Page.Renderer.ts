@@ -1,5 +1,5 @@
 import { Camera } from '../Core/Camera.js';
-import { Measure } from '../Core/Measure.js';
+import { GetBoundsWithOffset, GetMeasureHeight, Measure } from '../Core/Measure.js';
 import { Page } from '../Core/Page.js';
 import { ConfigSettings } from '../Types/Config.js';
 function RenderPage(
@@ -18,9 +18,9 @@ function RenderPage(
     const y = page.Bounds.y;
 
     if (config.PageSettings?.AutoSize) {
-      a4h = measures[measures.length-1].Bounds.y + measures[measures.length-1].GetMeasureHeight() + 40;
+      a4h = measures[measures.length-1].Bounds.y + GetMeasureHeight(measures[measures.length-1]) + 40;
       if (measures.length < 4) {
-        a4w = measures[measures.length-1].Bounds.x + measures[measures.length-1].GetBoundsWithOffset().width + 40;
+        a4w = measures[measures.length-1].Bounds.x + GetBoundsWithOffset(measures[measures.length-1]).width + 40;
       }
     }
 

@@ -1,12 +1,12 @@
 import { Camera } from "../Core/Camera.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
-import { Clef, Measure } from "../Core/Measure.js";
+import { Clef, CreateMeasureDivisions, Measure } from "../Core/Measure.js";
 import { Note, NoteProps } from "../Core/Note.js";
 import { Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { Staff } from "../Core/Staff.js";
 import { Voice } from "../Core/Voice.js";
-import { CreateMeasure } from "../Factory/Instrument.Factory.js";
+import { CreateDefaultPiano, CreateMeasure } from "../Factory/Instrument.Factory.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
 
@@ -22,10 +22,11 @@ interface lNote {
   Editable?: boolean;
   Grace: boolean;
   Voice: number;
-  Accidental: number;
+  Alter: number;
 }
 
 interface lMeasure {
+  InstrumentID: number;
   Clefs: Clef[];
   Staves: Staff[];
   TimeSignature: { top: number; bottom: number };
@@ -35,8 +36,14 @@ interface lMeasure {
   ShowClef: boolean;
   ShowTime: boolean;
 }
-interface LoadStructure {
+
+interface lInstrument {
+  IDNo: number;
   Measures: lMeasure[];
+}
+
+interface LoadStructure {
+  Instruments: lInstrument[];
 }
 
 const LoadSheet = (
@@ -50,15 +57,27 @@ const LoadSheet = (
   let runningId = { count: 0 };
   // TODO: this could error
   const loaded: LoadStructure = JSON.parse(savedJson);
-  // loading onto a single instrument to begin with
-  loaded.Measures.forEach((m: lMeasure, i: number) => {
+  loaded.Instruments.forEach((ins: lInstrument) => {
+  // For each loaded instrument, create an instrument on the sheet, TODO: We
+    // should probably clear all instruments before this - instruments will
+    // eventually have a type to determine stave count etc.
+  let instr_exists: boolean = false;
+  sheet.Instruments.forEach((instrument: Instrument) => {
+    if (instrument.ID === ins.IDNo) {
+      instr_exists = true;
+    }
+  });
+  if (!instr_exists) {
+    sheet.Instruments.push(CreateDefaultPiano(ins.IDNo));
+  }
+  ins.Measures.forEach((m: lMeasure) => {
     //   const msr = CreateDefaultMeasure(runningId, instr, page, cam);
     // TODO: Temporary
     if (instr.Staff === StaffType.Rhythm) {
       m.ShowClef = false;
     }
     const notes: Note[] = [];
-    m.Notes.forEach((n: lNote, i: number) => {
+    m.Notes.forEach((n: lNote) => {
       const noteProps: NoteProps = {
         Beat: n.Beat,
         Duration: n.Duration,
@@ -66,19 +85,20 @@ const LoadSheet = (
         Rest: n.Rest,
         Tied: n.Tied,
         Staff: n.Staff,
-        Tuple: false,
+        Tuplet: false,
         Clef: n.Clef,
         Editable: true,
         Grace: n.Grace,
         Voice: n.Voice,
-        Accidental: n.Accidental,
+        Alter: n.Alter,
       };
 
       const newNote = new Note(noteProps);
       notes.push(newNote);
     });
+    console.log("instr id: ", ins.IDNo);
     const msr = CreateMeasure(
-      instr,
+      ins.IDNo,
       null, // Prev Measure
       null, // Next Measure, these will need to be fixed when coming back to save/load
       new Bounds(m.Bounds.x, m.Bounds.y, m.Bounds.width, m.Bounds.height),
@@ -100,46 +120,54 @@ const LoadSheet = (
       sheet.Measures[sheet.Measures.length - 1].NextMeasure = msr;
     }
     sheet.Measures.push(msr);
-    msr.CreateDivisions();
-  });
+    CreateMeasureDivisions(msr);
+  })});
 };
 
 const SaveSheet = (sheet: Sheet): string => {
   let saved: LoadStructure = {
-    Measures: [],
+    Instruments: [],
   };
-  sheet.Measures.forEach((m: Measure) => {
-    let notes: lNote[] = [];
-    m.Voices.forEach((v: Voice, i: number) => {
-      v.Notes.forEach((n: Note) => {
-        if (n.Rest) {
-          return;
-        }
-        notes.push({
-          ID: n.ID,
-          Beat: n.Beat,
-          Duration: n.Duration,
-          Line: n.Line,
-          Rest: n.Rest,
-          Tied: n.Tied,
-          Staff: n.Staff,
-          Clef: n.Clef,
-          Editable: true,
-          Grace: n.Grace,
-          Voice: i,
-          Accidental: n.Accidental,
+  sheet.Instruments.forEach((i: Instrument) => {
+    let instr: lInstrument = {
+      IDNo: i.ID,
+      Measures: [],
+    };
+    saved.Instruments.push(instr);
+    sheet.Measures.filter((fm: Measure) => fm.InstrumentID === i.ID).forEach((m: Measure) => {
+      let notes: lNote[] = [];
+      m.Voices.forEach((v: Voice, i: number) => {
+        v.Notes.forEach((n: Note) => {
+          if (n.Rest) {
+            return;
+          }
+          notes.push({
+            ID: n.ID,
+            Beat: n.Beat,
+            Duration: n.Duration,
+            Line: n.Line,
+            Rest: n.Rest,
+            Tied: n.Tied,
+            Staff: n.Staff,
+            Clef: n.Clef,
+            Editable: true,
+            Grace: n.Grace,
+            Voice: i,
+            Alter: n.Alter,
+          });
         });
       });
-    });
-    saved.Measures.push({
-      Clefs: m.Clefs,
-      Staves: m.Staves,
-      TimeSignature: m.TimeSignature,
-      KeySignature: m.KeySignature,
-      Notes: notes,
-      Bounds: m.Bounds,
-      ShowClef: m.RenderClef,
-      ShowTime: m.RenderTimeSig,
+      saved.Instruments[saved.Instruments.length-1].Measures.push({
+        InstrumentID: saved.Instruments[saved.Instruments.length-1].IDNo,
+        Clefs: m.Clefs,
+        Staves: m.Staves,
+        TimeSignature: m.TimeSignature,
+        KeySignature: m.KeySignature,
+        Notes: notes,
+        Bounds: m.Bounds,
+        ShowClef: m.RenderClef,
+        ShowTime: m.RenderTimeSig,
+      });
     });
   });
 

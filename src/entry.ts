@@ -20,11 +20,11 @@ const keymaps: KeyMapping = {
   value6: "6",
   restInput: "r",
   delete: "d",
-  sharpen: "+",
+  sharpen: "shift s",
   flatten: "-",
   scaleToggle: "'",
-  save: "s",
-  load: "l",
+  save: "ctrl s",
+  load: "ctrl l",
   test_tuplet: "t",
   debug_clear: "c",
   beam: "b",
@@ -112,7 +112,12 @@ function zoom(app: App, canvas: HTMLCanvasElement, e: WheelEvent): void {
 
     e.preventDefault();
     const scale = e.deltaY * -0.01;
-    scale > 0 ? app.AlterZoom(0.15, x, y, true) : app.AlterZoom(-0.15, x, y, true);
+    scale > 0 ? app.AlterZoom(0.1, x, y, true) : app.AlterZoom(-0.1, x, y, true);
+  } else {
+    e.preventDefault();
+    console.log(e.deltaY);
+    const dir = e.deltaY * -0.01;
+    dir > 0 ? app.Scroll(100) : app.Scroll(-100);
   }
 }
 

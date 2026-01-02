@@ -24,7 +24,7 @@ import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
 import { Voice } from "./Voice.js";
 
 interface MeasureProps {
-  Instrument: Instrument;
+  InstrumentID: number;
   PrevMeasure: Measure;
   NextMeasure: Measure;
   Bounds: Bounds;
@@ -43,9 +43,10 @@ interface MeasureProps {
   Barlines: Barline[];
 }
 
-class Measure implements ISelectable {
+// MEASURE TYPE
+type Measure = {
 
-  Instrument: Instrument;
+  InstrumentID: number;
 
   // Measure References
   PrevMeasure: Measure;
@@ -54,10 +55,10 @@ class Measure implements ISelectable {
   // NUMBER
   ID: number;
   Num: number;
-  XOffset: number; // not sure if this is what we want to go with
+  XOffset: number; // not sure if msr.is what we want to go with
   PageLine: number;
   Line: number;
-  ActiveVoice: number = 0;
+  ActiveVoice: number;
   RunningID: { count: number };
 
   // BOOLEAN
@@ -79,142 +80,181 @@ class Measure implements ISelectable {
   KeySignature: string;
 
   Voices: Voice[];
-  Clefs: Clef[] = [];
+  Clefs: Clef[];
   Staves: Staff[];
   Barlines: Barline[];
   Articulations: Articulation[];
   Dynamics: Dynamic[];
 
   Message: (msg: Message) => void;
+};
 
-  constructor(properties: MeasureProps, runningId: { count: number }, loading: boolean = false) {
+function CreateEmptyMeasure(): Measure {
+  let msr: Measure = {
+    InstrumentID: 0,
+    PrevMeasure: undefined,
+    NextMeasure: undefined,
+    ID: 0,
+    Num: 0,
+    XOffset: 0,
+    PageLine: 0,
+    Line: 0,
+    ActiveVoice: 0,
+    RunningID: { count: 0 },
+    Selected: false,
+    Editable: false,
+    RenderClef: false,
+    RenderKey: false,
+    RenderTimeSig: false,
+    SelType: SelectableTypes.Measure,
+    Bounds: new Bounds(0, 0, 0, 0),
+    Camera: undefined,
+    Page: undefined,
+    TimeSignature: undefined,
+    KeySignature: "",
+    Voices: [],
+    Clefs: [],
+    Staves: [],
+    Barlines: [],
+    Articulations: [],
+    Dynamics: [],
+    Message: () => {},
+  };
 
-    this.Staves = properties.Staves;
-    this.PrevMeasure = properties.PrevMeasure;
-    this.NextMeasure = properties.NextMeasure;
-    this.RunningID = runningId;
-    this.ID = 0;
-    this.Num = 1;
-    this.Voices = [new Voice(0), new Voice(1), new Voice(2), new Voice(3)];
+  return msr;
+}
+
+function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }, loading: boolean = false): Measure {
+    let msr: Measure = CreateEmptyMeasure();
+    msr.Staves = properties.Staves;
+    msr.PrevMeasure = properties.PrevMeasure;
+    msr.NextMeasure = properties.NextMeasure;
+    msr.RunningID = runningId;
+    msr.ID = 0;
+    msr.Num = 1;
+    msr.Voices = [new Voice(0), new Voice(1), new Voice(2), new Voice(3)];
     if (loading && properties.Notes.length > 0) {
       // Add notes to assigned voices before division creation
       properties.Notes.forEach((n: Note) => {
-        if (this.Voices[n.Voice] !== undefined || this.Voices[n.Voice] !== null) {
+        if (msr.Voices[n.Voice] !== undefined || msr.Voices[n.Voice] !== null) {
           // Add notes to voices from load
-          this.AddNote(n, false, this.Voices[n.Voice]);
+          AddNote(msr, n, false, msr.Voices[n.Voice]);
         }
       });
 
     }
-    this.Message = properties.Message;
-    this.Selected = false;
-    this.Editable = true;
-    this.SelType = SelectableTypes.Measure;
-    this.Instrument = properties.Instrument;
-    this.Line = 0;
-    this.Bounds = properties.Bounds;
-    this.Bounds.height = GetStaffHeightUntil(this.Staves);
-    this.TimeSignature = CreateTimeSignature(properties.TimeSignature);
-    this.KeySignature = properties.KeySignature;
-   // this.Voices[this.ActiveVoice].Notes = properties.Notes;
-    this.Articulations = [];
-    this.Dynamics = [];
-    this.RenderClef = properties.RenderClef;
-    if (this.Instrument.Staff === StaffType.Rhythm) {
-      this.RenderClef = false;
-    }
-    this.RenderKey = properties.RenderKey;
-    this.Camera = properties.Camera;
-    this.RenderTimeSig = properties.RenderTimeSig;
-    this.Page = properties.Page;
-    this.PageLine =
+    msr.Message = properties.Message;
+    msr.Selected = false;
+    msr.Editable = true;
+    msr.SelType = SelectableTypes.Measure;
+    msr.InstrumentID = properties.InstrumentID;
+    msr.Line = 0;
+    msr.Bounds = properties.Bounds;
+    msr.Bounds.height = GetStaffHeightUntil(msr.Staves);
+    msr.TimeSignature = CreateTimeSignature(properties.TimeSignature);
+    msr.KeySignature = properties.KeySignature;
+   // msr.Voices[msr.ActiveVoice].Notes = properties.Notes;
+    msr.Articulations = [];
+    msr.Dynamics = [];
+    msr.RenderClef = properties.RenderClef;
+   // if (msr.Instrument.Staff === StaffType.Rhythm) {
+   //   msr.RenderClef = false;
+   // }
+    msr.RenderKey = properties.RenderKey;
+    msr.Camera = properties.Camera;
+    msr.RenderTimeSig = properties.RenderTimeSig;
+    msr.Page = properties.Page;
+    msr.PageLine =
       properties.Page.PageLines[properties.Page.PageLines.length - 1].Number;
 
-    this.SetXOffset();
+    SetXOffset(msr);
 
-    this.Barlines = properties.Barlines;
+    msr.Barlines = properties.Barlines;
 
-    this.CreateDivisions();
+    CreateMeasureDivisions(msr);
 
-    this.Staves.forEach((s: Staff, i: number) => {
-      const clef = new Clef(0, properties.Clefs[i].Type, 1, s.Num);
-      clef.SetBounds(this, s.Num);
-      this.Clefs.push(clef);
+    msr.Staves.forEach((s: Staff, i: number) => {
+      if (i < properties.Clefs.length) {
+        const clef = new Clef(0, properties.Clefs[i].Type, 1, s.Num);
+        clef.SetBounds(msr, s.Num);
+        msr.Clefs.push(clef);
+      }
     });
-    this.TimeSignature.SetBounds(this);
-  }
+    msr.TimeSignature.SetBounds(msr);
+    return msr;
+}
 
-  GetLineHovered(y: number, staffNum: number): { num: number; bounds: Bounds } {
-    const cam = this.Camera;
-    const relYPos = y - this.Bounds.y - cam.y;
-    let line = Math.floor(relYPos / 5); // this should be a constant, line_height (defined somewhere)
+  function GetLineHovered(msr: Measure, y: number, staffNum: number): { num: number; bounds: Bounds } {
+    const cam = msr.Camera;
+    const relYPos = y - msr.Bounds.y - cam.y;
+    let line = Math.floor(relYPos / 5); // msr.should be a constant, line_height (defined somewhere)
     let actualLine = line;
     const bounds = new Bounds(
-      this.Bounds.x,
+      msr.Bounds.x,
       0,
-      this.Bounds.width + this.XOffset,
+      msr.Bounds.width + msr.XOffset,
       5,
     );
-    const staff: Staff = this.Staves.find((s) => s.Num === staffNum);
-    const prevStaffLines = GetStaffHeightUntil(this.Staves, staffNum) / 5;
+    const staff: Staff = msr.Staves.find((s) => s.Num === staffNum);
+    const prevStaffLines = GetStaffHeightUntil(msr.Staves, staffNum) / 5;
     actualLine = line + staff.TopLine;
-    bounds.y = this.Bounds.y + 5 * actualLine;
+    bounds.y = msr.Bounds.y + 5 * actualLine;
     return { num: actualLine - prevStaffLines, bounds: bounds };
   }
 
-  GetNotePositionOnLine(line: number, staff: number): number {
-    const staffYPos = GetStaffHeightUntil(this.Staves, staff);
-    let y = staffYPos + this.Bounds.y + (line - this.Staves[staff].TopLine) * 5;
+  function GetNotePositionOnLine(msr: Measure, line: number, staff: number): number {
+    const staffYPos = GetStaffHeightUntil(msr.Staves, staff);
+    let y = staffYPos + msr.Bounds.y + (line - msr.Staves[staff].TopLine) * 5;
     return y - 2.5;
   }
 
-  GetBoundsWithOffset(): Bounds {
+  function GetBoundsWithOffset(msr: Measure): Bounds {
     return new Bounds(
-      this.Bounds.x,
-      this.Bounds.y,
-      this.Bounds.width + this.XOffset,
-      this.Bounds.height,
+      msr.Bounds.x,
+      msr.Bounds.y,
+      msr.Bounds.width + msr.XOffset,
+      msr.Bounds.height,
     );
   }
 
-  SetXOffset(): void {
-    this.XOffset = 0;
-    if (this.RenderClef) {
-      this.XOffset += 30;
+  function SetXOffset(msr: Measure): void {
+    msr.XOffset = 0;
+    if (msr.RenderClef) {
+      msr.XOffset += 30;
     }
-    if (this.RenderKey) {
-      this.XOffset += KeySignatures.get(this.KeySignature).length * 11;
+    if (msr.RenderKey) {
+      msr.XOffset += KeySignatures.get(msr.KeySignature).length * 11;
     }
-    if (this.RenderTimeSig) {
-      this.XOffset += 30;
+    if (msr.RenderTimeSig) {
+      msr.XOffset += 30;
     }
-    this.TimeSignature.SetBounds(this);
+    msr.TimeSignature.SetBounds(msr);
   }
 
-  CreateDivisions() {
-    this.Voices.forEach((v: Voice, i: number) => {
+  function CreateMeasureDivisions(msr: Measure) {
+    msr.Voices.forEach((v: Voice, i: number) => {
       v.Divisions = [];
-      this.Staves.forEach((s: Staff) => {
-        v.Divisions.push(...CreateDivisions(this, v.Notes, s.Num, v, i));
-        ResizeDivisions(this, v.Divisions, s.Num);
-        UpdateNoteBounds(this, s.Num);
+      msr.Staves.forEach((s: Staff) => {
+        v.Divisions.push(...CreateDivisions(msr, v.Notes, s.Num, v, i));
+        ResizeDivisions(msr, v.Divisions, s.Num);
+        UpdateNoteBounds(msr, s.Num);
       });
     });
   }
 
-  Reposition(prevMsr: Measure): void {
-    this.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
-    this.CreateDivisions();
+  function RepositionMeasure(msr: Measure, prevMsr: Measure): void {
+    msr.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
+    CreateMeasureDivisions(msr);
   }
 
-  GetMeasureHeight(): number {
-    return GetStaffHeightUntil(this.Staves);
+  function GetMeasureHeight(msr: Measure): number {
+    return GetStaffHeightUntil(msr.Staves);
   }
 
-  GetVoiceIndex(voice: Voice): number {
+  function GetVoiceIndex(msr: Measure, voice: Voice): number {
     let index = 0;
     let found = false;
-    this.Voices.forEach((v: Voice, i: number) => {
+    msr.Voices.forEach((v: Voice, i: number) => {
       if (v === voice) {
         index = i;
         found = true;
@@ -228,19 +268,20 @@ class Measure implements ISelectable {
     return index;
   }
 
-  AddNote(
+  function AddNote(
+    msr: Measure,
     note: Note,
     fromInput: boolean = false,
-    voice: Voice = this.Voices[this.ActiveVoice],
+    voice: Voice = msr.Voices[msr.ActiveVoice],
   ): void {
-      const voiceIndex = this.GetVoiceIndex(voice);
+      const voiceIndex = GetVoiceIndex(msr, voice);
     if (note.Rest) {
-      this.ClearNonRestNotes(note.Beat, note.Staff, voiceIndex);
+      ClearNonRestNotes(msr, note.Beat, note.Staff, voiceIndex);
     } else {
-      this.ClearRestNotes(note.Beat, note.Staff, voiceIndex);
+      ClearRestNotes(msr, note.Beat, note.Staff, voiceIndex);
     }
-    note.SetID(this.RunningID.count);
-    this.RunningID.count++;
+    note.SetID(msr.RunningID.count);
+    msr.RunningID.count++;
     voice.Notes.push(note);
 
     if (fromInput) {
@@ -254,153 +295,168 @@ class Measure implements ISelectable {
           MessageType: MessageType.AddNote,
         },
       };
-      this.Message(msg);
+      msr.Message(msg);
     }
   }
 
-  ClearNonRestNotes(beat: number, staff: number, voiceIndex: number): void {
-    for (let n = this.Voices[voiceIndex].Notes.length - 1; n >= 0; n--) {
+  function ClearNonRestNotes(msr: Measure, beat: number, staff: number, voiceIndex: number): void {
+    for (let n = msr.Voices[voiceIndex].Notes.length - 1; n >= 0; n--) {
       if (
-        this.Voices[voiceIndex].Notes[n].Beat === beat &&
-        this.Voices[voiceIndex].Notes[n].Rest === false &&
-        this.Voices[voiceIndex].Notes[n].Staff === staff
+        msr.Voices[voiceIndex].Notes[n].Beat === beat &&
+        msr.Voices[voiceIndex].Notes[n].Rest === false &&
+        msr.Voices[voiceIndex].Notes[n].Staff === staff
       ) {
-        this.Voices[voiceIndex].Notes.splice(n, 1);
+        msr.Voices[voiceIndex].Notes.splice(n, 1);
       }
     }
   }
 
-  ClearRestNotes(beat: number, staff: number, voiceIndex: number): void {
-    for (let n = this.Voices[voiceIndex].Notes.length - 1; n >= 0; n--) {
+  function ClearRestNotes(msr: Measure, beat: number, staff: number, voiceIndex: number): void {
+    for (let n = msr.Voices[voiceIndex].Notes.length - 1; n >= 0; n--) {
       if (
-        this.Voices[voiceIndex].Notes[n].Beat === beat &&
-        this.Voices[voiceIndex].Notes[n].Rest === true &&
-        this.Voices[voiceIndex].Notes[n].Staff === staff
+        msr.Voices[voiceIndex].Notes[n].Beat === beat &&
+        msr.Voices[voiceIndex].Notes[n].Rest === true &&
+        msr.Voices[voiceIndex].Notes[n].Staff === staff
       ) {
-        this.Voices[voiceIndex].Notes.splice(n, 1);
+        msr.Voices[voiceIndex].Notes.splice(n, 1);
       }
     }
   }
 
-  ClearMeasure(ignoreNotes?: Note[]): void {
-    for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+  function ClearMeasure(msr: Measure, ignoreNotes?: Note[]): void {
+    for (let n = msr.Voices[msr.ActiveVoice].Notes.length - 1; n >= 0; n--) {
       if (
-        this.Voices[this.ActiveVoice].Notes[n].Editable &&
-        !ignoreNotes.includes(this.Voices[this.ActiveVoice].Notes[n])
+        msr.Voices[msr.ActiveVoice].Notes[n].Editable &&
+        !ignoreNotes.includes(msr.Voices[msr.ActiveVoice].Notes[n])
       ) {
-        this.Voices[this.ActiveVoice].Notes.splice(n, 1);
+        msr.Voices[msr.ActiveVoice].Notes.splice(n, 1);
       }
     }
   }
 
-  DeleteSelected(): void {
-    for (let n = this.Voices[this.ActiveVoice].Notes.length - 1; n >= 0; n--) {
+  function DeleteSelectedMeasure(msr: Measure): void {
+    for (let n = msr.Voices[msr.ActiveVoice].Notes.length - 1; n >= 0; n--) {
       if (
-        this.Voices[this.ActiveVoice].Notes[n].Selected &&
-        this.Voices[this.ActiveVoice].Notes[n].Editable
+        msr.Voices[msr.ActiveVoice].Notes[n].Selected &&
+        msr.Voices[msr.ActiveVoice].Notes[n].Editable
       ) {
-        let beat = this.Voices[this.ActiveVoice].Notes[n].Beat;
-        let duration = this.Voices[this.ActiveVoice].Notes[n].Duration;
-        let staff = this.Voices[this.ActiveVoice].Notes[n].Staff;
-        let tuple = this.Voices[this.ActiveVoice].Notes[n].Tuple;
-        let tupleDetails = this.Voices[this.ActiveVoice].Notes[n].TupleDetails;
-        this.Voices[this.ActiveVoice].Notes.splice(n, 1);
-        const notesOnBeat = this.Voices[this.ActiveVoice].Notes.filter(
+        let beat = msr.Voices[msr.ActiveVoice].Notes[n].Beat;
+        let duration = msr.Voices[msr.ActiveVoice].Notes[n].Duration;
+        let staff = msr.Voices[msr.ActiveVoice].Notes[n].Staff;
+        let tuplet = msr.Voices[msr.ActiveVoice].Notes[n].Tuplet;
+        let tupletDetails = msr.Voices[msr.ActiveVoice].Notes[n].TupletDetails;
+        msr.Voices[msr.ActiveVoice].Notes.splice(n, 1);
+        const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter(
           (n) => n.Beat === beat,
         );
         if (notesOnBeat.length === 0) {
-          const clefType = GetNoteClefType(this, beat, staff);
+          const clefType = GetNoteClefType(msr, beat, staff);
           // beat is empty and requires a rest note
           const restProps: NoteProps = {
             Beat: beat,
             Duration: duration,
-            Line: GetStaffMiddleLine(this.Staves, staff),
+            Line: GetStaffMiddleLine(msr.Staves, staff),
             Rest: true,
             Tied: false,
             Staff: staff,
-            Tuple: tuple,
-            TupleDetails: tupleDetails,
+            Tuplet: tuplet,
+            TupletDetails: tupletDetails,
             Clef: clefType,
             Grace: false,
-            Voice: this.ActiveVoice,
-            Accidental: 0,
+            Voice: msr.ActiveVoice,
+            Alter: 0,
           };
-
-          this.AddNote(new Note(restProps));
+// TODO: Side effect, maybe check after deleting selected note if the measure
+          // has division gap and create there if true.
+          AddNote(msr, new Note(restProps));
         }
       }
     }
-    for (let d = this.Dynamics.length - 1; d >= 0; d--) {
-      if (this.Dynamics[d].Selected) {
-        this.Dynamics.splice(d, 1);
+    for (let d = msr.Dynamics.length - 1; d >= 0; d--) {
+      if (msr.Dynamics[d].Selected) {
+        msr.Dynamics.splice(d, 1);
       }
     }
   }
 
-  GetMinimumWidth(): number {
+  function GetMinimumWidth(msr: Measure): number {
     if (
-      this.Voices[this.ActiveVoice].Notes.filter((n) => n.Rest !== true)
+      msr.Voices[msr.ActiveVoice].Notes.filter((n) => n.Rest !== true)
         .length === 0
     ) {
       return DivisionMinWidth * 4;
     }
     const count = 1;
-//    const lowestVal = this.Voices[this.ActiveVoice].Notes.sort(
+//    const lowestVal = msr.Voices[msr.ActiveVoice].Notes.sort(
 //      (a: Note, b: Note) => {
 //        return a.Duration - b.Duration;
 //      },
 //    )[0];
-//    const count = (1 * (this.TimeSignature.top / this.TimeSignature.bottom)) / lowestVal.Duration;
+//    const count = (1 * (msr.TimeSignature.top / msr.TimeSignature.bottom)) / lowestVal.Duration;
  //   return count * DivisionMinWidth;
-    return this.Voices[this.ActiveVoice].Divisions.length * DivisionMaxWidth;
+    return msr.Voices[msr.ActiveVoice].Divisions.length * DivisionMaxWidth;
   }
 
-  ReturnSelectableElements(): ISelectable[] {
+  function ReturnSelectableElements(msr: Measure): ISelectable[] {
     const sel: ISelectable[] = [];
-    sel.push(...this.Voices[this.ActiveVoice].Notes);
-    sel.push(...this.Clefs);
+    sel.push(...msr.Voices[msr.ActiveVoice].Notes);
+    sel.push(...msr.Clefs);
     return sel;
   }
 
-  IsHovered(x: number, y: number, cam: Camera): boolean {
-    return this.GetBoundsWithOffset().IsHovered(x, y, cam);
+  function IsHovered(msr: Measure, x: number, y: number, cam: Camera): boolean {
+    return GetBoundsWithOffset(msr).IsHovered(x, y, cam);
   }
 
-  ChangeTimeSignature(top: number, bottom: number, transpose: boolean): void {
-    this.TimeSignature.top = top;
-    this.TimeSignature.bottom = bottom;
+  function ChangeTimeSignature(msr: Measure, top: number, bottom: number, transpose: boolean): void {
+    msr.TimeSignature.top = top;
+    msr.TimeSignature.bottom = bottom;
   }
 
-  RecalculateBarlines(): void {
-    this.Barlines[0].Bounds = new Bounds(
-      this.Bounds.x,
-      this.Bounds.y,
+  function RecalculateBarlines(msr: Measure): void {
+    msr.Barlines[0].Bounds = new Bounds(
+      msr.Bounds.x,
+      msr.Bounds.y,
       10,
-      this.GetMeasureHeight(),
+      GetMeasureHeight(msr),
     );
 
-    this.Barlines[1].Bounds = new Bounds(
-      this.Bounds.x + this.GetBoundsWithOffset().width - 10,
-      this.Bounds.y,
+    msr.Barlines[1].Bounds = new Bounds(
+      msr.Bounds.x + GetBoundsWithOffset(msr).width - 10,
+      msr.Bounds.y,
       10,
-      this.GetMeasureHeight(),
+      GetMeasureHeight(msr),
     );
   }
 
-  GetLastClef(staff: number): Clef {
-    const staffClefs = this.Clefs.filter((c: Clef) => c.Staff === staff).sort(
+  function GetLastClef(msr: Measure, staff: number): Clef {
+    const staffClefs = msr.Clefs.filter((c: Clef) => c.Staff === staff).sort(
       (a: Clef, b: Clef) => {
         return b.Beat - a.Beat;
       },
     );
     if (staffClefs.length === 0) {
       console.error(
-        "A clef should exist on this staff, in this measure. Returning default Clef",
+        "A clef should exist on msr.staff, in msr.measure. Returning default Clef",
       );
       return new Clef(0, "treble", 1, 0);
     }
     return staffClefs[0];
   }
-}
 
-export { Measure, MeasureProps, Division, Clef };
+export { Measure, MeasureProps, Division, Clef, 
+  DeleteSelectedMeasure,
+  CreateMeasureDivisions,
+  GetBoundsWithOffset,
+  GetLineHovered,
+  GetNotePositionOnLine,
+  RepositionMeasure,
+  RecalculateBarlines,
+  ChangeTimeSignature,
+  ClearRestNotes,
+  AddNote,
+  GetMinimumWidth,
+  SetXOffset,
+  CreateNewMeasure,
+  GetMeasureHeight,
+};

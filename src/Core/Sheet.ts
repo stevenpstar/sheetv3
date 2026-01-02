@@ -3,7 +3,7 @@ import {
   CreateInstrument,
 } from "../Factory/Instrument.Factory.js";
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
-import { ConfigSettings, Message } from "../entry.js";
+import { ConfigSettings, GetBoundsWithOffset, Message } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { Instrument } from "./Instrument.js";
 import { Division, Measure } from "./Measure.js";
@@ -16,22 +16,35 @@ interface SheetProps {
   Measures: Measure[];
   Pages: Page[];
 }
-class Sheet {
+type Sheet = {
   Instruments: Instrument[];
   KeySignature: { key: string; measureNo: number }[];
   Measures: Measure[];
   Pages: Page[];
+  // Sheet / Score config
+  // Title/Composer/Metadata
+};
 
-  constructor(properties: SheetProps) {
-    this.Instruments = properties.Instruments;
-    this.KeySignature = properties.KeySignature;
-    this.Measures = properties.Measures;
-    this.Pages = properties.Pages;
+function CreateEmptySheet(): Sheet {
+  return {
+    Instruments: [],
+    KeySignature: [],
+    Measures: [],
+    Pages: [],
+  };
+}
+  function CreateSheetFromProperties(properties: SheetProps): Sheet {
+    let sheet: Sheet = CreateEmptySheet();
+    sheet.Instruments = properties.Instruments;
+    sheet.KeySignature = properties.KeySignature;
+    sheet.Measures = properties.Measures;
+    sheet.Pages = properties.Pages;
+    return sheet;
   }
 
-  InputHover(x: number, y: number, camera: Camera): void {
-    this.Measures.forEach((m: Measure) => {
-      if (m.GetBoundsWithOffset().IsHovered(x, y, camera)) {
+  function SheetInputHover(sheet: Sheet, x: number, y: number, camera: Camera): void {
+    sheet.Measures.forEach((m: Measure) => {
+      if (GetBoundsWithOffset(m).IsHovered(x, y, camera)) {
         m.Voices[m.ActiveVoice].Divisions.forEach((d: Division) => {
           if (d.Bounds.IsHovered(x, y, camera)) {
             m.Staves.forEach((s: Staff) => {
@@ -42,7 +55,6 @@ class Sheet {
       }
     });
   }
-}
 
 function CreateDefaultSheet(
   config: ConfigSettings,
@@ -63,7 +75,7 @@ function CreateDefaultSheet(
 
   const page = sProps.Pages[0];
 
-  sProps.Instruments.push(CreateInstrument(20, config));
+  sProps.Instruments.push(CreateInstrument(20, config, 0));
   sProps.Measures.push(
     CreateDefaultMeasure(
       { count: 0 },
@@ -75,7 +87,7 @@ function CreateDefaultSheet(
     ),
   );
 
-  return new Sheet(sProps);
+  return CreateSheetFromProperties(sProps);
 }
 
-export { Sheet, SheetProps, CreateDefaultSheet };
+export { Sheet, SheetProps, CreateDefaultSheet, SheetInputHover };

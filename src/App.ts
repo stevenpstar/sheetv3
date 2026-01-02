@@ -1,7 +1,7 @@
-import { CreateDefaultSheet, Sheet } from "./Core/Sheet.js";
+import { CreateDefaultSheet, Sheet, SheetInputHover } from "./Core/Sheet.js";
 import { Renderer } from "./Core/Renderer.js";
 import { CreateMeasure } from "./Factory/Instrument.Factory.js";
-import { Clef, Division, Measure } from "./Core/Measure.js";
+import { ChangeTimeSignature, Clef, CreateMeasureDivisions, DeleteSelectedMeasure, Division, GetBoundsWithOffset, GetLineHovered, Measure, RecalculateBarlines, RepositionMeasure } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
 import { Camera } from "./Core/Camera.js";
@@ -86,6 +86,7 @@ class App {
   CanDragCamera: boolean = true;
   RenderBounds: Bounds = new Bounds(400, 400, 800, 800);
   Optimise: boolean = true;
+  OptBuffer: number = 0;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -99,7 +100,7 @@ class App {
     this.PitchMap = GeneratePitchMap();
     this.Message = ClearMessage();
     this.NotifyCallback = notifyCallback;
-    this.Debug = true;
+    this.Debug = false;
     this.Canvas = canvas;
     this.Container = container;
     this.Selector = new Selector();
@@ -164,15 +165,15 @@ class App {
       this.Update(x, y);
     }
     if (this.NoteInput) {
-      this.Sheet.InputHover(x, y, this.Camera);
+      SheetInputHover(this.Sheet, x, y, this.Camera);
     }
     this.Update(x, y);
   }
 
   Delete(): void {
     for (let [msr, _] of this.Selector.Elements) {
-      msr.DeleteSelected();
-      msr.CreateDivisions();
+      DeleteSelectedMeasure(msr);
+      CreateMeasureDivisions(msr);
     }
     this.ResizeMeasures(this.Sheet);
   }
@@ -188,7 +189,7 @@ class App {
     }
 
     const msrOver: Measure | undefined = this.Sheet.Measures.find(
-      (msr: Measure) => msr.GetBoundsWithOffset().IsHovered(x, y, this.Camera),
+      (msr: Measure) => GetBoundsWithOffset(msr).IsHovered(x, y, this.Camera),
     );
 
     if (msrOver === undefined) {
@@ -228,7 +229,7 @@ class App {
         d.Bounds.IsHovered(x, y, this.Camera),
       );
       if (divOver) {
-        this.StartLine = msrOver.GetLineHovered(y, divOver.Staff).num;
+        this.StartLine = GetLineHovered(msrOver, y, divOver.Staff).num;
       }
     } else if (this.NoteInput) {
       InputOnMeasure(
@@ -258,10 +259,10 @@ class App {
   }
   Update(x: number, y: number): void {
     // Update render bounds
-    this.RenderBounds.x = -this.Camera.x;
-    this.RenderBounds.y = -this.Camera.y;
-    this.RenderBounds.width = this.Canvas.clientWidth / this.Camera.Zoom;
-    this.RenderBounds.height = this.Canvas.clientHeight / this.Camera.Zoom;
+    this.RenderBounds.x = -this.Camera.x + this.OptBuffer;
+    this.RenderBounds.y = -this.Camera.y + this.OptBuffer;
+    this.RenderBounds.width = this.Canvas.clientWidth / this.Camera.Zoom - this.OptBuffer * 2;
+    this.RenderBounds.height = this.Canvas.clientHeight / this.Camera.Zoom - this.OptBuffer * 2;
     this.Render({ x: x, y: y });
   }
   Render(mousePos: { x: number; y: number }): void {
@@ -279,6 +280,7 @@ class App {
       this.NoteValue,
       this.RenderBounds,
       this.Optimise,
+      this.Debug
     );
 
   }
@@ -344,9 +346,9 @@ class App {
         let percentage_traveled = time_diff / measureTime * 100;
         let percentage_across = (percentage_traveled / 100) * msr_width;
         tracker_x = msr.Bounds.x + msr.XOffset + percentage_across + this.Camera.x;
-        this.Context.fillStyle = "rgba(0, 0, 255, 0.4)";
+        this.Context.fillStyle = "rgba(149,184,209, 0.8)";
         this.Context.fillRect(
-          tracker_x,
+          tracker_x - 2.5,
           this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.y + this.Camera.y,
           5,
           this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.height
@@ -372,7 +374,7 @@ class App {
     let x = 0;
     this.Sheet.Instruments.forEach((i) => {
       const instrMeasures = this.Sheet.Measures.filter(
-        (m: Measure) => m.Instrument === i,
+        (m: Measure) => m.InstrumentID === i.ID,
       );
       const previousMeasure = instrMeasures[instrMeasures.length - 1];
       let latestLine =
@@ -384,7 +386,7 @@ class App {
         prevMsr.Bounds.height,
       );
       const newMsr = CreateMeasure(
-        i,
+        i.ID,
         previousMeasure,
         null,
         newMeasureBounds,
@@ -404,7 +406,7 @@ class App {
       // add measure number and barlines, will need to be reworked when
       // inserting measures is added
       newMsr.Num =
-        this.Sheet.Measures.filter((m: Measure) => m.Instrument === i).length +
+        this.Sheet.Measures.filter((m: Measure) => m.InstrumentID === i.ID).length +
         1;
       newMsr.Barlines[1].Type = BarlineType.END;
       if (newMsr.PrevMeasure.Barlines[1].Type === BarlineType.END) {
@@ -465,7 +467,7 @@ class App {
 
   DragNote(x: number, y: number): void {
     const msrOver = this.Sheet.Measures.find((m) =>
-      m.GetBoundsWithOffset().IsHovered(x, y, this.Camera),
+      GetBoundsWithOffset(m).IsHovered(x, y, this.Camera),
     );
 
     if (msrOver === undefined) {
@@ -479,7 +481,7 @@ class App {
       d.Bounds.IsHovered(x, y, this.Camera),
     );
     if (divOver) {
-      this.EndLine = msrOver.GetLineHovered(y, divOver.Staff).num;
+      this.EndLine = GetLineHovered(msrOver, y, divOver.Staff).num;
     }
     const lineDiff = this.EndLine - this.StartLine;
     for (let [msr, elem] of this.Selector.Elements) {
@@ -518,6 +520,7 @@ class App {
       this.StartLine = -1;
       this.EndLine = -1;
       this.DraggingNote = false;
+      this.SaveToUndoStack();
     }
     if (this.DragLining) {
       this.DragLining = false;
@@ -561,25 +564,36 @@ class App {
     this.Camera.ZoomTarget = num;
   }
 
+  Scroll(amount: number): void {
+    this.Camera.y += amount;
+    this.Camera.oldY = this.Camera.y;
+    this.Update(0, 0);
+  }
+
   // TEST FUNCTION
   ResizeFirstMeasure(): void {
     //    this.Sheet.Measures[0].Bounds.width += 50;
-    this.Sheet.Measures[0].CreateDivisions();
+    CreateMeasureDivisions(this.Sheet.Measures[0]);
     for (let i = 1; i < this.Sheet.Measures.length; i++) {
-      this.Sheet.Measures[i].Reposition(this.Sheet.Measures[i - 1]);
+      RepositionMeasure(this.Sheet.Measures[i], this.Sheet.Measures[i - 1]);
     }
     this.Update(0, 0);
   }
 
   ResizeMeasures(sheet: Sheet): void {
     sheet.Instruments.forEach((i: Instrument) => {
-      const measures = sheet.Measures.filter(
-        (m: Measure) => m.Instrument === i,
-      );
+        const measures = sheet.Measures.filter(
+          (m: Measure) => m.InstrumentID === i.ID,
+        );
+        if (measures.length == 0) {
+          return;
+        }
         this.Sheet.Pages = [];
         this.Sheet.Pages.push(new Page(0, 0, 1));
-      const lineHeight =
-        measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
+        // TODO: I don't even know what this is for but ok
+        const lineHeight = 400;
+//      const lineHeight =
+//        measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
       SetPagesAndLines(
         measures,
         this.Sheet.Pages,
@@ -604,7 +618,7 @@ class App {
         m.Staves.forEach((s: Staff) => {
           UpdateNoteBounds(m, s.Num);
         });
-        m.RecalculateBarlines();
+        RecalculateBarlines(m);
       });
     });
     this.Update(0, 0);
@@ -619,7 +633,7 @@ class App {
       elem.forEach((n) => {
         if (n.SelType === SelectableTypes.Note) {
           const note = n as Note;
-          note.Accidental = acc;
+          note.Alter = acc;
           this.Message = ClearMessage();
           const m: Message = {
             messageData: {
@@ -640,14 +654,16 @@ class App {
     this.SaveToUndoStack();
   }
 
+  // Sharpen/Flatten implementation should be in accidentaler(?)
   Sharpen(): void {
+    console.log("Sharpening!\n");
     for (let [_, elem] of this.Selector.Elements) {
       elem.forEach((n) => {
         if (n.SelType === SelectableTypes.Note) {
           const note = n as Note;
-          note.Accidental += 1;
-          if (note.Accidental > 2) {
-            note.Accidental = 2;
+          note.Alter += 1;
+          if (note.Alter > 2) {
+            note.Alter = 2;
           }
         }
       });
@@ -656,13 +672,14 @@ class App {
     this.SaveToUndoStack();
   }
   Flatten(): void {
+    console.log("Flat!\n");
     for (let [_, elem] of this.Selector.Elements) {
       elem.forEach((e) => {
         if (e.SelType === SelectableTypes.Note) {
           const n = e as Note;
-          n.Accidental -= 1;
-          if (n.Accidental < -2) {
-            n.Accidental = -2;
+          n.Alter -= 1;
+          if (n.Alter < -2) {
+            n.Alter = -2;
           }
         }
       });
@@ -786,7 +803,7 @@ class App {
     transpose: boolean = false,
   ): void {
     for (let [msr, _] of this.Selector.Elements) {
-      msr.ChangeTimeSignature(top, bottom, transpose);
+      ChangeTimeSignature(msr, top, bottom, transpose);
     }
 
     this.SaveToUndoStack();
@@ -876,7 +893,7 @@ class App {
     const newStaff = new Staff(instr.Staves.length);
     instr.Staves.push(new Staff(instr.Staves.length));
     const msrs: Measure[] = this.Sheet.Measures.filter(
-      (m) => m.Instrument === instr,
+      (m) => m.InstrumentID === instr.ID,
     );
     msrs.forEach((m) => {
       m.Staves.push(newStaff);
@@ -928,7 +945,7 @@ class App {
   ChangeTimeSig(): void {
     const msr1 = this.Sheet.Measures[0];
     if (msr1) {
-      msr1.ChangeTimeSignature(3, 4, false);
+      ChangeTimeSignature(msr1, 3, 4, false);
     }
 
     this.SaveToUndoStack();
@@ -985,6 +1002,19 @@ class App {
 
   ToggleOpt(): void {
     this.Optimise = !this.Optimise;
+  }
+
+  ToggleDebug(): void {
+    this.Debug = !this.Debug;
+  }
+
+  // TODO: For development/testing purposes
+  PreviewOpt(): void {
+    if (this.OptBuffer === 0) {
+      this.OptBuffer = 300;
+    } else {
+      this.OptBuffer = 0;
+    }
   }
 }
 

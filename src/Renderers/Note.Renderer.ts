@@ -1,11 +1,10 @@
 import { Camera } from "../Core/Camera.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
-import { GetStaffMiddleLine } from "../Core/Staff.js";
 import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
-import { Theme } from "../entry.js";
+import { GetNotePositionOnLine, Theme } from "../entry.js";
 import {
   NoteHeads,
   RenderScaledNote,
@@ -28,14 +27,6 @@ enum BeamDirection {
   Flat,
 }
 
-const crotchetRest =
-  "c-.2863.1212-.4577.5392-.326.8318.0397.0418.4556.5392.8736 1.0868.9551 1.0764 1.1182 1.3313 1.3292 1.8288.8339 1.7054.3762 3.877-1.0847 5.2501-.1233.163-.6625.6186-1.1683.9948-1.4525 1.2498-2.1214 1.9604-2.368 2.5874-.0899.1651-.0899.3281-.0899.581-.0397.5789 0 .6291 1.7159 2.6209 2.3262 2.7922 3.9919 4.7506 4.1215 4.8739l.1233.1212-.163-.0815c-2.2948-.9551-4.8739-1.4128-5.7475-.9948-.2947.1212-.4661.2926-.5873.5789-.3365.7106-.2466 1.7556.2529 3.2897.4556 1.3794 1.371 3.2082 2.2844 4.5813.3762.5873 1.0868 1.5006 1.1683 1.5424.1233.1233.2947.0815.4159 0 .1233-.163.1233-.2947-.1212-.5789-.8736-1.2498-1.2895-3.8372-.7921-5.2104.2027-.6186.4577-.9551.9133-1.1662 1.208-.5392 3.879.1296 4.9972 1.2477.0815.0836.2529.255.3344.2947.2947.1233.7106-.0397.8339-.3344.1714-.2947.0815-.4974-.2947-.9551-.7022-.8339-2.8257-3.3315-3.1183-3.7077-.7524-.8736-1.0868-1.7054-1.1683-2.7504-.0397-1.3313.4974-2.7421 1.5027-3.6659.1212-.163.6604-.6207 1.16-.9948 1.5424-1.2916 2.1715-2.0001 2.416-2.671.1714-.5392.0899-1.0366-.2863-1.4943-.1296-.1212-1.5842-1.9186-3.2897-3.9585-2.3345-2.7442-3.1684-3.7474-3.2897-3.7892-.1714-.0397-.3762-.0397-.5476.0418z";
-const quaverRest =
-  "c-.884.1666-1.5606.7769-1.8666 1.6201-.0663.272-.0663.3383-.0663.7106 0 .5117.0323.7837.272 1.1883.3383.6783 1.0489 1.2223 1.8598 1.4212.85.2397 2.2712.034 3.8981-.5049l.4046-.1394-1.9992 5.525-1.9652 5.5182c0 0 .0663.034.1734.1071.1989.1326.5372.2329.7769.2329.4046 0 .9163-.2329.9826-.4386 0-.0663.9486-3.2878 2.0978-7.1128l2.0315-7.0125-.0663-.0986c-.1649-.2057-.5032-.272-.7106-.1071-.0663.0663-.1717.2057-.238.306-.306.5117-1.0829 1.4212-1.4875 1.7595-.3723.306-.578.3383-.9163.2057-.306-.1666-.4063-.3383-.612-1.2546-.1989-.9095-.4369-1.3226-.9486-1.6609-.4726-.3043-1.0829-.4046-1.6201-.2652z";
-const semiQuaverRest =
-  "c-.6228.1176-1.1016.5484-1.3116 1.1436-.0516.192-.0516.2388-.0516.5016 0 .3612.0228.5532.192.8388.2388.4788.7404.8628 1.3176 1.0032.5952.1692 1.5504.0468 2.7-.3324.168-.0708.3084-.1224.3084-.0984 0 .0276-1.0728 3.516-1.1196 3.6372-.1224.3096-.5304.882-.8868 1.242-.3324.3336-.5016.408-.7632.2868-.216-.1176-.2868-.24-.432-.8868-.1212-.4776-.2148-.7404-.4068-.9276-.5016-.5532-1.3644-.624-2.0304-.192-.3144.2148-.5532.5484-.6936.9096-.0516.1872-.0516.2388-.0516.5004 0 .3564.0276.5496.192.8352.2388.4776.7404.8628 1.3176 1.0032.2628.0744.9324.0744 1.3872 0 .3792-.0708.834-.1884 1.2888-.3336.192-.0696.3612-.1164.3612-.0936 0 0-2.3436 7.6272-2.3904 7.7436 0 .024.1872.1692.3792.216.192.0756.3852.0756.5772 0 .1872-.0468.3792-.1644.3792-.2388.024-.024.9804-3.6324 2.1516-8.0112l2.1288-7.9596-.0468-.0696c-.0948-.1452-.2868-.1692-.4548-.0984-.0948.0468-.0948.0468-.3804.4776-.2388.384-.576.7872-.768.9792-.2628.216-.4032.2628-.6432.1692-.2148-.1176-.2904-.2388-.4308-.8856-.1452-.642-.3144-.9336-.6708-1.1724-.3324-.2148-.7632-.2856-1.1484-.1872z";
-const demiSemiQuaverRest =
-  "m0 0c-.516.101-.918.461-1.094.957-.043.16-.043.199-.043.418 0 .218 0 .3.043.418.137.441.418.777.856.976.297.16.437.18.855.18.52 0 .957-.078 1.657-.297.179-.063.316-.102.316-.102.019 0-.16.7-.399 1.536-.296 1.175-.417 1.554-.457 1.671-.16.301-.5.758-.718.957-.2.18-.317.219-.516.141-.18-.098-.242-.199-.359-.738-.102-.399-.18-.617-.34-.778-.418-.457-1.137-.515-1.692-.156-.261.176-.46.457-.578.754-.043.16-.043.199-.043.418 0 .301.024.461.161.699.199.399.617.719 1.097.836.219.063.778.063 1.156 0 .317-.058.696-.16 1.075-.277.179-.059.32-.102.32-.102 0 .02-.797 3.051-.84 3.11-.156.34-.476.758-.715.996-.258.258-.398.301-.617.219-.18-.098-.242-.2-.359-.739-.102-.398-.18-.617-.34-.773-.418-.461-1.137-.52-1.692-.16-.261.179-.46.457-.578.758-.043.156-.043.199-.043.417 0 .219 0 .297.043.418.137.438.418.778.856.977.32.16.437.18.875.18.32 0 .422 0 .679-.043.36-.059.739-.176 1.157-.297l.258-.102v.063c-.02.078-1.696 6.375-1.715 6.414-.02.082.34.238.558.238.219 0 .539-.137.559-.238.019-.02.976-4.145 2.172-9.164 2.133-9.086 2.133-9.106 2.094-9.168-.063-.078-.161-.117-.282-.117-.14.019-.199.078-.34.316-.277.481-.597.898-.773 1.039-.121.078-.223.078-.379.02-.18-.102-.242-.2-.359-.739-.121-.539-.262-.777-.559-.976-.277-.18-.637-.238-.957-.16z";
 const noteXBuffer = 9;
 
 function RenderNote(
@@ -193,12 +184,12 @@ function RenderRest(
 
   let x = div.Bounds.x + noteXBuffer;
   //    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
-  let y = msr.GetNotePositionOnLine(note.Line + 3.5, note.Staff);
+  let y = GetNotePositionOnLine(msr, note.Line + 3.5, note.Staff);
   let path = `m${x} ${y}`;
   ctx.fillStyle = note.Selected ? theme.SelectColour : theme.NoteElements;
   if (div.Duration === 0.015625) {
 
-  let y = msr.GetNotePositionOnLine(note.Line + 3.5, note.Staff);
+  let y = GetNotePositionOnLine(msr, note.Line + 3.5, note.Staff);
     RenderScaledNote(
       note,
       renderProps,
@@ -213,7 +204,7 @@ function RenderRest(
 
   if (div.Duration > 0.015625 && div.Duration <= 0.03125) {
 
-    let y = msr.GetNotePositionOnLine(note.Line + 5, note.Staff);
+    let y = GetNotePositionOnLine(msr, note.Line + 5, note.Staff);
     RenderScaledNote(
       note,
       renderProps,
@@ -230,7 +221,7 @@ function RenderRest(
 //    ctx.fill(new Path2D(path));
   } else if (div.Duration > 0.03125 && div.Duration <= 0.0625) {
 
-    let y = msr.GetNotePositionOnLine(note.Line + 5, note.Staff);
+    let y = GetNotePositionOnLine(msr, note.Line + 5, note.Staff);
     RenderScaledNote(
       note,
       renderProps,
@@ -247,7 +238,7 @@ function RenderRest(
 //    ctx.fill(new Path2D(path));
   } else if (div.Duration > 0.0625 && div.Duration <= 0.125) {
 
-    let y = msr.GetNotePositionOnLine(note.Line + 5, note.Staff);
+    let y = GetNotePositionOnLine(msr, note.Line + 5, note.Staff);
     RenderScaledNote(
       note,
       renderProps,
@@ -262,7 +253,7 @@ function RenderRest(
   //  path = `m${x} ${y}` + quaverRest;
   //  ctx.fill(new Path2D(path));
   } else if (div.Duration === 0.25) {
-    let y = msr.GetNotePositionOnLine(note.Line + 5.5, note.Staff);
+    let y = GetNotePositionOnLine(msr, note.Line + 5.5, note.Staff);
     RenderScaledNote(
       note,
       renderProps,
@@ -274,7 +265,7 @@ function RenderRest(
       stdFontSize,
     );
   } else if (div.Duration === 0.5) {
-    let y = msr.GetNotePositionOnLine(note.Line + 4.5, note.Staff);
+    let y = GetNotePositionOnLine(msr, note.Line + 4.5, note.Staff);
     RenderScaledNote(
       note,
       renderProps,
@@ -395,7 +386,7 @@ function RenderTuplets(
     );
     let nArray = [...notesInDiv];
     const stemDir = DetermineStemDirection([notesInDiv], [div]);
-    if (!notesInDiv[0].Tuple) {
+    if (!notesInDiv[0].Tuplet) {
       if (foundTuplet) {
         foundTuplet = false;
         RenderTupletAnnotation(
@@ -414,7 +405,7 @@ function RenderTuplets(
     if (!foundTuplet) {
       foundTuplet = true;
       tupleX = div.Bounds.x + 9;
-      tupleCount = notesInDiv[0].TupleDetails.Count;
+      tupleCount = notesInDiv[0].TupletDetails.Count;
       tupleY = div.Bounds.y;
       tupleXEnd = div.Bounds.x + 19;
     } else {
@@ -469,10 +460,10 @@ function RenderTies(
       const nextNote = tiedTo;
       const x1 = div.Bounds.x + noteXBuffer + camera.x + 3;
       const y1 =
-        msr.GetNotePositionOnLine(note.Line, note.Staff) + camera.y - 4;
+        GetNotePositionOnLine(msr, note.Line, note.Staff) + camera.y - 4;
       const x2 = divs[i + 1].Bounds.x + noteXBuffer + camera.x + 3;
       const y2 =
-        msr.GetNotePositionOnLine(nextNote.Line, note.Staff) + camera.y;
+        GetNotePositionOnLine(msr, nextNote.Line, note.Staff) + camera.y;
       const midPointX = x2 - (x2 - x1) / 2;
       const distanceX = x2 - x1;
       const curveOffset = note.Line < 15 ? -15 : 15;
@@ -558,7 +549,7 @@ function renderLedgerLines(
   const divNotes = msr.Voices[msr.ActiveVoice].Notes.filter(
     (n) => n.Beat === division.Beat && n.Staff === division.Staff,
   );
-  const numOfAcc = divNotes.filter((n) => n.Accidental !== 0).length;
+  const numOfAcc = divNotes.filter((n) => n.Alter !== 0 || n.Accidental !== "").length;
   if (numOfAcc > 0) {
     dynNoteXBuffer += noteXBuffer * numOfAcc - 1;
   }
@@ -585,12 +576,12 @@ function renderLedgerLines(
   context.fillStyle = theme.NoteElements;
 
   for (let l = midLine - 6; l >= highestLine.Line; l -= 2) {
-    const ledgerY = msr.GetNotePositionOnLine(l, staff) + camera.y + 2.5;
+    const ledgerY = GetNotePositionOnLine(msr, l, staff) + camera.y + 2.5;
     const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
     context.fill(new Path2D(path));
   }
   for (let h = midLine + 6; h <= lowestLine.Line; h += 2) {
-    const ledgerY = msr.GetNotePositionOnLine(h, staff) + camera.y + 2.5;
+    const ledgerY = GetNotePositionOnLine(msr, h, staff) + camera.y + 2.5;
     const path = `m ${ledgerX} ${ledgerY}` + ledgerString;
     context.fill(new Path2D(path));
   }

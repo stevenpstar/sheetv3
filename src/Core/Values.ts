@@ -64,4 +64,4 @@ function GetLargestValues(duration: number): number[] {
   return values;
 }
 
-export { NoteValues, GetLargestValues }
+export { NoteValues, GetLargestValues, ValueMap}

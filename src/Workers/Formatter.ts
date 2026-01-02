@@ -1,6 +1,6 @@
 import { Camera } from "../Core/Camera.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
-import { Measure } from "../Core/Measure.js";
+import { CreateMeasureDivisions, GetMinimumWidth, Measure, RepositionMeasure, SetXOffset } from "../Core/Measure.js";
 import { MarginAdjuster, Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { ConfigSettings } from "../Types/Config.js";
@@ -23,6 +23,7 @@ function SetPagesAndLines(
     console.error("No page found!");
     return;
   }
+  console.log("page lines count: ", page.PageLines);
   let runningWidth = 0;
   let currentPage = 0;
   let currentLine = 1;
@@ -36,9 +37,9 @@ function SetPagesAndLines(
     });
     return;
   }
-  measures.forEach((msr: Measure, i: number) => {
+  measures.forEach((msr: Measure) => {
     msrsOnLine++;
-    const msrWidth = msr.GetMinimumWidth() + msr.XOffset;
+    const msrWidth = GetMinimumWidth(msr) + msr.XOffset;
     if (runningWidth + msrWidth > pageWidth || msrsOnLine > 4) {
       currentLine++;
       msrsOnLine = 1;
@@ -84,32 +85,39 @@ function ResizeMeasuresOnPage(
   page.PageLines.forEach((line) => {
     sheet.Instruments.forEach((instr: Instrument) => {
       const msrs = sheet.Measures.filter(
-        (m) => m.PageLine === line.Number && m.Instrument === instr && m.Page === page,
+        (m) => m.PageLine === line.Number && m.InstrumentID === instr.ID && m.Page === page,
       );
       let msrsLineWidth = 0;
       msrs.forEach((m: Measure) => {
-        msrsLineWidth += m.GetMinimumWidth() + m.XOffset;
+        msrsLineWidth += GetMinimumWidth(m) + m.XOffset;
       });
       const fillWidth = pageSize - msrsLineWidth;
       msrs.forEach((m: Measure, i: number) => {
+      let instruments: Instrument[] = sheet.Instruments.filter((i: Instrument) => i.ID === m.InstrumentID);
+      if (instruments.length === 0 || instruments.length > 1) {
+        console.error("Instrument length: ", instruments.length, ". Needs to be 1");
+      }
+      let instr = instruments[0];
      //   console.log("page: ", page.Number);
-     //   console.log("line number: ", line.Number);
+ //       console.log("line number: ", line.Number);
+   //     console.log(m);
      //   console.log("line bounds y: ", line.LineBounds.y);
-        m.Bounds.y = line.LineBounds.y + m.Instrument.Position.y;
+        m.Bounds.y = line.LineBounds.y + instr.Position.y + (300 * instr.ID);
         // TODO: We have removed prefboundsY, will likely have to reimplement
         //     m.PrefBoundsY = m.Bounds.y;
         if (i === 0) {
           m.Bounds.x = page.Bounds.x + page.Margins.left;
-          m.RenderClef = m.Instrument.Staff === StaffType.Rhythm ? false : true;
+          // y bounds position will need to be updated
+          m.RenderClef = instr.Staff === StaffType.Rhythm ? false : true;
           m.RenderTimeSig = true;
           // TODO: When we work on keys
           m.RenderKey = true;
-          m.SetXOffset();
+          SetXOffset(m);
           // the calculated new width of the measure, may need to be overwritten
           // by config settings if they are set (maxWidth in
           // measureformatsettings)
           const maxWidth = GetMaxWidth(page, config);
-          const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
+          const calculatedWidth = GetMinimumWidth(m) + fillWidth / msrs.length;
           let mWidth = 0;
           if (calculatedWidth < maxWidth) {
             mWidth = calculatedWidth;
@@ -117,22 +125,24 @@ function ResizeMeasuresOnPage(
             mWidth = maxWidth;
           }
           m.Bounds.width = mWidth;
-          m.CreateDivisions();
+          CreateMeasureDivisions(m);
         } else {
+          // TODO: This will have to change here too (some measures mid-line
+          // will need to display this information)
           m.RenderClef = false;
           m.RenderTimeSig = false;
           m.RenderKey = false;
-          m.SetXOffset();
+          SetXOffset(m);
           const maxWidth = GetMaxWidth(page, config);
-          const calculatedWidth = m.GetMinimumWidth() + fillWidth / msrs.length;
+          const calculatedWidth = GetMinimumWidth(m) + fillWidth / msrs.length;
           var msrWidth = calculatedWidth;
           // Limit the width if the calculated width exceeds the maximum
           if (calculatedWidth > maxWidth) {
             msrWidth = maxWidth;
           }
           m.Bounds.width = msrWidth;
-          msrs[i].Reposition(msrs[i - 1]);
-          m.CreateDivisions();
+          RepositionMeasure(msrs[i], msrs[i - 1]);
+          CreateMeasureDivisions(m);
         }
         m.Clefs.forEach((c) => {
           c.SetBounds(m, c.Staff);

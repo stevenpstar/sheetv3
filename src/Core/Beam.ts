@@ -2,7 +2,7 @@ import { BeamDirection, StemDirection } from "../Renderers/Note.Renderer.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Vector2 } from "../Types/Vectors.js";
-import { Theme } from "../entry.js";
+import { GetNotePositionOnLine, Theme } from "../entry.js";
 import { Camera } from "./Camera.js";
 import { DivGroup, Division } from "./Division.js";
 import { Measure } from "./Measure.js";
@@ -98,10 +98,10 @@ function GenerateBeams(
   //  if (stemDir === StemDirection.Up) {}
   //  19 = various buffers (x / note)
   const beamStartX = divisions[0].Bounds.x + 19;
-  const beamStartY = measure.GetNotePositionOnLine(startTopLine, staff) - 35;
+  const beamStartY = GetNotePositionOnLine(measure, startTopLine, staff) - 35;
 
   const beamEndX = divisions[divisions.length - 1].Bounds.x + 19;
-  const beamEndY = measure.GetNotePositionOnLine(endTopLine, staff) - 35;
+  const beamEndY = GetNotePositionOnLine(measure, endTopLine, staff) - 35;
 
   const beam = new Beam(
     new Bounds(beamStartX, beamStartY, beamEndX - beamStartX, 5),

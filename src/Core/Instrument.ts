@@ -23,6 +23,7 @@ enum StaffType {
   Rhythm,
 }
 interface Instrument {
+  ID: number,
   Position: { x: number; y: number };
   Staff: StaffType;
   Staves: Staff[];

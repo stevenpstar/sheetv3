@@ -2,7 +2,7 @@ import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Staff } from "../Core/Staff.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
-import { Theme } from "../entry.js";
+import { GetBoundsWithOffset, Theme } from "../entry.js";
 import { RenderClef } from "./Clef.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { RenderStaff } from "./Staff.Renderer.js";
@@ -11,6 +11,7 @@ function RenderMeasureRev(
   measure: Measure,
   renderProps: RenderProperties,
   theme: Theme,
+  debug: boolean
 ): void {
   // Render Barlines here
   measure.Staves.forEach((s: Staff) => RenderStaff(renderProps, measure, s));
@@ -45,21 +46,26 @@ function RenderMeasureRev(
   measure.Dynamics.forEach((d: Dynamic) =>
     RenderDynamic(renderProps, measure, d, theme),
   );
-  const debug = false;
   if (debug) {
-    measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division) => {
-      renderProps.context.strokeStyle = "blue";
-      renderProps.context.strokeRect(
+    measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division, di: number) => {
+
+      renderProps.context.fillStyle = "rgba(0, 0, 255, 0.2)";
+      if (di % 2 == 0) {
+        renderProps.context.fillStyle = "rgba(255, 0, 0, 0.2)";
+      }  
+      renderProps.context.lineWidth = 1;
+      renderProps.context.fillRect(
         d.Bounds.x + renderProps.camera.x,
         d.Bounds.y + renderProps.camera.y,
         d.Bounds.width,
         d.Bounds.height,
       );
       d.Subdivisions.forEach((sd, i) => {
+        console.log("Are we rendering any subdivisions?");
         if (i % 2 == 0) {
-          renderProps.context.fillStyle = "rgba(0, 155, 0, 0.2)";
+          renderProps.context.fillStyle = "rgba(0, 0, 255, 0.2)";
         } else {
-          renderProps.context.fillStyle = "rgba(255, 0, 0, 0.2)";
+          renderProps.context.fillStyle = "rgba(255, , 0, 0.2)";
         }
         renderProps.context.fillRect(
           sd.Bounds.x + renderProps.camera.x,
@@ -79,10 +85,10 @@ function RenderMeasureRev(
 
     renderProps.context.strokeStyle = "purple";
     renderProps.context.strokeRect(
-      measure.Bounds.x + renderProps.camera.x,
-      measure.Bounds.y + renderProps.camera.y,
-      measure.Bounds.width,
-      measure.Bounds.height
+      GetBoundsWithOffset(measure).x + renderProps.camera.x,
+      GetBoundsWithOffset(measure).y + renderProps.camera.y,
+      GetBoundsWithOffset(measure).width,
+      GetBoundsWithOffset(measure).height
     );
     renderProps.context.strokeStyle = "black";
   }

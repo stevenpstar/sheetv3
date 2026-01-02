@@ -16,13 +16,14 @@ interface NoteProps {
   Rest: boolean;
   Tied: boolean;
   Staff: number;
-  Tuple: boolean;
-  TupleDetails?: TupleDetails;
   Clef: string;
-  Editable?: boolean;
   Grace: boolean;
   Voice: number;
-  Accidental: number;
+  Alter: number;
+  Tuplet: boolean;
+  TupletDetails?: TupleDetails;
+  Accidental?: string;
+  Editable?: boolean;
 }
 
 class Note implements ISelectable {
@@ -35,7 +36,8 @@ class Note implements ISelectable {
 
   Rest: boolean;
   Tied: boolean;
-  Accidental: number;
+  Alter: number;
+  Accidental: string;
   ID: number;
   SelType: SelectableTypes;
   Clef: string;
@@ -57,8 +59,8 @@ class Note implements ISelectable {
   // across staffs for example)
   StaffGroup: number;
 
-  Tuple: boolean;
-  TupleDetails?: TupleDetails;
+  Tuplet: boolean;
+  TupletDetails?: TupleDetails;
 
   constructor(props: NoteProps) {
     this.Voice = props.Voice;
@@ -71,7 +73,10 @@ class Note implements ISelectable {
     this.Line = props.Line;
     this.Rest = props.Rest;
     this.Tied = props.Tied;
-    this.Accidental = props.Accidental;
+    this.Alter = props.Alter;
+    if (props.Accidental) {
+      this.Accidental = props.Accidental;
+    }
     this.Staff = props.Staff;
     this.Clef = props.Clef;
     this.Grace = props.Grace;
@@ -86,9 +91,9 @@ class Note implements ISelectable {
     this.Editable = props.Editable !== undefined ? props.Editable : true;
     this.ID = -1;
 
-    this.Tuple = props.Tuple;
-    if (props.TupleDetails) {
-      this.TupleDetails = props.TupleDetails;
+    this.Tuplet = props.Tuplet;
+    if (props.TupletDetails) {
+      this.TupletDetails = props.TupletDetails;
     }
     this.Opacity = 1.0;
   }

@@ -15,7 +15,7 @@ const keymaps = {
   value6: "6",
   restInput: "r",
   delete: "d",
-  sharpen: "+",
+  sharpen: "shift +",
   flatten: "-",
   scaleToggle: "'",
   save: "s",
@@ -63,7 +63,7 @@ const test_CONFIG: ConfigSettings = {
   CameraSettings: {
     DragEnabled: true,
     ZoomEnabled: true,
-    Zoom: 1.7,
+    Zoom: 1.0,
     StartingPosition: { x: 20, y: 20 },
     CenterMeasures: false,
     CenterPage: false,

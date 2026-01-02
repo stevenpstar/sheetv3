@@ -11,7 +11,7 @@ import { Voice } from "../Core/Voice.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { ReturnAccidentalOffset } from "../Workers/Accidentaler.js";
-import { ConfigSettings, Theme } from "../entry.js";
+import { ConfigSettings, GetBoundsWithOffset, GetLineHovered, GetMeasureHeight, GetNotePositionOnLine, Theme } from "../entry.js";
 import { RenderAccidental } from "./Accidentals.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
 import { RenderMeasureRev } from "./Measure.RendererRev.js";
@@ -38,6 +38,7 @@ function RenderMeasure(
   restInput: boolean,
   noteValue: number,
   config: ConfigSettings,
+  debug: boolean,
 ) {
   //    if (hovId === measure.ID)
   RenderHovered(
@@ -52,7 +53,7 @@ function RenderMeasure(
   //    if (debug)
   // RenderDebug(measure, renderProps, index, mousePos);
   //RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
-  RenderMeasureRev(measure, renderProps, config.Theme);
+  RenderMeasureRev(measure, renderProps, config.Theme, debug);
   measure.Staves.forEach((s: Staff) => {
     measure.Voices.forEach((v: Voice) => {
       RenderNotes(measure, renderProps, s.Num, config.Theme, v);
@@ -96,12 +97,12 @@ function MiddleLineBounds(measure: Measure): Bounds {
   let b = new Bounds(
     measure.Bounds.x,
     0,
-    measure.GetBoundsWithOffset().width,
+    GetBoundsWithOffset(measure).width,
     5,
   );
   let actualLine = 15; // middle line number
   const diff = actualLine - measure.Staves[0].BotLine;
-  b.y = measure.Bounds.y + measure.GetMeasureHeight() + (diff * 5 - 2.5);
+  b.y = measure.Bounds.y + GetMeasureHeight(measure) + (diff * 5 - 2.5);
   return b;
 }
 
@@ -125,12 +126,12 @@ function RenderHovered(
   const divisions = measure.Voices[measure.ActiveVoice].Divisions;
   divisions.forEach((s) => {
     if (s.Bounds.IsHovered(mousePos.x, mousePos.y, camera)) {
-      let line = measure.GetLineHovered(mousePos.y, s.Staff);
-      if (measure.Instrument.Staff === StaffType.Rhythm) {
-        line.num = 15;
-        line.bounds = MiddleLineBounds(measure);
-      }
-      line.bounds.y = measure.GetNotePositionOnLine(line.num, s.Staff);
+      let line = GetLineHovered(measure, mousePos.y, s.Staff);
+//      if (measure.Instrument.Staff === StaffType.Rhythm) {
+//        line.num = 15;
+//        line.bounds = MiddleLineBounds(measure);
+//      }
+      line.bounds.y = GetNotePositionOnLine(measure, line.num, s.Staff);
       // context.fillStyle="rgb(0, 0, 255, 0.1)";
       // context.fillRect(s.Bounds.x + camera.x,
       //                  s.Bounds.y + camera.y,
@@ -146,13 +147,13 @@ function RenderHovered(
           Rest: restInput,
           Tied: false,
           Staff: s.Staff,
-          Tuple: false,
-          TupleIndex: 0,
-          TupleCount: 1,
+          Tuplet: false,
+          TupletIndex: 0,
+          TupletCount: 1,
           Clef: "treble",
           Grace: false,
           Voice: measure.ActiveVoice,
-          Accidental: 0,
+          Alter: 0,
         };
         const tempNote = new Note(tempNoteProps);
         if (!restInput) {
@@ -331,7 +332,7 @@ function RenderNotes(
         // Just in case this has failed to be set
         group.StemDir = stemDir;
       }
-      let tuplet = group.Notes[0][0].Tuple;
+      let tuplet = group.Notes[0][0].Tuplet;
       const isBeamed = group.Beams.length > 0;
       group.Stems.forEach((s) => {
         s.Render(renderProps, theme);
@@ -385,13 +386,13 @@ function RenderNotes(
               theme,
             );
 
-            const accNotes = dN.filter((n) => n.Accidental !== 0);
+            const accNotes = dN.filter((n) => n.Alter !== 0);
             accNotes.sort((a: Note, b: Note) => {
               return a.Line - b.Line;
             });
             const offsets = ReturnAccidentalOffset(accNotes);
             accNotes.forEach((n: Note, i: number) => {
-              RenderAccidental(renderProps, n, n.Accidental, offsets[i], theme);
+              RenderAccidental(renderProps, n, n.Alter, offsets[i], theme);
             });
           }
         });
@@ -424,17 +425,18 @@ function RenderNotes(
     theme,
   );
 
-  if (msr.Instrument.Staff === StaffType.Grand) {
-    RenderTies(renderProps, voice.Divisions, voice.Notes, StaffType.Grand, msr);
-    RenderTuplets(
-      renderProps,
-      voice.Divisions,
-      voice.Notes,
-      StaffType.Grand,
-      msr,
-      theme,
-    );
-  }
+  // TODO: Work out if this matters
+ // if (msr.Instrument.Staff === StaffType.Grand) {
+ //   RenderTies(renderProps, voice.Divisions, voice.Notes, StaffType.Grand, msr);
+ //   RenderTuplets(
+ //     renderProps,
+ //     voice.Divisions,
+ //     voice.Notes,
+ //     StaffType.Grand,
+ //     msr,
+ //     theme,
+ //   );
+ // }
 }
 
 function RenderGraceNotes(

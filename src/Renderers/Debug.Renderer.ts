@@ -1,5 +1,5 @@
 import { Division } from "../Core/Division.js";
-import { Measure } from "../Core/Measure.js";
+import { GetLineHovered, Measure } from "../Core/Measure.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 
 function RenderPanel(props: RenderProperties): void {
@@ -112,7 +112,7 @@ function RenderDebugOld(
 
   // TODO: Line numbers for grand staff are wrong in debug
   // OR they are wrong in staff 0 if we don't add the top line number
-  const line = measure.GetLineHovered(mousePos.y, 0);
+  const line = GetLineHovered(measure, mousePos.y, 0);
 
   //    context.fillRect(line.bounds.x + camera.x,
   //                     line.bounds.y + camera.y,

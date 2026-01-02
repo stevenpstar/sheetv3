@@ -36,6 +36,7 @@ interface KeyMapping {
 }
 
 function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
+  console.log("key press: ", key);
   switch (key) {
     case keyMaps.addmeasure:
       app.AddMeasure();
@@ -113,7 +114,7 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       app.ChangeBarline(barlineType);
       break;
     case keyMaps.add_accent:
-      app.AddArticulation(ArticulationType.ACCENT);
+      app.AddArticulation(ArticulationType.STACCATO);
       break;
     case keyMaps.add_clef:
       app.AddClef();

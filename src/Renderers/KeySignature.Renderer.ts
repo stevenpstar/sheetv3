@@ -1,7 +1,7 @@
 import { KeySignatures } from "../Core/KeySignatures.js";
 import { Clef, Measure } from "../Core/Measure.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
-import { Theme } from "../entry.js";
+import { GetNotePositionOnLine, Theme } from "../entry.js";
 import { RenderSymbol, StdAccidentals } from "./MusicFont.Renderer.js";
 
 interface keyProps {
@@ -20,7 +20,7 @@ function RenderKeySignature(
 ): void {
   renderProps.context.fillStyle = renderProps.theme.NoteElements;
   const staffClefs = msr.Clefs.filter((c: Clef) => c.Staff === staff);
-  if (!staffClefs) {
+  if (staffClefs.length == 0) {
     console.error("(RenderKeySignature): Something went very wrong here");
     return;
   }
@@ -33,7 +33,7 @@ function RenderKeySignature(
         renderProps,
         StdAccidentals.Sharp,
         msr.Bounds.x + xOff + i * 10,
-        msr.GetNotePositionOnLine(l, staff) + 2.5,
+        GetNotePositionOnLine(msr, l, staff) + 2.5,
         theme,
         false,
       );
@@ -42,7 +42,7 @@ function RenderKeySignature(
         renderProps,
         StdAccidentals.Flat,
         msr.Bounds.x + xOff + i * 10,
-        msr.GetNotePositionOnLine(l, staff) + 2.5,
+        GetNotePositionOnLine(msr, l, staff) + 2.5,
         theme,
         false,
       );
