@@ -283,9 +283,10 @@ function AddToDivision(
   let tying = false;
   let tStart = -1;
   let tEnd = -1;
-  msr.Voices[msr.ActiveVoice].Divisions.filter(
-    (d) => d.Staff === staff,
-  ).forEach((div: Division, i: number) => {
+  //TODO: SORT divisionOnStaff by Beat? Unless already sorted somewhere else.
+  let divisionsOnStaff = msr.Voices[msr.ActiveVoice].Divisions
+    .filter(d => d.Staff === staff);
+  divisionsOnStaff.forEach((div: Division, i: number) => {
     if (tying && noteProps.Rest) {
       tying = false;
     }
@@ -296,15 +297,16 @@ function AddToDivision(
       let remVal = remainingValue;
       let room: boolean = false;
       let lastIndex: number = 0;
-      for (let j = i; j < msr.Voices[msr.ActiveVoice].Divisions.length; j++) {
+      for (let j = i; j < divisionsOnStaff.length; j++) {
         if (remVal <= 0 && !room) {
           continue;
         }
         const notesOnBeat = msr.Voices[msr.ActiveVoice].Notes.filter(
-          (n: Note) => n.Beat == msr.Voices[msr.ActiveVoice].Divisions[j].Beat,
+          (n: Note) => n.Beat == div.Beat &&
+          n.Staff === div.Staff,
         );
         if (notesOnBeat.length > 0 && notesOnBeat[0].Rest) {
-          remVal -= msr.Voices[msr.ActiveVoice].Divisions[j].Duration;
+          remVal -= div.Duration;
           if (remVal <= 0) {
             room = true;
             lastIndex = j;

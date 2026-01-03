@@ -1,3 +1,4 @@
+import { Camera } from "../Core/Camera.js";
 import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Staff } from "../Core/Staff.js";
@@ -46,28 +47,48 @@ function RenderMeasureRev(
   measure.Dynamics.forEach((d: Dynamic) =>
     RenderDynamic(renderProps, measure, d, theme),
   );
+
   if (debug) {
+
+  measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division) => {
+      renderProps.context.strokeStyle = "rgba(0, 255, 0, 255)";
+      renderProps.context.lineWidth = 2;
+      renderProps.context.beginPath();
+      renderProps.context.setLineDash([0, 0]);
+      renderProps.context.moveTo(d.Bounds.x + renderProps.camera.x,
+                                 d.Bounds.y + (d.Bounds.height / 2) + renderProps.camera.y);
+      renderProps.context.lineTo(d.Bounds.x + d.NoteXBuffer + renderProps.camera.x, 
+                                 d.Bounds.y + (d.Bounds.height / 2) + renderProps.camera.y);
+      renderProps.context.stroke();
+      renderProps.context.closePath();
+
+      renderProps.context.fillStyle = "black";
+      renderProps.context.font = "12px Bravura";
+      renderProps.context.fillText(d.NoteXBuffer.toString(), d.Bounds.x + renderProps.camera.x + 2,
+                                   d.Bounds.y + (d.Bounds.height / 2) + renderProps.camera.y + 4)
+  });
+
     measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division, di: number) => {
+      
 
       renderProps.context.fillStyle = "rgba(0, 0, 255, 0.2)";
       if (di % 2 == 0) {
         renderProps.context.fillStyle = "rgba(255, 0, 0, 0.2)";
       }  
       renderProps.context.lineWidth = 1;
-      renderProps.context.fillRect(
+      renderProps.context.strokeRect(
         d.Bounds.x + renderProps.camera.x,
         d.Bounds.y + renderProps.camera.y,
         d.Bounds.width,
         d.Bounds.height,
       );
       d.Subdivisions.forEach((sd, i) => {
-        console.log("Are we rendering any subdivisions?");
         if (i % 2 == 0) {
           renderProps.context.fillStyle = "rgba(0, 0, 255, 0.2)";
         } else {
           renderProps.context.fillStyle = "rgba(255, , 0, 0.2)";
         }
-        renderProps.context.fillRect(
+        renderProps.context.strokeRect(
           sd.Bounds.x + renderProps.camera.x,
           sd.Bounds.y + renderProps.camera.y,
           sd.Bounds.width,

@@ -4,7 +4,7 @@ import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Clef, Measure, MeasureProps } from "../Core/Measure.js";
 import { Page } from "../Core/Page.js";
 import { Note } from "../Core/Note.js";
-import { Staff } from "../Core/Staff.js";
+import { CreateStaff, Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
 import { Message } from "../Types/Message.js";
 import { ConfigSettings, CreateNewMeasure, MeasureSettings } from "../entry.js";
@@ -21,7 +21,7 @@ const CreateDefaultPiano = (id: number): Instrument => {
     ID: id,
     Position: { x: 0, y: 5 },
     Staff: StaffType.Grand,
-    Staves: [new Staff(0), new Staff(1)],
+    Staves: [CreateStaff(0), CreateStaff(1)],
   };
 
   return defaultPiano;
@@ -46,7 +46,7 @@ function CreateInstrument(y: number, config: ConfigSettings, id: number): Instru
     ID: id,
     Position: { x: 0, y: y },
     Staff: staff,
-    Staves: [new Staff(0)],
+    Staves: [CreateStaff(0)],
   };
 
   return instr;
@@ -71,11 +71,11 @@ const CreateDefaultMeasure = (
       150,
       msrHeight,
     ),
-    TimeSignature: { top: 3, bottom: 4 },
+    TimeSignature: { top: 4, bottom: 4 },
     KeySignature: "DMaj/Bmin",
     Notes: [],
     Clefs: [new Clef(0, "treble", 1, 0), new Clef(1, "bass", 1, 1)],
-    Staves: [new Staff(0), new Staff(1)],
+    Staves: [CreateStaff(0), CreateStaff(1)],
     RenderClef: true,
     RenderTimeSig: true,
     RenderKey: true,

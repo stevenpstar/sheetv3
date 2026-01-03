@@ -43,7 +43,7 @@ export type XMLScore = {
   Instruments: XMLInstrument[]
 }
 import { Clef } from "../Core/Clef.js";
-import { Staff } from "../Core/Staff.js";
+import { CreateStaff, Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
 import { LoadStructure, lMeasure, lNote } from "./Loader.js";
 import { GeneratePitchMap, MappedMidi } from "./Pitcher.js";
@@ -66,7 +66,7 @@ function LoadFromMXML(score: XMLScore): LoadStructure {
       let staves = [];
       let clefs = [];
       m.Staves.forEach((s: XMLStaff) => {
-        staves.push(new Staff(s.Number));
+        staves.push(CreateStaff(s.Number));
       });
       m.Clefs.forEach((c: XMLClef, ci: number) => {
         clefs.push(new Clef(ci, c.Type, 1, c.Staff));

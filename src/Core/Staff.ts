@@ -2,21 +2,24 @@ import { Measure } from "./Measure.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
 import { Theme } from "../Types/Config.js";
 
-class Staff {
+type Staff = {
   // Determines line offset / Order of staff
   Num: number;
   TopLine: number;
   MidLine: number;
   BotLine: number;
   Buffer: number;
-  constructor(num: number) {
-    this.Num = num;
-    this.Buffer = this.Num * 1000;
-    // These defaults will change/be configurable
-    this.TopLine = 5;
-    this.BotLine = 35;
-    this.MidLine = 15;
-  }
+};
+function CreateStaff(num: number): Staff {
+  let staff: Staff = {
+    Num: num,
+    Buffer: num * 1000,
+    TopLine: 5,
+    BotLine: 35,
+    MidLine: 15,
+  };
+
+  return staff;
 }
 
 function RenderMeasureLines(
@@ -141,4 +144,5 @@ export {
   RenderStaffLines,
   RenderMeasureLines,
   GetStaffActualMidLine,
+  CreateStaff
 };

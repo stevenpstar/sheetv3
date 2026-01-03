@@ -22,8 +22,8 @@ enum StaffType {
   Grand,
   Rhythm,
 }
-interface Instrument {
-  ID: number,
+type Instrument = {
+  ID: number;
   Position: { x: number; y: number };
   Staff: StaffType;
   Staves: Staff[];

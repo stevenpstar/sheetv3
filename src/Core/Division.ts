@@ -31,7 +31,7 @@ type Subdivision = {
   Bounds: Bounds;
 };
 
-interface Division {
+type Division = {
   Beat: number;
   Duration: number;
   Bounds: Bounds;
@@ -92,6 +92,7 @@ function CreateDivisions(
       Voice: voiceIndex,
       Alter: 0,
     };
+    console.log("Adding (initial) rest at beat: ", 1);
     // TODO: Clef should not be determined by staff that makes no sense
     AddNote(msr, new Note(restProps), false, voice);
   }
@@ -278,10 +279,7 @@ function ResizeDivisions(
     if (i > 0) {
       const lastDivEnd = divs[i - 1].Bounds.x + divs[i - 1].Bounds.width;
       if (lastDivEnd !== div.Bounds.x) {
-        console.log("setting div bounds x!");
-        console.log("prev: ", div.Bounds.x);
         div.Bounds.x = lastDivEnd;
-        console.log("after: ", div.Bounds.x);
       }
     }
 
@@ -295,8 +293,6 @@ function ResizeDivisions(
   divs.forEach((d: Division) => {
     total_div_width += d.Bounds.width;
   });
-  console.log("msr width: ", msr.Bounds.width);
-  console.log("first div width: ", divs[0].Bounds.width);
 }
 
 function GenerateMissingBeatDivisions(
@@ -369,6 +365,7 @@ function GenerateMissingBeatDivisions(
       Voice: voiceIndex,
       Alter: 0,
     };
+    console.log("Adding rest at beat: ", div.Beat);
     AddNote(msr, new Note(restProps), false, voice);
   });
 
@@ -381,8 +378,14 @@ function GenerateMissingBeatDivisions(
   reSortedDivs = divisions.sort((divA: Division, divB: Division) => {
     return divA.Beat - divB.Beat;
   });
+  if (reSortedDivs.length === 0) {
+    return;
+  }
   const lastDiv = reSortedDivs[reSortedDivs.length - 1];
-  const lastBeat = lastDiv.Beat + lastDiv.Duration * msr.TimeSignature.bottom;
+  let lastBeat = 1;
+  if (lastDiv) {
+    lastBeat = lastDiv.Beat + lastDiv.Duration * msr.TimeSignature.bottom;
+  }
 
   const lastDivisionsToAdd = [];
   const rem = msrDuration - lastBeat;
@@ -424,6 +427,7 @@ function GenerateMissingBeatDivisions(
       Voice: msr.ActiveVoice,
       Alter: 0,
     };
+    console.log("final pass adding rest to beat: ", div.Beat);
     AddNote(msr, new Note(restProps));
   });
 }

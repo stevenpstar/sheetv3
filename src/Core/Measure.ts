@@ -277,6 +277,7 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
       const voiceIndex = GetVoiceIndex(msr, voice);
     if (note.Rest) {
       ClearNonRestNotes(msr, note.Beat, note.Staff, voiceIndex);
+      note.Line = GetStaffMiddleLine(msr.Staves, note.Staff);
     } else {
       ClearRestNotes(msr, note.Beat, note.Staff, voiceIndex);
     }
@@ -366,6 +367,7 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
             Voice: msr.ActiveVoice,
             Alter: 0,
           };
+          console.log("Adding rest after note deletion at beat: ", beat);
 // TODO: Side effect, maybe check after deleting selected note if the measure
           // has division gap and create there if true.
           AddNote(msr, new Note(restProps));

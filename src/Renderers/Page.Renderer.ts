@@ -91,6 +91,8 @@ function RenderPage(
       context.moveTo(x + cam.x, y + line.LineBounds.y + 12.5 + cam.y);
       context.lineTo(x + a4w + cam.x, y + line.LineBounds.y + 12.5 + cam.y);
       context.stroke();
+
+      context.closePath();
     });
 
     // Render bounds

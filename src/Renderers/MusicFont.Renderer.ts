@@ -150,6 +150,14 @@ function RenderScaledNote(
   context.fillStyle = colour;
   context.font = `${fontSize}px Bravura`;
   context.fillText(symbol, x + camera.x, y + camera.y);
+  // TODO: This is for debugging, obviously need a debug flag somewhere at some
+  // point
+  if (selected) {
+    context.font = '12px Bravura';
+    context.fillText("Voice: " + note.Voice.toString(), x + camera.x + 6, y + camera.y + 20);
+    context.fillText("Beat: " + note.Beat.toString(), x + camera.x + 6, y + camera.y + 34);
+    context.fillText("Staff: " + note.Staff.toString(), x + camera.x + 6, y + camera.y + 46);
+  }
 }
 
 //TODO: Test(?) Function, maybe. - testing opacity only here

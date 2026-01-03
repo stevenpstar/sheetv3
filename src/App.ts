@@ -26,7 +26,7 @@ import {
   MappedMidi,
 } from "./Workers/Pitcher.js";
 import { ConfigSettings } from "./Types/Config.js";
-import { GetStaffHeightUntil, Staff } from "./Core/Staff.js";
+import { CreateStaff, GetStaffHeightUntil, Staff } from "./Core/Staff.js";
 import {
   Barline,
   BarlineType,
@@ -890,8 +890,8 @@ class App {
     if (!instr) {
       return;
     }
-    const newStaff = new Staff(instr.Staves.length);
-    instr.Staves.push(new Staff(instr.Staves.length));
+    const newStaff = CreateStaff(instr.Staves.length);
+    instr.Staves.push(newStaff);
     const msrs: Measure[] = this.Sheet.Measures.filter(
       (m) => m.InstrumentID === instr.ID,
     );

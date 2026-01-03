@@ -271,7 +271,7 @@ function RenderRest(
       renderProps,
       Rests.Minim,
       x,
-      y + 1,
+      y + 6,
       theme,
       note.Selected,
       stdFontSize

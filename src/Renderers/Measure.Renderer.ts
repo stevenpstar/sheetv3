@@ -374,7 +374,11 @@ function RenderNotes(
             : 0;
 
           if (n.Rest) {
-            RenderRest(renderProps, context, div, camera, n, msr, theme);
+            // THIS IS CAUSING THE REST RENDERING BUG (Stray rests rendering on
+            // staff 1 after inputting a note on staff 2
+            // Note: No idea what this does, division groups I don't believe
+            // support having rests in between beamed notes.
+           // RenderRest(renderProps, context, div, camera, n, msr, theme);
           } else {
             RenderNote(
               n,
