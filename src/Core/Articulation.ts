@@ -13,6 +13,7 @@ enum ArticulationType {
   NONE = 0,
   ACCENT = 1,
   STACCATO = 2,
+  MARCATO = 3,
 }
 
 class Articulation {
@@ -101,6 +102,13 @@ function RenderArticulation(
         symbol = ArticulationSymbol.StaccatoBelow;
       } else {
         symbol = ArticulationSymbol.StaccatoAbove;
+      }
+      break;
+    case ArticulationType.MARCATO:
+      if (div.Direction == StemDirection.Up) {
+        symbol = ArticulationSymbol.MarcatoBelow;
+      } else {
+        symbol = ArticulationSymbol.MarcatoAbove;
       }
       break;
     default:

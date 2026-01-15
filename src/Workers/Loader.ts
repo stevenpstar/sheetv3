@@ -1,7 +1,9 @@
+import { Articulation, ArticulationType } from "../Core/Articulation.js";
 import { Camera } from "../Core/Camera.js";
+import { Dynamic } from "../Core/Dynamic.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Clef, CreateMeasureDivisions, Measure } from "../Core/Measure.js";
-import { Note, NoteProps } from "../Core/Note.js";
+import { CreateNewNote, Note, NoteProps } from "../Core/Note.js";
 import { Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { Staff } from "../Core/Staff.js";
@@ -17,6 +19,8 @@ interface lNote {
   Line: number;
   Rest: boolean;
   Tied: boolean;
+  TiedStart: number;
+  TiedEnd: number;
   Staff: number;
   Clef: string;
   Editable?: boolean;
@@ -24,6 +28,19 @@ interface lNote {
   Voice: number;
   Alter: number;
 }
+
+interface lArticulation {
+  Type: ArticulationType,
+  Beat: number,
+  Staff: number,
+  Voice: number
+};
+
+interface lDynamic {
+  Symbol: string,
+  Staff: number,
+  Beat: number,
+};
 
 interface lMeasure {
   InstrumentID: number;
@@ -35,6 +52,8 @@ interface lMeasure {
   Bounds: Bounds;
   ShowClef: boolean;
   ShowTime: boolean;
+  Articulations: lArticulation[],
+  Dynamics: lDynamic[],
 }
 
 interface lInstrument {
@@ -93,10 +112,11 @@ const LoadSheet = (
         Alter: n.Alter,
       };
 
-      const newNote = new Note(noteProps);
+      const newNote = CreateNewNote(noteProps);
+      newNote.TiedStart = n.TiedStart;
+      newNote.TiedEnd = n.TiedEnd;
       notes.push(newNote);
     });
-    console.log("instr id: ", ins.IDNo);
     const msr = CreateMeasure(
       ins.IDNo,
       null, // Prev Measure
@@ -114,6 +134,29 @@ const LoadSheet = (
       true,
       notes,
     );
+
+    let loadedArticulations: Articulation[] = [];
+    m.Articulations.forEach((lArt: lArticulation) => {
+      if (lArt.Voice < msr.Voices.length) {
+        let newArticulation: Articulation = new Articulation(
+          lArt.Type,
+          lArt.Beat,
+          lArt.Staff,
+          msr.Voices[lArt.Voice],
+        );
+        loadedArticulations.push(newArticulation);
+      }
+    });
+    msr.Articulations = loadedArticulations;
+
+    let loadedDynamics: Dynamic[] = [];
+    m.Dynamics.forEach((lDyn: lDynamic) => {
+      let newDynamic: Dynamic = new Dynamic(
+        lDyn.Symbol, lDyn.Staff, lDyn.Beat
+      );
+      loadedDynamics.push(newDynamic);
+    });
+    msr.Dynamics = loadedDynamics;
 
     if (sheet.Measures.length > 0) {
       msr.PrevMeasure = sheet.Measures[sheet.Measures.length - 1];
@@ -154,9 +197,30 @@ const SaveSheet = (sheet: Sheet): string => {
             Grace: n.Grace,
             Voice: i,
             Alter: n.Alter,
+            TiedStart: n.TiedStart,
+            TiedEnd: n.TiedEnd,
           });
         });
       });
+      let articulations: lArticulation[] = [];
+      m.Articulations.forEach((a: Articulation) => {
+        articulations.push({
+          Voice: a.Voice.ID,
+          Type: a.Type,
+          Beat: a.Beat,
+          Staff: a.Staff,
+        });
+      });
+
+      let dynamics: lDynamic[] = [];
+      m.Dynamics.forEach((d: Dynamic) => {
+        dynamics.push({
+          Symbol: d.Symbol,
+          Staff: d.Staff,
+          Beat: d.Beat,
+        });
+      });
+
       saved.Instruments[saved.Instruments.length-1].Measures.push({
         InstrumentID: saved.Instruments[saved.Instruments.length-1].IDNo,
         Clefs: m.Clefs,
@@ -167,6 +231,8 @@ const SaveSheet = (sheet: Sheet): string => {
         Bounds: m.Bounds,
         ShowClef: m.RenderClef,
         ShowTime: m.RenderTimeSig,
+        Articulations: articulations,
+        Dynamics: dynamics,
       });
     });
   });
@@ -174,4 +240,4 @@ const SaveSheet = (sheet: Sheet): string => {
   return JSON.stringify(saved);
 };
 
-export { LoadSheet, SaveSheet, LoadStructure, lNote, lMeasure };
+export { LoadSheet, SaveSheet, LoadStructure, lNote, lMeasure, lArticulation, lDynamic };

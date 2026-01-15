@@ -100,6 +100,8 @@ enum ArticulationSymbol {
   AccentBelow = "\u{E4A1}",
   StaccatoAbove = "\u{E4A2}",
   StaccatoBelow = "\u{E4A3}",
+  MarcatoAbove = "\u{E4AC}",
+  MarcatoBelow = "\u{E4AD}",
 }
 
 function RenderSymbol(
@@ -157,6 +159,9 @@ function RenderScaledNote(
     context.fillText("Voice: " + note.Voice.toString(), x + camera.x + 6, y + camera.y + 20);
     context.fillText("Beat: " + note.Beat.toString(), x + camera.x + 6, y + camera.y + 34);
     context.fillText("Staff: " + note.Staff.toString(), x + camera.x + 6, y + camera.y + 46);
+    context.fillText("Tied: " + (note.Tied ? "true" : "false") , x + camera.x + 6, y + camera.y + 58);
+    context.fillText("TiedStart: " + note.TiedStart.toString(), x + camera.x + 6, y + camera.y + 70);
+    context.fillText("TiedEnd: " + note.TiedEnd.toString(), x + camera.x + 6, y + camera.y + 82);
   }
 }
 

@@ -5,7 +5,7 @@ import { DivGroup, IsRestOnBeat } from "../Core/Division.js";
 import { StaffType } from "../Core/Instrument.js";
 import { KeySignatures } from "../Core/KeySignatures.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
-import { Note } from "../Core/Note.js";
+import { CreateNewNote, Note } from "../Core/Note.js";
 import { RenderMeasureLines, RenderStaffLines, Staff } from "../Core/Staff.js";
 import { Voice } from "../Core/Voice.js";
 import { Bounds } from "../Types/Bounds.js";
@@ -58,7 +58,7 @@ function RenderMeasure(
     measure.Voices.forEach((v: Voice) => {
       RenderNotes(measure, renderProps, s.Num, config.Theme, v);
       v.Divisions.filter(
-        (div: Division) => div.Staff === s.Num && div.Beat === 1,
+        (div: Division) => div.Staff === s.Num,
       ).forEach((div: Division) => {
         measure.Articulations.filter(
           (a: Articulation) => a.Beat == div.Beat && a.Staff == div.Staff,
@@ -155,7 +155,7 @@ function RenderHovered(
           Voice: measure.ActiveVoice,
           Alter: 0,
         };
-        const tempNote = new Note(tempNoteProps);
+        const tempNote = CreateNewNote(tempNoteProps);
         if (!restInput) {
           RenderNote(
             tempNote,

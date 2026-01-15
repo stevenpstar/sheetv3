@@ -17,7 +17,7 @@ import {
 import { Dynamic } from "./Dynamic.js";
 import { Instrument, StaffType } from "./Instrument.js";
 import { KeySignatures } from "./KeySignatures.js";
-import { Note, NoteProps } from "./Note.js";
+import { CreateNewNote, Note, NoteProps, SetNoteID } from "./Note.js";
 import { Page } from "./Page.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
 import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
@@ -59,6 +59,7 @@ type Measure = {
   PageLine: number;
   Line: number;
   ActiveVoice: number;
+  AnacrusisDuration: number;
   RunningID: { count: number };
 
   // BOOLEAN
@@ -67,6 +68,7 @@ type Measure = {
   RenderClef: boolean;
   RenderKey: boolean;
   RenderTimeSig: boolean;
+  IsAnacrusis: boolean;
 
   SelType: SelectableTypes;
 
@@ -106,6 +108,8 @@ function CreateEmptyMeasure(): Measure {
     RenderClef: false,
     RenderKey: false,
     RenderTimeSig: false,
+    IsAnacrusis: false,
+    AnacrusisDuration: 0,
     SelType: SelectableTypes.Measure,
     Bounds: new Bounds(0, 0, 0, 0),
     Camera: undefined,
@@ -281,7 +285,7 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
     } else {
       ClearRestNotes(msr, note.Beat, note.Staff, voiceIndex);
     }
-    note.SetID(msr.RunningID.count);
+    SetNoteID(note, msr.RunningID.count);
     msr.RunningID.count++;
     voice.Notes.push(note);
 
@@ -370,7 +374,7 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
           console.log("Adding rest after note deletion at beat: ", beat);
 // TODO: Side effect, maybe check after deleting selected note if the measure
           // has division gap and create there if true.
-          AddNote(msr, new Note(restProps));
+          AddNote(msr, CreateNewNote(restProps));
         }
       }
     }

@@ -9,7 +9,7 @@ import {
 import { CreateFlags } from "../Core/Flag.js";
 import { StaffType } from "../Core/Instrument.js";
 import { AddNote, ClearRestNotes, CreateMeasureDivisions, Division, GetLineHovered, GetNotePositionOnLine, Measure } from "../Core/Measure.js";
-import { Note, NoteProps, TupleDetails } from "../Core/Note.js";
+import { CreateNewNote, Note, NoteProps, SetTiedStartEnd, TupleDetails } from "../Core/Note.js";
 import { GetStaffMiddleLine, Staff } from "../Core/Staff.js";
 import { GetLargestValues } from "../Core/Values.js";
 import { Voice } from "../Core/Voice.js";
@@ -21,7 +21,7 @@ import {
 } from "../Renderers/Note.Renderer.js";
 import { CreateStems } from "../Renderers/Stem.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
-import { ISelectable } from "../Types/ISelectable.js";
+import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 
 const noteXBuffer = 9;
 
@@ -118,7 +118,7 @@ function InputNote(
     Voice: msr.ActiveVoice,
     Alter: 0,
   };
-  const newNote: Note = new Note(noteProps);
+  const newNote: Note = CreateNewNote(noteProps);
 
   if (grace) {
     let order = subDivision.Order;
@@ -338,7 +338,7 @@ function AddToDivision(
           Alter: 0,
         };
 
-        const newNote = new Note(newNoteProps);
+        const newNote = CreateNewNote(newNoteProps);
         AddNote(msr, newNote, true);
         remainingValue = 0;
         return;
@@ -365,10 +365,10 @@ function AddToDivision(
         Alter: 0,
       };
 
-      const newNote = new Note(newNoteProps);
+      const newNote = CreateNewNote(newNoteProps);
 
       if (tying) {
-        newNote.SetTiedStartEnd(tStart, tEnd);
+        SetTiedStartEnd(newNote, tStart, tEnd);
         if (remainingValue - div.Duration <= 0) {
           tying = false;
         }
@@ -404,10 +404,10 @@ function AddToDivision(
           Voice: msr.ActiveVoice,
           Alter: 0,
         };
-        const newNote = new Note(newNoteProps);
+        const newNote = CreateNewNote(newNoteProps);
 
         if (tying) {
-          newNote.SetTiedStartEnd(tStart, tEnd);
+          SetTiedStartEnd(newNote, tStart, tEnd);
           if (remainingValue - div.Duration <= 0) {
             tying = false;
           }
@@ -447,7 +447,7 @@ function AddToDivision(
       notesOnBeat.forEach((n) => {
         n.Duration = remainingValue;
         n.Tied = true;
-        n.SetTiedStartEnd(tiedStart, tiedEnd);
+        SetTiedStartEnd(n, tiedStart, tiedEnd);
         let nextBeat = div.Beat + remainingValue * msr.TimeSignature.bottom;
         tiedNoteValues.forEach((dur: number, i: number) => {
           const shouldTie = i < tiedNoteValues.length - 1;
@@ -465,13 +465,13 @@ function AddToDivision(
             Voice: msr.ActiveVoice,
             Alter: 0,
           };
-          const noteObj = new Note(tiedNote);
-          noteObj.SetTiedStartEnd(tiedStart, tiedEnd);
+          const noteObj = CreateNewNote(tiedNote);
+          SetTiedStartEnd(noteObj, tiedStart, tiedEnd);
           AddNote(msr, noteObj, true);
           nextBeat = nextBeat + dur * msr.TimeSignature.bottom;
         });
       });
-      AddNote(msr, new Note(newNoteProps), true);
+      AddNote(msr, CreateNewNote(newNoteProps), true);
     }
   });
 }
@@ -483,7 +483,7 @@ function CreateTuplet(
   let duration = 0;
   for (let [measure, notes] of selNotes) {
     notes.forEach((sel: ISelectable) => {
-      if (sel instanceof Note === false) {
+      if (sel.SelType !== SelectableTypes.Note) {
         return;
       }
       const n = sel as Note;
@@ -502,7 +502,7 @@ function CreateTuplet(
       n.TupletDetails = details;
       // add newly created tuplet notes
       for (let i = 1; i < count; i++) {
-        const newNote = new Note({
+        const newNote = CreateNewNote({
           Beat: lastBeat + newDuration * measure.TimeSignature.bottom,
           Duration: newDuration,
           Line: n.Line,

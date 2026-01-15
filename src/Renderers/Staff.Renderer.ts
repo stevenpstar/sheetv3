@@ -14,7 +14,7 @@ function RenderStaff(
   // These should be defined somewhere else
   const { context, camera, theme } = renderProps;
   const line_space = 10;
-  const line_width = 1;
+  const line_width = 1.25;
 
   const staves = msr.Staves;
   const yStart = msr.Bounds.y + GetStaffHeightUntil(staves, staff.Num);

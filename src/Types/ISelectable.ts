@@ -18,7 +18,6 @@ interface ISelectable {
   SelType: SelectableTypes;
   Bounds: Bounds | Bounds[];
   Editable: boolean;
-  IsHovered: (x: number, y: number, cam: Camera) => boolean;
 }
 
 export { ISelectable, SelectableTypes };

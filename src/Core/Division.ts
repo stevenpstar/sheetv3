@@ -8,7 +8,7 @@ import { Beam } from "./Beam.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
 import { Flag } from "./Flag.js";
 import { AddNote, Measure } from "./Measure.js";
-import { Note, NoteProps } from "./Note.js";
+import { CreateNewNote, Note, NoteProps } from "./Note.js";
 import {
   GetStaffHeight,
   GetStaffHeightUntil,
@@ -70,6 +70,10 @@ function CreateDivisions(
   const divisions: Division[] = [];
   let nextBeat = 0;
   let runningValue = 0;
+  let measureDuration = 1 * (msr.TimeSignature.top / msr.TimeSignature.bottom);
+  if (msr.IsAnacrusis) {
+    measureDuration = msr.AnacrusisDuration;
+  }
 
   notes.sort((a: Note, b: Note) => {
     return a.Beat - b.Beat;
@@ -81,7 +85,7 @@ function CreateDivisions(
   ) {
     const restProps: NoteProps = {
       Beat: 1,
-      Duration: 1 * (msr.TimeSignature.top / msr.TimeSignature.bottom),
+      Duration: measureDuration,
       Line: GetStaffMiddleLine(msr.Staves, staff),
       Rest: true,
       Tied: false,
@@ -92,9 +96,8 @@ function CreateDivisions(
       Voice: voiceIndex,
       Alter: 0,
     };
-    console.log("Adding (initial) rest at beat: ", 1);
     // TODO: Clef should not be determined by staff that makes no sense
-    AddNote(msr, new Note(restProps), false, voice);
+    AddNote(msr, CreateNewNote(restProps), false, voice);
   }
   notes
     .filter((n) => n.Staff === staff && n.Grace === false && n.Voice === voiceIndex)
@@ -119,7 +122,9 @@ function CreateDivisions(
         runningValue += n.Duration;
       }
     });
-    GenerateMissingBeatDivisions(msr, divisions, staff, voice, voiceIndex);
+    if (!msr.IsAnacrusis) {
+      GenerateMissingBeatDivisions(msr, divisions, staff, voice, voiceIndex);
+    }
 
 // CREATING SUBDIVISIONS FOR DIVISION //
   
@@ -366,7 +371,7 @@ function GenerateMissingBeatDivisions(
       Alter: 0,
     };
     console.log("Adding rest at beat: ", div.Beat);
-    AddNote(msr, new Note(restProps), false, voice);
+    AddNote(msr, CreateNewNote(restProps), false, voice);
   });
 
   // check remaining measure for empty divisions
@@ -428,7 +433,7 @@ function GenerateMissingBeatDivisions(
       Alter: 0,
     };
     console.log("final pass adding rest to beat: ", div.Beat);
-    AddNote(msr, new Note(restProps));
+    AddNote(msr, CreateNewNote(restProps));
   });
 }
 

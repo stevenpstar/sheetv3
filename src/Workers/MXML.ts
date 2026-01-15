@@ -3,6 +3,13 @@
 //  Temporarily redefining data structures, these should be separate or exported
 //  as types from Music XML parser.
 
+export enum XMLArticulationType {
+  NONE = 0,
+  ACCENT = 1,
+  STACCATO = 2,
+  MARCATO = 3,
+}
+
 export type XMLClef = {
   Type: string;
   Staff: number;
@@ -22,6 +29,21 @@ export type XMLNote = {
    Grace: boolean;
    Voice: number;
    Alter: number;
+   TiedStart: number;
+   TiedEnd: number;
+}
+// This should be a separate library that is included and shared maybe?
+export type XMLArticulation = {
+  Type: XMLArticulationType,
+  Beat: number,
+  Staff: number,
+  Voice: number,
+};
+
+export type XMLDynamic = {
+  Symbol: string,
+  Staff: number,
+  Beat: number,
 }
 
 export type XMLMeasure = {
@@ -31,6 +53,8 @@ export type XMLMeasure = {
   Key: string,
   TimeSignature: { top: number, bottom: number },
   Notes: XMLNote[],
+  Articulations: XMLArticulation[],
+  Dynamics: XMLDynamic[],
 };
 
 export type XMLInstrument = {
@@ -42,10 +66,11 @@ export type XMLInstrument = {
 export type XMLScore = {
   Instruments: XMLInstrument[]
 }
+import { ArticulationType } from "../Core/Articulation.js";
 import { Clef } from "../Core/Clef.js";
 import { CreateStaff, Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
-import { LoadStructure, lMeasure, lNote } from "./Loader.js";
+import { LoadStructure, lArticulation, lDynamic, lMeasure, lNote } from "./Loader.js";
 import { GeneratePitchMap, MappedMidi } from "./Pitcher.js";
 
 
@@ -115,16 +140,39 @@ function LoadFromMXML(score: XMLScore): LoadStructure {
             Duration: n.Duration,
             Line: line,
             Rest: false,
-            Tied: false,
+            Tied: n.Tied,
             Staff: n.Staff,
             Clef: clef_string,
             Editable: true,
             Grace: false,
             Voice: 0,
             Alter: n.Alter,
+            TiedStart: n.TiedStart,
+            TiedEnd: n.TiedEnd,
           }
         );
       });
+      let lArticulations: lArticulation[] = [];
+      m.Articulations.forEach((xmlArt: XMLArticulation) => {
+        let newArticulation: lArticulation = {
+          Type: XMlArtToLArt(xmlArt),
+          Voice: xmlArt.Voice,
+          Beat: xmlArt.Beat,
+          Staff: xmlArt.Staff,
+        };
+        lArticulations.push(newArticulation);
+      });
+
+      let lDynamics: lDynamic[] = [];
+      m.Dynamics.forEach((xmlDyn: XMLDynamic) => {
+        let newDynamic: lDynamic = {
+          Symbol: xmlDyn.Symbol,
+          Staff: xmlDyn.Staff,
+          Beat: xmlDyn.Beat,
+        };
+        lDynamics.push(newDynamic);
+      });
+
       let lmsr: lMeasure = {
         InstrumentID: score.Instruments[i].IDNo,
         Clefs: clefs,
@@ -135,12 +183,31 @@ function LoadFromMXML(score: XMLScore): LoadStructure {
         Bounds: new Bounds(0,0,0,0),
         ShowClef: false,
         ShowTime: false,
+        Articulations: lArticulations,
+        Dynamics: lDynamics,
       };
       loadedStruct.Instruments[loadedStruct.Instruments.length-1].Measures.push(lmsr);
     });
   });
 
   return loadedStruct;
+}
+
+// I feel like there's definitely a way to do this without this switch statement
+// but I'm tired writing this code
+function XMlArtToLArt(mxmlArtType: XMLArticulation): ArticulationType {
+  switch (mxmlArtType.Type) {
+    case XMLArticulationType.NONE:
+      return ArticulationType.NONE;
+    case XMLArticulationType.ACCENT:
+      return ArticulationType.ACCENT;
+    case XMLArticulationType.STACCATO:
+      return ArticulationType.STACCATO;
+    case XMLArticulationType.MARCATO:
+      return ArticulationType.MARCATO;
+    default:
+      return ArticulationType.NONE;
+  }
 }
 
 export { LoadFromMXML };

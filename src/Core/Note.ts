@@ -26,7 +26,7 @@ interface NoteProps {
   Editable?: boolean;
 }
 
-class Note implements ISelectable {
+interface Note extends ISelectable {
   Beat: number;
   // Order is always the same as Beat, unless the note is a Grace note.
   Order: number;
@@ -61,64 +61,100 @@ class Note implements ISelectable {
 
   Tuplet: boolean;
   TupletDetails?: TupleDetails;
-
-  constructor(props: NoteProps) {
-    this.Voice = props.Voice;
-    this.Beat = props.Beat;
-    this.Order = 0;
-    if (!props.Grace) {
-      this.Order = this.Beat;
-    }
-    this.Duration = props.Duration;
-    this.Line = props.Line;
-    this.Rest = props.Rest;
-    this.Tied = props.Tied;
-    this.Alter = props.Alter;
-    if (props.Accidental) {
-      this.Accidental = props.Accidental;
-    }
-    this.Staff = props.Staff;
-    this.Clef = props.Clef;
-    this.Grace = props.Grace;
-    // Out of bounds may happen when changing time signatures (4th beat in a 3/4 bar for example)
-    this.OutOfBounds = false;
-
-    this.Selected = false;
-    this.SelType = SelectableTypes.Note;
-    this.Bounds = new Bounds(0, 0, 0, 0);
-    this.Bounds.width = 12;
-    this.Bounds.height = 10;
-    this.Editable = props.Editable !== undefined ? props.Editable : true;
-    this.ID = -1;
-
-    this.Tuplet = props.Tuplet;
-    if (props.TupletDetails) {
-      this.TupletDetails = props.TupletDetails;
-    }
-    this.Opacity = 1.0;
-  }
-
-  SetBounds(bounds: Bounds): void {
-    this.Bounds = bounds;
-  }
-
-  SetID(id: number): void {
-    this.ID = id;
-  }
-
-  SetTiedStartEnd(s: number, e: number): void {
-    this.TiedStart = s;
-    this.TiedEnd = e;
-  }
-
-  IsHovered(x: number, y: number, cam: Camera): boolean {
-    return this.Bounds.IsHovered(x, y, cam);
-  }
-
-  GetMidiNumber(): number {
-    const line = this.Staff === 0 ? this.Line : this.Line - 1000;
-    return ReturnMidiNumber(this.Clef, line, this.Staff);
-  }
 }
 
-export { Note, NoteProps, TupleDetails };
+function CreateEmptyNote(): Note {
+  return {
+    Voice: 0,
+    Beat: 0,
+    Order: 0,
+    Grace: false,
+    Duration: 0,
+    Line: 0,
+    Rest: false,
+    Tied: false,
+    TiedStart: 0,
+    TiedEnd: 0,
+    Alter: 0,
+    Accidental: "",
+    Staff: 0,
+    StaffGroup: -1,
+    Clef: "",
+    OutOfBounds: false,
+    Selected: false,
+    SelType: SelectableTypes.Note,
+    Bounds: new Bounds(0, 0, 0, 0),
+    Editable: false,
+    ID: -1,
+    Tuplet: false,
+    Opacity: 1.0, // Remove this 
+  };
+}
+
+function CreateNewNote(props: NoteProps): Note {
+  let note = CreateEmptyNote();
+  note.Voice = props.Voice;
+  note.Beat = props.Beat;
+  note.Order = 0;
+  if (!props.Grace) {
+    note.Order = note.Beat;
+  }
+  note.Duration = props.Duration;
+  note.Line = props.Line;
+  note.Rest = props.Rest;
+  note.Tied = props.Tied;
+  note.Alter = props.Alter;
+  if (props.Accidental) {
+    note.Accidental = props.Accidental;
+  }
+  note.Staff = props.Staff;
+  note.Clef = props.Clef;
+  note.Grace = props.Grace;
+  // Out of bounds may happen when changing time signatures (4th beat in a 3/4 bar for example)
+  note.OutOfBounds = false;
+
+  note.Selected = false;
+  note.SelType = SelectableTypes.Note;
+  note.Bounds = new Bounds(0, 0, 0, 0);
+  note.Bounds.width = 12;
+  note.Bounds.height = 10;
+  note.Editable = props.Editable !== undefined ? props.Editable : true;
+  note.ID = -1;
+
+  note.Tuplet = props.Tuplet;
+  if (props.TupletDetails) {
+    note.TupletDetails = props.TupletDetails;
+  }
+  note.Opacity = 1.0;
+  return note;
+}
+
+  function SetNoteBounds(note: Note, bounds: Bounds): void {
+    note.Bounds = bounds;
+  }
+
+  function SetNoteID(note: Note, id: number): void {
+    note.ID = id;
+  }
+
+  function SetTiedStartEnd(note: Note, s: number, e: number): void {
+    note.TiedStart = s;
+    note.TiedEnd = e;
+  }
+
+  function IsNoteHovered(note: Note, x: number, y: number, cam: Camera): boolean {
+    return note.Bounds.IsHovered(x, y, cam);
+  }
+
+  function GetMidiNumber(note: Note): number {
+    const line = note.Staff === 0 ? note.Line : note.Line - 1000;
+    return ReturnMidiNumber(note.Clef, line, note.Staff);
+  }
+
+export { Note, NoteProps, TupleDetails ,
+CreateNewNote,
+SetNoteBounds,
+SetNoteID,
+SetTiedStartEnd,
+IsNoteHovered,
+GetMidiNumber};

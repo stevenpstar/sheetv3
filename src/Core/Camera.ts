@@ -11,6 +11,7 @@ class Camera {
   Zoom: number;
   // Experimental smooth zoom
   ZoomTarget: number;
+  ScaleFactor: number;
   constructor(x: number, y: number) {
     this.Dragging = false;
     this.x = x;
@@ -19,6 +20,7 @@ class Camera {
     this.oldY = y;
     this.Zoom = 1;
     this.ZoomTarget = this.Zoom;
+    this.ScaleFactor = 1;
   }
 
   SetDragging(
@@ -35,8 +37,8 @@ class Camera {
 
     this.Dragging = drag;
     if (this.Dragging) {
-      this.DraggingX = x / cam.Zoom;
-      this.DraggingY = y / cam.Zoom;
+      this.DraggingX = x / (cam.Zoom * this.ScaleFactor);
+      this.DraggingY = y / (cam.Zoom * this.ScaleFactor);
     } else {
       this.DraggingX = 0.0;
       this.DraggingY = 0.0;

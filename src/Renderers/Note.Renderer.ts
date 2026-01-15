@@ -1,6 +1,7 @@
 import { Camera } from "../Core/Camera.js";
 import { Division, Measure } from "../Core/Measure.js";
 import { Note } from "../Core/Note.js";
+import { RenderSlur, RenderTie } from "../Core/Slur.js";
 import { NoteValues } from "../Core/Values.js";
 import { Bounds } from "../Types/Bounds.js";
 import { RenderProperties } from "../Types/RenderProperties.js";
@@ -458,25 +459,7 @@ function RenderTies(
         return;
       }
       const nextNote = tiedTo;
-      const x1 = div.Bounds.x + noteXBuffer + camera.x + 3;
-      const y1 =
-        GetNotePositionOnLine(msr, note.Line, note.Staff) + camera.y - 4;
-      const x2 = divs[i + 1].Bounds.x + noteXBuffer + camera.x + 3;
-      const y2 =
-        GetNotePositionOnLine(msr, nextNote.Line, note.Staff) + camera.y;
-      const midPointX = x2 - (x2 - x1) / 2;
-      const distanceX = x2 - x1;
-      const curveOffset = note.Line < 15 ? -15 : 15;
-      const curveStartOffset = note.Line < 15 ? -8 : 8;
-      // TODO: This is temporary, will get more complicated if we do things like
-      // collision avoidance probably
-      const curveHighPoint = note.Line < 15 ? -20 : 20;
-      const curveLowPoint = note.Line < 15 ? -17 : 17;
-      // TODO: Testing slurs/ties as svg path
-      const slurPath = `
-      m ${x1} ${y1} q ${distanceX / 2} ${curveHighPoint} ${distanceX} 0 q -${distanceX / 2} ${curveLowPoint} -${distanceX} 0 z
-      //      `;
-      context.fill(new Path2D(slurPath));
+      RenderTie(renderProps, note, nextNote);
     });
   });
 }

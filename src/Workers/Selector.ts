@@ -2,7 +2,7 @@ import { Barline } from "../Core/Barline.js";
 import { Camera } from "../Core/Camera.js";
 import { DivGroup } from "../Core/Division.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
-import { Note } from "../Core/Note.js";
+import { IsNoteHovered, Note } from "../Core/Note.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
 import { Message, MessageType } from "../Types/Message.js";
 import { UpdateNoteBounds } from "./NoteInput.js";
@@ -51,10 +51,11 @@ class Selector {
     elements.push(...msr.Dynamics);
     elements.push(msr.TimeSignature);
     elements.forEach((e: ISelectable) => {
-      if (e.IsHovered(x, y, cam) && e.Selected === false) {
-        e.Selected = true;
-        selectedElements.push(e);
         if (e.SelType === SelectableTypes.Note) {
+          if (IsNoteHovered(e as Note, x, y, cam) && e.Selected === false) {
+            e.Selected = true;
+            selectedElements.push(e);
+
           const n = e as Note;
           const m: Message = {
             messageData: {
@@ -72,9 +73,9 @@ class Selector {
             selectedElements.push(...tiedNotes);
           }
         }
+        }
         elem = e;
         this.Elements.set(msr, selectedElements);
-      }
     });
     return elem;
   }

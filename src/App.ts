@@ -148,8 +148,8 @@ class App {
   Hover(x: number, y: number): void {
     this.MouseX = x;
     this.MouseY = y;
-    x = x / this.Camera.Zoom;
-    y = y / this.Camera.Zoom;
+    x = x / (this.Camera.Zoom * this.Camera.ScaleFactor);
+    y = y / (this.Camera.Zoom * this.Camera.ScaleFactor);
     if (this.CanDragCamera && this.Camera) {
       if (this.Camera.DragCamera(x, y)) {
         this.Update(x, y);
@@ -180,8 +180,8 @@ class App {
 
   Input(x: number, y: number, shiftKey: boolean): void {
     // will move this code elsewhere, testing note input
-    x = x / this.Camera.Zoom;
-    y = y / this.Camera.Zoom;
+    x = x / (this.Camera.Zoom * this.Camera.ScaleFactor);
+    y = y / (this.Camera.Zoom * this.Camera.ScaleFactor);
 
     //TODO: NOT FINAL THIS IS PROTOTYPING NOT FINAL
     if (!this.NoteInput && this.Formatting) {
@@ -295,7 +295,7 @@ class App {
         const originalX = app.MouseX / app.Camera.Zoom;
         const ogY = app.MouseY / app.Camera.Zoom;
         app.Camera.SetZoom(nextZoom);
-        app.Context.setTransform(app.Camera.Zoom, 0, 0, app.Camera.Zoom, 0, 0);
+        app.Context.setTransform(app.Camera.Zoom * app.Camera.ScaleFactor, 0, 0, app.Camera.Zoom * app.Camera.ScaleFactor, 0.5, 0.5);
         const newX = app.MouseX / app.Camera.Zoom;
         const newY = app.MouseY / app.Camera.Zoom;
         app.Camera.x += newX - originalX;
@@ -536,12 +536,12 @@ class App {
 
   AlterZoom(num: number, mx: number, my: number, smooth: boolean = false): void {
     if (!smooth) {
-      const originalX = mx / this.Camera.Zoom;
-      const ogY = my / this.Camera.Zoom;
+      const originalX = mx / (this.Camera.Zoom * this.Camera.ScaleFactor);
+      const ogY = my / (this.Camera.Zoom * this.Camera.ScaleFactor);
       this.Camera.SetZoom(this.Camera.Zoom + num);
-      this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
-      const newX = mx / this.Camera.Zoom;
-      const newY = my / this.Camera.Zoom;
+      this.Context.setTransform(this.Camera.Zoom * this.Camera.ScaleFactor, 0, 0, this.Camera.Zoom * this.Camera.ScaleFactor, 0.5, 0.5);
+      const newX = mx / (this.Camera.Zoom * this.Camera.ScaleFactor);
+      const newY = my / (this.Camera.Zoom * this.Camera.ScaleFactor);
       this.Camera.x += newX - originalX;
       this.Camera.y += newY - ogY;
       this.Camera.oldX = this.Camera.x;
@@ -556,7 +556,7 @@ class App {
   SetCameraZoom(num: number): void {
     this.Camera.SetZoom(num);
     this.Camera.ZoomTarget = this.Camera.Zoom;
-    this.Context.setTransform(this.Camera.Zoom, 0, 0, this.Camera.Zoom, 0, 0);
+    this.Context.setTransform(this.Camera.Zoom * this.Camera.ScaleFactor, 0, 0, this.Camera.Zoom * this.Camera.ScaleFactor, 0.5, 0.5);
     this.Update(0, 0);
   }
 
