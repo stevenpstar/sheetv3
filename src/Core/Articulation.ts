@@ -14,6 +14,7 @@ enum ArticulationType {
   ACCENT = 1,
   STACCATO = 2,
   MARCATO = 3,
+  TENUTO = 4,
 }
 
 class Articulation {
@@ -111,6 +112,14 @@ function RenderArticulation(
         symbol = ArticulationSymbol.MarcatoAbove;
       }
       break;
+    case ArticulationType.TENUTO:
+      if (div.Direction == StemDirection.Up) {
+        symbol = ArticulationSymbol.TenutoBelow;
+      } else {
+        symbol = ArticulationSymbol.TenutoAbove;
+      }
+      break;
+
     default:
       symbol = ArticulationSymbol.AccentAbove;
   }

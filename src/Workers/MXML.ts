@@ -8,6 +8,7 @@ export enum XMLArticulationType {
   ACCENT = 1,
   STACCATO = 2,
   MARCATO = 3,
+  TENUTO = 4,
 }
 
 export type XMLClef = {
@@ -22,6 +23,7 @@ export type XMLStaff = {
 export type XMLNote = {
    ID: number;
    Beat: number;
+   Rest: boolean;
    Duration: number; // should be divided by 4 from XML value
    NoteName: string;
    Tied: boolean;
@@ -55,6 +57,8 @@ export type XMLMeasure = {
   Notes: XMLNote[],
   Articulations: XMLArticulation[],
   Dynamics: XMLDynamic[],
+  Anacrusis: boolean,
+  AnacrusisDuration: number,
 };
 
 export type XMLInstrument = {
@@ -139,7 +143,7 @@ function LoadFromMXML(score: XMLScore): LoadStructure {
             Beat: n.Beat,
             Duration: n.Duration,
             Line: line,
-            Rest: false,
+            Rest: n.Rest,
             Tied: n.Tied,
             Staff: n.Staff,
             Clef: clef_string,
@@ -185,6 +189,8 @@ function LoadFromMXML(score: XMLScore): LoadStructure {
         ShowTime: false,
         Articulations: lArticulations,
         Dynamics: lDynamics,
+        Anacrusis: m.Anacrusis,
+        AnacrusisDuration: m.AnacrusisDuration,
       };
       loadedStruct.Instruments[loadedStruct.Instruments.length-1].Measures.push(lmsr);
     });
@@ -205,6 +211,8 @@ function XMlArtToLArt(mxmlArtType: XMLArticulation): ArticulationType {
       return ArticulationType.STACCATO;
     case XMLArticulationType.MARCATO:
       return ArticulationType.MARCATO;
+    case XMLArticulationType.TENUTO:
+      return ArticulationType.TENUTO;
     default:
       return ArticulationType.NONE;
   }

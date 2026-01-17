@@ -1,3 +1,4 @@
+import { Measure } from "../entry";
 import { Staff } from "./Staff";
 
 interface HeightProps {
@@ -27,6 +28,7 @@ type Instrument = {
   Position: { x: number; y: number };
   Staff: StaffType;
   Staves: Staff[];
+  Measures: Measure[];
   //  HeightProps: HeightProps;
 }
 

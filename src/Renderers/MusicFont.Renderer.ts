@@ -102,6 +102,8 @@ enum ArticulationSymbol {
   StaccatoBelow = "\u{E4A3}",
   MarcatoAbove = "\u{E4AC}",
   MarcatoBelow = "\u{E4AD}",
+  TenutoAbove = "\u{E4A4}",
+  TenutoBelow = "\u{E4A5}",
 }
 
 function RenderSymbol(

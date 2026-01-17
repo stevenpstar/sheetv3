@@ -13,6 +13,7 @@ import {
   ResizeDivisions,
   DivisionMinWidth,
   DivisionMaxWidth,
+  ResizeDivisionsRevised,
 } from "./Division.js";
 import { Dynamic } from "./Dynamic.js";
 import { Instrument, StaffType } from "./Instrument.js";
@@ -41,6 +42,7 @@ interface MeasureProps {
   Message: (msg: Message) => void;
   Settings?: MeasureSettings;
   Barlines: Barline[];
+  IsAnacrusis: boolean;
 }
 
 // MEASURE TYPE
@@ -130,6 +132,7 @@ function CreateEmptyMeasure(): Measure {
 
 function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }, loading: boolean = false): Measure {
     let msr: Measure = CreateEmptyMeasure();
+    msr.IsAnacrusis = properties.IsAnacrusis;
     msr.Staves = properties.Staves;
     msr.PrevMeasure = properties.PrevMeasure;
     msr.NextMeasure = properties.NextMeasure;
@@ -240,7 +243,8 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
       v.Divisions = [];
       msr.Staves.forEach((s: Staff) => {
         v.Divisions.push(...CreateDivisions(msr, v.Notes, s.Num, v, i));
-        ResizeDivisions(msr, v.Divisions, s.Num);
+      //  ResizeDivisions(msr, v.Divisions, s.Num);
+        //ResizeDivisionsRevised(msr, s.Num);
         UpdateNoteBounds(msr, s.Num);
       });
     });
@@ -399,8 +403,8 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
 //      },
 //    )[0];
 //    const count = (1 * (msr.TimeSignature.top / msr.TimeSignature.bottom)) / lowestVal.Duration;
- //   return count * DivisionMinWidth;
-    return msr.Voices[msr.ActiveVoice].Divisions.length * DivisionMaxWidth;
+    return count * DivisionMinWidth;
+   // return msr.Voices[msr.ActiveVoice].Divisions.length * DivisionMaxWidth;
   }
 
   function ReturnSelectableElements(msr: Measure): ISelectable[] {

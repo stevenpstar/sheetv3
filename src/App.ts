@@ -16,7 +16,7 @@ import { Selector } from "./Workers/Selector.js";
 import { Instrument, StaffType } from "./Core/Instrument.js";
 import { KeyMapping, KeyPress } from "./Workers/Mappings.js";
 import { ISelectable, SelectableTypes } from "./Types/ISelectable.js";
-import { ResizeMeasuresOnPage, SetPagesAndLines } from "./Workers/Formatter.js";
+import { ResizeMeasuresOnPage, ResizeMeasuresOnPageRevised, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves, saveFile } from "./testsaves.js";
 import { ClearMessage, Message, MessageType } from "./Types/Message.js";
@@ -401,6 +401,7 @@ class App {
         this.NotifyCallback,
         false,
         [], // not loading so empty note array
+        false,
         this.Config.MeasureSettings,
       );
       // add measure number and barlines, will need to be reworked when
@@ -601,7 +602,7 @@ class App {
         lineHeight,
       );
       this.Sheet.Pages.forEach((page: Page) => {
-        ResizeMeasuresOnPage(
+        ResizeMeasuresOnPageRevised(
           this.Sheet,
           page,
           this.Camera,

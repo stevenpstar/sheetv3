@@ -1,9 +1,11 @@
 import { Camera } from "../Core/Camera.js";
+import { ResizeDivisionsRevised } from "../Core/Division.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
-import { CreateMeasureDivisions, GetMinimumWidth, Measure, RepositionMeasure, SetXOffset } from "../Core/Measure.js";
+import { Clef, CreateMeasureDivisions, GetMinimumWidth, Measure, RepositionMeasure, SetXOffset } from "../Core/Measure.js";
 import { MarginAdjuster, Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { ConfigSettings } from "../Types/Config.js";
+import { UpdateNoteBounds } from "./NoteInput.js";
 
 // TODO: Add pages when necessary but for now we do just lines
 function SetPagesAndLines(
@@ -75,6 +77,46 @@ function GetMaxWidth(page: Page, config: ConfigSettings): number {
   return maxWidth;
 }
 
+function ResizeMeasuresOnPageRevised(
+  sheet: Sheet,
+  page: Page,
+  cam: Camera,
+  config: ConfigSettings) {
+    const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right + page.Margins.left);
+    let minimumMeasureWidth = 100;
+    if (sheet.Measures.length > 1) {
+      minimumMeasureWidth = pageSize / 4;
+    }
+    sheet.Measures.forEach((msr: Measure, i: number) => {
+
+      let largestMeasureWidth = minimumMeasureWidth;
+
+      if (i === 0) {
+        // TODO: Temporary
+        msr.RenderClef = true;
+        msr.RenderKey = true;
+        msr.RenderTimeSig = true;
+        //
+        msr.Bounds.x = page.Bounds.x + page.Margins.left;
+      } else {
+        RepositionMeasure(msr, sheet.Measures[i-1]);
+      }
+
+      SetXOffset(msr);
+      msr.Bounds.width = ResizeDivisionsRevised(msr, 0);
+      if (msr.Bounds.width < minimumMeasureWidth) {
+        msr.Bounds.width = minimumMeasureWidth;
+      }
+      msr.Bounds.y = page.PageLines[0].LineBounds.y + sheet.Instruments[0].Position.y + (300 * sheet.Instruments[0].ID);
+      CreateMeasureDivisions(msr);
+      msr.Clefs.forEach((c: Clef) => {
+        c.SetBounds(msr, c.Staff);
+      });
+      msr.TimeSignature.SetBounds(msr);
+     // UpdateNoteBounds(msr, 0);
+    });
+  }
+
 function ResizeMeasuresOnPage(
   sheet: Sheet,
   page: Page,
@@ -96,6 +138,7 @@ function ResizeMeasuresOnPage(
       let instruments: Instrument[] = sheet.Instruments.filter((i: Instrument) => i.ID === m.InstrumentID);
       if (instruments.length === 0 || instruments.length > 1) {
         console.error("Instrument length: ", instruments.length, ". Needs to be 1");
+        return;
       }
       let instr = instruments[0];
      //   console.log("page: ", page.Number);
@@ -122,7 +165,7 @@ function ResizeMeasuresOnPage(
           if (calculatedWidth < maxWidth) {
             mWidth = calculatedWidth;
           } else {
-            mWidth = maxWidth;
+            mWidth = calculatedWidth;
           }
           m.Bounds.width = mWidth;
           CreateMeasureDivisions(m);
@@ -140,9 +183,10 @@ function ResizeMeasuresOnPage(
           if (calculatedWidth > maxWidth) {
             msrWidth = maxWidth;
           }
-          m.Bounds.width = msrWidth;
+          m.Bounds.width = calculatedWidth;
           RepositionMeasure(msrs[i], msrs[i - 1]);
           CreateMeasureDivisions(m);
+          m.Bounds.width = ResizeDivisionsRevised(m, 0);
         }
         m.Clefs.forEach((c) => {
           c.SetBounds(m, c.Staff);
@@ -168,4 +212,4 @@ function GetAdjuster(
   return adjuster;
 }
 
-export { SetPagesAndLines, ResizeMeasuresOnPage };
+export { SetPagesAndLines, ResizeMeasuresOnPage, ResizeMeasuresOnPageRevised };

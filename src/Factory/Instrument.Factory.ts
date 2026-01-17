@@ -87,6 +87,7 @@ const CreateDefaultMeasure = (
       new Barline(BarlinePos.START, BarlineType.SINGLE),
       new Barline(BarlinePos.END, BarlineType.END),
     ],
+    IsAnacrusis: false,
   };
   return CreateNewMeasure(props, id);
 };
@@ -108,6 +109,7 @@ const CreateMeasure = (
   callback: (msg: Message) => void,
   loading: boolean = false,
   notes: Note[] = [],
+  isAnacrusis: boolean = false,
   settings?: MeasureSettings,
 ): Measure => {
   const props: MeasureProps = {
@@ -131,6 +133,7 @@ const CreateMeasure = (
       new Barline(BarlinePos.START, BarlineType.SINGLE),
       new Barline(BarlinePos.END, BarlineType.SINGLE),
     ],
+    IsAnacrusis: isAnacrusis,
   };
   return CreateNewMeasure(props, runningId, loading);
 };

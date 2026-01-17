@@ -15,7 +15,7 @@ import {
   GetStaffMiddleLine,
 } from "./Staff.js";
 import { Stem } from "./Stem.js";
-import { GetLargestValues, ValueMap } from "./Values.js";
+import { GetLargestValues, NoteValues, ValueMap } from "./Values.js";
 import { Voice } from "./Voice.js";
 
 enum SubdivisionType {
@@ -123,6 +123,7 @@ function CreateDivisions(
       }
     });
     if (!msr.IsAnacrusis) {
+      console.log("Generating missiong divinsions for msr: ", msr);
       GenerateMissingBeatDivisions(msr, divisions, staff, voice, voiceIndex);
     }
 
@@ -298,6 +299,37 @@ function ResizeDivisions(
   divs.forEach((d: Division) => {
     total_div_width += d.Bounds.width;
   });
+}
+
+// returns total width
+function ResizeDivisionsRevised(
+  msr: Measure,
+  staff: number,
+): number {
+  let totalDivisionWidth = 0;
+  let prevDivX = 0;
+  let prevDivDuration = 0;
+  msr.Voices[msr.ActiveVoice].Notes.filter((n: Note) => n.Staff === staff)
+    .forEach((n: Note, i: number) => {
+      totalDivisionWidth += GetWidthByDuration(n.Duration);
+      if (i === 0) {
+        prevDivDuration = GetWidthByDuration(n.Duration);
+      }
+      let div = msr.Voices[msr.ActiveVoice].Divisions.find((d: Division) => d.Staff === staff && d.Beat === n.Beat);
+      if (!div) {
+        console.error("Divisions should exist before trying to resize them");
+        return 0;
+      }
+      div.Bounds.width = GetWidthByDuration(n.Duration);
+      if (i > 0) {
+        div.Bounds.x = prevDivX + GetWidthByDuration(prevDivDuration);
+        prevDivX = div.Bounds.x;
+        prevDivDuration = GetWidthByDuration(n.Duration);
+      }
+
+    });
+
+  return totalDivisionWidth;
 }
 
 function GenerateMissingBeatDivisions(
@@ -617,6 +649,37 @@ function IsRestOnBeat(beat: number, notes: Note[], staff: number): boolean {
   return restFound;
 }
 
+function GetWidthByDuration(noteDuration: number): number {
+  // values are hard coded for now, this implementation is not final.
+  // values will be a part of a config
+  // These values should likely be proportional to duration, they are not
+  const minDivWidth = 40;
+  const semiQuaver = 45;
+  const quaver = 50;
+  const crotchet = 60;
+  let divWidth = minDivWidth;
+
+  switch (noteDuration) {
+    case NoteValues.n1:
+      divWidth = crotchet;
+      break;
+    case NoteValues.n2:
+      divWidth = crotchet;
+      break;
+    case NoteValues.n4:
+      divWidth = crotchet;
+      break;
+    case NoteValues.n8:
+      divWidth = quaver;
+      break;
+    case NoteValues.n16:
+      divWidth = semiQuaver;
+      break;
+    default:
+  }
+  return divWidth;
+}
+
 export {
   Division,
   CreateDivisions,
@@ -630,4 +693,5 @@ export {
   GetDivisionGroups,
   DivisionMinWidth,
   DivisionMaxWidth,
+  ResizeDivisionsRevised
 };

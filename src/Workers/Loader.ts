@@ -43,17 +43,19 @@ interface lDynamic {
 };
 
 interface lMeasure {
-  InstrumentID: number;
-  Clefs: Clef[];
-  Staves: Staff[];
-  TimeSignature: { top: number; bottom: number };
-  KeySignature: string;
-  Notes: lNote[];
-  Bounds: Bounds;
-  ShowClef: boolean;
-  ShowTime: boolean;
+  InstrumentID: number,
+  Clefs: Clef[],
+  Staves: Staff[],
+  TimeSignature: { top: number; bottom: number },
+  KeySignature: string,
+  Notes: lNote[],
+  Bounds: Bounds,
+  ShowClef: boolean,
+  ShowTime: boolean,
   Articulations: lArticulation[],
   Dynamics: lDynamic[],
+  Anacrusis: boolean,
+  AnacrusisDuration: number,
 }
 
 interface lInstrument {
@@ -133,7 +135,11 @@ const LoadSheet = (
       callback,
       true,
       notes,
+      m.Anacrusis,
     );
+
+    // Set anacrusis duration
+    msr.AnacrusisDuration = m.AnacrusisDuration;
 
     let loadedArticulations: Articulation[] = [];
     m.Articulations.forEach((lArt: lArticulation) => {
@@ -165,6 +171,7 @@ const LoadSheet = (
     sheet.Measures.push(msr);
     CreateMeasureDivisions(msr);
   })});
+  console.log("sheet after load: ", sheet);
 };
 
 const SaveSheet = (sheet: Sheet): string => {
@@ -233,6 +240,8 @@ const SaveSheet = (sheet: Sheet): string => {
         ShowTime: m.RenderTimeSig,
         Articulations: articulations,
         Dynamics: dynamics,
+        Anacrusis: m.IsAnacrusis,
+        AnacrusisDuration: m.AnacrusisDuration,
       });
     });
   });
