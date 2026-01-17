@@ -82,38 +82,42 @@ function ResizeMeasuresOnPageRevised(
   page: Page,
   cam: Camera,
   config: ConfigSettings) {
+    if (sheet.Instruments.length === 0) { return; } // No instruments means no music
     const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right + page.Margins.left);
     let minimumMeasureWidth = 100;
-    if (sheet.Measures.length > 1) {
+    if (sheet.Instruments[0].Measures.length > 1) {
       minimumMeasureWidth = pageSize / 4;
     }
-    sheet.Measures.forEach((msr: Measure, i: number) => {
 
-      let largestMeasureWidth = minimumMeasureWidth;
+    sheet.Instruments.forEach((instrument: Instrument) => {
+      instrument.Measures.forEach((msr: Measure, i: number) => {
 
-      if (i === 0) {
-        // TODO: Temporary
-        msr.RenderClef = true;
-        msr.RenderKey = true;
-        msr.RenderTimeSig = true;
-        //
-        msr.Bounds.x = page.Bounds.x + page.Margins.left;
-      } else {
-        RepositionMeasure(msr, sheet.Measures[i-1]);
-      }
+        let largestMeasureWidth = minimumMeasureWidth;
 
-      SetXOffset(msr);
-      msr.Bounds.width = ResizeDivisionsRevised(msr, 0);
-      if (msr.Bounds.width < minimumMeasureWidth) {
-        msr.Bounds.width = minimumMeasureWidth;
-      }
-      msr.Bounds.y = page.PageLines[0].LineBounds.y + sheet.Instruments[0].Position.y + (300 * sheet.Instruments[0].ID);
-      CreateMeasureDivisions(msr);
-      msr.Clefs.forEach((c: Clef) => {
-        c.SetBounds(msr, c.Staff);
+        if (i === 0) {
+          // TODO: Temporary
+          msr.RenderClef = true;
+          msr.RenderKey = true;
+          msr.RenderTimeSig = true;
+          //
+          msr.Bounds.x = page.Bounds.x + page.Margins.left;
+        } else {
+          RepositionMeasure(msr, instrument.Measures[i-1]);
+        }
+
+        SetXOffset(msr);
+        msr.Bounds.width = ResizeDivisionsRevised(msr, 0);
+        if (msr.Bounds.width < minimumMeasureWidth) {
+          msr.Bounds.width = minimumMeasureWidth;
+        }
+        msr.Bounds.y = page.PageLines[0].LineBounds.y + sheet.Instruments[0].Position.y + (300 * sheet.Instruments[0].ID);
+        CreateMeasureDivisions(msr);
+        msr.Clefs.forEach((c: Clef) => {
+          c.SetBounds(msr, c.Staff);
+        });
+        msr.TimeSignature.SetBounds(msr);
+       // UpdateNoteBounds(msr, 0);
       });
-      msr.TimeSignature.SetBounds(msr);
-     // UpdateNoteBounds(msr, 0);
     });
   }
 
@@ -126,7 +130,7 @@ function ResizeMeasuresOnPage(
   const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
   page.PageLines.forEach((line) => {
     sheet.Instruments.forEach((instr: Instrument) => {
-      const msrs = sheet.Measures.filter(
+      const msrs = instr.Measures.filter(
         (m) => m.PageLine === line.Number && m.InstrumentID === instr.ID && m.Page === page,
       );
       let msrsLineWidth = 0;

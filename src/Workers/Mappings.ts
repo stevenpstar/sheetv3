@@ -100,7 +100,7 @@ function KeyPress(app: App, key: string, keyMaps: KeyMapping): void {
       app.GraceInput = !app.GraceInput;
       break;
     case keyMaps.change_timesig:
-      app.ChangeTimeSig();
+      //app.ChangeTimeSig();
       break;
     case keyMaps.add_dynamic:
       app.AddDynamic("f");

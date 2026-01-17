@@ -164,11 +164,13 @@ const LoadSheet = (
     });
     msr.Dynamics = loadedDynamics;
 
-    if (sheet.Measures.length > 0) {
-      msr.PrevMeasure = sheet.Measures[sheet.Measures.length - 1];
-      sheet.Measures[sheet.Measures.length - 1].NextMeasure = msr;
+    const instrument = sheet.Instruments.find((i: Instrument) => i.ID === ins.IDNo);
+    if (!instrument) { console.error("Instrument should exist at id: ", ins.IDNo); return; }
+    if (instrument.Measures.length > 0) {
+      msr.PrevMeasure = instrument.Measures[instrument.Measures.length - 1];
+      instrument.Measures[instrument.Measures.length - 1].NextMeasure = msr;
     }
-    sheet.Measures.push(msr);
+    instrument.Measures.push(msr);
     CreateMeasureDivisions(msr);
   })});
   console.log("sheet after load: ", sheet);
@@ -184,7 +186,7 @@ const SaveSheet = (sheet: Sheet): string => {
       Measures: [],
     };
     saved.Instruments.push(instr);
-    sheet.Measures.filter((fm: Measure) => fm.InstrumentID === i.ID).forEach((m: Measure) => {
+    i.Measures.filter((fm: Measure) => fm.InstrumentID === i.ID).forEach((m: Measure) => {
       let notes: lNote[] = [];
       m.Voices.forEach((v: Voice, i: number) => {
         v.Notes.forEach((n: Note) => {

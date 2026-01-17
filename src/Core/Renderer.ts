@@ -4,14 +4,15 @@ import { Bounds } from "../Types/Bounds.js";
 import { ConfigSettings } from "../Types/Config.js";
 import { RenderBarline } from "./Barline.js";
 import { Camera } from "./Camera.js";
+import { Instrument } from "./Instrument.js";
 import { GetBoundsWithOffset, Measure } from "./Measure.js";
 import { Page } from "./Page.js";
+import { Sheet } from "./Sheet.js";
 
 const Renderer = (
   c: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
-  measures: Measure[],
-  pages: Page[],
+  sheet: Sheet,
   mousePos: { x: number; y: number },
   cam: Camera,
   noteInput: boolean,
@@ -23,6 +24,10 @@ const Renderer = (
   optimise: boolean,
   debug: boolean
 ) => {
+
+  if (sheet.Instruments.length === 0) {
+    return;
+  }
   ctx.fillStyle = config.Theme.BackgroundColour;
 
   ctx.save();
@@ -33,49 +38,47 @@ const Renderer = (
   }
   ctx.restore();
   if (config.PageSettings?.RenderPage) {
-    pages.forEach((page) => {
-      RenderPage(page, c, ctx, cam, true, config, measures);
+    sheet.Pages.forEach((page) => {
+      RenderPage(page, c, ctx, cam, true, config, sheet.Instruments[0].Measures);
     });
   }
   ctx.fillStyle = config.Theme.NoteElements;
-
-  measures.forEach((m: Measure, i: number) => {
-    if (optimise) {
-      if (GetBoundsWithOffset(m).Intersects(renderBounds) === false) {
-        return;
+  sheet.Instruments.forEach((instrument: Instrument) => {
+    instrument.Measures.forEach((m: Measure, i: number) => {
+      if (optimise) {
+        if (GetBoundsWithOffset(m).Intersects(renderBounds) === false) {
+          return;
+        }
       }
-    }
-      const renderProps = {
-      context: ctx,
-      camera: cam,
-      theme: config.Theme,
-    };
-    const lastMeasure =
-      i ===
-      measures.filter((msr: Measure) => m.InstrumentID === msr.InstrumentID)
-        .length -
-        1;
+        const renderProps = {
+        context: ctx,
+        camera: cam,
+        theme: config.Theme,
+      };
+      const lastMeasure =
+        i ===
+        instrument.Measures.filter((msr: Measure) => m.InstrumentID === msr.InstrumentID)
+          .length -
+          1;
 
-    RenderMeasure(
-      m,
-      renderProps,
-      mousePos,
-      lastMeasure,
-      noteInput,
-      i,
-      restInput,
-      noteValue,
-      config,
-      debug
-    );
-    if (i > 0) {
-      const instrMsrs = measures.filter(
-        (msr: Measure) => m.InstrumentID === msr.InstrumentID,
+      RenderMeasure(
+        m,
+        renderProps,
+        mousePos,
+        lastMeasure,
+        noteInput,
+        i,
+        restInput,
+        noteValue,
+        config,
+        debug
       );
-      RenderBarline(renderProps, instrMsrs[instrMsrs.length - 1], m, cam);
-    }
-    RenderBarline(renderProps, null, m, cam);
-    RenderBarline(renderProps, m, null, cam);
+      if (i > 0) {
+        RenderBarline(renderProps, instrument.Measures[instrument.Measures.length - 1], m, cam);
+      }
+      RenderBarline(renderProps, null, m, cam);
+      RenderBarline(renderProps, m, null, cam);
+    });
   });
 
   if (optimise && debug) {

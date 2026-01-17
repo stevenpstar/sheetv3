@@ -13,13 +13,11 @@ import { Staff } from "./Staff.js";
 interface SheetProps {
   Instruments: Instrument[];
   KeySignature: { key: string; measureNo: number }[];
-  Measures: Measure[];
   Pages: Page[];
 }
 type Sheet = {
   Instruments: Instrument[];
   KeySignature: { key: string; measureNo: number }[];
-  Measures: Measure[];
   Pages: Page[];
   // Sheet / Score config
   // Title/Composer/Metadata
@@ -29,7 +27,6 @@ function CreateEmptySheet(): Sheet {
   return {
     Instruments: [],
     KeySignature: [],
-    Measures: [],
     Pages: [],
   };
 }
@@ -37,22 +34,24 @@ function CreateEmptySheet(): Sheet {
     let sheet: Sheet = CreateEmptySheet();
     sheet.Instruments = properties.Instruments;
     sheet.KeySignature = properties.KeySignature;
-    sheet.Measures = properties.Measures;
     sheet.Pages = properties.Pages;
     return sheet;
   }
 
   function SheetInputHover(sheet: Sheet, x: number, y: number, camera: Camera): void {
-    sheet.Measures.forEach((m: Measure) => {
-      if (GetBoundsWithOffset(m).IsHovered(x, y, camera)) {
-        m.Voices[m.ActiveVoice].Divisions.forEach((d: Division) => {
-          if (d.Bounds.IsHovered(x, y, camera)) {
-            m.Staves.forEach((s: Staff) => {
-              UpdateNoteBounds(m, s.Num);
-            });
-          }
-        });
-      }
+    sheet.Instruments.forEach((i: Instrument) => {
+      i.Measures.forEach((m: Measure) => {
+        if (GetBoundsWithOffset(m).IsHovered(x, y, camera)) {
+          m.Voices[m.ActiveVoice].Divisions.forEach((d: Division) => {
+            if (d.Bounds.IsHovered(x, y, camera)) {
+              m.Staves.forEach((s: Staff) => {
+                UpdateNoteBounds(m, s.Num);
+              });
+            }
+          });
+        }
+      });
+
     });
   }
 
@@ -69,23 +68,24 @@ function CreateDefaultSheet(
   const sProps: SheetProps = {
     Instruments: [],
     KeySignature: [{ key: "CMaj/Amin", measureNo: 0 }],
-    Measures: [],
     Pages: [newPage],
   };
 
   const page = sProps.Pages[0];
 
   sProps.Instruments.push(CreateInstrument(20, config, 0));
-  sProps.Measures.push(
-    CreateDefaultMeasure(
-      { count: 0 },
-      sProps.Instruments[0],
-      page,
-      camera,
-      callback,
-      config.MeasureSettings,
-    ),
-  );
+  sProps.Instruments.forEach((i: Instrument) => {
+    i.Measures.push(
+      CreateDefaultMeasure(
+        { count: 0 },
+        sProps.Instruments[0],
+        page,
+        camera,
+        callback,
+        config.MeasureSettings,
+      ),
+    );
+  });
 
   return CreateSheetFromProperties(sProps);
 }

@@ -1,7 +1,7 @@
 import { CreateDefaultSheet, Sheet, SheetInputHover } from "./Core/Sheet.js";
 import { Renderer } from "./Core/Renderer.js";
 import { CreateMeasure } from "./Factory/Instrument.Factory.js";
-import { ChangeTimeSignature, Clef, CreateMeasureDivisions, DeleteSelectedMeasure, Division, GetBoundsWithOffset, GetLineHovered, Measure, RecalculateBarlines, RepositionMeasure } from "./Core/Measure.js";
+import { ChangeTimeSignature, Clef, CreateMeasureDivisions, DeleteSelectedMeasure, Division, GetBoundsWithOffset, GetLineHovered, Measure, RecalculateBarlines } from "./Core/Measure.js";
 import { Bounds } from "./Types/Bounds.js";
 import { Note } from "./Core/Note.js";
 import { Camera } from "./Core/Camera.js";
@@ -13,10 +13,10 @@ import {
   UpdateNoteBounds,
 } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
-import { Instrument, StaffType } from "./Core/Instrument.js";
+import { Instrument } from "./Core/Instrument.js";
 import { KeyMapping, KeyPress } from "./Workers/Mappings.js";
 import { ISelectable, SelectableTypes } from "./Types/ISelectable.js";
-import { ResizeMeasuresOnPage, ResizeMeasuresOnPageRevised, SetPagesAndLines } from "./Workers/Formatter.js";
+import { ResizeMeasuresOnPageRevised, SetPagesAndLines } from "./Workers/Formatter.js";
 import { LoadSheet, SaveSheet } from "./Workers/Loader.js";
 import { allSaves, saveFile } from "./testsaves.js";
 import { ClearMessage, Message, MessageType } from "./Types/Message.js";
@@ -188,9 +188,10 @@ class App {
       this.SelectLiner(x, y);
     }
 
-    const msrOver: Measure | undefined = this.Sheet.Measures.find(
-      (msr: Measure) => GetBoundsWithOffset(msr).IsHovered(x, y, this.Camera),
-    );
+    let msrOver: Measure | undefined = undefined;
+    this.Sheet.Instruments.forEach((instrument: Instrument) => {
+      msrOver = instrument.Measures.find((measure: Measure) => GetBoundsWithOffset(measure).IsHovered(x, y, this.Camera));
+    });
 
     if (msrOver === undefined) {
       if (!shiftKey) {
@@ -269,8 +270,7 @@ class App {
     Renderer(
       this.Canvas,
       this.Context,
-      this.Sheet.Measures,
-      this.Sheet.Pages,
+      this.Sheet,
       mousePos,
       this.Camera,
       this.NoteInput,
@@ -310,19 +310,20 @@ class App {
 
     if (this.Playing) {
       this.Update(0, 0);
+      if (this.Sheet.Instruments.length === 0) { return; }
       // render code should not be in this class
-      if (this.PlaybackMeasureIndex >= this.Sheet.Measures.length) {
+      if (this.PlaybackMeasureIndex >= this.Sheet.Instruments[0].Measures.length) {
         this.Playing = false;
         return;
       }
-      let msr = this.Sheet.Measures[this.PlaybackMeasureIndex];
+      let msr = this.Sheet.Instruments[0].Measures[this.PlaybackMeasureIndex];
       let time_diff = this.AudioContext.currentTime - this.PlaybackTimer;
       let measureTime = msr.TimeSignature.top / msr.TimeSignature.bottom * this.PlaybackTempo / 60.0;
       if (time_diff > measureTime) {
         this.PlaybackTimer += measureTime;
-        if (this.PlaybackMeasureIndex < this.Sheet.Measures.length) {
+        if (this.PlaybackMeasureIndex < this.Sheet.Instruments[0].Measures.length) {
           this.PlaybackMeasureIndex += 1;
-          msr = this.Sheet.Measures[this.PlaybackMeasureIndex];
+          msr = this.Sheet.Instruments[0].Measures[this.PlaybackMeasureIndex];
           if (!msr) {
             this.Playing = false;
             this.PlaybackMeasureIndex = 0;
@@ -341,17 +342,17 @@ class App {
 
       if (msr) {
 
-        let tracker_x = this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.x;
-        let msr_width = this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.width;
+        let tracker_x = this.Sheet.Instruments[0].Measures[this.PlaybackMeasureIndex].Bounds.x;
+        let msr_width = this.Sheet.Instruments[0].Measures[this.PlaybackMeasureIndex].Bounds.width;
         let percentage_traveled = time_diff / measureTime * 100;
         let percentage_across = (percentage_traveled / 100) * msr_width;
         tracker_x = msr.Bounds.x + msr.XOffset + percentage_across + this.Camera.x;
         this.Context.fillStyle = "rgba(149,184,209, 0.8)";
         this.Context.fillRect(
           tracker_x - 2.5,
-          this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.y + this.Camera.y,
+          this.Sheet.Instruments[0].Measures[this.PlaybackMeasureIndex].Bounds.y + this.Camera.y,
           5,
-          this.Sheet.Measures[this.PlaybackMeasureIndex].Bounds.height
+          this.Sheet.Instruments[0].Measures[this.PlaybackMeasureIndex].Bounds.height
         );
         this.Context.fillStyle = "black";
 
@@ -370,10 +371,10 @@ class App {
   }
 
   AddMeasure(): void {
-    const prevMsr = this.Sheet.Measures[this.Sheet.Measures.length - 1];
+    const prevMsr = this.Sheet.Instruments[0].Measures[this.Sheet.Instruments[0].Measures.length - 1];
     let x = 0;
     this.Sheet.Instruments.forEach((i) => {
-      const instrMeasures = this.Sheet.Measures.filter(
+      const instrMeasures = this.Sheet.Instruments[0].Measures.filter(
         (m: Measure) => m.InstrumentID === i.ID,
       );
       const previousMeasure = instrMeasures[instrMeasures.length - 1];
@@ -407,13 +408,13 @@ class App {
       // add measure number and barlines, will need to be reworked when
       // inserting measures is added
       newMsr.Num =
-        this.Sheet.Measures.filter((m: Measure) => m.InstrumentID === i.ID).length +
+        this.Sheet.Instruments[0].Measures.filter((m: Measure) => m.InstrumentID === i.ID).length +
         1;
       newMsr.Barlines[1].Type = BarlineType.END;
       if (newMsr.PrevMeasure.Barlines[1].Type === BarlineType.END) {
         newMsr.PrevMeasure.Barlines[1].Type = BarlineType.SINGLE;
       }
-      this.Sheet.Measures.push(newMsr);
+      this.Sheet.Instruments[0].Measures.push(newMsr);
       previousMeasure.NextMeasure = newMsr;
       this.ResizeMeasures(this.Sheet);
     });
@@ -457,7 +458,7 @@ class App {
       }
       this.StartDragY = y;
       // TODO: Super SCUFFED TEST PROTOTYPE NOT FINAL
-      this.Sheet.Measures.forEach((m) => {
+      this.Sheet.Instruments[0].Measures.forEach((m) => {
         if (m.PageLine === this.LineNumber) {
           m.Bounds.y = this.LinerBounds.y;
         }
@@ -467,7 +468,7 @@ class App {
   }
 
   DragNote(x: number, y: number): void {
-    const msrOver = this.Sheet.Measures.find((m) =>
+    const msrOver = this.Sheet.Instruments[0].Measures.find((m) =>
       GetBoundsWithOffset(m).IsHovered(x, y, this.Camera),
     );
 
@@ -570,20 +571,10 @@ class App {
     this.Camera.oldY = this.Camera.y;
     this.Update(0, 0);
   }
-
-  // TEST FUNCTION
-  ResizeFirstMeasure(): void {
-    //    this.Sheet.Measures[0].Bounds.width += 50;
-    CreateMeasureDivisions(this.Sheet.Measures[0]);
-    for (let i = 1; i < this.Sheet.Measures.length; i++) {
-      RepositionMeasure(this.Sheet.Measures[i], this.Sheet.Measures[i - 1]);
-    }
-    this.Update(0, 0);
-  }
-
+  
   ResizeMeasures(sheet: Sheet): void {
     sheet.Instruments.forEach((i: Instrument) => {
-        const measures = sheet.Measures.filter(
+        const measures = i.Measures.filter(
           (m: Measure) => m.InstrumentID === i.ID,
         );
         if (measures.length == 0) {
@@ -716,9 +707,10 @@ class App {
   }
 
   SelectById(id: number): ISelectable {
-    const sel = this.Selector.SelectById(this.Sheet.Measures, id);
-    this.Update(0, 0);
-    return sel;
+   // const sel = this.Selector.SelectById(this.Sheet.Measures, id);
+   // this.Update(0, 0);
+   // return sel;
+   return null;
   }
 
   ToggleFormatting(): void {
@@ -763,7 +755,9 @@ class App {
 
   LoadSheet(sheet: string): void {
     //Clear measures
-    this.Sheet.Measures = [];
+    this.Sheet.Instruments.forEach((i: Instrument) => {
+      i.Measures = [];
+    });
 
     LoadSheet(
       this.Sheet,
@@ -778,8 +772,10 @@ class App {
   }
 
   LoadFromMXML(score: XMLScore): void {
+    this.Sheet.Instruments.forEach((i: Instrument) => {
+      i.Measures = [];
+    });
 
-    this.Sheet.Measures = [];
     let loadStruct = LoadFromMXML(score);
     this.LoadSheet(JSON.stringify(loadStruct));
     this.ResizeMeasures(this.Sheet);
@@ -893,7 +889,7 @@ class App {
     }
     const newStaff = CreateStaff(instr.Staves.length);
     instr.Staves.push(newStaff);
-    const msrs: Measure[] = this.Sheet.Measures.filter(
+    const msrs: Measure[] = instr.Measures.filter(
       (m) => m.InstrumentID === instr.ID,
     );
     msrs.forEach((m) => {
@@ -943,14 +939,16 @@ class App {
     this.SaveToUndoStack();
   }
 
-  ChangeTimeSig(): void {
-    const msr1 = this.Sheet.Measures[0];
-    if (msr1) {
-      ChangeTimeSignature(msr1, 3, 4, false);
-    }
-
-    this.SaveToUndoStack();
-  }
+  // TODO: This function was a test, keeping it here as there is a keybind (also
+  // commented out) - need to fully implement this functionality
+//  ChangeTimeSig(): void {
+//    const msr1 = this.Sheet.Measures[0];
+//    if (msr1) {
+//      ChangeTimeSignature(msr1, 3, 4, false);
+//    }
+//
+//    this.SaveToUndoStack();
+//  }
 
   AddDynamic(dynString: string): void {
     for (let [msr, elem] of this.Selector.Elements) {
@@ -984,11 +982,13 @@ class App {
   }
 
   CycleActiveVoice(): void {
-    this.Sheet.Measures.forEach((m: Measure) => {
-      m.ActiveVoice += 1;
-      if (m.ActiveVoice > 3) {
-        m.ActiveVoice = 0;
-      }
+    this.Sheet.Instruments.forEach((instrument: Instrument) => {
+      instrument.Measures.forEach((m: Measure) => {
+        m.ActiveVoice += 1;
+        if (m.ActiveVoice > 3) {
+          m.ActiveVoice = 0;
+        }
+      });
     });
   }
 

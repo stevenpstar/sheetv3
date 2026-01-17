@@ -22,6 +22,7 @@ const CreateDefaultPiano = (id: number): Instrument => {
     Position: { x: 0, y: 5 },
     Staff: StaffType.Grand,
     Staves: [CreateStaff(0), CreateStaff(1)],
+    Measures: [],
   };
 
   return defaultPiano;
@@ -47,6 +48,7 @@ function CreateInstrument(y: number, config: ConfigSettings, id: number): Instru
     Position: { x: 0, y: y },
     Staff: staff,
     Staves: [CreateStaff(0)],
+    Measures: [],
   };
 
   return instr;
