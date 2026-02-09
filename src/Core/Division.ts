@@ -13,9 +13,10 @@ import {
   GetStaffHeight,
   GetStaffHeightUntil,
   GetStaffMiddleLine,
+  Staff,
 } from "./Staff.js";
 import { Stem } from "./Stem.js";
-import { GetLargestValues, NoteValues, ValueMap } from "./Values.js";
+import { GetLargestValues, NoteValues } from "./Values.js";
 import { Voice } from "./Voice.js";
 
 enum SubdivisionType {
@@ -123,7 +124,6 @@ function CreateDivisions(
       }
     });
     if (!msr.IsAnacrusis) {
-      console.log("Generating missiong divinsions for msr: ", msr);
       GenerateMissingBeatDivisions(msr, divisions, staff, voice, voiceIndex);
     }
 
@@ -143,6 +143,8 @@ function CreateDivisions(
         clef,
       );
     });
+  ResizeDivisionsRevised(msr);
+  RepositionDivisionsInMeasure(msr);
   UpdateNoteBounds(msr, staff);
   return divisions;
 }
@@ -259,7 +261,7 @@ function CreateBeatBounds(
   // single height
   const maxDuration = msr.TimeSignature.GetMaxDuration();
   const durationPercentage = duration / maxDuration;
-  const width = msr.Bounds.width * durationPercentage;
+  const width = GetWidthByDuration(duration);//msr.Bounds.width * durationPercentage;
   const height = GetStaffHeight(msr.Staves, staff);
   const x =
     msr.Bounds.x +
@@ -274,62 +276,113 @@ function ResizeDivisions(
   divisions: Division[],
   staff: number,
 ): void {
-  const divs = divisions.filter((d) => d.Staff === staff);
-  divs.sort((a: Division, b: Division) => {
-    return a.Beat - b.Beat;
-  });
-  const msr_value = msr.TimeSignature.top * (1.0 / msr.TimeSignature.bottom);
-  divs.forEach((div: Division, i: number) => {
-    div.Bounds.width = div.Duration * msr.Bounds.width;
-    //div.Bounds.width = (div.Duration / msr_value) * msr.Bounds.width;
-    if (i > 0) {
-      const lastDivEnd = divs[i - 1].Bounds.x + divs[i - 1].Bounds.width;
-      if (lastDivEnd !== div.Bounds.x) {
-        div.Bounds.x = lastDivEnd;
-      }
-    }
-
-    if (i === 0 && divs.length === 1) {
-      div.Bounds.width = msr.Bounds.width;
-    }
-  });
-
-  // TODO: Checking that all divs == measure bounds width
-  let total_div_width = 0.0;
-  divs.forEach((d: Division) => {
-    total_div_width += d.Bounds.width;
-  });
+//  const divs = divisions.filter((d) => d.Staff === staff);
+//  divs.sort((a: Division, b: Division) => {
+//    return a.Beat - b.Beat;
+//  });
+//  const msr_value = msr.TimeSignature.top * (1.0 / msr.TimeSignature.bottom);
+//  divs.forEach((div: Division, i: number) => {
+//    div.Bounds.width = div.Duration * msr.Bounds.width;
+//    //div.Bounds.width = (div.Duration / msr_value) * msr.Bounds.width;
+//    if (i > 0) {
+//      const lastDivEnd = divs[i - 1].Bounds.x + divs[i - 1].Bounds.width;
+//      if (lastDivEnd !== div.Bounds.x) {
+//        div.Bounds.x = lastDivEnd;
+//      }
+//    }
+//
+//    if (i === 0 && divs.length === 1) {
+//      div.Bounds.width = msr.Bounds.width;
+//    }
+//  });
+//
+//  // TODO: Checking that all divs == measure bounds width
+//  let total_div_width = 0.0;
+//  divs.forEach((d: Division) => {
+//    total_div_width += d.Bounds.width;
+//  });
 }
 
 // returns total width
+// TODO: Separate function, but divisions need to be repositioned/resized based
+// on largest measure on staff/between instruments.
 function ResizeDivisionsRevised(
   msr: Measure,
-  staff: number,
 ): number {
+  let startingPosition = msr.Bounds.x + msr.XOffset;
   let totalDivisionWidth = 0;
-  let prevDivX = 0;
   let prevDivDuration = 0;
-  msr.Voices[msr.ActiveVoice].Notes.filter((n: Note) => n.Staff === staff)
-    .forEach((n: Note, i: number) => {
+  let largestStaff = 0;
+  let largestStaffWidth = 0;
+  msr.FormattingData.BeatPositions = [];
+  msr.Staves.forEach((s: Staff) => {
+    let staffWidth = 0;
+    msr.Voices[msr.ActiveVoice].Divisions.filter((n: Division) => n.Staff === s.Num)
+      .forEach((div: Division, i: number) => {
+        staffWidth += GetWidthByDuration(div.Duration);
+      });
+      if (staffWidth > largestStaffWidth) {
+        largestStaffWidth = staffWidth;
+        largestStaff = s.Num;
+      }
+  });
+  totalDivisionWidth = 0;
+  prevDivDuration = 0;
+  let beatPosition = startingPosition;
+  msr.Voices[msr.ActiveVoice].Divisions.filter((n: Division) => n.Staff === largestStaff)
+    .forEach((n: Division, i: number) => {
+      msr.FormattingData.BeatPositions.push( {
+        Beat: n.Duration,
+        Position: beatPosition,
+      } );
       totalDivisionWidth += GetWidthByDuration(n.Duration);
+      beatPosition += GetWidthByDuration(n.Duration);
       if (i === 0) {
         prevDivDuration = GetWidthByDuration(n.Duration);
       }
-      let div = msr.Voices[msr.ActiveVoice].Divisions.find((d: Division) => d.Staff === staff && d.Beat === n.Beat);
+      let div = msr.Voices[msr.ActiveVoice].Divisions
+        .find((d: Division) => d.Staff === largestStaff && d.Beat === n.Beat);
       if (!div) {
         console.error("Divisions should exist before trying to resize them");
         return 0;
       }
       div.Bounds.width = GetWidthByDuration(n.Duration);
-      if (i > 0) {
-        div.Bounds.x = prevDivX + GetWidthByDuration(prevDivDuration);
-        prevDivX = div.Bounds.x;
-        prevDivDuration = GetWidthByDuration(n.Duration);
-      }
-
     });
 
-  return totalDivisionWidth;
+  return totalDivisionWidth + 30;
+}
+
+// This is only accounting for active voice so it's going to be crazy when
+// switching, things should be positioned by largest measure/divisions voice.
+function RepositionDivisionsInMeasure(msr: Measure): void {
+
+  let beatPositions: Array<number> = [];
+  let largestStaff: number = 0; 
+  let largestWidth = 0;
+  let smallestDuration: number = NoteValues.n32;
+  msr.Staves.forEach((s: Staff) => {
+    let width = 0;
+    msr.Voices[msr.ActiveVoice].Divisions.filter((n: Division) => n.Staff === s.Num).forEach((div: Division) => {
+      width += GetWidthByDuration(div.Duration);
+    });
+    if (width > largestWidth) {
+      largestStaff = s.Num;
+      largestWidth = width;
+    }
+  });
+  msr.Staves.forEach((s: Staff) => {
+    let divisions = msr.Voices[msr.ActiveVoice].Divisions.filter((d: Division) => d.Staff === s.Num);
+    let xPos = msr.Bounds.x + msr.XOffset;
+    divisions.forEach((d: Division) => {
+      d.Bounds.x = xPos;
+      // TODO: Subdivisions should not always equal the same as division, this
+      // is temporary to fix bug while reworking formatting
+      d.Subdivisions.forEach((sd: Subdivision) => {
+        sd.Bounds.x = d.Bounds.x;
+      });
+      xPos += d.Bounds.width;
+    })
+  })
 }
 
 function GenerateMissingBeatDivisions(
@@ -367,7 +420,7 @@ function GenerateMissingBeatDivisions(
           divisionsToAdd.push({
             Beat: sBeat,
             Duration: v,
-            Bounds: CreateBeatBounds(msr, sBeat, v, div.Staff),
+            Bounds: new Bounds(0, 0, 0, 0),//CreateBeatBounds(msr, sBeat, v, div.Staff),
             Staff: div.Staff,
             StaffGroup: notesOnDiv[0].StaffGroup,
             Direction: StemDirection.Up,
@@ -402,7 +455,6 @@ function GenerateMissingBeatDivisions(
       Voice: voiceIndex,
       Alter: 0,
     };
-    console.log("Adding rest at beat: ", div.Beat);
     AddNote(msr, CreateNewNote(restProps), false, voice);
   });
 
@@ -435,7 +487,7 @@ function GenerateMissingBeatDivisions(
       lastDivisionsToAdd.push({
         Beat: sBeat,
         Duration: v,
-        Bounds: CreateBeatBounds(msr, sBeat, v, lastDiv.Staff),
+        Bounds: new Bounds(0, 0, 0, 0),//CreateBeatBounds(msr, sBeat, v, lastDiv.Staff),
         Staff: staff,
       });
       sBeat += v * msr.TimeSignature.bottom;
@@ -464,7 +516,6 @@ function GenerateMissingBeatDivisions(
       Voice: msr.ActiveVoice,
       Alter: 0,
     };
-    console.log("final pass adding rest to beat: ", div.Beat);
     AddNote(msr, CreateNewNote(restProps));
   });
 }
@@ -653,10 +704,11 @@ function GetWidthByDuration(noteDuration: number): number {
   // values are hard coded for now, this implementation is not final.
   // values will be a part of a config
   // These values should likely be proportional to duration, they are not
-  const minDivWidth = 40;
-  const semiQuaver = 45;
-  const quaver = 50;
-  const crotchet = 60;
+  const minDivWidth = 30;
+  const semiQuaver = 30;
+  const demiSemiQuaver = 30;
+  const quaver = 35;
+  const crotchet = 80;
   let divWidth = minDivWidth;
 
   switch (noteDuration) {
@@ -675,8 +727,14 @@ function GetWidthByDuration(noteDuration: number): number {
     case NoteValues.n16:
       divWidth = semiQuaver;
       break;
+    case NoteValues.n32:
+      console.log("demisemi!");
+      divWidth = demiSemiQuaver;
+      break;
     default:
+      divWidth = crotchet;
   }
+  divWidth = 80;
   return divWidth;
 }
 
@@ -693,5 +751,6 @@ export {
   GetDivisionGroups,
   DivisionMinWidth,
   DivisionMaxWidth,
-  ResizeDivisionsRevised
+  ResizeDivisionsRevised,
+  RepositionDivisionsInMeasure,
 };

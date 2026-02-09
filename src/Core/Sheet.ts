@@ -5,6 +5,7 @@ import {
 import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { ConfigSettings, GetBoundsWithOffset, Message } from "../entry.js";
 import { Camera } from "./Camera.js";
+import { RepositionDivisionsInMeasure, ResizeDivisionsRevised } from "./Division.js";
 import { Instrument } from "./Instrument.js";
 import { Division, Measure } from "./Measure.js";
 import { Page } from "./Page.js";
@@ -42,10 +43,12 @@ function CreateEmptySheet(): Sheet {
     sheet.Instruments.forEach((i: Instrument) => {
       i.Measures.forEach((m: Measure) => {
         if (GetBoundsWithOffset(m).IsHovered(x, y, camera)) {
+          ResizeDivisionsRevised(m);
+          RepositionDivisionsInMeasure(m);
           m.Voices[m.ActiveVoice].Divisions.forEach((d: Division) => {
             if (d.Bounds.IsHovered(x, y, camera)) {
               m.Staves.forEach((s: Staff) => {
-                UpdateNoteBounds(m, s.Num);
+                //UpdateNoteBounds(m, s.Num);
               });
             }
           });

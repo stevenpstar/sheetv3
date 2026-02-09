@@ -15,7 +15,7 @@ function CreateStaff(num: number): Staff {
     Num: num,
     Buffer: num * 1000,
     TopLine: 5,
-    BotLine: 35,
+    BotLine: 30,
     MidLine: 15,
   };
 

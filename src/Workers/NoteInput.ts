@@ -1,8 +1,11 @@
+import { sheet } from "../../dist/entry.mjs";
 import { Camera } from "../Core/Camera.js";
 import { GetNoteClefType } from "../Core/Clef.js";
 import {
   DivGroup,
   GetDivisionGroups,
+  RepositionDivisionsInMeasure,
+  ResizeDivisionsRevised,
   Subdivision,
   SubdivisionType,
 } from "../Core/Division.js";
@@ -10,6 +13,7 @@ import { CreateFlags } from "../Core/Flag.js";
 import { StaffType } from "../Core/Instrument.js";
 import { AddNote, ClearRestNotes, CreateMeasureDivisions, Division, GetLineHovered, GetNotePositionOnLine, Measure } from "../Core/Measure.js";
 import { CreateNewNote, Note, NoteProps, SetTiedStartEnd, TupleDetails } from "../Core/Note.js";
+import { Sheet } from "../Core/Sheet.js";
 import { GetStaffMiddleLine, Staff } from "../Core/Staff.js";
 import { GetLargestValues } from "../Core/Values.js";
 import { Voice } from "../Core/Voice.js";
@@ -22,12 +26,14 @@ import {
 import { CreateStems } from "../Renderers/Stem.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
+import { ResizeMeasuresOnPageRevised } from "./Formatter.js";
 
 const noteXBuffer = 9;
 
 // added for automatic/generated notes from external UIs.
 // eg. Generating a random rhythm in the music trainer app
 function AddNoteOnMeasure(
+  sheet: Sheet,
   msr: Measure,
   noteValue: number,
   line: number,
@@ -39,6 +45,7 @@ function AddNoteOnMeasure(
     (sd: Subdivision) => sd.Type === SubdivisionType.NOTE,
   );
   InputNote(
+    sheet,
     msr,
     noteValue,
     beat,
@@ -50,6 +57,7 @@ function AddNoteOnMeasure(
 }
 
 function InputOnMeasure(
+  sheet: Sheet,
   msr: Measure,
   noteValue: number,
   x: number,
@@ -69,6 +77,8 @@ function InputOnMeasure(
     return sd.Bounds.IsHovered(x, y, cam);
   });
   if (!subDivision) {
+    console.log("beatOver div:");
+    console.log(beatOver);
     console.error("Subdivision on beat not found");
     return;
   }
@@ -76,10 +86,11 @@ function InputOnMeasure(
  // if (msr.Instrument.Staff === StaffType.Rhythm) {
  //   line.num = 15;
  // }
-  InputNote(msr, noteValue, beatOver, subDivision, line, rest, grace);
+  InputNote(sheet, msr, noteValue, beatOver, subDivision, line, rest, grace);
 }
 
 function InputNote(
+  sheet: Sheet,
   msr: Measure,
   noteValue: number,
   division: Division,
@@ -137,6 +148,7 @@ function InputNote(
     }
   }
   RecreateDivisionGroups(msr);
+// // const _ = ResizeMeasuresOnPageRevised(sheet, sheet.Pages[0], 
   CreateMeasureDivisions(msr);
   RecreateStemAndBeams(msr);
 }
@@ -198,7 +210,7 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
         );
         var subDivBuffer = 0;
         if (noteSubDiv) {
-          subDivBuffer = noteSubDiv.Bounds.x - div.Bounds.x;
+          subDivBuffer = 0;//noteSubDiv.Bounds.x - div.Bounds.x;
         }
         div.NoteXBuffer = dynNoteXBuffer + subDivBuffer;
 
@@ -555,4 +567,5 @@ export {
   CreateTuplet,
   AddNoteOnMeasure,
   RecreateDivisionGroups,
+  RecreateStemAndBeams
 };

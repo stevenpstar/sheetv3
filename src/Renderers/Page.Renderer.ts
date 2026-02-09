@@ -36,7 +36,7 @@ function RenderPage(
     context.fillStyle = config.Theme.PageColour;;
     context.fillRect(x + cam.x, y + cam.y, a4w, a4h);
 
-    if (formatting) {
+    if (false) {
     context.strokeStyle = "rgba(51, 2, 16, 0.2)";
 
     // Render Margin Lines

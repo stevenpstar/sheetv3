@@ -10,6 +10,7 @@ import {
   CreateTuplet,
   InputOnMeasure,
   RecreateDivisionGroups,
+  RecreateStemAndBeams,
   UpdateNoteBounds,
 } from "./Workers/NoteInput.js";
 import { Selector } from "./Workers/Selector.js";
@@ -37,6 +38,7 @@ import { Articulation, ArticulationType } from "./Core/Articulation.js";
 import { AddToUndoStack, LoadNextState, LoadPreviousState } from "./Workers/UndoRedo.js";
 import { LoadFromMXML, type XMLScore } from "./Workers/MXML.js";
 import { Page } from "./Core/Page.js";
+import { RepositionDivisionsInMeasure, ResizeDivisionsRevised } from "./Core/Division.js";
 
 class App {
   Config: ConfigSettings;
@@ -234,6 +236,7 @@ class App {
       }
     } else if (this.NoteInput) {
       InputOnMeasure(
+        this.Sheet,
         msrOver,
         this.NoteValue,
         x,
@@ -242,7 +245,13 @@ class App {
         this.RestInput,
         this.GraceInput,
       );
+      RecreateDivisionGroups(msrOver);
+      //const _ = ResizeMeasuresOnPageRevised(this.Sheet, this.Sheet.Pages[0],
+                                            //this.Camera, this.Config);
+
       this.ResizeMeasures(this.Sheet);
+
+      RecreateStemAndBeams(msrOver);
       this.SaveToUndoStack();
     }
     //  this.NotifyCallback(this.Message);
@@ -494,6 +503,8 @@ class App {
           // when re-implementing dragging notes/selectables
           if (n.Selected && n.Editable) {
             n.Line += lineDiff;
+            ResizeDivisionsRevised(msr);
+            RepositionDivisionsInMeasure(msr);
             UpdateNoteBounds(msr, n.Staff);
             // send message about note update
             if (lineDiff !== 0) {
@@ -586,12 +597,12 @@ class App {
         const lineHeight = 400;
 //      const lineHeight =
 //        measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
-      SetPagesAndLines(
-        measures,
-        this.Sheet.Pages,
-        this.Config.PageSettings?.UsePages,
-        lineHeight,
-      );
+    //  SetPagesAndLines(
+    //    measures,
+    //    this.Sheet.Pages,
+    //    this.Config.PageSettings?.UsePages,
+    //    lineHeight,
+    //  );
       this.Sheet.Pages.forEach((page: Page) => {
         ResizeMeasuresOnPageRevised(
           this.Sheet,
@@ -600,20 +611,21 @@ class App {
           this.Config,
         );
       });
-      if (this.Config.CameraSettings?.CenterMeasures) {
-        this.CenterMeasures();
-      } else if (this.Config.CameraSettings?.CenterPage) {
-        this.CenterPage();
-      }
-      measures.forEach((m: Measure) => {
-        RecreateDivisionGroups(m);
-        m.Staves.forEach((s: Staff) => {
-          UpdateNoteBounds(m, s.Num);
-        });
-        RecalculateBarlines(m);
-      });
+    //  if (this.Config.CameraSettings?.CenterMeasures) {
+    //    this.CenterMeasures();
+    //  } else if (this.Config.CameraSettings?.CenterPage) {
+    //    this.CenterPage();
+    //  }
+    //  measures.forEach((m: Measure) => {
+    //    RecreateDivisionGroups(m);
+    //    m.Staves.forEach((s: Staff) => {
+    //      UpdateNoteBounds(m, s.Num);
+    //    });
+    //    RecalculateBarlines(m);
+    //  });
     });
     this.Update(0, 0);
+    console.log(sheet);
   }
 
   SetNoteValue(val: number): void {
@@ -855,7 +867,7 @@ class App {
     beat: Division,
     rest: boolean,
   ): void {
-    AddNoteOnMeasure(msr, noteValue, line, beat, rest, this.GraceInput);
+    AddNoteOnMeasure(this.Sheet, msr, noteValue, line, beat, rest, this.GraceInput);
 
     this.SaveToUndoStack();
   }

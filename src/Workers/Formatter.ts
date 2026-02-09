@@ -1,9 +1,11 @@
 import { Camera } from "../Core/Camera.js";
-import { ResizeDivisionsRevised } from "../Core/Division.js";
+import { RepositionDivisionsInMeasure, ResizeDivisionsRevised } from "../Core/Division.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Clef, CreateMeasureDivisions, GetMinimumWidth, Measure, RepositionMeasure, SetXOffset } from "../Core/Measure.js";
 import { MarginAdjuster, Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
+import { Staff } from "../Core/Staff.js";
+import { Bounds } from "../Types/Bounds.js";
 import { ConfigSettings } from "../Types/Config.js";
 import { UpdateNoteBounds } from "./NoteInput.js";
 
@@ -83,16 +85,38 @@ function ResizeMeasuresOnPageRevised(
   cam: Camera,
   config: ConfigSettings) {
     if (sheet.Instruments.length === 0) { return; } // No instruments means no music
+    let pageLine = 0;
+    let pageLineWidth = 0;
     const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right + page.Margins.left);
-    let minimumMeasureWidth = 100;
-    if (sheet.Instruments[0].Measures.length > 1) {
-      minimumMeasureWidth = pageSize / 4;
-    }
+    let minimumMeasureWidth = 200;
+  //  if (sheet.Instruments[0].Measures.length > 1) {
+  //    minimumMeasureWidth = pageSize / 4;
+  //  }
 
     sheet.Instruments.forEach((instrument: Instrument) => {
+      // Trying to make things work here leave me alone
+    //  if (sheet.Instruments[0].Measures.length > 1) {
+    //    minimumMeasureWidth = pageSize / 4;
+    //  }
+
       instrument.Measures.forEach((msr: Measure, i: number) => {
 
-        let largestMeasureWidth = minimumMeasureWidth;
+        // This seems very redundant but my brain is not working
+        // properly as I code this
+       // let largestMeasureWidth = minimumMeasureWidth;
+       // sheet.Instruments.forEach((ins: Instrument) => {
+       //   ins.Measures.filter((m: Measure) => m.Num === i)
+       //     .forEach((m: Measure) => {
+       //       m.Staves.forEach((s: Staff) => {
+       //         let msrWidth = ResizeDivisionsRevised(m, s.Num);
+       //         if (msrWidth > largestMeasureWidth) {
+       //           largestMeasureWidth = msrWidth;
+       //         }
+       //       });
+       //     });
+       // });
+
+       // minimumMeasureWidth = largestMeasureWidth;
 
         if (i === 0) {
           // TODO: Temporary
@@ -101,22 +125,44 @@ function ResizeMeasuresOnPageRevised(
           msr.RenderTimeSig = true;
           //
           msr.Bounds.x = page.Bounds.x + page.Margins.left;
-        } else {
-          RepositionMeasure(msr, instrument.Measures[i-1]);
-        }
+        } 
+       // else {
+       //   RepositionMeasure(msr, instrument.Measures[i-1]);
+       // }
 
         SetXOffset(msr);
-        msr.Bounds.width = ResizeDivisionsRevised(msr, 0);
+        msr.Bounds.width = ResizeDivisionsRevised(msr);
         if (msr.Bounds.width < minimumMeasureWidth) {
           msr.Bounds.width = minimumMeasureWidth;
         }
-        msr.Bounds.y = page.PageLines[0].LineBounds.y + sheet.Instruments[0].Position.y + (300 * sheet.Instruments[0].ID);
+       // pageLineWidth += msr.Bounds.width;
+       // if (pageLineWidth > pageSize) {
+       //   pageLine += 1;
+       //   pageLineWidth = msr.Bounds.width;
+       //   msr.Bounds.x = page.Bounds.x + page.Margins.left;
+       //   msr.RenderClef = true;
+       //   msr.RenderKey = true;
+       //   msr.RenderTimeSig = true;
+       //   msr.PageLine = pageLine;
+       //   if (page.PageLines.length < (pageLine - 1)) {
+       //     page.AddLine(page.PageLines[pageLine-1].YPos + 100);
+       //   }
+       // } 
+
+      //  msr.Bounds.y = page.PageLines[pageLine].LineBounds.y 
+      //    + instrument.Position.y + (100 * pageLine);
+        RepositionDivisionsInMeasure(msr);
         CreateMeasureDivisions(msr);
         msr.Clefs.forEach((c: Clef) => {
           c.SetBounds(msr, c.Staff);
         });
         msr.TimeSignature.SetBounds(msr);
-       // UpdateNoteBounds(msr, 0);
+        if (i > 0) {
+          RepositionMeasure(msr, instrument.Measures[i-1]);
+        }
+        msr.Staves.forEach((_: Staff, i: number) => {
+          UpdateNoteBounds(msr, i);
+        });
       });
     });
   }
@@ -127,6 +173,7 @@ function ResizeMeasuresOnPage(
   cam: Camera,
   config: ConfigSettings,
 ): void {
+  console.error("Deprecated function");
   const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
   page.PageLines.forEach((line) => {
     sheet.Instruments.forEach((instr: Instrument) => {
@@ -190,7 +237,7 @@ function ResizeMeasuresOnPage(
           m.Bounds.width = calculatedWidth;
           RepositionMeasure(msrs[i], msrs[i - 1]);
           CreateMeasureDivisions(m);
-          m.Bounds.width = ResizeDivisionsRevised(m, 0);
+          m.Bounds.width = ResizeDivisionsRevised(m);
         }
         m.Clefs.forEach((c) => {
           c.SetBounds(m, c.Staff);

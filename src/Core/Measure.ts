@@ -14,6 +14,7 @@ import {
   DivisionMinWidth,
   DivisionMaxWidth,
   ResizeDivisionsRevised,
+  RepositionDivisionsInMeasure,
 } from "./Division.js";
 import { Dynamic } from "./Dynamic.js";
 import { Instrument, StaffType } from "./Instrument.js";
@@ -23,6 +24,15 @@ import { Page } from "./Page.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
 import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
 import { Voice } from "./Voice.js";
+
+type BeatPosition = {
+  Beat: number;
+  Position: number;
+};
+
+type FormattingData = {
+  BeatPositions: Array<BeatPosition>;
+};
 
 interface MeasureProps {
   InstrumentID: number;
@@ -90,6 +100,8 @@ type Measure = {
   Articulations: Articulation[];
   Dynamics: Dynamic[];
 
+  FormattingData: FormattingData;
+
   Message: (msg: Message) => void;
 };
 
@@ -124,6 +136,9 @@ function CreateEmptyMeasure(): Measure {
     Barlines: [],
     Articulations: [],
     Dynamics: [],
+    FormattingData: { 
+      BeatPositions: [],
+    },
     Message: () => {},
   };
 
@@ -227,13 +242,13 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
   function SetXOffset(msr: Measure): void {
     msr.XOffset = 0;
     if (msr.RenderClef) {
-      msr.XOffset += 30;
+      msr.XOffset += 37;
     }
     if (msr.RenderKey) {
-      msr.XOffset += KeySignatures.get(msr.KeySignature).length * 11;
+      msr.XOffset += 7 + KeySignatures.get(msr.KeySignature).length * 11;
     }
     if (msr.RenderTimeSig) {
-      msr.XOffset += 30;
+      msr.XOffset += 37;
     }
     msr.TimeSignature.SetBounds(msr);
   }
@@ -244,7 +259,9 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
       msr.Staves.forEach((s: Staff) => {
         v.Divisions.push(...CreateDivisions(msr, v.Notes, s.Num, v, i));
       //  ResizeDivisions(msr, v.Divisions, s.Num);
-        //ResizeDivisionsRevised(msr, s.Num);
+       // ResizeDivisionsRevised(msr, s.Num);
+        ResizeDivisionsRevised(msr);
+        RepositionDivisionsInMeasure(msr);
         UpdateNoteBounds(msr, s.Num);
       });
     });
@@ -469,4 +486,5 @@ export { Measure, MeasureProps, Division, Clef,
   SetXOffset,
   CreateNewMeasure,
   GetMeasureHeight,
+  BeatPosition,
 };
