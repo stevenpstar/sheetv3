@@ -7,7 +7,7 @@ import { UpdateNoteBounds } from "../Workers/NoteInput.js";
 import { Beam } from "./Beam.js";
 import { Clef, GetNoteClefType } from "./Clef.js";
 import { Flag } from "./Flag.js";
-import { AddNote, Measure } from "./Measure.js";
+import { AddNote, BeatPosition, Measure } from "./Measure.js";
 import { CreateNewNote, Note, NoteProps } from "./Note.js";
 import {
   GetStaffHeight,
@@ -303,59 +303,91 @@ function ResizeDivisions(
 //  });
 }
 
+type DurationBeat = {
+  Duration: number;
+  Beat: number;
+};
+
 // returns total width
 // TODO: Separate function, but divisions need to be repositioned/resized based
 // on largest measure on staff/between instruments.
 function ResizeDivisionsRevised(
   msr: Measure,
 ): number {
-  let startingPosition = msr.Bounds.x + msr.XOffset;
-  let totalDivisionWidth = 0;
-  let prevDivDuration = 0;
-  let largestStaff = 0;
-  let largestStaffWidth = 0;
-  msr.FormattingData.BeatPositions = [];
-  msr.Staves.forEach((s: Staff) => {
-    let staffWidth = 0;
-    msr.Voices[msr.ActiveVoice].Divisions.filter((n: Division) => n.Staff === s.Num)
-      .forEach((div: Division, i: number) => {
-        staffWidth += GetWidthByDuration(div.Duration);
-      });
-      if (staffWidth > largestStaffWidth) {
-        largestStaffWidth = staffWidth;
-        largestStaff = s.Num;
+
+  let durationBeats: DurationBeat[] = [];
+  msr.Voices[msr.ActiveVoice].Divisions.forEach((d: Division) => {
+    durationBeats.push(
+      {
+        Duration: d.Duration,
+        Beat: d.Beat,
       }
+    );
   });
-  totalDivisionWidth = 0;
-  prevDivDuration = 0;
-  let beatPosition = startingPosition;
-  msr.Voices[msr.ActiveVoice].Divisions.filter((n: Division) => n.Staff === largestStaff)
-    .forEach((n: Division, i: number) => {
-      msr.FormattingData.BeatPositions.push( {
-        Beat: n.Duration,
-        Position: beatPosition,
-      } );
-      totalDivisionWidth += GetWidthByDuration(n.Duration);
-      beatPosition += GetWidthByDuration(n.Duration);
-      if (i === 0) {
-        prevDivDuration = GetWidthByDuration(n.Duration);
-      }
-      let div = msr.Voices[msr.ActiveVoice].Divisions
-        .find((d: Division) => d.Staff === largestStaff && d.Beat === n.Beat);
-      if (!div) {
-        console.error("Divisions should exist before trying to resize them");
-        return 0;
-      }
-      div.Bounds.width = GetWidthByDuration(n.Duration);
+
+  // sort just in case, it should already be sorted.
+  durationBeats.sort((a: DurationBeat, b: DurationBeat) => {
+    return a.Beat - b.Beat
+  });
+
+  let mappedDurationBeats: Map<number, Array<DurationBeat>> = new Map();
+  durationBeats.forEach((db: DurationBeat) => {
+    let beatArray: Array<DurationBeat> = [];
+    if (mappedDurationBeats.get(db.Beat)) {
+      beatArray = mappedDurationBeats.get(db.Beat);
+    }
+    beatArray.push(db);
+    mappedDurationBeats.set(db.Beat, beatArray);
+  });
+
+  let calculatedMeasureWidth = msr.XOffset;
+  let beatPosition = msr.Bounds.x + msr.XOffset;
+  let lastDivisionWidth = 0;
+  msr.FormattingData.BeatPositions = [];
+  mappedDurationBeats.forEach((durations, beat) => {
+    msr.FormattingData.BeatPositions.push({
+      Beat: beat,
+      Position: beatPosition,
     });
 
-  return totalDivisionWidth + 30;
+    if (durations.length === 0) {
+      console.error("Should at least be 1, does not make sense otherwise!");
+      return;
+    }
+    // Durations array should be sorted by default, so the first entry should be
+    // the shortest duration. (TODO: Check)
+    console.log("durationscheck: ", durations);
+    let shortestDuration = durations[durations.length-1].Duration;
+    calculatedMeasureWidth += GetWidthByDuration(shortestDuration);
+    lastDivisionWidth = GetWidthByDuration(shortestDuration);
+    beatPosition += lastDivisionWidth;
+  });
+
+  msr.Voices[msr.ActiveVoice].Divisions.forEach((d: Division) => {
+    let pos = msr.Bounds.x + msr.XOffset;
+    msr.FormattingData.BeatPositions.forEach((bp: BeatPosition) => {
+      if (d.Beat === bp.Beat) {
+        pos = bp.Position;
+        return;
+      }
+    });
+    d.Bounds.x = pos;
+    // Temporary, these should be formatted somewhere else
+    d.Subdivisions.forEach((sd: Subdivision) => {
+      sd.Bounds.x = d.Bounds.x;
+    });
+  });
+  
+  //msr.Bounds.width = calculatedMeasureWidth + msr.XOffset;
+  msr.Bounds.width = calculatedMeasureWidth;
+  return calculatedMeasureWidth;
 }
 
 // This is only accounting for active voice so it's going to be crazy when
 // switching, things should be positioned by largest measure/divisions voice.
 function RepositionDivisionsInMeasure(msr: Measure): void {
 
+  return;
   let beatPositions: Array<number> = [];
   let largestStaff: number = 0; 
   let largestWidth = 0;
@@ -708,7 +740,7 @@ function GetWidthByDuration(noteDuration: number): number {
   const semiQuaver = 30;
   const demiSemiQuaver = 30;
   const quaver = 35;
-  const crotchet = 80;
+  const crotchet = 50;
   let divWidth = minDivWidth;
 
   switch (noteDuration) {
@@ -728,13 +760,11 @@ function GetWidthByDuration(noteDuration: number): number {
       divWidth = semiQuaver;
       break;
     case NoteValues.n32:
-      console.log("demisemi!");
       divWidth = demiSemiQuaver;
       break;
     default:
       divWidth = crotchet;
   }
-  divWidth = 80;
   return divWidth;
 }
 

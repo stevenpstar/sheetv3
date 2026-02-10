@@ -323,6 +323,7 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
       };
       msr.Message(msg);
     }
+    ResizeDivisionsRevised(msr);
   }
 
   function ClearNonRestNotes(msr: Measure, beat: number, staff: number, voiceIndex: number): void {

@@ -48,7 +48,7 @@ function RenderMeasureRev(
     RenderDynamic(renderProps, measure, d, theme),
   );
 
-  if (true) {
+  if (debug) {
 
   measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division) => {
    //   renderProps.context.strokeStyle = "rgba(0, 255, 0, 255)";
@@ -76,12 +76,12 @@ function RenderMeasureRev(
         renderProps.context.fillStyle = "rgba(255, 0, 0, 0.2)";
       }  
       renderProps.context.lineWidth = 1;
-     // renderProps.context.strokeRect(
-     //   d.Bounds.x + renderProps.camera.x,
-     //   d.Bounds.y + renderProps.camera.y,
-     //   d.Bounds.width,
-     //   d.Bounds.height,
-     // );
+      renderProps.context.strokeRect(
+        d.Bounds.x + renderProps.camera.x,
+        d.Bounds.y + renderProps.camera.y,
+        d.Bounds.width,
+        d.Bounds.height,
+      );
     //  d.Subdivisions.forEach((sd, i) => {
     //    if (i % 2 == 0) {
     //      renderProps.context.fillStyle = "rgba(0, 0, 255, 0.2)";

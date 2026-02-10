@@ -151,6 +151,7 @@ function ResizeMeasuresOnPageRevised(
 
       //  msr.Bounds.y = page.PageLines[pageLine].LineBounds.y 
       //    + instrument.Position.y + (100 * pageLine);
+        ResizeDivisionsRevised(msr);
         RepositionDivisionsInMeasure(msr);
         CreateMeasureDivisions(msr);
         msr.Clefs.forEach((c: Clef) => {
