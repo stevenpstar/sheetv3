@@ -268,8 +268,27 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
   }
 
   function RepositionMeasure(msr: Measure, prevMsr: Measure): void {
-    msr.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
+    if (msr.PageLine === prevMsr.PageLine && msr.Page === prevMsr.Page) {
+      msr.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
+    } else {
+      msr.Bounds.x = msr.Page.Bounds.x + msr.Page.Margins.left;
+    }
+    RepositionMeasureOnPageLine(msr);
     CreateMeasureDivisions(msr);
+  }
+
+  function RepositionMeasureOnPageLine(msr: Measure): void {
+      if (msr.PageLine - 1 < msr.Page.PageLines.length) {
+          //  msr.Bounds.y = msr.Page.PageLines[msr.PageLine - 1].YPos;
+        //  PageLine yPos is not being set anywhere, need to implement that
+        //  (ypos/distance between lines etc will depend on instruments and
+        //  probably some sort of config file/setting
+        const measureDistance = 250;
+        msr.Bounds.y = msr.Page.Margins.top + (msr.PageLine - 1) * measureDistance;
+      } else {
+          msr.Bounds.y = msr.Page.Margins.top;
+          console.error("Pageline out of bounds of page");
+      }
   }
 
   function GetMeasureHeight(msr: Measure): number {

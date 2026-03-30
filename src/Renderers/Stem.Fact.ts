@@ -68,7 +68,6 @@ function CreateStems(
   const stems: Stem[] = [];
   let dynNoteXBuffer = 9;
   const stemDir: StemDirection = DetermineStemDirection(notes, divisions);
-
   let highestLine: number = Number.MAX_SAFE_INTEGER;
   let lowestLine: number = Number.MIN_SAFE_INTEGER;
   let hNote: Note;

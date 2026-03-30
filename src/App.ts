@@ -246,6 +246,7 @@ class App {
         this.GraceInput,
       );
       RecreateDivisionGroups(msrOver);
+      //ResizeMeasuresOnPageRevised(this.Sheet, this.Sheet.Pages[0], this.Camera, this.Config);
       //const _ = ResizeMeasuresOnPageRevised(this.Sheet, this.Sheet.Pages[0],
                                             //this.Camera, this.Config);
 
@@ -300,7 +301,7 @@ class App {
       const zoomThreshold = 0.02;
       if (app.Camera.Zoom < app.Camera.ZoomTarget - zoomThreshold || app.Camera.Zoom > app.Camera.ZoomTarget + zoomThreshold) {
         app.CanDragCamera = false;
-        const nextZoom = app.Camera.Zoom + (app.Camera.ZoomTarget - app.Camera.Zoom) * 0.05;
+        const nextZoom = app.Camera.Zoom + (app.Camera.ZoomTarget - app.Camera.Zoom) * 0.1;
         const originalX = app.MouseX / app.Camera.Zoom;
         const ogY = app.MouseY / app.Camera.Zoom;
         app.Camera.SetZoom(nextZoom);
@@ -499,8 +500,6 @@ class App {
       elem
         .filter((e: ISelectable) => e.SelType === SelectableTypes.Note)
         .forEach((n: Note) => {
-          // Should never be selected, currently band-aid fix for bug. Address
-          // when re-implementing dragging notes/selectables
           if (n.Selected && n.Editable) {
             n.Line += lineDiff;
             ResizeDivisionsRevised(msr);
@@ -597,12 +596,12 @@ class App {
         const lineHeight = 400;
 //      const lineHeight =
 //        measures[0].Instrument.Staff === StaffType.Rhythm ? 400 : 400;
-    //  SetPagesAndLines(
-    //    measures,
-    //    this.Sheet.Pages,
-    //    this.Config.PageSettings?.UsePages,
-    //    lineHeight,
-    //  );
+      SetPagesAndLines(
+        measures,
+        this.Sheet.Pages,
+        this.Config.PageSettings?.UsePages,
+        lineHeight,
+      );
       this.Sheet.Pages.forEach((page: Page) => {
         ResizeMeasuresOnPageRevised(
           this.Sheet,

@@ -119,6 +119,9 @@ function GetBeamString(
 ): string {
   const baseThickness = stemDir === StemDirection.Up ? -6 : 6;
   const yBuffer = stemDir === StemDirection.Up ? 8 : -8;
+  if (stemDir === StemDirection.Up) {
+    console.log("Stems should be up");
+  }
   const lineBuffer = yBuffer * no;
   const svgLine = `M ${beam.StartPoint.x + cam.x + 1} ${beam.StartPoint.y + cam.y - baseThickness + lineBuffer}
         L${beam.EndPoint.x + cam.x + 1} ${beam.EndPoint.y + cam.y - baseThickness + lineBuffer}

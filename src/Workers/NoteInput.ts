@@ -26,7 +26,7 @@ import {
 import { CreateStems } from "../Renderers/Stem.Fact.js";
 import { Bounds } from "../Types/Bounds.js";
 import { ISelectable, SelectableTypes } from "../Types/ISelectable.js";
-import { ResizeMeasuresOnPageRevised } from "./Formatter.js";
+import { ResizeMeasuresOnPage, ResizeMeasuresOnPageRevised } from "./Formatter.js";
 
 const noteXBuffer = 9;
 
@@ -252,6 +252,7 @@ function UpdateNoteBounds(msr: Measure, staff: number): void {
       });
     });
   });
+  RecreateDivisionGroups(msr);
   RecreateStemAndBeams(msr);
 }
 

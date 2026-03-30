@@ -354,10 +354,12 @@ function ResizeDivisionsRevised(
       console.error("Should at least be 1, does not make sense otherwise!");
       return;
     }
-    // Durations array should be sorted by default, so the first entry should be
-    // the shortest duration. (TODO: Check)
-    console.log("durationscheck: ", durations);
-    let shortestDuration = durations[durations.length-1].Duration;
+    let shortestDuration = Number.MAX_SAFE_INTEGER;
+    durations.forEach((d: DurationBeat) => {
+      if (d.Duration < shortestDuration) {
+        shortestDuration = d.Duration;
+      }
+    });
     calculatedMeasureWidth += GetWidthByDuration(shortestDuration);
     lastDivisionWidth = GetWidthByDuration(shortestDuration);
     beatPosition += lastDivisionWidth;
@@ -379,7 +381,7 @@ function ResizeDivisionsRevised(
   });
   
   //msr.Bounds.width = calculatedMeasureWidth + msr.XOffset;
-  msr.Bounds.width = calculatedMeasureWidth;
+  msr.Bounds.width = calculatedMeasureWidth - msr.XOffset;
   return calculatedMeasureWidth;
 }
 
@@ -736,19 +738,21 @@ function GetWidthByDuration(noteDuration: number): number {
   // values are hard coded for now, this implementation is not final.
   // values will be a part of a config
   // These values should likely be proportional to duration, they are not
-  const minDivWidth = 30;
+  const minDivWidth = 25;
   const semiQuaver = 30;
-  const demiSemiQuaver = 30;
+  const demiSemiQuaver = minDivWidth;
   const quaver = 35;
-  const crotchet = 50;
+  const crotchet = 40;
+  const minim = 60;
+  const semibreve = 100;
   let divWidth = minDivWidth;
 
   switch (noteDuration) {
     case NoteValues.n1:
-      divWidth = crotchet;
+      divWidth = semibreve;
       break;
     case NoteValues.n2:
-      divWidth = crotchet;
+      divWidth = minim;
       break;
     case NoteValues.n4:
       divWidth = crotchet;

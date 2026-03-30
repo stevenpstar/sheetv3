@@ -1,7 +1,7 @@
 import { Camera } from "../Core/Camera.js";
 import { RepositionDivisionsInMeasure, ResizeDivisionsRevised } from "../Core/Division.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
-import { Clef, CreateMeasureDivisions, GetMinimumWidth, Measure, RepositionMeasure, SetXOffset } from "../Core/Measure.js";
+import { Clef, CreateMeasureDivisions, GetBoundsWithOffset, GetMinimumWidth, Measure, RepositionMeasure, SetXOffset } from "../Core/Measure.js";
 import { MarginAdjuster, Page } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { Staff } from "../Core/Staff.js";
@@ -43,8 +43,9 @@ function SetPagesAndLines(
   }
   measures.forEach((msr: Measure) => {
     msrsOnLine++;
-    const msrWidth = GetMinimumWidth(msr) + msr.XOffset;
-    if (runningWidth + msrWidth > pageWidth || msrsOnLine > 4) {
+    //const msrWidth = GetMinimumWidth(msr) + msr.XOffset;
+    const msrWidth = GetBoundsWithOffset(msr).width;
+    if (runningWidth + msrWidth > pageWidth) {
       currentLine++;
       msrsOnLine = 1;
       if (page.PageLines.length < currentLine && currentLine <= linesPerPage) {
@@ -126,15 +127,18 @@ function ResizeMeasuresOnPageRevised(
           //
           msr.Bounds.x = page.Bounds.x + page.Margins.left;
         } 
-       // else {
-       //   RepositionMeasure(msr, instrument.Measures[i-1]);
-       // }
+        else {
+         // RepositionMeasure(msr, instrument.Measures[i-1]);
+         if (instrument.Measures[i-1].PageLine < msr.PageLine) {
+           msr.Bounds.x = page.Bounds.x + page.Margins.left;
+         }
+        }
 
         SetXOffset(msr);
         msr.Bounds.width = ResizeDivisionsRevised(msr);
-        if (msr.Bounds.width < minimumMeasureWidth) {
-          msr.Bounds.width = minimumMeasureWidth;
-        }
+      //  if (msr.Bounds.width < minimumMeasureWidth) {
+      //    msr.Bounds.width = minimumMeasureWidth;
+      //  }
        // pageLineWidth += msr.Bounds.width;
        // if (pageLineWidth > pageSize) {
        //   pageLine += 1;
@@ -151,15 +155,22 @@ function ResizeMeasuresOnPageRevised(
 
       //  msr.Bounds.y = page.PageLines[pageLine].LineBounds.y 
       //    + instrument.Position.y + (100 * pageLine);
-        ResizeDivisionsRevised(msr);
-        RepositionDivisionsInMeasure(msr);
         CreateMeasureDivisions(msr);
+        RepositionDivisionsInMeasure(msr);
         msr.Clefs.forEach((c: Clef) => {
           c.SetBounds(msr, c.Staff);
         });
         msr.TimeSignature.SetBounds(msr);
         if (i > 0) {
           RepositionMeasure(msr, instrument.Measures[i-1]);
+        } else {
+          msr.Bounds.x = msr.Page.Bounds.x + msr.Page.Margins.left;
+          if (msr.PageLine - 1 < msr.Page.PageLines.length) {
+            msr.Bounds.y = msr.Page.PageLines[msr.PageLine - 1].YPos;
+          } else {
+            msr.Bounds.y = msr.Page.Margins.top;
+            console.error("Pageline out of bounds of page");
+          }
         }
         msr.Staves.forEach((_: Staff, i: number) => {
           UpdateNoteBounds(msr, i);
@@ -219,7 +230,7 @@ function ResizeMeasuresOnPage(
           } else {
             mWidth = calculatedWidth;
           }
-          m.Bounds.width = mWidth;
+          m.Bounds.width = ResizeDivisionsRevised(m);
           CreateMeasureDivisions(m);
         } else {
           // TODO: This will have to change here too (some measures mid-line
@@ -235,7 +246,7 @@ function ResizeMeasuresOnPage(
           if (calculatedWidth > maxWidth) {
             msrWidth = maxWidth;
           }
-          m.Bounds.width = calculatedWidth;
+          //m.Bounds.width = calculatedWidth;
           RepositionMeasure(msrs[i], msrs[i - 1]);
           CreateMeasureDivisions(m);
           m.Bounds.width = ResizeDivisionsRevised(m);
