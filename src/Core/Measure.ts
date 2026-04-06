@@ -21,6 +21,7 @@ import { Instrument, StaffType } from "./Instrument.js";
 import { KeySignatures } from "./KeySignatures.js";
 import { CreateNewNote, Note, NoteProps, SetNoteID } from "./Note.js";
 import { Page } from "./Page.js";
+import { Sheet } from "./Sheet.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
 import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
 import { Voice } from "./Voice.js";
@@ -270,7 +271,16 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
   function RepositionMeasure(msr: Measure, prevMsr: Measure): void {
     if (msr.PageLine === prevMsr.PageLine && msr.Page === prevMsr.Page) {
       msr.Bounds.x = prevMsr.Bounds.x + prevMsr.Bounds.width + prevMsr.XOffset;
+      // this will actually depend on whether the user has manually set them to
+      // be showing and/or if there is a change
+      msr.RenderClef = false;
+      msr.RenderKey = false;
+      msr.RenderTimeSig = false;
+
     } else {
+      msr.RenderClef = true;
+      msr.RenderKey = true;
+      msr.RenderTimeSig = true;
       msr.Bounds.x = msr.Page.Bounds.x + msr.Page.Margins.left;
     }
     RepositionMeasureOnPageLine(msr);

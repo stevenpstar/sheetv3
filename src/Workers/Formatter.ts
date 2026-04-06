@@ -2,7 +2,7 @@ import { Camera } from "../Core/Camera.js";
 import { RepositionDivisionsInMeasure, ResizeDivisionsRevised } from "../Core/Division.js";
 import { Instrument, StaffType } from "../Core/Instrument.js";
 import { Clef, CreateMeasureDivisions, GetBoundsWithOffset, GetMinimumWidth, Measure, RepositionMeasure, SetXOffset } from "../Core/Measure.js";
-import { MarginAdjuster, Page } from "../Core/Page.js";
+import { MarginAdjuster, Page, PageLine } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { Staff } from "../Core/Staff.js";
 import { Bounds } from "../Types/Bounds.js";
@@ -155,12 +155,6 @@ function ResizeMeasuresOnPageRevised(
 
       //  msr.Bounds.y = page.PageLines[pageLine].LineBounds.y 
       //    + instrument.Position.y + (100 * pageLine);
-        CreateMeasureDivisions(msr);
-        RepositionDivisionsInMeasure(msr);
-        msr.Clefs.forEach((c: Clef) => {
-          c.SetBounds(msr, c.Staff);
-        });
-        msr.TimeSignature.SetBounds(msr);
         if (i > 0) {
           RepositionMeasure(msr, instrument.Measures[i-1]);
         } else {
@@ -172,7 +166,41 @@ function ResizeMeasuresOnPageRevised(
             console.error("Pageline out of bounds of page");
           }
         }
-        msr.Staves.forEach((_: Staff, i: number) => {
+
+        CreateMeasureDivisions(msr);
+
+        // Filling page width when total measure length is shorter but there are
+        // more page lines
+        page.PageLines.forEach((line: PageLine, i: number) => {
+          console.log("pageline: ", line.Number);
+          const msrsOnLine = instrument.Measures.filter((msr: Measure) => msr.PageLine === line.Number);
+          let totalWidth = 0;
+          let pageWidth = page.Bounds.width - (page.Margins.left + page.Margins.right);
+          msrsOnLine.forEach((msr: Measure) => {
+            totalWidth += GetBoundsWithOffset(msr).width;
+          });
+          let difference = 0;
+          if (totalWidth < pageWidth && i < page.PageLines.length - 1) {
+            difference = pageWidth - totalWidth;
+            difference = difference / msrsOnLine.length;
+            console.log("difference: ", difference);
+          }
+          msrsOnLine.forEach((msr: Measure, i: number) => {
+            if (i > 0) {
+              const prevMsrBounds = GetBoundsWithOffset(msrsOnLine[i-1]);
+              msr.Bounds.x = prevMsrBounds.x + prevMsrBounds.width + difference;
+              msr.Bounds.width += difference;
+            }
+          });
+        });
+
+
+        RepositionDivisionsInMeasure(msr);
+        msr.Clefs.forEach((c: Clef) => {
+          c.SetBounds(msr, c.Staff);
+        });
+        msr.TimeSignature.SetBounds(msr);
+                msr.Staves.forEach((_: Staff, i: number) => {
           UpdateNoteBounds(msr, i);
         });
       });

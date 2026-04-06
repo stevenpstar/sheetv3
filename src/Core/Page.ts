@@ -86,4 +86,4 @@ class Page {
   }
 }
 
-export { Page, MarginAdjuster };
+export { Page, PageLine, MarginAdjuster };
