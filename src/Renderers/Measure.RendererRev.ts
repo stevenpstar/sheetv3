@@ -6,13 +6,15 @@ import { RenderProperties } from "../Types/RenderProperties.js";
 import { BeatPosition, GetBoundsWithOffset, Theme } from "../entry.js";
 import { RenderClef } from "./Clef.Renderer.js";
 import { RenderKeySignature } from "./KeySignature.Renderer.js";
+import { Brackets, RenderScaledSymbol } from "./MusicFont.Renderer.js";
 import { RenderStaff } from "./Staff.Renderer.js";
 
 function RenderMeasureRev(
   measure: Measure,
   renderProps: RenderProperties,
   theme: Theme,
-  debug: boolean
+  debug: boolean,
+  isHovered: boolean
 ): void {
   // Render Barlines here
   measure.Staves.forEach((s: Staff) => RenderStaff(renderProps, measure, s));
@@ -26,6 +28,15 @@ function RenderMeasureRev(
     }
   });
   if (measure.RenderKey) {
+    RenderScaledSymbol(
+      renderProps,
+      Brackets.Brace,
+      measure.Bounds.x - 20.0,
+      measure.Bounds.y + measure.Bounds.height - 55,
+      theme,
+      false,
+      164,
+    );
     measure.Staves.forEach((s: Staff) => {
       if (measure.Clefs.length === 0) {
         console.error("Measure has no clefs, returning early from Rendering Key Signature");
@@ -48,7 +59,7 @@ function RenderMeasureRev(
     RenderDynamic(renderProps, measure, d, theme),
   );
 
-  if (debug) {
+  if (debug || isHovered) {
 
   measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division) => {
    //   renderProps.context.strokeStyle = "rgba(0, 255, 0, 255)";
@@ -71,12 +82,12 @@ function RenderMeasureRev(
     measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division, di: number) => {
       
 
-      renderProps.context.fillStyle = "rgba(0, 0, 255, 0.2)";
+      renderProps.context.fillStyle = "rgba(0, 0, 255, 0.1)";
       if (di % 2 == 0) {
-        renderProps.context.fillStyle = "rgba(255, 0, 0, 0.2)";
+        renderProps.context.fillStyle = "rgba(255, 0, 0, 0.1)";
       }  
       renderProps.context.lineWidth = 1;
-      renderProps.context.strokeRect(
+      renderProps.context.fillRect(
         d.Bounds.x + renderProps.camera.x,
         d.Bounds.y + renderProps.camera.y,
         d.Bounds.width,

@@ -10,18 +10,14 @@ import { Clef, GetNoteClefType } from "./Clef.js";
 import {
   CreateDivisions,
   type Division,
-  ResizeDivisions,
   DivisionMinWidth,
-  DivisionMaxWidth,
   ResizeDivisionsRevised,
   RepositionDivisionsInMeasure,
 } from "./Division.js";
 import { Dynamic } from "./Dynamic.js";
-import { Instrument, StaffType } from "./Instrument.js";
 import { KeySignatures } from "./KeySignatures.js";
 import { CreateNewNote, Note, NoteProps, SetNoteID } from "./Note.js";
 import { Page } from "./Page.js";
-import { Sheet } from "./Sheet.js";
 import { GetStaffHeightUntil, GetStaffMiddleLine, Staff } from "./Staff.js";
 import { CreateTimeSignature, TimeSignature } from "./TimeSignatures.js";
 import { Voice } from "./Voice.js";
@@ -56,7 +52,6 @@ interface MeasureProps {
   IsAnacrusis: boolean;
 }
 
-// MEASURE TYPE
 type Measure = {
 
   InstrumentID: number;
@@ -68,7 +63,7 @@ type Measure = {
   // NUMBER
   ID: number;
   Num: number;
-  XOffset: number; // not sure if msr.is what we want to go with
+  XOffset: number; 
   PageLine: number;
   Line: number;
   ActiveVoice: number;
@@ -243,25 +238,24 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
   function SetXOffset(msr: Measure): void {
     msr.XOffset = 0;
     if (msr.RenderClef) {
-      msr.XOffset += 37;
+      msr.XOffset += 32;
     }
     if (msr.RenderKey) {
       msr.XOffset += 7 + KeySignatures.get(msr.KeySignature).length * 11;
     }
     if (msr.RenderTimeSig) {
-      msr.XOffset += 37;
+      msr.XOffset += 32;
     }
     msr.TimeSignature.SetBounds(msr);
   }
 
-  function CreateMeasureDivisions(msr: Measure) {
+  function CreateMeasureDivisions(msr: Measure, addWidth: number = 0) {
+    console.log("How many times?");
     msr.Voices.forEach((v: Voice, i: number) => {
       v.Divisions = [];
       msr.Staves.forEach((s: Staff) => {
         v.Divisions.push(...CreateDivisions(msr, v.Notes, s.Num, v, i));
-      //  ResizeDivisions(msr, v.Divisions, s.Num);
-       // ResizeDivisionsRevised(msr, s.Num);
-        ResizeDivisionsRevised(msr);
+        ResizeDivisionsRevised(msr, addWidth);
         RepositionDivisionsInMeasure(msr);
         UpdateNoteBounds(msr, s.Num);
       });
@@ -293,10 +287,10 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
         //  PageLine yPos is not being set anywhere, need to implement that
         //  (ypos/distance between lines etc will depend on instruments and
         //  probably some sort of config file/setting
-        const measureDistance = 250;
-        msr.Bounds.y = msr.Page.Margins.top + (msr.PageLine - 1) * measureDistance;
+        const measureDistance = 400;
+        msr.Bounds.y = msr.Page.Bounds.y + msr.Page.Margins.top + (msr.PageLine - 1) * measureDistance;
       } else {
-          msr.Bounds.y = msr.Page.Margins.top;
+          msr.Bounds.y = msr.Page.Bounds.y + msr.Page.Margins.top;
           console.error("Pageline out of bounds of page");
       }
   }

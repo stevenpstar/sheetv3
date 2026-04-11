@@ -188,11 +188,11 @@ function RenderFinalBarline(
 
   const line = `M${xStart + cam.x - 9}
       ${yStart + cam.y} h
-      1 v ${barlineHeight} h -1 Z`;
+      2 v ${barlineHeight} h -2 Z`;
 
   const thickLine = `M${xStart + cam.x - 4}
       ${yStart + cam.y} h
-      4 v ${barlineHeight + 1} h -4 Z`;
+      5 v ${barlineHeight + 1} h -5 Z`;
 
   renderProps.context.fill(new Path2D(line));
   renderProps.context.fill(new Path2D(thickLine));

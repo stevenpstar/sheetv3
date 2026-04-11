@@ -55,10 +55,6 @@ function RenderNote(
   switch (note.Duration) {
     case 0.125:
     case 0.25:
-      //   noteString = posString + noteHead;
-      if (note.Opacity < 1.0) {
-        note.Opacity += 0.01;
-      }
       RenderScaledNote(
         note,
         renderProps,
@@ -178,16 +174,33 @@ function RenderRest(
   msr: Measure,
   theme: Theme,
 ): void {
+  console.log("Are we here?");
   if (!note) {
     return;
   }
   ctx.fillStyle = theme.NoteElements;
 
   let x = div.Bounds.x + noteXBuffer;
-  //    let y = div.Bounds.y + cam.y + ((note.Line - 3 - msr.SALineTop) * 5);
   let y = GetNotePositionOnLine(msr, note.Line + 3.5, note.Staff);
-  let path = `m${x} ${y}`;
   ctx.fillStyle = note.Selected ? theme.SelectColour : theme.NoteElements;
+  let measureDuration = msr.TimeSignature.top / msr.TimeSignature.bottom;
+  if (msr.IsAnacrusis) {
+    measureDuration = msr.AnacrusisDuration;
+  }
+  if (div.Duration === measureDuration) {
+    x = div.Bounds.x + div.Bounds.width / 2;
+    RenderScaledNote(
+      note,
+      renderProps,
+      Rests.Whole,
+      x,
+      y + 1,
+      theme,
+      note.Selected, // This will not be a constant
+      stdFontSize,
+    );
+
+  }
   if (div.Duration === 0.015625) {
 
   let y = GetNotePositionOnLine(msr, note.Line + 3.5, note.Staff);

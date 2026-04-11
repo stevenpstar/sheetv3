@@ -97,6 +97,9 @@ function returnCanvas(id: string): CanText {
     console.error("Canvas not found");
   } else {
     context.setTransform(1, 0, 0, 1, 0, 0);
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    canvas.style.textRendering = "geometricPrecision";
   }
 
   return { canvas: canvas, context: context };

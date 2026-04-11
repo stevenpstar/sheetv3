@@ -2,6 +2,10 @@ import { RenderProperties } from "../Types/RenderProperties.js";
 import { Note, Theme } from "../entry.js";
 
 const stdFontSize = 40;
+
+enum Brackets {
+  Brace = "\u{1D114}",
+}
 enum Clefs {
   G = "\u{1D11E}",
   GOttavaBassa = "\u{1D120}",
@@ -164,6 +168,7 @@ function RenderScaledNote(
     context.fillText("Tied: " + (note.Tied ? "true" : "false") , x + camera.x + 6, y + camera.y + 58);
     context.fillText("TiedStart: " + note.TiedStart.toString(), x + camera.x + 6, y + camera.y + 70);
     context.fillText("TiedEnd: " + note.TiedEnd.toString(), x + camera.x + 6, y + camera.y + 82);
+    context.fillText("Duration: " + note.Duration, x + camera.x + 6, y + camera.y + 94);
   }
 }
 
@@ -186,6 +191,7 @@ function RenderAnimatedSymbol(
 }
 
 export {
+  Brackets,
   Clefs,
   NoteHeads,
   Rests,

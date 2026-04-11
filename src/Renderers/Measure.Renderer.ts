@@ -40,6 +40,7 @@ function RenderMeasure(
   config: ConfigSettings,
   debug: boolean,
 ) {
+  let isHovered = GetBoundsWithOffset(measure).IsHovered(mousePos.x, mousePos.y, renderProps.camera);
   //    if (hovId === measure.ID)
   RenderHovered(
     measure,
@@ -53,7 +54,7 @@ function RenderMeasure(
   //    if (debug)
   // RenderDebug(measure, renderProps, index, mousePos);
   //RenderMeasureBase(measure, renderProps, mousePos, lastMeasure, config.Theme);
-  RenderMeasureRev(measure, renderProps, config.Theme, debug);
+  RenderMeasureRev(measure, renderProps, config.Theme, debug, isHovered);
   measure.Staves.forEach((s: Staff) => {
     measure.Voices.forEach((v: Voice) => {
       RenderNotes(measure, renderProps, s.Num, config.Theme, v);

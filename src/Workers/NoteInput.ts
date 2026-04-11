@@ -2,6 +2,7 @@ import { sheet } from "../../dist/entry.mjs";
 import { Camera } from "../Core/Camera.js";
 import { GetNoteClefType } from "../Core/Clef.js";
 import {
+    CreateDivisions,
   DivGroup,
   GetDivisionGroups,
   RepositionDivisionsInMeasure,
@@ -147,9 +148,25 @@ function InputNote(
       AddToDivision(msr, noteProps, division.Staff);
     }
   }
-  RecreateDivisionGroups(msr);
-// // const _ = ResizeMeasuresOnPageRevised(sheet, sheet.Pages[0], 
-  CreateMeasureDivisions(msr);
+  if (division.Duration !== noteValue) {
+ //   RecreateDivisionGroups(msr);
+ //   CreateMeasureDivisions(msr);
+  } else {
+     
+   msr.Voices.forEach((v: Voice, i: number) => {
+      v.Divisions = [];
+      msr.Staves.forEach((s: Staff) => {
+        v.Divisions.push(...CreateDivisions(msr, v.Notes, s.Num, v, i));
+        ResizeDivisionsRevised(msr, 0);
+        RepositionDivisionsInMeasure(msr);
+        UpdateNoteBounds(msr, s.Num);
+      });
+    });
+
+    console.log("Why didn't this work?");
+    console.log(msr);
+
+  }
   RecreateStemAndBeams(msr);
 }
 

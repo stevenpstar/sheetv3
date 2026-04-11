@@ -32,7 +32,7 @@ function RenderKeySignature(
       RenderSymbol(
         renderProps,
         StdAccidentals.Sharp,
-        msr.Bounds.x + 14 + xOff + i * 10,
+        msr.Bounds.x + 7 + xOff + i * 10,
         GetNotePositionOnLine(msr, l, staff) + 2.5,
         theme,
         false,
@@ -41,7 +41,7 @@ function RenderKeySignature(
       RenderSymbol(
         renderProps,
         StdAccidentals.Flat,
-        msr.Bounds.x + 14 + xOff + i * 10,
+        msr.Bounds.x + 7 + xOff + i * 10,
         GetNotePositionOnLine(msr, l, staff) + 2.5,
         theme,
         false,

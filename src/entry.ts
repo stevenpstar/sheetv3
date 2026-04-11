@@ -112,7 +112,7 @@ function zoom(app: App, canvas: HTMLCanvasElement, e: WheelEvent): void {
 
     e.preventDefault();
     const scale = e.deltaY * -0.01;
-    scale > 0 ? app.AlterZoom(0.1, x, y, true) : app.AlterZoom(-0.1, x, y, true);
+    scale > 0 ? app.AlterZoom(0.1, x, y, false) : app.AlterZoom(-0.1, x, y, false);
   } else {
     e.preventDefault();
     console.log(e.deltaY);

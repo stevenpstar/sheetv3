@@ -34,6 +34,11 @@ const ValueMap = new Map<number, number>([
   [0.03125, NoteValues.n32],
 ]);
 
+const TimeSigValueMap = new Map<number, number>([
+  [4, NoteValues.n4],
+  [8, NoteValues.n8]
+]);
+
 function GetLargestValues(duration: number): number[] {
   let remainingDiff = duration;
   let values: number[] = [];
@@ -64,4 +69,4 @@ function GetLargestValues(duration: number): number[] {
   return values;
 }
 
-export { NoteValues, GetLargestValues, ValueMap}
+export { NoteValues, TimeSigValueMap, GetLargestValues, ValueMap}

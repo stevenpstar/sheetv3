@@ -250,9 +250,10 @@ class App {
       //const _ = ResizeMeasuresOnPageRevised(this.Sheet, this.Sheet.Pages[0],
                                             //this.Camera, this.Config);
 
-      this.ResizeMeasures(this.Sheet);
+//      this.ResizeMeasures(this.Sheet);
 
       RecreateStemAndBeams(msrOver);
+      console.log(this.Sheet);
       this.SaveToUndoStack();
     }
     //  this.NotifyCallback(this.Message);
@@ -296,6 +297,7 @@ class App {
   }
 
   RealtimeUpdate(app: App): void {
+    return;
 
     if (app.Camera) {
       const zoomThreshold = 0.02;
@@ -546,7 +548,8 @@ class App {
     this.Camera.SetDragging(dragging, x, y, this.Config, this.Camera);
   }
 
-  AlterZoom(num: number, mx: number, my: number, smooth: boolean = false): void {
+  AlterZoom(num: number, mx: number, my: number, smooth: boolean = true): void {
+    console.log("dpi: ", window.devicePixelRatio);
     if (!smooth) {
       const originalX = mx / (this.Camera.Zoom * this.Camera.ScaleFactor);
       const ogY = my / (this.Camera.Zoom * this.Camera.ScaleFactor);

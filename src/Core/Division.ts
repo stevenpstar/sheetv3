@@ -313,6 +313,7 @@ type DurationBeat = {
 // on largest measure on staff/between instruments.
 function ResizeDivisionsRevised(
   msr: Measure,
+  addWidth: number = 0,
 ): number {
 
   let durationBeats: DurationBeat[] = [];
@@ -382,7 +383,7 @@ function ResizeDivisionsRevised(
   
   //msr.Bounds.width = calculatedMeasureWidth + msr.XOffset;
   msr.Bounds.width = calculatedMeasureWidth - msr.XOffset;
-  return calculatedMeasureWidth;
+  return calculatedMeasureWidth + addWidth;
 }
 
 // This is only accounting for active voice so it's going to be crazy when
@@ -473,7 +474,7 @@ function GenerateMissingBeatDivisions(
   divisionsToAdd.forEach((div) => {
     const notesOnBeat = voice.Notes.find((n) => n.Beat === div.Beat && n.Staff === div.Staff);
     if (notesOnBeat !== undefined) {
-      console.error("Note found in division gap");
+//      console.error("Note found in division gap");
     }
     const clefType = GetNoteClefType(msr, div.Beat, staff);
     const restProps: NoteProps = {
@@ -533,7 +534,7 @@ function GenerateMissingBeatDivisions(
       (n) => n.Beat === div.Beat && n.Staff === div.Staff,
     );
     if (notesOnBeat !== undefined) {
-      console.error("Note found in division gap");
+ //     console.error("Note found in division gap");
     }
 
     const clefType = GetNoteClefType(msr, div.Beat, staff);
@@ -738,8 +739,8 @@ function GetWidthByDuration(noteDuration: number): number {
   // values are hard coded for now, this implementation is not final.
   // values will be a part of a config
   // These values should likely be proportional to duration, they are not
-  const minDivWidth = 25;
-  const semiQuaver = 30;
+  const minDivWidth = 35;
+  const semiQuaver = 35;
   const demiSemiQuaver = minDivWidth;
   const quaver = 35;
   const crotchet = 40;
@@ -767,7 +768,7 @@ function GetWidthByDuration(noteDuration: number): number {
       divWidth = demiSemiQuaver;
       break;
     default:
-      divWidth = crotchet;
+      divWidth = semibreve;
   }
   return divWidth;
 }

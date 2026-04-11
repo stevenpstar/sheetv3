@@ -43,7 +43,7 @@ function CreateEmptySheet(): Sheet {
     sheet.Instruments.forEach((i: Instrument) => {
       i.Measures.forEach((m: Measure) => {
         if (GetBoundsWithOffset(m).IsHovered(x, y, camera)) {
-          ResizeDivisionsRevised(m);
+         // ResizeDivisionsRevised(m);
           RepositionDivisionsInMeasure(m);
           m.Voices[m.ActiveVoice].Divisions.forEach((d: Division) => {
             if (d.Bounds.IsHovered(x, y, camera)) {

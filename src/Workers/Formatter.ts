@@ -5,7 +5,6 @@ import { Clef, CreateMeasureDivisions, GetBoundsWithOffset, GetMinimumWidth, Mea
 import { MarginAdjuster, Page, PageLine } from "../Core/Page.js";
 import { Sheet } from "../Core/Sheet.js";
 import { Staff } from "../Core/Staff.js";
-import { Bounds } from "../Types/Bounds.js";
 import { ConfigSettings } from "../Types/Config.js";
 import { UpdateNoteBounds } from "./NoteInput.js";
 
@@ -14,7 +13,7 @@ function SetPagesAndLines(
   measures: Measure[],
   pages: Page[],
   usePage: boolean | null,
-  defaultLineHeight: number = 1050,
+  defaultLineHeight: number = 10050,
 ): void {
   // temp constant here
   const linesPerPage = 5;
@@ -27,7 +26,6 @@ function SetPagesAndLines(
     console.error("No page found!");
     return;
   }
-  console.log("page lines count: ", page.PageLines);
   let runningWidth = 0;
   let currentPage = 0;
   let currentLine = 1;
@@ -160,42 +158,50 @@ function ResizeMeasuresOnPageRevised(
         } else {
           msr.Bounds.x = msr.Page.Bounds.x + msr.Page.Margins.left;
           if (msr.PageLine - 1 < msr.Page.PageLines.length) {
-            msr.Bounds.y = msr.Page.PageLines[msr.PageLine - 1].YPos;
+            msr.Bounds.y = msr.Page.Bounds.y + msr.Page.PageLines[msr.PageLine - 1].YPos;
           } else {
             msr.Bounds.y = msr.Page.Margins.top;
             console.error("Pageline out of bounds of page");
           }
         }
 
-        CreateMeasureDivisions(msr);
+        let difference = 0;
+        CreateMeasureDivisions(msr, difference);
 
         // Filling page width when total measure length is shorter but there are
         // more page lines
+        // TODO: This is being run for each measure, then loops over every page
+        // line? Very inefficient - may be messing with scaling measure width
+        // automatically.
         page.PageLines.forEach((line: PageLine, i: number) => {
-          console.log("pageline: ", line.Number);
           const msrsOnLine = instrument.Measures.filter((msr: Measure) => msr.PageLine === line.Number);
           let totalWidth = 0;
           let pageWidth = page.Bounds.width - (page.Margins.left + page.Margins.right);
           msrsOnLine.forEach((msr: Measure) => {
             totalWidth += GetBoundsWithOffset(msr).width;
           });
-          let difference = 0;
+          difference = 0;
           if (totalWidth < pageWidth && i < page.PageLines.length - 1) {
             difference = pageWidth - totalWidth;
             difference = difference / msrsOnLine.length;
-            console.log("difference: ", difference);
           }
-          msrsOnLine.forEach((msr: Measure, i: number) => {
-            if (i > 0) {
-              const prevMsrBounds = GetBoundsWithOffset(msrsOnLine[i-1]);
-              msr.Bounds.x = prevMsrBounds.x + prevMsrBounds.width + difference;
-              msr.Bounds.width += difference;
-            }
-          });
+          if (difference > 0) {
+            msrsOnLine.forEach((msr: Measure, i: number) => {
+              if (i > 0) {
+                const prevMsrBounds = GetBoundsWithOffset(msrsOnLine[i-1]);
+                msr.Bounds.x = prevMsrBounds.x + prevMsrBounds.width + difference;
+              }
+
+            });
+
+             // msr.Bounds.width = ResizeDivisionsRevised(msr, difference);
+          }
         });
 
 
-        RepositionDivisionsInMeasure(msr);
+        //RepositionDivisionsInMeasure(msr);
+        CreateMeasureDivisions(msr, difference);
+        UpdateNoteBounds(msr, 0);
         msr.Clefs.forEach((c: Clef) => {
           c.SetBounds(msr, c.Staff);
         });
@@ -213,6 +219,7 @@ function ResizeMeasuresOnPage(
   cam: Camera,
   config: ConfigSettings,
 ): void {
+  return;
   console.error("Deprecated function");
   const pageSize = page.Bounds.width - (page.Margins.left + page.Margins.right);
   page.PageLines.forEach((line) => {
