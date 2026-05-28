@@ -64,6 +64,7 @@ const CreateDefaultMeasure = (
 ): Measure => {
   const msrHeight = instr.Staff === StaffType.Single ? mh * 2 : mh;
   const props: MeasureProps = {
+    MeasureID: id.count,
     InstrumentID: instr.ID,
     PrevMeasure: null,
     NextMeasure: null,
@@ -73,7 +74,7 @@ const CreateDefaultMeasure = (
       150,
       msrHeight,
     ),
-    TimeSignature: { top: 5, bottom: 4 },
+    TimeSignature: { top: 4, bottom: 4 },
     KeySignature: "DMaj/Bmin",
     Notes: [],
     Clefs: [new Clef(0, "treble", 1, 0), new Clef(1, "bass", 1, 1)],
@@ -115,6 +116,7 @@ const CreateMeasure = (
   settings?: MeasureSettings,
 ): Measure => {
   const props: MeasureProps = {
+    MeasureID: runningId.count,
     InstrumentID: instrID,
     PrevMeasure: prevMsr,
     NextMeasure: nextMsr,
@@ -137,6 +139,8 @@ const CreateMeasure = (
     ],
     IsAnacrusis: isAnacrusis,
   };
+  runningId.count += 1;
+  console.log("incrementing running id: ", runningId);
   return CreateNewMeasure(props, runningId, loading);
 };
 

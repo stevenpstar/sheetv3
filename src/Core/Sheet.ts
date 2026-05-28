@@ -15,11 +15,13 @@ interface SheetProps {
   Instruments: Instrument[];
   KeySignature: { key: string; measureNo: number }[];
   Pages: Page[];
+  RunningMeasureID: { count: number };
 }
 type Sheet = {
   Instruments: Instrument[];
   KeySignature: { key: string; measureNo: number }[];
   Pages: Page[];
+  RunningMeasureID: { count: number };
   // Sheet / Score config
   // Title/Composer/Metadata
 };
@@ -29,6 +31,7 @@ function CreateEmptySheet(): Sheet {
     Instruments: [],
     KeySignature: [],
     Pages: [],
+    RunningMeasureID: { count: 0 },
   };
 }
   function CreateSheetFromProperties(properties: SheetProps): Sheet {
@@ -72,6 +75,7 @@ function CreateDefaultSheet(
     Instruments: [],
     KeySignature: [{ key: "CMaj/Amin", measureNo: 0 }],
     Pages: [newPage],
+    RunningMeasureID: { count: 0 },
   };
 
   const page = sProps.Pages[0];

@@ -67,6 +67,18 @@ interface LoadStructure {
   Instruments: lInstrument[];
 }
 
+type Editable = {
+  InstrumentID: number,
+  MeasureID: number,
+  Staff: number,
+  Beat: number,
+}
+
+type SheetMetadata = {
+  Editable: boolean,
+  Editable_EXCEPTIONS: Array<Editable>,
+}
+
 const LoadSheet = (
   sheet: Sheet,
   page: Page,
@@ -75,7 +87,6 @@ const LoadSheet = (
   savedJson: string,
   callback: (msg: Message) => void,
 ) => {
-  let runningId = { count: 0 };
   // TODO: this could error
   const loaded: LoadStructure = JSON.parse(savedJson);
   loaded.Instruments.forEach((ins: lInstrument) => {
@@ -91,7 +102,7 @@ const LoadSheet = (
   if (!instr_exists) {
     sheet.Instruments.push(CreateDefaultPiano(ins.IDNo));
   }
-  ins.Measures.forEach((m: lMeasure) => {
+  ins.Measures.forEach((m: lMeasure, i: number) => {
     //   const msr = CreateDefaultMeasure(runningId, instr, page, cam);
     // TODO: Temporary
     if (instr.Staff === StaffType.Rhythm) {
@@ -108,7 +119,7 @@ const LoadSheet = (
         Staff: n.Staff,
         Tuplet: false,
         Clef: n.Clef,
-        Editable: true,
+        Editable: false,
         Grace: n.Grace,
         Voice: n.Voice,
         Alter: n.Alter,
@@ -129,7 +140,7 @@ const LoadSheet = (
       m.Clefs,
       m.Staves,
       cam,
-      runningId,
+      { count: i },
       page,
       m.ShowClef,
       callback,
@@ -190,9 +201,10 @@ const SaveSheet = (sheet: Sheet): string => {
       let notes: lNote[] = [];
       m.Voices.forEach((v: Voice, i: number) => {
         v.Notes.forEach((n: Note) => {
-          if (n.Rest) {
-            return;
-          }
+        // NOTE: Saving rests now
+         // if (n.Rest) {
+         //   return;
+         // }
           notes.push({
             ID: n.ID,
             Beat: n.Beat,
@@ -248,6 +260,8 @@ const SaveSheet = (sheet: Sheet): string => {
     });
   });
 
+  console.log("saved: ");
+  console.log(JSON.stringify(saved));
   return JSON.stringify(saved);
 };
 

@@ -250,7 +250,10 @@ class App {
       //const _ = ResizeMeasuresOnPageRevised(this.Sheet, this.Sheet.Pages[0],
                                             //this.Camera, this.Config);
 
-//      this.ResizeMeasures(this.Sheet);
+      // TODO: This is uncommented for now until formatting is reworked. 
+      // Otherwise divisions are not created correctly when inputting notes
+      // (only on the same staff for some reason) - 04-May-26
+      this.ResizeMeasures(this.Sheet);
 
       RecreateStemAndBeams(msrOver);
       console.log(this.Sheet);
@@ -408,7 +411,7 @@ class App {
         prevMsr.Clefs,
         prevMsr.Staves,
         this.Camera,
-        this.RunningID,
+        this.Sheet.RunningMeasureID,
         this.Sheet.Pages[this.Sheet.Pages.length - 1], // Page will need to be determined
         false,
         this.NotifyCallback,
@@ -821,6 +824,29 @@ class App {
   }
 
   CenterMeasures(): void {
+// Reworking because I don't know what was going on below
+    // for now assume camera zoom = 1 and only 1 instrument.
+    var pageWidth = this.Canvas.clientWidth;
+    var total_measures_width = 0;
+    var first_measure_x = 0.0;
+    this.Sheet.Instruments[0].Measures.forEach((m: Measure, i: number) => {
+      if (i == 0) {
+        first_measure_x = m.Bounds.x;
+      }
+      total_measures_width += GetBoundsWithOffset(m).width;
+    });
+    total_measures_width *= this.Camera.Zoom;
+    if (pageWidth < total_measures_width) { console.log("measures are not fitting onto page: ", pageWidth, ", ", total_measures_width); 
+    return;}
+    var difference = pageWidth - total_measures_width;
+    var diff_halved = difference / 2.0;
+    var camera_x = diff_halved - first_measure_x;
+    console.log("diff_halved = ", diff_halved);
+    console.log("camera_x: ", camera_x);
+    this.Camera.x = camera_x;
+    this.Camera.x = (-first_measure_x) + diff_halved / this.Camera.Zoom;
+
+    return;
     // This measure is currently only being used for mtrainer
     let msrWidth = 100;
     if (this.Config.FormatSettings?.MeasureFormatSettings?.MaxWidth) {

@@ -163,9 +163,6 @@ function InputNote(
       });
     });
 
-    console.log("Why didn't this work?");
-    console.log(msr);
-
   }
   RecreateStemAndBeams(msr);
 }

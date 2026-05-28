@@ -149,26 +149,36 @@ function RenderScaledNote(
   theme: Theme,
   selected: boolean,
   fontSize: number,
+  overrideColour: string = "",
 ): void {
   const { context, camera } = renderProps;
   var colour = selected ? theme.SelectColour : theme.NoteElements;
   if (note.OutOfBounds) {
     colour = "red";
   }
-  context.fillStyle = colour;
+  if (note.Beat === 2.5) {
+    overrideColour = "#a2d143";
+  }
+  if (overrideColour !== "") {
+    context.fillStyle = overrideColour;
+  } else {
+    context.fillStyle = colour;
+  }
   context.font = `${fontSize}px Bravura`;
   context.fillText(symbol, x + camera.x, y + camera.y);
   // TODO: This is for debugging, obviously need a debug flag somewhere at some
   // point
-  if (selected) {
+  if (note.Selected) {
     context.font = '12px Bravura';
-    context.fillText("Voice: " + note.Voice.toString(), x + camera.x + 6, y + camera.y + 20);
-    context.fillText("Beat: " + note.Beat.toString(), x + camera.x + 6, y + camera.y + 34);
-    context.fillText("Staff: " + note.Staff.toString(), x + camera.x + 6, y + camera.y + 46);
-    context.fillText("Tied: " + (note.Tied ? "true" : "false") , x + camera.x + 6, y + camera.y + 58);
-    context.fillText("TiedStart: " + note.TiedStart.toString(), x + camera.x + 6, y + camera.y + 70);
-    context.fillText("TiedEnd: " + note.TiedEnd.toString(), x + camera.x + 6, y + camera.y + 82);
-    context.fillText("Duration: " + note.Duration, x + camera.x + 6, y + camera.y + 94);
+    //context.fillText("Voice: " + note.Voice.toString(), x + camera.x + 6, y + camera.y + 20);
+    context.fillText("ID: " + note.ID.toString(), x + camera.x + 6, y + camera.y + 20);
+//    context.fillText("Beat: " + note.Beat.toString(), x + camera.x + 6, y + camera.y + 34);
+//    context.fillText("Staff: " + note.Staff.toString(), x + camera.x + 6, y + camera.y + 46);
+//    context.fillText("Tied: " + (note.Tied ? "true" : "false") , x + camera.x + 6, y + camera.y + 58);
+//    context.fillText("TiedStart: " + note.TiedStart.toString(), x + camera.x + 6, y + camera.y + 70);
+//    context.fillText("TiedEnd: " + note.TiedEnd.toString(), x + camera.x + 6, y + camera.y + 82);
+//    context.fillText("Duration: " + note.Duration, x + camera.x + 6, y + camera.y + 94);
+//    context.fillText("Line: " + note.Line.toString(), x + camera.x + 6, y + camera.y + 106);
   }
 }
 

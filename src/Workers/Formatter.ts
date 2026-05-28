@@ -199,7 +199,7 @@ function ResizeMeasuresOnPageRevised(
         });
 
 
-        //RepositionDivisionsInMeasure(msr);
+        RepositionDivisionsInMeasure(msr);
         CreateMeasureDivisions(msr, difference);
         UpdateNoteBounds(msr, 0);
         msr.Clefs.forEach((c: Clef) => {

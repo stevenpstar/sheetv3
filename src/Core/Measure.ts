@@ -32,6 +32,7 @@ type FormattingData = {
 };
 
 interface MeasureProps {
+  MeasureID: number;
   InstrumentID: number;
   PrevMeasure: Measure;
   NextMeasure: Measure;
@@ -148,7 +149,7 @@ function CreateNewMeasure(properties: MeasureProps, runningId: { count: number }
     msr.PrevMeasure = properties.PrevMeasure;
     msr.NextMeasure = properties.NextMeasure;
     msr.RunningID = runningId;
-    msr.ID = 0;
+    msr.ID = properties.MeasureID;
     msr.Num = 1;
     msr.Voices = [new Voice(0), new Voice(1), new Voice(2), new Voice(3)];
     if (loading && properties.Notes.length > 0) {

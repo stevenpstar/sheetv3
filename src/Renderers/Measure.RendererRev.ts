@@ -1,4 +1,3 @@
-import { Camera } from "../Core/Camera.js";
 import { Dynamic, RenderDynamic } from "../Core/Dynamic.js";
 import { Clef, Division, Measure } from "../Core/Measure.js";
 import { Staff } from "../Core/Staff.js";
@@ -18,6 +17,11 @@ function RenderMeasureRev(
 ): void {
   // Render Barlines here
   measure.Staves.forEach((s: Staff) => RenderStaff(renderProps, measure, s));
+  renderProps.context.font = `48px Bravura`;
+  renderProps.context.fillText(measure.ID.toString(),
+                               measure.Bounds.x - 20 + renderProps.camera.x,
+                               measure.Bounds.y + renderProps.camera.y);
+
   measure.Clefs.forEach((c: Clef) => {
     if (c.Beat === 1 && measure.PrevMeasure === null) {
       RenderClef(renderProps, c, theme)
@@ -59,7 +63,7 @@ function RenderMeasureRev(
     RenderDynamic(renderProps, measure, d, theme),
   );
 
-  if (debug || isHovered) {
+  if (debug) {
 
   measure.Voices[measure.ActiveVoice].Divisions.forEach((d: Division) => {
    //   renderProps.context.strokeStyle = "rgba(0, 255, 0, 255)";
